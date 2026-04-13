@@ -1,0 +1,38 @@
+package com.carbonpoint.system.security;
+
+import com.carbonpoint.common.exception.BusinessException;
+import com.carbonpoint.common.result.ErrorCode;
+import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+
+@Aspect
+@Component
+public class RequirePermAspect {
+
+    @Autowired
+    private PermissionService permissionService;
+
+    @Autowired
+    private CurrentUser currentUser;
+
+    @Before("@annotation(requirePerm)")
+    public void checkPermission(JoinPoint joinPoint, RequirePerm requirePerm) {
+        // Initialize from SecurityContext populated by JwtAuthenticationFilter
+        currentUser.initFromSecurityContext();
+
+        Long userId = currentUser.getUserId();
+        if (userId == null) {
+            throw new BusinessException(ErrorCode.UNAUTHORIZED);
+        }
+
+        List<String> permissions = permissionService.getUserPermissions(userId);
+        if (!permissions.contains(requirePerm.value())) {
+            throw new BusinessException(ErrorCode.PERMISSION_DENIED);
+        }
+    }
+}

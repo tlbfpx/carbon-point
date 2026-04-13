@@ -1,0 +1,39 @@
+# Git
+.git
+.gitignore
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+
+# Build artifacts
+**/target/
+dist/
+*.jar
+*.class
+
+# Node
+node_modules/
+.pnpm-store/
+
+# Test
+**/src/test/
+**/*.test.ts
+**/*.test.tsx
+
+# Documentation (not needed in image)
+docs/
+openspec/
+
+# Environment
+.env
+.env.*
+*.local
+
+# Misc
+*.log
+.DS_Store
+Thumbs.db
+certs/

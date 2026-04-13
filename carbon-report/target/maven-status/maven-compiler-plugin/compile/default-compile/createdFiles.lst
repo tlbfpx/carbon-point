@@ -1,0 +1,9 @@
+com/carbonpoint/report/dto/PointTrendDTO$TrendPoint.class
+com/carbonpoint/report/dto/EnterpriseDashboardDTO$ProductExchangeDTO.class
+com/carbonpoint/report/dto/EnterpriseDashboardDTO$DailyTrend.class
+com/carbonpoint/report/dto/PointTrendDTO.class
+com/carbonpoint/report/dto/PlatformDashboardDTO$TenantRankDTO.class
+com/carbonpoint/report/dto/PlatformDashboardDTO.class
+com/carbonpoint/report/dto/EnterpriseDashboardDTO.class
+com/carbonpoint/report/service/ReportService.class
+com/carbonpoint/report/controller/ReportController.class

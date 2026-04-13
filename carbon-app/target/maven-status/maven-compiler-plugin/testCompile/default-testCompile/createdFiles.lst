@@ -1,0 +1,17 @@
+com/carbonpoint/app/integration/PointExchangeIntegrationTest.class
+com/carbonpoint/app/integration/LoginSecurityTest.class
+com/carbonpoint/app/integration/TestDataHelper$UserBuilder.class
+com/carbonpoint/app/integration/PermissionIntegrationTest.class
+com/carbonpoint/app/integration/BaseIntegrationTest.class
+com/carbonpoint/app/integration/TestDataHelper$ExchangeOrderBuilder.class
+com/carbonpoint/app/integration/CheckInConcurrencyTest.class
+com/carbonpoint/app/integration/TestDataHelper$TenantBuilder.class
+com/carbonpoint/app/integration/TestDataHelper$CheckInRecordBuilder.class
+com/carbonpoint/app/integration/TestDataHelper$TimeSlotRuleBuilder.class
+com/carbonpoint/app/integration/NotificationTriggerTest.class
+com/carbonpoint/app/integration/TestDataHelper.class
+com/carbonpoint/app/integration/StockConcurrencyTest.class
+com/carbonpoint/app/integration/CheckInIntegrationTest.class
+com/carbonpoint/app/integration/MultiTenantIsolationTest.class
+com/carbonpoint/app/integration/TestDataHelper$PointRuleBuilder.class
+com/carbonpoint/app/integration/TestDataHelper$ProductBuilder.class

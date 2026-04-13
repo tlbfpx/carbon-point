@@ -1,0 +1,17 @@
+{
+  "name": "carbon-point",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev:h5": "pnpm --filter @carbon-point/h5 dev",
+    "dev:dashboard": "pnpm --filter @carbon-point/dashboard dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "type-check": "pnpm -r type-check"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@8.15.0"
+}

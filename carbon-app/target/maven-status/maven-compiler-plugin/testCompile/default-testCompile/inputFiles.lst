@@ -1,0 +1,10 @@
+/Users/muxi/workspace/carbon-point/carbon-app/src/test/java/com/carbonpoint/app/integration/PermissionIntegrationTest.java
+/Users/muxi/workspace/carbon-point/carbon-app/src/test/java/com/carbonpoint/app/integration/BaseIntegrationTest.java
+/Users/muxi/workspace/carbon-point/carbon-app/src/test/java/com/carbonpoint/app/integration/MultiTenantIsolationTest.java
+/Users/muxi/workspace/carbon-point/carbon-app/src/test/java/com/carbonpoint/app/integration/PointExchangeIntegrationTest.java
+/Users/muxi/workspace/carbon-point/carbon-app/src/test/java/com/carbonpoint/app/integration/CheckInIntegrationTest.java
+/Users/muxi/workspace/carbon-point/carbon-app/src/test/java/com/carbonpoint/app/integration/CheckInConcurrencyTest.java
+/Users/muxi/workspace/carbon-point/carbon-app/src/test/java/com/carbonpoint/app/integration/TestDataHelper.java
+/Users/muxi/workspace/carbon-point/carbon-app/src/test/java/com/carbonpoint/app/integration/StockConcurrencyTest.java
+/Users/muxi/workspace/carbon-point/carbon-app/src/test/java/com/carbonpoint/app/integration/NotificationTriggerTest.java
+/Users/muxi/workspace/carbon-point/carbon-app/src/test/java/com/carbonpoint/app/integration/LoginSecurityTest.java

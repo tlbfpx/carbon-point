@@ -1,0 +1,49 @@
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import path from 'path';
+
+export default defineConfig(({ command, isSsrBuild }) => {
+  // Platform app (platform admin): build to dist/platform with base=/platform/
+  // Dashboard app (enterprise admin): build to dist/dashboard with base=/dashboard/
+  const platformInput = path.resolve(__dirname, 'platform.html');
+  const dashboardInput = path.resolve(__dirname, 'index.html');
+
+  return {
+    plugins: [react()],
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, './src'),
+      },
+    },
+    server: {
+      port: 3001,
+      host: true,
+    },
+    build: {
+      outDir: 'dist/dashboard',
+      emptyOutDir: true,
+      base: '/',
+      rollupOptions: {
+        input: {
+          dashboard: dashboardInput,
+          platform: platformInput,
+        },
+        output: {
+          manualChunks: {
+            vendor: ['react', 'react-dom', 'react-router-dom'],
+            antd: ['antd', '@ant-design/icons'],
+            charts: ['recharts'],
+            query: ['@tanstack/react-query', 'zustand'],
+          },
+          assetFileNames: 'assets/[name].[hash][extname]',
+          chunkFileNames: 'assets/[name].[hash].js',
+          entryFileNames: 'assets/[name].[hash].js',
+        },
+      },
+      target: 'es2015',
+      cssCodeSplit: true,
+      minify: 'esbuild',
+      sourcemap: false,
+    },
+  };
+});

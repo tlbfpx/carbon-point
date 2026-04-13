@@ -1,0 +1,108 @@
+<h2>企业角色权限设计方案</h2>
+<p class="subtitle">平台套餐 → 企业超管 → 运营/自定义角色 的三层权限体系</p>
+
+<div class="section">
+  <h3>权限层级架构</h3>
+  <div style="display: flex; gap: 16px; align-items: stretch; margin-top: 16px;">
+    <!-- Platform Level -->
+    <div style="flex: 1; border: 2px solid #1890ff; border-radius: 8px; padding: 16px; background: #e6f7ff;">
+      <div style="text-align: center; font-weight: bold; color: #1890ff; margin-bottom: 12px;">平台层</div>
+      <div style="background: #fff; border-radius: 6px; padding: 12px; margin-bottom: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <div style="font-weight: bold; text-align: center; margin-bottom: 8px;">套餐定义</div>
+        <div style="font-size: 13px; color: #666;">
+          <div style="margin: 4px 0;">• 标准版：员工、规则</div>
+          <div style="margin: 4px 0;">• 专业版：+商品、订单</div>
+          <div style="margin: 4px 0;">• 旗舰版：+报表、积分</div>
+        </div>
+      </div>
+      <div style="font-size: 12px; color: #666; text-align: center;">平台管理员可创建/编辑套餐</div>
+    </div>
+
+    <!-- Arrow -->
+    <div style="display: flex; align-items: center; font-size: 24px; color: #1890ff;">→</div>
+
+    <!-- Enterprise Level -->
+    <div style="flex: 1; border: 2px solid #52c41a; border-radius: 8px; padding: 16px; background: #f6ffed;">
+      <div style="text-align: center; font-weight: bold; color: #52c41a; margin-bottom: 12px;">企业层</div>
+      <div style="background: #fff; border-radius: 6px; padding: 12px; margin-bottom: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <div style="font-weight: bold; text-align: center; margin-bottom: 8px;">超管角色</div>
+        <div style="font-size: 12px; color: #666; text-align: center;">权限来自套餐（不可修改）</div>
+      </div>
+      <div style="background: #fff; border-radius: 6px; padding: 12px; margin-bottom: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <div style="font-weight: bold; text-align: center; margin-bottom: 8px;">运营角色</div>
+        <div style="font-size: 12px; color: #666; text-align: center;">权限由超管分配（ subset）</div>
+      </div>
+      <div style="background: #fff; border-radius: 6px; padding: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <div style="font-weight: bold; text-align: center; margin-bottom: 8px;">自定义角色</div>
+        <div style="font-size: 12px; color: #666; text-align: center;">超管可创建（subset of 超管权限）</div>
+      </div>
+    </div>
+
+    <!-- Arrow -->
+    <div style="display: flex; align-items: center; font-size: 24px; color: #52c41a;">→</div>
+
+    <!-- Operator Level -->
+    <div style="flex: 0.8; border: 2px solid #faad14; border-radius: 8px; padding: 16px; background: #fffbe6;">
+      <div style="text-align: center; font-weight: bold; color: #faad14; margin-bottom: 12px;">运营视角</div>
+      <div style="font-size: 13px; color: #666;">
+        <div style="margin: 6px 0;">✓ 查看数据看板</div>
+        <div style="margin: 6px 0;">✓ 管理员工</div>
+        <div style="margin: 6px 0;">✓ 配置规则</div>
+        <div style="margin: 6px 0; color: #999;">✗ 删除商品（未授权）</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>套餐升级行为</h3>
+  <div class="pros-cons">
+    <div class="pros">
+      <h4>选择 A（推荐）</h4>
+      <ul>
+        <li>运营保留当前权限，不自动增加</li>
+        <li>超管手动分配新权限</li>
+        <li>可预测，无意外权限变更</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <h4>对比 B/C</h4>
+      <ul>
+        <li>B: 新权限自动授予，可能不符合企业意愿</li>
+        <li>C: 需要二次确认，增加操作复杂度</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>角色数量设计</h3>
+  <div style="display: flex; gap: 16px; margin-top: 12px;">
+    <div style="flex: 1; background: #fafafa; border-radius: 8px; padding: 16px; border: 1px solid #d9d9d9;">
+      <div style="font-weight: bold; margin-bottom: 8px;">超管（预设）</div>
+      <ul style="font-size: 13px; color: #666; margin: 0; padding-left: 20px;">
+        <li>平台在企业创建时自动生成</li>
+        <li>权限直接复制自套餐，不可编辑</li>
+        <li>不可删除，至少保留一个</li>
+      </ul>
+    </div>
+    <div style="flex: 1; background: #fafafa; border-radius: 8px; padding: 16px; border: 1px solid #d9d9d9;">
+      <div style="font-weight: bold; margin-bottom: 8px;">运营（预设）</div>
+      <ul style="font-size: 13px; color: #666; margin: 0; padding-left: 20px;">
+        <li>超管创建，默认权限为空</li>
+        <li>超管分配 subset 权限</li>
+        <li>可删除</li>
+      </ul>
+    </div>
+    <div style="flex: 1; background: #fafafa; border-radius: 8px; padding: 16px; border: 1px solid #d9d9d9;">
+      <div style="font-weight: bold; margin-bottom: 8px;">自定义角色（可选）</div>
+      <ul style="font-size: 13px; color: #666; margin: 0; padding-left: 20px;">
+        <li>超管自行创建</li>
+        <li>权限 subset of 超管</li>
+        <li>可分配给任意企业成员</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<p style="margin-top: 24px; font-size: 14px; color: #666; text-align: center;">这张图展示了整体的权限层级关系。超管权限来自套餐，运营和自定义角色权限由超管分配。<br/>如果这个架构清晰无误，我将深入展开数据模型和 UI 设计。</p>

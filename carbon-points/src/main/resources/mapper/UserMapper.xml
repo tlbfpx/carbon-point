@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.carbonpoint.points.mapper.PointsUserMapper">
+
+    <!-- Atomic points update: add delta to available, add frozenDelta to frozen -->
+    <update id="updatePointsAtomic">
+        UPDATE users
+        SET available_points = available_points + #{delta},
+            frozen_points = frozen_points + #{frozenDelta},
+            total_points = total_points + #{delta},
+            updated_at = NOW()
+        WHERE id = #{userId}
+          AND (available_points + #{delta}) >= 0
+          AND (frozen_points + #{frozenDelta}) >= 0
+    </update>
+
+    <!-- Count users with higher rank (lower rank number = more points) -->
+    <select id="countHigherRank" resultType="int">
+        SELECT COUNT(*) FROM users
+        WHERE tenant_id = #{tenantId}
+          AND total_points > #{totalPoints}
+          AND status = 'active'
+    </select>
+
+    <!-- Update user level -->
+    <update id="updateLevel">
+        UPDATE users SET level = #{level}, updated_at = NOW() WHERE id = #{userId}
+    </update>
+
+    <!-- Update consecutive check-in days info -->
+    <update id="updateConsecutiveInfo">
+        UPDATE users
+        SET consecutive_days = #{consecutiveDays},
+            last_checkin_date = #{lastCheckinDate},
+            updated_at = NOW()
+        WHERE id = #{userId}
+    </update>
+
+</mapper>

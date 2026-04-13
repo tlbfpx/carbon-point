@@ -1,0 +1,11 @@
+/Users/muxi/workspace/carbon-point/carbon-mall/src/main/java/com/carbonpoint/mall/service/ProductService.java
+/Users/muxi/workspace/carbon-point/carbon-mall/src/main/java/com/carbonpoint/mall/dto/ExchangeDTO.java
+/Users/muxi/workspace/carbon-point/carbon-mall/src/main/java/com/carbonpoint/mall/util/CouponGenerator.java
+/Users/muxi/workspace/carbon-point/carbon-mall/src/main/java/com/carbonpoint/mall/entity/Product.java
+/Users/muxi/workspace/carbon-point/carbon-mall/src/main/java/com/carbonpoint/mall/mapper/ProductMapper.java
+/Users/muxi/workspace/carbon-point/carbon-mall/src/main/java/com/carbonpoint/mall/controller/ExchangeController.java
+/Users/muxi/workspace/carbon-point/carbon-mall/src/main/java/com/carbonpoint/mall/controller/ProductController.java
+/Users/muxi/workspace/carbon-point/carbon-mall/src/main/java/com/carbonpoint/mall/mapper/ExchangeOrderMapper.java
+/Users/muxi/workspace/carbon-point/carbon-mall/src/main/java/com/carbonpoint/mall/service/ExchangeService.java
+/Users/muxi/workspace/carbon-point/carbon-mall/src/main/java/com/carbonpoint/mall/entity/ExchangeOrder.java
+/Users/muxi/workspace/carbon-point/carbon-mall/src/main/java/com/carbonpoint/mall/dto/ProductCreateDTO.java

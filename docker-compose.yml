@@ -1,0 +1,72 @@
+# Carbon Point Local Development Docker Compose
+# Only runs middleware (MySQL, Redis, Nginx) in containers
+# Backend and frontend run locally on host for faster development
+
+version: '3.8'
+
+networks:
+  carbon-point:
+    driver: bridge
+
+volumes:
+  mysql-data:
+  redis-data:
+
+services:
+
+  # MySQL 8.0 - main database
+  mysql:
+    image: mysql:8.0
+    container_name: carbon-point-mysql
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: carbon_point
+      MYSQL_USER: carbon
+      MYSQL_PASSWORD: carbon123
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - carbon-point
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # Redis 7 - cache and distributed lock
+  redis:
+    image: redis:7-alpine
+    container_name: carbon-point-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - carbon-point
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Nginx - reverse proxy for frontend static files
+  nginx:
+    image: nginx:alpine
+    container_name: carbon-point-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./dist:/usr/share/nginx/html:ro
+      - ./certs:/etc/nginx/certs:ro
+    networks:
+      - carbon-point
+    depends_on:
+      - mysql
+      - redis

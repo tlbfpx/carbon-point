@@ -1,0 +1,55 @@
+# Carbon Point Local Development Makefile
+# Backend and frontend run locally, middleware runs in Docker
+
+.PHONY: docker-up docker-down docker-logs build-backend run-backend build-frontend run-frontend dev clean
+
+# Start all middleware containers in background
+docker-up:
+	@echo "Starting MySQL, Redis, Nginx..."
+	docker compose up -d
+
+# Stop all middleware containers
+docker-down:
+	@echo "Stopping all containers..."
+	docker compose down
+
+# Show middleware logs
+docker-logs:
+	@docker compose logs -f
+
+# Build backend (Spring Boot)
+build-backend:
+	@echo "Building backend..."
+	./mvnw clean package -DskipTests
+
+# Run backend locally with local environment
+run-backend:
+	@echo "Starting Spring Boot backend locally..."
+	java -jar \
+		-Dspring.profiles.active=dev \
+		--env-file .env.local \
+		carbon-app/target/carbon-app-*.jar
+
+# Build frontend (all apps)
+build-frontend:
+	@echo "Building frontend..."
+	pnpm install && pnpm build
+
+# Dev mode - start middleware and show instructions
+dev: docker-up
+	@echo ""
+	@echo "✅ Middleware started in Docker:"
+	@echo "   - MySQL: localhost:3306 (database: carbon_point)"
+	@echo "   - Redis: localhost:6379"
+	@echo "   - Nginx: http://localhost"
+	@echo ""
+	@echo "Next steps:"
+	@echo "1. Run backend:  make run-backend"
+	@echo "2. Run frontend: pnpm dev"
+	@echo ""
+
+# Clean up build artifacts
+clean:
+	@echo "Cleaning..."
+	./mvnw clean
+	rm -rf dist

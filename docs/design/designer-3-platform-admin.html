@@ -1,0 +1,1648 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>碳积分平台 · 平台管理</title>
+<style>
+/* ========== RESET & BASE ========== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px; color: rgba(0,0,0,.85); background: #f0f2f5; }
+a { color: #1677ff; text-decoration: none; }
+a:hover { color: #4096ff; }
+
+/* ========== LAYOUT ========== */
+.layout { display: flex; height: 100vh; overflow: hidden; }
+
+/* ========== SIDEBAR ========== */
+.sidebar { width: 220px; min-width: 220px; background: #001529; display: flex; flex-direction: column; overflow-y: auto; }
+.sidebar-logo { height: 56px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid rgba(255,255,255,.08); }
+.sidebar-logo span { color: #fff; font-size: 15px; font-weight: 600; letter-spacing: 1px; }
+.sidebar-logo .logo-icon { width: 28px; height: 28px; background: linear-gradient(135deg, #1677ff, #69b1ff); border-radius: 6px; display: flex; align-items: center; justify-content: center; margin-right: 10px; color: #fff; font-size: 16px; font-weight: 700; }
+.sidebar-menu { padding: 8px 0; flex: 1; }
+.sidebar-section { padding: 16px 24px 6px; color: rgba(255,255,255,.35); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+.menu-item { display: flex; align-items: center; padding: 0 24px; height: 44px; color: rgba(255,255,255,.65); cursor: pointer; transition: all .2s; border-radius: 0; margin: 2px 8px; border-radius: 6px; font-size: 14px; }
+.menu-item:hover { color: #fff; background: rgba(255,255,255,.06); }
+.menu-item.active { color: #fff; background: #1677ff; }
+.menu-item .menu-icon { width: 20px; text-align: center; margin-right: 12px; font-size: 15px; }
+.menu-item .menu-icon svg { width: 16px; height: 16px; fill: currentColor; }
+
+/* ========== MAIN AREA ========== */
+.main-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+/* ========== TOP HEADER ========== */
+.top-header { height: 56px; background: #fff; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex-shrink: 0; }
+.header-left { display: flex; align-items: center; gap: 16px; }
+.breadcrumb { display: flex; align-items: center; gap: 6px; color: rgba(0,0,0,.45); font-size: 13px; }
+.breadcrumb .sep { margin: 0 2px; }
+.breadcrumb .current { color: rgba(0,0,0,.85); }
+.header-right { display: flex; align-items: center; gap: 16px; }
+.header-badge { position: relative; cursor: pointer; padding: 4px; }
+.header-badge .dot { position: absolute; top: 2px; right: 2px; width: 8px; height: 8px; background: #ff4d4f; border-radius: 50%; border: 1.5px solid #fff; }
+.user-info { display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 4px 8px; border-radius: 6px; }
+.user-info:hover { background: #f5f5f5; }
+.avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #1677ff, #69b1ff); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: 600; }
+.user-info .name { font-size: 14px; color: rgba(0,0,0,.85); }
+.user-info .arrow { font-size: 10px; color: rgba(0,0,0,.25); }
+
+/* ========== CONTENT ========== */
+.content-area { flex: 1; overflow-y: auto; padding: 20px 24px; }
+.page { display: none; }
+.page.active { display: block; }
+.page-title { font-size: 20px; font-weight: 600; color: rgba(0,0,0,.88); margin-bottom: 4px; }
+.page-desc { font-size: 13px; color: rgba(0,0,0,.45); margin-bottom: 20px; }
+
+/* ========== CARDS ========== */
+.card { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 16px; border: 1px solid #f0f0f0; }
+.card-title { font-size: 15px; font-weight: 600; color: rgba(0,0,0,.88); margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; }
+.card-title .extra { font-size: 13px; font-weight: 400; }
+
+/* ========== STAT CARDS ========== */
+.stat-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 16px; }
+.stat-card { background: #fff; border-radius: 8px; padding: 20px; border: 1px solid #f0f0f0; position: relative; overflow: hidden; }
+.stat-card::after { content: ''; position: absolute; top: 0; right: 0; width: 80px; height: 80px; border-radius: 50%; opacity: .06; transform: translate(20px, -20px); }
+.stat-card.blue::after { background: #1677ff; }
+.stat-card.green::after { background: #52c41a; }
+.stat-card.orange::after { background: #fa8c16; }
+.stat-card.purple::after { background: #722ed1; }
+.stat-card.cyan::after { background: #13c2c2; }
+.stat-label { font-size: 13px; color: rgba(0,0,0,.45); margin-bottom: 8px; }
+.stat-value { font-size: 28px; font-weight: 700; color: rgba(0,0,0,.88); line-height: 1.2; }
+.stat-change { margin-top: 8px; font-size: 12px; display: flex; align-items: center; gap: 4px; }
+.stat-change.up { color: #52c41a; }
+.stat-change.down { color: #ff4d4f; }
+.stat-icon { position: absolute; top: 20px; right: 20px; width: 48px; height: 48px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+.stat-icon.blue { background: #e6f4ff; color: #1677ff; }
+.stat-icon.green { background: #f6ffed; color: #52c41a; }
+.stat-icon.orange { background: #fff7e6; color: #fa8c16; }
+.stat-icon.purple { background: #f9f0ff; color: #722ed1; }
+.stat-icon.cyan { background: #e6fffb; color: #13c2c2; }
+
+/* ========== CHART AREAS (CSS-only) ========== */
+.chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.bar-chart-container { position: relative; height: 240px; display: flex; align-items: flex-end; padding: 0 0 30px 40px; }
+.bar-chart-container .y-axis { position: absolute; left: 0; top: 0; bottom: 30px; width: 40px; display: flex; flex-direction: column-reverse; justify-content: space-between; align-items: flex-end; padding-right: 8px; }
+.bar-chart-container .y-axis span { font-size: 11px; color: rgba(0,0,0,.35); }
+.bar-chart-container .bars { display: flex; align-items: flex-end; gap: 12px; flex: 1; height: 100%; position: relative; }
+.bar-chart-container .bar-group { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; }
+.bar-chart-container .bar { width: 28px; border-radius: 4px 4px 0 0; background: linear-gradient(180deg, #1677ff, #69b1ff); transition: height .3s; position: relative; min-height: 4px; }
+.bar-chart-container .bar:hover { opacity: .85; }
+.bar-chart-container .bar-label { margin-top: 8px; font-size: 11px; color: rgba(0,0,0,.45); white-space: nowrap; }
+.bar-chart-container .grid-lines { position: absolute; left: 40px; right: 0; top: 0; bottom: 30px; }
+.bar-chart-container .grid-line { border-top: 1px dashed #f0f0f0; width: 100%; }
+
+.line-chart-container { position: relative; height: 240px; padding: 0 0 30px 40px; }
+.line-chart-container .y-axis { position: absolute; left: 0; top: 0; bottom: 30px; width: 40px; display: flex; flex-direction: column-reverse; justify-content: space-between; align-items: flex-end; padding-right: 8px; }
+.line-chart-container .y-axis span { font-size: 11px; color: rgba(0,0,0,.35); }
+.line-chart-container svg { width: 100%; height: calc(100% - 30px); }
+
+/* ========== TABLE ========== */
+.table-wrapper { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+table th, table td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+table th { background: #fafafa; color: rgba(0,0,0,.65); font-weight: 600; white-space: nowrap; }
+table tr:hover td { background: #fafafa; }
+table td { color: rgba(0,0,0,.85); }
+
+/* ========== TAGS ========== */
+.tag { display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 4px; font-size: 12px; line-height: 20px; white-space: nowrap; }
+.tag-blue { background: #e6f4ff; color: #1677ff; border: 1px solid #91caff; }
+.tag-green { background: #f6ffed; color: #52c41a; border: 1px solid #b7eb8f; }
+.tag-orange { background: #fff7e6; color: #fa8c16; border: 1px solid #ffd591; }
+.tag-red { background: #fff2f0; color: #ff4d4f; border: 1px solid #ffccc7; }
+.tag-purple { background: #f9f0ff; color: #722ed1; border: 1px solid #d3adf7; }
+.tag-cyan { background: #e6fffb; color: #13c2c2; border: 1px solid #87e8de; }
+.tag-gray { background: #fafafa; color: rgba(0,0,0,.45); border: 1px solid #d9d9d9; }
+.tag-gold { background: #fffbe6; color: #d48806; border: 1px solid #ffe58f; }
+
+/* ========== BUTTONS ========== */
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 5px 16px; border-radius: 6px; font-size: 14px; cursor: pointer; border: 1px solid #d9d9d9; background: #fff; color: rgba(0,0,0,.85); transition: all .2s; line-height: 22px; height: 32px; white-space: nowrap; }
+.btn:hover { border-color: #1677ff; color: #1677ff; }
+.btn-primary { background: #1677ff; border-color: #1677ff; color: #fff; }
+.btn-primary:hover { background: #4096ff; border-color: #4096ff; color: #fff; }
+.btn-sm { height: 26px; padding: 2px 10px; font-size: 13px; border-radius: 4px; }
+.btn-link { border: none; background: none; color: #1677ff; padding: 0; height: auto; }
+.btn-link:hover { color: #4096ff; border: none; }
+.btn-danger { color: #ff4d4f; border-color: #ff4d4f; }
+.btn-danger:hover { color: #ff7875; border-color: #ff7875; }
+.btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ========== FORM ========== */
+.form-row { display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
+.form-item { display: flex; flex-direction: column; gap: 6px; }
+.form-item label { font-size: 13px; color: rgba(0,0,0,.65); font-weight: 500; }
+.form-item label .req { color: #ff4d4f; margin-right: 4px; }
+.form-control { height: 32px; padding: 4px 12px; border: 1px solid #d9d9d9; border-radius: 6px; font-size: 14px; color: rgba(0,0,0,.85); outline: none; transition: border-color .2s; min-width: 180px; background: #fff; }
+.form-control:focus { border-color: #1677ff; box-shadow: 0 0 0 2px rgba(22,119,255,.06); }
+.form-control::placeholder { color: rgba(0,0,0,.25); }
+select.form-control { appearance: auto; }
+textarea.form-control { height: auto; min-height: 80px; padding: 8px 12px; resize: vertical; }
+
+/* ========== TABS ========== */
+.tabs { margin-bottom: 16px; }
+.tab-bar { display: flex; border-bottom: 1px solid #f0f0f0; gap: 0; }
+.tab-item { padding: 12px 20px; font-size: 14px; color: rgba(0,0,0,.65); cursor: pointer; border-bottom: 2px solid transparent; transition: all .2s; white-space: nowrap; }
+.tab-item:hover { color: #1677ff; }
+.tab-item.active { color: #1677ff; border-bottom-color: #1677ff; font-weight: 500; }
+.tab-panel { display: none; padding-top: 16px; }
+.tab-panel.active { display: block; }
+
+/* ========== SWITCH / TOGGLE ========== */
+.switch { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+.switch-track { width: 44px; height: 22px; border-radius: 11px; background: rgba(0,0,0,.25); position: relative; transition: background .2s; flex-shrink: 0; }
+.switch-track.on { background: #1677ff; }
+.switch-thumb { width: 18px; height: 18px; border-radius: 50%; background: #fff; position: absolute; top: 2px; left: 2px; transition: transform .2s; box-shadow: 0 2px 4px rgba(0,0,0,.12); }
+.switch-track.on .switch-thumb { transform: translateX(22px); }
+.switch-label { font-size: 13px; color: rgba(0,0,0,.65); }
+
+/* ========== MODAL ========== */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 1000; align-items: center; justify-content: center; }
+.modal-overlay.show { display: flex; }
+.modal { background: #fff; border-radius: 8px; width: 600px; max-width: 90vw; max-height: 85vh; overflow-y: auto; box-shadow: 0 6px 16px rgba(0,0,0,.08), 0 9px 28px rgba(0,0,0,.05); }
+.modal-header { padding: 16px 24px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; justify-content: space-between; }
+.modal-header h3 { font-size: 16px; font-weight: 600; color: rgba(0,0,0,.88); }
+.modal-close { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 4px; font-size: 18px; color: rgba(0,0,0,.45); }
+.modal-close:hover { background: #f5f5f5; color: rgba(0,0,0,.75); }
+.modal-body { padding: 24px; }
+.modal-footer { padding: 12px 24px; border-top: 1px solid #f0f0f0; display: flex; justify-content: flex-end; gap: 8px; }
+
+/* ========== PAGINATION ========== */
+.pagination { display: flex; align-items: center; justify-content: flex-end; gap: 4px; margin-top: 16px; }
+.pagination .page-info { font-size: 13px; color: rgba(0,0,0,.45); margin-right: 12px; }
+.page-btn { min-width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border: 1px solid #d9d9d9; border-radius: 6px; cursor: pointer; font-size: 13px; color: rgba(0,0,0,.85); background: #fff; padding: 0 6px; }
+.page-btn:hover { border-color: #1677ff; color: #1677ff; }
+.page-btn.active { background: #1677ff; border-color: #1677ff; color: #fff; }
+.page-btn.disabled { color: rgba(0,0,0,.25); cursor: not-allowed; border-color: #d9d9d9; }
+
+/* ========== DETAIL ========== */
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.detail-item { }
+.detail-item .label { font-size: 13px; color: rgba(0,0,0,.45); margin-bottom: 4px; }
+.detail-item .value { font-size: 14px; color: rgba(0,0,0,.85); }
+
+/* ========== FILTER BAR ========== */
+.filter-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+.filter-bar .search-input { min-width: 240px; }
+
+/* ========== UPLOAD ========== */
+.upload-area { width: 120px; height: 120px; border: 1px dashed #d9d9d9; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: border-color .2s; color: rgba(0,0,0,.25); gap: 8px; }
+.upload-area:hover { border-color: #1677ff; }
+.upload-area .upload-icon { font-size: 28px; }
+.upload-area .upload-text { font-size: 12px; }
+
+/* ========== CONFIG CARDS ========== */
+.config-section { margin-bottom: 24px; }
+.config-section-title { font-size: 15px; font-weight: 600; color: rgba(0,0,0,.88); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; gap: 8px; }
+.config-section-title .icon { font-size: 16px; }
+.config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.config-item { display: flex; flex-direction: column; gap: 6px; }
+.config-item .config-label { font-size: 13px; color: rgba(0,0,0,.65); }
+.config-item .config-desc { font-size: 12px; color: rgba(0,0,0,.35); margin-top: -2px; }
+.config-item .config-value { display: flex; align-items: center; gap: 8px; }
+
+/* ========== RULE CARD ========== */
+.rule-card { background: #fafafa; border: 1px solid #f0f0f0; border-radius: 8px; padding: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+.rule-card .rule-info { flex: 1; }
+.rule-card .rule-name { font-size: 14px; font-weight: 500; color: rgba(0,0,0,.85); margin-bottom: 4px; }
+.rule-card .rule-desc { font-size: 12px; color: rgba(0,0,0,.45); }
+.rule-card .rule-params { display: flex; gap: 16px; margin-top: 8px; }
+.rule-card .rule-param { font-size: 12px; color: rgba(0,0,0,.65); }
+.rule-card .rule-param span { font-weight: 600; color: rgba(0,0,0,.85); }
+
+/* ========== NOTIFICATION PREVIEW ========== */
+.preview-box { background: #f6f8fa; border: 1px solid #e8e8e8; border-radius: 8px; padding: 16px; margin-top: 12px; max-width: 400px; }
+.preview-box .preview-title { font-size: 12px; color: rgba(0,0,0,.45); margin-bottom: 8px; }
+.preview-box .preview-content { font-size: 14px; color: rgba(0,0,0,.85); line-height: 1.8; }
+.preview-box .preview-var { color: #1677ff; font-weight: 500; background: #e6f4ff; padding: 1px 4px; border-radius: 3px; }
+
+/* ========== SECURITY CARD ========== */
+.security-card { background: #fff; border-radius: 8px; border: 1px solid #f0f0f0; overflow: hidden; margin-bottom: 16px; }
+.security-card-header { padding: 16px 20px; background: linear-gradient(135deg, #fafafa, #f5f5f5); border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; gap: 12px; }
+.security-card-header .sc-icon { width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+.security-card-header .sc-title { font-size: 15px; font-weight: 600; color: rgba(0,0,0,.88); }
+.security-card-header .sc-desc { font-size: 12px; color: rgba(0,0,0,.45); margin-top: 2px; }
+.security-card-body { padding: 20px; }
+
+/* ========== EMPTY ========== */
+.empty-state { text-align: center; padding: 40px; color: rgba(0,0,0,.25); }
+.empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; }
+.empty-state .empty-text { font-size: 14px; }
+
+/* ========== LOG DETAIL ========== */
+.log-detail-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.log-detail-item { }
+.log-detail-item .ld-label { font-size: 12px; color: rgba(0,0,0,.45); margin-bottom: 4px; }
+.log-detail-item .ld-value { font-size: 14px; color: rgba(0,0,0,.85); }
+.log-detail-full { margin-top: 16px; }
+.log-detail-full .ld-label { font-size: 12px; color: rgba(0,0,0,.45); margin-bottom: 4px; }
+.log-detail-full .ld-value { font-size: 14px; color: rgba(0,0,0,.85); background: #fafafa; padding: 12px; border-radius: 6px; border: 1px solid #f0f0f0; line-height: 1.8; }
+
+/* ========== NUMBER INPUT ========== */
+.number-input { display: flex; align-items: center; }
+.number-input .num-btn { width: 28px; height: 32px; display: flex; align-items: center; justify-content: center; border: 1px solid #d9d9d9; background: #fff; cursor: pointer; font-size: 14px; color: rgba(0,0,0,.65); }
+.number-input .num-btn:first-child { border-radius: 6px 0 0 6px; }
+.number-input .num-btn:last-child { border-radius: 0 6px 6px 0; }
+.number-input .num-btn:hover { border-color: #1677ff; color: #1677ff; }
+.number-input input { width: 60px; height: 32px; border: 1px solid #d9d9d9; border-left: none; border-right: none; text-align: center; font-size: 14px; outline: none; color: rgba(0,0,0,.85); }
+
+/* ========== TOOLTIP ========== */
+.tooltip-trigger { position: relative; display: inline-flex; cursor: help; }
+.tooltip-trigger .tooltip-content { display: none; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); margin-bottom: 8px; background: rgba(0,0,0,.75); color: #fff; padding: 6px 10px; border-radius: 4px; font-size: 12px; white-space: nowrap; z-index: 100; }
+.tooltip-trigger:hover .tooltip-content { display: block; }
+
+/* ========== RANK BADGE ========== */
+.rank-badge { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; font-size: 12px; font-weight: 700; }
+.rank-1 { background: linear-gradient(135deg, #ffd700, #ffb800); color: #fff; }
+.rank-2 { background: linear-gradient(135deg, #c0c0c0, #a0a0a0); color: #fff; }
+.rank-3 { background: linear-gradient(135deg, #cd7f32, #b8680e); color: #fff; }
+.rank-other { background: #f0f0f0; color: rgba(0,0,0,.45); }
+
+/* ========== DETAIL PAGE ========== */
+.detail-header { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+.detail-header .back-btn { cursor: pointer; color: rgba(0,0,0,.45); font-size: 18px; padding: 4px; }
+.detail-header .back-btn:hover { color: rgba(0,0,0,.75); }
+.detail-header .tenant-logo { width: 56px; height: 56px; border-radius: 12px; background: linear-gradient(135deg, #1677ff, #69b1ff); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 22px; font-weight: 700; }
+.detail-header .tenant-meta h2 { font-size: 18px; font-weight: 600; color: rgba(0,0,0,.88); margin-bottom: 4px; }
+.detail-header .tenant-meta p { font-size: 13px; color: rgba(0,0,0,.45); }
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 1200px) { .stat-grid { grid-template-columns: repeat(3, 1fr); } }
+</style>
+</head>
+<body>
+<div class="layout">
+  <!-- ========== SIDEBAR ========== -->
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">C</div>
+      <span>碳积分平台</span>
+    </div>
+    <div class="sidebar-menu">
+      <div class="sidebar-section">平台管理</div>
+      <div class="menu-item active" onclick="switchPage('dashboard', this)">
+        <span class="menu-icon">&#9635;</span> 全平台看板
+      </div>
+      <div class="menu-item" onclick="switchPage('tenant', this)">
+        <span class="menu-icon">&#9881;</span> 企业管理
+      </div>
+      <div class="menu-item" onclick="switchPage('config', this)">
+        <span class="menu-icon">&#9881;</span> 平台配置
+      </div>
+      <div class="menu-item" onclick="switchPage('admin', this)">
+        <span class="menu-icon">&#9823;</span> 管理员管理
+      </div>
+      <div class="menu-item" onclick="switchPage('logs', this)">
+        <span class="menu-icon">&#9776;</span> 操作日志
+      </div>
+      <div class="menu-item" onclick="switchPage('security', this)">
+        <span class="menu-icon">&#9879;</span> 安全配置
+      </div>
+    </div>
+    <div style="padding: 16px 24px; border-top: 1px solid rgba(255,255,255,.08);">
+      <div style="font-size: 11px; color: rgba(255,255,255,.25);">v1.0.0 · 碳积分平台</div>
+    </div>
+  </div>
+
+  <!-- ========== MAIN ========== -->
+  <div class="main-area">
+    <!-- TOP HEADER -->
+    <div class="top-header">
+      <div class="header-left">
+        <div class="breadcrumb" id="breadcrumb">
+          <span>平台管理</span>
+          <span class="sep">/</span>
+          <span class="current" id="breadcrumb-current">全平台看板</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="header-badge" title="通知">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,.45)" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="dot"></span>
+        </div>
+        <div class="user-info">
+          <div class="avatar">管</div>
+          <span class="name">平台管理员</span>
+          <span class="arrow">&#9662;</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content-area">
+
+      <!-- ==================== PAGE 1: DASHBOARD ==================== -->
+      <div class="page active" id="page-dashboard">
+        <div class="page-title">全平台数据看板</div>
+        <div class="page-desc">平台整体运营数据概览，实时监控关键指标</div>
+
+        <!-- STAT CARDS -->
+        <div class="stat-grid">
+          <div class="stat-card blue">
+            <div class="stat-label">总企业数</div>
+            <div class="stat-value">156</div>
+            <div class="stat-change up">&#9650; 12.5% 较上月</div>
+            <div class="stat-icon blue">&#9881;</div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-label">活跃企业</div>
+            <div class="stat-value">132</div>
+            <div class="stat-change up">&#9650; 8.3% 较上月</div>
+            <div class="stat-icon green">&#10003;</div>
+          </div>
+          <div class="stat-card orange">
+            <div class="stat-label">总用户数</div>
+            <div class="stat-value">28,463</div>
+            <div class="stat-change up">&#9650; 15.2% 较上月</div>
+            <div class="stat-icon orange">&#9787;</div>
+          </div>
+          <div class="stat-card purple">
+            <div class="stat-label">总发放积分</div>
+            <div class="stat-value">3,852,190</div>
+            <div class="stat-change up">&#9650; 22.1% 较上月</div>
+            <div class="stat-icon purple">&#9733;</div>
+          </div>
+          <div class="stat-card cyan">
+            <div class="stat-label">总兑换量</div>
+            <div class="stat-value">56,832</div>
+            <div class="stat-change up">&#9650; 18.7% 较上月</div>
+            <div class="stat-icon cyan">&#8644;</div>
+          </div>
+        </div>
+
+        <!-- CHARTS -->
+        <div class="chart-grid">
+          <div class="card">
+            <div class="card-title">
+              月度积分发放趋势
+              <span class="extra" style="display:flex;gap:16px;">
+                <span style="display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:12px;height:3px;background:#1677ff;border-radius:2px;"></span><span style="font-size:12px;color:rgba(0,0,0,.45);">发放量</span></span>
+                <span style="display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:12px;height:3px;background:#52c41a;border-radius:2px;"></span><span style="font-size:12px;color:rgba(0,0,0,.45);">兑换量</span></span>
+              </span>
+            </div>
+            <div class="bar-chart-container">
+              <div class="y-axis">
+                <span>400k</span><span>300k</span><span>200k</span><span>100k</span><span>0</span>
+              </div>
+              <div class="grid-lines">
+                <div class="grid-line" style="position:absolute;top:0;left:0;right:0;"></div>
+                <div class="grid-line" style="position:absolute;top:25%;left:0;right:0;"></div>
+                <div class="grid-line" style="position:absolute;top:50%;left:0;right:0;"></div>
+                <div class="grid-line" style="position:absolute;top:75%;left:0;right:0;"></div>
+              </div>
+              <div class="bars">
+                <div class="bar-group"><div style="display:flex;gap:4px;align-items:flex-end;"><div class="bar" style="height:55%;background:linear-gradient(180deg,#1677ff,#69b1ff);"></div><div class="bar" style="height:35%;background:linear-gradient(180deg,#52c41a,#95de64);"></div></div><div class="bar-label">10月</div></div>
+                <div class="bar-group"><div style="display:flex;gap:4px;align-items:flex-end;"><div class="bar" style="height:60%;background:linear-gradient(180deg,#1677ff,#69b1ff);"></div><div class="bar" style="height:40%;background:linear-gradient(180deg,#52c41a,#95de64);"></div></div><div class="bar-label">11月</div></div>
+                <div class="bar-group"><div style="display:flex;gap:4px;align-items:flex-end;"><div class="bar" style="height:68%;background:linear-gradient(180deg,#1677ff,#69b1ff);"></div><div class="bar" style="height:45%;background:linear-gradient(180deg,#52c41a,#95de64);"></div></div><div class="bar-label">12月</div></div>
+                <div class="bar-group"><div style="display:flex;gap:4px;align-items:flex-end;"><div class="bar" style="height:72%;background:linear-gradient(180deg,#1677ff,#69b1ff);"></div><div class="bar" style="height:48%;background:linear-gradient(180deg,#52c41a,#95de64);"></div></div><div class="bar-label">1月</div></div>
+                <div class="bar-group"><div style="display:flex;gap:4px;align-items:flex-end;"><div class="bar" style="height:78%;background:linear-gradient(180deg,#1677ff,#69b1ff);"></div><div class="bar" style="height:52%;background:linear-gradient(180deg,#52c41a,#95de64);"></div></div><div class="bar-label">2月</div></div>
+                <div class="bar-group"><div style="display:flex;gap:4px;align-items:flex-end;"><div class="bar" style="height:85%;background:linear-gradient(180deg,#1677ff,#69b1ff);"></div><div class="bar" style="height:58%;background:linear-gradient(180deg,#52c41a,#95de64);"></div></div><div class="bar-label">3月</div></div>
+                <div class="bar-group"><div style="display:flex;gap:4px;align-items:flex-end;"><div class="bar" style="height:92%;background:linear-gradient(180deg,#1677ff,#69b1ff);"></div><div class="bar" style="height:62%;background:linear-gradient(180deg,#52c41a,#95de64);"></div></div><div class="bar-label">4月</div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">用户增长趋势</div>
+            <div class="line-chart-container">
+              <div class="y-axis">
+                <span>30k</span><span>22k</span><span>15k</span><span>7k</span><span>0</span>
+              </div>
+              <svg viewBox="0 0 500 210" preserveAspectRatio="none">
+                <!-- Grid lines -->
+                <line x1="0" y1="0" x2="500" y2="0" stroke="#f0f0f0" stroke-width="1" stroke-dasharray="4"/>
+                <line x1="0" y1="52.5" x2="500" y2="52.5" stroke="#f0f0f0" stroke-width="1" stroke-dasharray="4"/>
+                <line x1="0" y1="105" x2="500" y2="105" stroke="#f0f0f0" stroke-width="1" stroke-dasharray="4"/>
+                <line x1="0" y1="157.5" x2="500" y2="157.5" stroke="#f0f0f0" stroke-width="1" stroke-dasharray="4"/>
+                <!-- Area fill -->
+                <defs>
+                  <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#1677ff" stop-opacity="0.15"/>
+                    <stop offset="100%" stop-color="#1677ff" stop-opacity="0"/>
+                  </linearGradient>
+                </defs>
+                <path d="M0,168 L71,147 L143,130 L214,112 L286,91 L357,70 L429,49 L500,28 L500,210 L0,210 Z" fill="url(#areaGrad)"/>
+                <!-- Line -->
+                <polyline points="0,168 71,147 143,130 214,112 286,91 357,70 429,49 500,28" fill="none" stroke="#1677ff" stroke-width="2.5" stroke-linejoin="round"/>
+                <!-- Dots -->
+                <circle cx="0" cy="168" r="4" fill="#fff" stroke="#1677ff" stroke-width="2"/>
+                <circle cx="71" cy="147" r="4" fill="#fff" stroke="#1677ff" stroke-width="2"/>
+                <circle cx="143" cy="130" r="4" fill="#fff" stroke="#1677ff" stroke-width="2"/>
+                <circle cx="214" cy="112" r="4" fill="#fff" stroke="#1677ff" stroke-width="2"/>
+                <circle cx="286" cy="91" r="4" fill="#fff" stroke="#1677ff" stroke-width="2"/>
+                <circle cx="357" cy="70" r="4" fill="#fff" stroke="#1677ff" stroke-width="2"/>
+                <circle cx="429" cy="49" r="4" fill="#fff" stroke="#1677ff" stroke-width="2"/>
+                <circle cx="500" cy="28" r="4" fill="#fff" stroke="#1677ff" stroke-width="2"/>
+              </svg>
+              <div style="display:flex;justify-content:space-between;padding-top:8px;">
+                <span style="font-size:11px;color:rgba(0,0,0,.35);">10月</span>
+                <span style="font-size:11px;color:rgba(0,0,0,.35);">11月</span>
+                <span style="font-size:11px;color:rgba(0,0,0,.35);">12月</span>
+                <span style="font-size:11px;color:rgba(0,0,0,.35);">1月</span>
+                <span style="font-size:11px;color:rgba(0,0,0,.35);">2月</span>
+                <span style="font-size:11px;color:rgba(0,0,0,.35);">3月</span>
+                <span style="font-size:11px;color:rgba(0,0,0,.35);">4月</span>
+                <span style="font-size:11px;color:rgba(0,0,0,.35);">5月</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RANKING TABLES -->
+        <div class="chart-grid">
+          <div class="card">
+            <div class="card-title">
+              企业积分排名 TOP 8
+              <span class="extra"><a href="javascript:void(0)" style="font-size:13px;">查看全部 &#8250;</a></span>
+            </div>
+            <div class="table-wrapper">
+              <table>
+                <thead><tr><th>排名</th><th>企业名称</th><th>套餐</th><th>总积分</th><th>趋势</th></tr></thead>
+                <tbody>
+                  <tr><td><span class="rank-badge rank-1">1</span></td><td>腾讯科技有限公司</td><td><span class="tag tag-blue">ENTERPRISE</span></td><td>892,340</td><td><span class="stat-change up">&#9650; 5.2%</span></td></tr>
+                  <tr><td><span class="rank-badge rank-2">2</span></td><td>阿里巴巴集团</td><td><span class="tag tag-blue">ENTERPRISE</span></td><td>756,120</td><td><span class="stat-change up">&#9650; 3.8%</span></td></tr>
+                  <tr><td><span class="rank-badge rank-3">3</span></td><td>字节跳动科技</td><td><span class="tag tag-purple">PRO</span></td><td>623,890</td><td><span class="stat-change up">&#9650; 7.1%</span></td></tr>
+                  <tr><td><span class="rank-badge rank-other">4</span></td><td>华为技术有限公司</td><td><span class="tag tag-blue">ENTERPRISE</span></td><td>534,210</td><td><span class="stat-change down">&#9660; 1.2%</span></td></tr>
+                  <tr><td><span class="rank-badge rank-other">5</span></td><td>小米科技有限公司</td><td><span class="tag tag-purple">PRO</span></td><td>478,560</td><td><span class="stat-change up">&#9650; 4.5%</span></td></tr>
+                  <tr><td><span class="rank-badge rank-other">6</span></td><td>京东集团</td><td><span class="tag tag-purple">PRO</span></td><td>412,780</td><td><span class="stat-change up">&#9650; 2.9%</span></td></tr>
+                  <tr><td><span class="rank-badge rank-other">7</span></td><td>美团点评</td><td><span class="tag tag-green">FREE</span></td><td>356,920</td><td><span class="stat-change up">&#9650; 6.3%</span></td></tr>
+                  <tr><td><span class="rank-badge rank-other">8</span></td><td>网易公司</td><td><span class="tag tag-purple">PRO</span></td><td>298,430</td><td><span class="stat-change down">&#9660; 0.8%</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">
+              企业用户数排名 TOP 8
+              <span class="extra"><a href="javascript:void(0)" style="font-size:13px;">查看全部 &#8250;</a></span>
+            </div>
+            <div class="table-wrapper">
+              <table>
+                <thead><tr><th>排名</th><th>企业名称</th><th>套餐</th><th>用户数</th><th>活跃率</th></tr></thead>
+                <tbody>
+                  <tr><td><span class="rank-badge rank-1">1</span></td><td>腾讯科技有限公司</td><td><span class="tag tag-blue">ENTERPRISE</span></td><td>5,230</td><td><span class="tag tag-green">87.3%</span></td></tr>
+                  <tr><td><span class="rank-badge rank-2">2</span></td><td>阿里巴巴集团</td><td><span class="tag tag-blue">ENTERPRISE</span></td><td>4,860</td><td><span class="tag tag-green">82.1%</span></td></tr>
+                  <tr><td><span class="rank-badge rank-3">3</span></td><td>字节跳动科技</td><td><span class="tag tag-purple">PRO</span></td><td>3,920</td><td><span class="tag tag-green">79.5%</span></td></tr>
+                  <tr><td><span class="rank-badge rank-other">4</span></td><td>华为技术有限公司</td><td><span class="tag tag-blue">ENTERPRISE</span></td><td>3,450</td><td><span class="tag tag-blue">76.8%</span></td></tr>
+                  <tr><td><span class="rank-badge rank-other">5</span></td><td>京东集团</td><td><span class="tag tag-purple">PRO</span></td><td>2,890</td><td><span class="tag tag-blue">73.2%</span></td></tr>
+                  <tr><td><span class="rank-badge rank-other">6</span></td><td>小米科技有限公司</td><td><span class="tag tag-purple">PRO</span></td><td>2,560</td><td><span class="tag tag-orange">68.7%</span></td></tr>
+                  <tr><td><span class="rank-badge rank-other">7</span></td><td>美团点评</td><td><span class="tag tag-green">FREE</span></td><td>2,180</td><td><span class="tag tag-orange">62.4%</span></td></tr>
+                  <tr><td><span class="rank-badge rank-other">8</span></td><td>网易公司</td><td><span class="tag tag-purple">PRO</span></td><td>1,920</td><td><span class="tag tag-orange">65.1%</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== PAGE 2: TENANT MANAGEMENT ==================== -->
+      <div class="page" id="page-tenant">
+        <!-- TENANT LIST -->
+        <div id="tenant-list-view">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+            <div class="page-title">企业管理</div>
+            <button class="btn btn-primary" onclick="openModal('create-tenant-modal')">+ 新建企业</button>
+          </div>
+          <div class="page-desc">管理平台下所有企业租户，包括创建、启用、暂停和查看详情</div>
+
+          <div class="filter-bar">
+            <input class="form-control search-input" placeholder="搜索企业名称...">
+            <select class="form-control" style="min-width:140px;">
+              <option value="">全部套餐</option>
+              <option>FREE</option>
+              <option>PRO</option>
+              <option>ENTERPRISE</option>
+            </select>
+            <select class="form-control" style="min-width:140px;">
+              <option value="">全部状态</option>
+              <option>活跃</option>
+              <option>暂停</option>
+              <option>到期</option>
+            </select>
+            <button class="btn">查询</button>
+            <button class="btn">重置</button>
+          </div>
+
+          <div class="card" style="padding:0;">
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>企业名称</th>
+                    <th>套餐</th>
+                    <th>用户数/上限</th>
+                    <th>状态</th>
+                    <th>创建时间</th>
+                    <th>到期时间</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><div style="display:flex;align-items:center;gap:10px;"><div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#1677ff,#4096ff);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:600;">腾</div><span style="font-weight:500;">腾讯科技有限公司</span></div></td>
+                    <td><span class="tag tag-blue">ENTERPRISE</span></td>
+                    <td>5,230 / 10,000</td>
+                    <td><span class="tag tag-green">活跃</span></td>
+                    <td>2025-03-15</td>
+                    <td>2027-03-15</td>
+                    <td><button class="btn-link btn-sm" onclick="showTenantDetail()">详情</button><button class="btn-link btn-sm" style="color:#fa8c16;">暂停</button></td>
+                  </tr>
+                  <tr>
+                    <td><div style="display:flex;align-items:center;gap:10px;"><div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#ff6b35,#ff9a5c);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:600;">阿</div><span style="font-weight:500;">阿里巴巴集团</span></div></td>
+                    <td><span class="tag tag-blue">ENTERPRISE</span></td>
+                    <td>4,860 / 10,000</td>
+                    <td><span class="tag tag-green">活跃</span></td>
+                    <td>2025-01-20</td>
+                    <td>2027-01-20</td>
+                    <td><button class="btn-link btn-sm">详情</button><button class="btn-link btn-sm" style="color:#fa8c16;">暂停</button></td>
+                  </tr>
+                  <tr>
+                    <td><div style="display:flex;align-items:center;gap:10px;"><div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#722ed1,#b37feb);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:600;">字</div><span style="font-weight:500;">字节跳动科技</span></div></td>
+                    <td><span class="tag tag-purple">PRO</span></td>
+                    <td>3,920 / 5,000</td>
+                    <td><span class="tag tag-green">活跃</span></td>
+                    <td>2025-06-10</td>
+                    <td>2026-06-10</td>
+                    <td><button class="btn-link btn-sm">详情</button><button class="btn-link btn-sm" style="color:#fa8c16;">暂停</button></td>
+                  </tr>
+                  <tr>
+                    <td><div style="display:flex;align-items:center;gap:10px;"><div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#e8342e,#ff7875);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:600;">华</div><span style="font-weight:500;">华为技术有限公司</span></div></td>
+                    <td><span class="tag tag-blue">ENTERPRISE</span></td>
+                    <td>3,450 / 10,000</td>
+                    <td><span class="tag tag-orange">暂停</span></td>
+                    <td>2024-11-05</td>
+                    <td>2026-11-05</td>
+                    <td><button class="btn-link btn-sm">详情</button><button class="btn-link btn-sm" style="color:#52c41a;">恢复</button></td>
+                  </tr>
+                  <tr>
+                    <td><div style="display:flex;align-items:center;gap:10px;"><div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#fa8c16,#ffc53d);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:600;">美</div><span style="font-weight:500;">美团点评</span></div></td>
+                    <td><span class="tag tag-green">FREE</span></td>
+                    <td>2,180 / 500</td>
+                    <td><span class="tag tag-red">到期</span></td>
+                    <td>2024-08-22</td>
+                    <td>2025-08-22</td>
+                    <td><button class="btn-link btn-sm">详情</button><button class="btn-link btn-sm" style="color:#1677ff;">续期</button></td>
+                  </tr>
+                  <tr>
+                    <td><div style="display:flex;align-items:center;gap:10px;"><div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#13c2c2,#5cdbd3);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:600;">网</div><span style="font-weight:500;">网易公司</span></div></td>
+                    <td><span class="tag tag-purple">PRO</span></td>
+                    <td>1,920 / 5,000</td>
+                    <td><span class="tag tag-green">活跃</span></td>
+                    <td>2025-09-01</td>
+                    <td>2026-09-01</td>
+                    <td><button class="btn-link btn-sm">详情</button><button class="btn-link btn-sm" style="color:#fa8c16;">暂停</button></td>
+                  </tr>
+                  <tr>
+                    <td><div style="display:flex;align-items:center;gap:10px;"><div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#52c41a,#95de64);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:600;">小</div><span style="font-weight:500;">小米科技有限公司</span></div></td>
+                    <td><span class="tag tag-purple">PRO</span></td>
+                    <td>2,560 / 5,000</td>
+                    <td><span class="tag tag-green">活跃</span></td>
+                    <td>2025-07-18</td>
+                    <td>2026-07-18</td>
+                    <td><button class="btn-link btn-sm">详情</button><button class="btn-link btn-sm" style="color:#fa8c16;">暂停</button></td>
+                  </tr>
+                  <tr>
+                    <td><div style="display:flex;align-items:center;gap:10px;"><div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#eb2f96,#ff85c0);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:600;">京</div><span style="font-weight:500;">京东集团</span></div></td>
+                    <td><span class="tag tag-purple">PRO</span></td>
+                    <td>2,890 / 5,000</td>
+                    <td><span class="tag tag-green">活跃</span></td>
+                    <td>2025-04-28</td>
+                    <td>2026-04-28</td>
+                    <td><button class="btn-link btn-sm">详情</button><button class="btn-link btn-sm" style="color:#fa8c16;">暂停</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="pagination">
+            <span class="page-info">共 156 条</span>
+            <span class="page-btn disabled">&#8249;</span>
+            <span class="page-btn active">1</span>
+            <span class="page-btn">2</span>
+            <span class="page-btn">3</span>
+            <span class="page-btn">...</span>
+            <span class="page-btn">16</span>
+            <span class="page-btn">&#8250;</span>
+          </div>
+        </div>
+
+        <!-- TENANT DETAIL VIEW (hidden by default) -->
+        <div id="tenant-detail-view" style="display:none;">
+          <div class="detail-header">
+            <span class="back-btn" onclick="hideTenantDetail()">&#8592;</span>
+            <div class="tenant-logo">腾</div>
+            <div class="tenant-meta">
+              <h2>腾讯科技有限公司 <span class="tag tag-blue" style="font-size:12px;vertical-align:middle;">ENTERPRISE</span> <span class="tag tag-green" style="font-size:12px;vertical-align:middle;">活跃</span></h2>
+              <p>创建于 2025-03-15 · 到期 2027-03-15 · 用户 5,230 / 10,000</p>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">基本信息</div>
+            <div class="detail-grid">
+              <div class="detail-item"><div class="label">企业名称</div><div class="value">腾讯科技有限公司</div></div>
+              <div class="detail-item"><div class="label">套餐类型</div><div class="value"><span class="tag tag-blue">ENTERPRISE</span></div></div>
+              <div class="detail-item"><div class="label">用户上限</div><div class="value">10,000 人</div></div>
+              <div class="detail-item"><div class="label">当前用户数</div><div class="value">5,230 人</div></div>
+              <div class="detail-item"><div class="label">创建时间</div><div class="value">2025-03-15 10:30:00</div></div>
+              <div class="detail-item"><div class="label">到期时间</div><div class="value">2027-03-15 10:30:00</div></div>
+              <div class="detail-item"><div class="label">累计发放积分</div><div class="value">892,340</div></div>
+              <div class="detail-item"><div class="label">累计兑换量</div><div class="value">12,456</div></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">自动初始化角色</div>
+            <div class="table-wrapper">
+              <table>
+                <thead><tr><th>角色名称</th><th>角色标识</th><th>说明</th><th>用户数</th></tr></thead>
+                <tbody>
+                  <tr><td>超级管理员</td><td><span class="tag tag-red">super_admin</span></td><td>企业最高权限，不可删除</td><td>2</td></tr>
+                  <tr><td>管理员</td><td><span class="tag tag-orange">admin</span></td><td>企业日常管理</td><td>5</td></tr>
+                  <tr><td>部门主管</td><td><span class="tag tag-blue">manager</span></td><td>部门级管理，查看本部门数据</td><td>18</td></tr>
+                  <tr><td>普通员工</td><td><span class="tag tag-gray">employee</span></td><td>打卡、积分查看、兑换</td><td>5,205</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">自动初始化时段规则</div>
+            <div class="rule-card">
+              <div class="rule-info">
+                <div class="rule-name">早间打卡</div>
+                <div class="rule-desc">工作日早间时段，基础积分奖励</div>
+                <div class="rule-params">
+                  <div class="rule-param">时段: <span>07:00 - 09:00</span></div>
+                  <div class="rule-param">基础积分: <span>10 - 30</span></div>
+                  <div class="rule-param">每日上限: <span>50</span></div>
+                </div>
+              </div>
+              <span class="tag tag-green">已启用</span>
+            </div>
+            <div class="rule-card">
+              <div class="rule-info">
+                <div class="rule-name">午间打卡</div>
+                <div class="rule-desc">工作日午间时段，中等积分奖励</div>
+                <div class="rule-params">
+                  <div class="rule-param">时段: <span>11:30 - 13:30</span></div>
+                  <div class="rule-param">基础积分: <span>15 - 40</span></div>
+                  <div class="rule-param">每日上限: <span>60</span></div>
+                </div>
+              </div>
+              <span class="tag tag-green">已启用</span>
+            </div>
+            <div class="rule-card">
+              <div class="rule-info">
+                <div class="rule-name">晚间打卡</div>
+                <div class="rule-desc">工作日晚间时段，高积分奖励</div>
+                <div class="rule-params">
+                  <div class="rule-param">时段: <span>17:30 - 19:30</span></div>
+                  <div class="rule-param">基础积分: <span>20 - 50</span></div>
+                  <div class="rule-param">每日上限: <span>80</span></div>
+                </div>
+              </div>
+              <span class="tag tag-green">已启用</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== PAGE 3: PLATFORM CONFIG ==================== -->
+      <div class="page" id="page-config">
+        <div class="page-title">平台配置</div>
+        <div class="page-desc">管理平台全局配置，包括默认规则模板、功能开关和通知模板</div>
+
+        <div class="tabs">
+          <div class="tab-bar">
+            <div class="tab-item active" onclick="switchTab('config', 0, this)">默认规则模板</div>
+            <div class="tab-item" onclick="switchTab('config', 1, this)">功能开关</div>
+            <div class="tab-item" onclick="switchTab('config', 2, this)">通知模板</div>
+          </div>
+
+          <!-- TAB 1: DEFAULT RULES -->
+          <div class="tab-panel active" id="config-tab-0">
+            <div class="card">
+              <div class="card-title">
+                默认时段规则模板
+                <span class="extra"><span style="font-size:12px;color:rgba(0,0,0,.35);">新企业创建时将自动复制这些规则</span> <button class="btn btn-sm btn-primary" style="margin-left:12px;">+ 新增规则</button></span>
+              </div>
+              <div class="rule-card">
+                <div class="rule-info">
+                  <div class="rule-name">早间打卡 <span class="tag tag-green" style="font-size:11px;margin-left:8px;">已启用</span></div>
+                  <div class="rule-desc">工作日早间时段，基础积分奖励</div>
+                  <div class="rule-params">
+                    <div class="rule-param">时段: <span>07:00 - 09:00</span></div>
+                    <div class="rule-param">基础积分: <span>10 - 30</span></div>
+                    <div class="rule-param">每日上限: <span>50</span></div>
+                    <div class="rule-param">排序: <span>1</span></div>
+                  </div>
+                </div>
+                <div class="btn-group"><button class="btn btn-sm">编辑</button><button class="btn btn-sm btn-danger">删除</button></div>
+              </div>
+              <div class="rule-card">
+                <div class="rule-info">
+                  <div class="rule-name">午间打卡 <span class="tag tag-green" style="font-size:11px;margin-left:8px;">已启用</span></div>
+                  <div class="rule-desc">工作日午间时段，中等积分奖励</div>
+                  <div class="rule-params">
+                    <div class="rule-param">时段: <span>11:30 - 13:30</span></div>
+                    <div class="rule-param">基础积分: <span>15 - 40</span></div>
+                    <div class="rule-param">每日上限: <span>60</span></div>
+                    <div class="rule-param">排序: <span>2</span></div>
+                  </div>
+                </div>
+                <div class="btn-group"><button class="btn btn-sm">编辑</button><button class="btn btn-sm btn-danger">删除</button></div>
+              </div>
+              <div class="rule-card">
+                <div class="rule-info">
+                  <div class="rule-name">晚间打卡 <span class="tag tag-green" style="font-size:11px;margin-left:8px;">已启用</span></div>
+                  <div class="rule-desc">工作日晚间时段，高积分奖励</div>
+                  <div class="rule-params">
+                    <div class="rule-param">时段: <span>17:30 - 19:30</span></div>
+                    <div class="rule-param">基础积分: <span>20 - 50</span></div>
+                    <div class="rule-param">每日上限: <span>80</span></div>
+                    <div class="rule-param">排序: <span>3</span></div>
+                  </div>
+                </div>
+                <div class="btn-group"><button class="btn btn-sm">编辑</button><button class="btn btn-sm btn-danger">删除</button></div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-title">
+                默认连续打卡奖励规则
+                <span class="extra"><button class="btn btn-sm btn-primary">+ 新增奖励</button></span>
+              </div>
+              <div class="table-wrapper">
+                <table>
+                  <thead><tr><th>连续天数</th><th>奖励积分</th><th>描述</th><th>状态</th><th>操作</th></tr></thead>
+                  <tbody>
+                    <tr><td>3 天</td><td>+20</td><td>连续打卡3天额外奖励</td><td><span class="tag tag-green">已启用</span></td><td><button class="btn-link btn-sm">编辑</button><button class="btn-link btn-sm" style="color:#ff4d4f;">删除</button></td></tr>
+                    <tr><td>7 天</td><td>+80</td><td>连续打卡7天额外奖励</td><td><span class="tag tag-green">已启用</span></td><td><button class="btn-link btn-sm">编辑</button><button class="btn-link btn-sm" style="color:#ff4d4f;">删除</button></td></tr>
+                    <tr><td>14 天</td><td>+200</td><td>连续打卡14天额外奖励</td><td><span class="tag tag-green">已启用</span></td><td><button class="btn-link btn-sm">编辑</button><button class="btn-link btn-sm" style="color:#ff4d4f;">删除</button></td></tr>
+                    <tr><td>30 天</td><td>+500</td><td>连续打卡30天额外大奖</td><td><span class="tag tag-green">已启用</span></td><td><button class="btn-link btn-sm">编辑</button><button class="btn-link btn-sm" style="color:#ff4d4f;">删除</button></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 2: FEATURE TOGGLES -->
+          <div class="tab-panel" id="config-tab-1">
+            <div class="card">
+              <div class="card-title">功能开关</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;">
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid #f0f0f0;border-right:1px solid #f0f0f0;">
+                  <div>
+                    <div style="font-size:14px;font-weight:500;color:rgba(0,0,0,.85);">随机积分</div>
+                    <div style="font-size:12px;color:rgba(0,0,0,.45);margin-top:2px;">打卡积分在基础范围内随机生成</div>
+                  </div>
+                  <div class="switch" onclick="toggleSwitch(this)"><div class="switch-track on"><div class="switch-thumb"></div></div></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid #f0f0f0;">
+                  <div>
+                    <div style="font-size:14px;font-weight:500;color:rgba(0,0,0,.85);">特殊日期加成</div>
+                    <div style="font-size:12px;color:rgba(0,0,0,.45);margin-top:2px;">节假日、纪念日积分翻倍</div>
+                  </div>
+                  <div class="switch" onclick="toggleSwitch(this)"><div class="switch-track on"><div class="switch-thumb"></div></div></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid #f0f0f0;border-right:1px solid #f0f0f0;">
+                  <div>
+                    <div style="font-size:14px;font-weight:500;color:rgba(0,0,0,.85);">等级系数</div>
+                    <div style="font-size:12px;color:rgba(0,0,0,.45);margin-top:2px;">高等级用户获得积分加成</div>
+                  </div>
+                  <div class="switch" onclick="toggleSwitch(this)"><div class="switch-track on"><div class="switch-thumb"></div></div></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid #f0f0f0;">
+                  <div>
+                    <div style="font-size:14px;font-weight:500;color:rgba(0,0,0,.85);">排行榜功能</div>
+                    <div style="font-size:12px;color:rgba(0,0,0,.45);margin-top:2px;">显示企业内和跨企业排行榜</div>
+                  </div>
+                  <div class="switch" onclick="toggleSwitch(this)"><div class="switch-track on"><div class="switch-thumb"></div></div></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid #f0f0f0;border-right:1px solid #f0f0f0;">
+                  <div>
+                    <div style="font-size:14px;font-weight:500;color:rgba(0,0,0,.85);">积分商城</div>
+                    <div style="font-size:12px;color:rgba(0,0,0,.45);margin-top:2px;">允许用户使用积分兑换商品</div>
+                  </div>
+                  <div class="switch" onclick="toggleSwitch(this)"><div class="switch-track on"><div class="switch-thumb"></div></div></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid #f0f0f0;">
+                  <div>
+                    <div style="font-size:14px;font-weight:500;color:rgba(0,0,0,.85);">连续打卡奖励</div>
+                    <div style="font-size:12px;color:rgba(0,0,0,.45);margin-top:2px;">连续多天打卡额外积分奖励</div>
+                  </div>
+                  <div class="switch" onclick="toggleSwitch(this)"><div class="switch-track on"><div class="switch-thumb"></div></div></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-right:1px solid #f0f0f0;">
+                  <div>
+                    <div style="font-size:14px;font-weight:500;color:rgba(0,0,0,.85);">微信通知</div>
+                    <div style="font-size:12px;color:rgba(0,0,0,.45);margin-top:2px;">通过微信公众号推送打卡提醒</div>
+                  </div>
+                  <div class="switch" onclick="toggleSwitch(this)"><div class="switch-track"><div class="switch-thumb"></div></div></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;">
+                  <div>
+                    <div style="font-size:14px;font-weight:500;color:rgba(0,0,0,.85);">数据导出</div>
+                    <div style="font-size:12px;color:rgba(0,0,0,.45);margin-top:2px;">允许企业管理员导出运营数据</div>
+                  </div>
+                  <div class="switch" onclick="toggleSwitch(this)"><div class="switch-track on"><div class="switch-thumb"></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 3: NOTIFICATION TEMPLATES -->
+          <div class="tab-panel" id="config-tab-2">
+            <div class="card" style="padding:0;">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid #f0f0f0;">
+                <div class="card-title" style="margin-bottom:0;">通知模板列表</div>
+                <button class="btn btn-sm btn-primary">+ 新增模板</button>
+              </div>
+              <div class="table-wrapper">
+                <table>
+                  <thead><tr><th>模板名称</th><th>触发场景</th><th>变量</th><th>状态</th><th>操作</th></tr></thead>
+                  <tbody>
+                    <tr>
+                      <td style="font-weight:500;">打卡成功通知</td>
+                      <td>用户完成打卡后</td>
+                      <td><span class="tag tag-blue" style="font-size:11px;">{user_name}</span> <span class="tag tag-blue" style="font-size:11px;">{points}</span> <span class="tag tag-blue" style="font-size:11px;">{time_slot}</span></td>
+                      <td><span class="tag tag-green">已启用</span></td>
+                      <td><button class="btn-link btn-sm" onclick="openModal('preview-modal')">预览</button><button class="btn-link btn-sm">编辑</button></td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight:500;">升级通知</td>
+                      <td>用户等级提升</td>
+                      <td><span class="tag tag-blue" style="font-size:11px;">{user_name}</span> <span class="tag tag-blue" style="font-size:11px;">{level_name}</span> <span class="tag tag-blue" style="font-size:11px;">{coefficient}</span></td>
+                      <td><span class="tag tag-green">已启用</span></td>
+                      <td><button class="btn-link btn-sm" onclick="openModal('preview-modal')">预览</button><button class="btn-link btn-sm">编辑</button></td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight:500;">兑换成功通知</td>
+                      <td>用户完成兑换</td>
+                      <td><span class="tag tag-blue" style="font-size:11px;">{user_name}</span> <span class="tag tag-blue" style="font-size:11px;">{product_name}</span> <span class="tag tag-blue" style="font-size:11px;">{cost_points}</span></td>
+                      <td><span class="tag tag-green">已启用</span></td>
+                      <td><button class="btn-link btn-sm" onclick="openModal('preview-modal')">预览</button><button class="btn-link btn-sm">编辑</button></td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight:500;">连续打卡里程碑</td>
+                      <td>达到连续打卡天数</td>
+                      <td><span class="tag tag-blue" style="font-size:11px;">{user_name}</span> <span class="tag tag-blue" style="font-size:11px;">{streak_days}</span> <span class="tag tag-blue" style="font-size:11px;">{bonus_points}</span></td>
+                      <td><span class="tag tag-green">已启用</span></td>
+                      <td><button class="btn-link btn-sm" onclick="openModal('preview-modal')">预览</button><button class="btn-link btn-sm">编辑</button></td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight:500;">企业到期预警</td>
+                      <td>企业即将到期前7天</td>
+                      <td><span class="tag tag-blue" style="font-size:11px;">{tenant_name}</span> <span class="tag tag-blue" style="font-size:11px;">{expire_date}</span> <span class="tag tag-blue" style="font-size:11px;">{days_left}</span></td>
+                      <td><span class="tag tag-green">已启用</span></td>
+                      <td><button class="btn-link btn-sm" onclick="openModal('preview-modal')">预览</button><button class="btn-link btn-sm">编辑</button></td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight:500;">每日打卡提醒</td>
+                      <td>工作日定时推送</td>
+                      <td><span class="tag tag-blue" style="font-size:11px;">{user_name}</span> <span class="tag tag-blue" style="font-size:11px;">{time_slot}</span></td>
+                      <td><span class="tag tag-gray">已禁用</span></td>
+                      <td><button class="btn-link btn-sm" onclick="openModal('preview-modal')">预览</button><button class="btn-link btn-sm">编辑</button></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== PAGE 4: ADMIN ACCOUNTS ==================== -->
+      <div class="page" id="page-admin">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+          <div class="page-title">平台管理员管理</div>
+          <button class="btn btn-primary" onclick="openModal('create-admin-modal')">+ 新增管理员</button>
+        </div>
+        <div class="page-desc">管理平台管理员账号，分配角色与权限</div>
+
+        <div class="filter-bar">
+          <input class="form-control search-input" placeholder="搜索用户名或昵称...">
+          <select class="form-control" style="min-width:140px;">
+            <option value="">全部角色</option>
+            <option>super_admin</option>
+            <option>admin</option>
+            <option>viewer</option>
+          </select>
+          <select class="form-control" style="min-width:140px;">
+            <option value="">全部状态</option>
+            <option>正常</option>
+            <option>已禁用</option>
+          </select>
+          <button class="btn">查询</button>
+        </div>
+
+        <div class="card" style="padding:0;">
+          <div class="table-wrapper">
+            <table>
+              <thead><tr><th>用户名</th><th>昵称</th><th>角色</th><th>最近登录</th><th>状态</th><th>操作</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td style="font-weight:500;">superadmin</td>
+                  <td>超级管理员</td>
+                  <td><span class="tag tag-red">super_admin</span></td>
+                  <td>2026-04-11 09:23:15</td>
+                  <td><span class="tag tag-green">正常</span></td>
+                  <td><button class="btn-link btn-sm">编辑</button></td>
+                </tr>
+                <tr>
+                  <td style="font-weight:500;">wang.wei</td>
+                  <td>王伟</td>
+                  <td><span class="tag tag-red">super_admin</span></td>
+                  <td>2026-04-11 08:45:30</td>
+                  <td><span class="tag tag-green">正常</span></td>
+                  <td><button class="btn-link btn-sm">编辑</button><button class="btn-link btn-sm" style="color:#ff4d4f;">禁用</button></td>
+                </tr>
+                <tr>
+                  <td style="font-weight:500;">li.na</td>
+                  <td>李娜</td>
+                  <td><span class="tag tag-orange">admin</span></td>
+                  <td>2026-04-10 17:12:08</td>
+                  <td><span class="tag tag-green">正常</span></td>
+                  <td><button class="btn-link btn-sm">编辑</button><button class="btn-link btn-sm" style="color:#ff4d4f;">禁用</button></td>
+                </tr>
+                <tr>
+                  <td style="font-weight:500;">zhang.ming</td>
+                  <td>张明</td>
+                  <td><span class="tag tag-orange">admin</span></td>
+                  <td>2026-04-10 14:33:56</td>
+                  <td><span class="tag tag-green">正常</span></td>
+                  <td><button class="btn-link btn-sm">编辑</button><button class="btn-link btn-sm" style="color:#ff4d4f;">禁用</button></td>
+                </tr>
+                <tr>
+                  <td style="font-weight:500;">chen.xiao</td>
+                  <td>陈晓</td>
+                  <td><span class="tag tag-blue">viewer</span></td>
+                  <td>2026-04-09 11:20:45</td>
+                  <td><span class="tag tag-green">正常</span></td>
+                  <td><button class="btn-link btn-sm">编辑</button><button class="btn-link btn-sm" style="color:#ff4d4f;">禁用</button></td>
+                </tr>
+                <tr>
+                  <td style="font-weight:500;">liu.yang</td>
+                  <td>刘洋</td>
+                  <td><span class="tag tag-blue">viewer</span></td>
+                  <td>2026-04-08 16:08:22</td>
+                  <td><span class="tag tag-green">正常</span></td>
+                  <td><button class="btn-link btn-sm">编辑</button><button class="btn-link btn-sm" style="color:#ff4d4f;">禁用</button></td>
+                </tr>
+                <tr>
+                  <td style="font-weight:500;">zhao.lin</td>
+                  <td>赵琳</td>
+                  <td><span class="tag tag-blue">viewer</span></td>
+                  <td>2026-03-28 09:55:10</td>
+                  <td><span class="tag tag-gray">已禁用</span></td>
+                  <td><button class="btn-link btn-sm">编辑</button><button class="btn-link btn-sm" style="color:#52c41a;">启用</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="pagination">
+          <span class="page-info">共 7 条</span>
+          <span class="page-btn disabled">&#8249;</span>
+          <span class="page-btn active">1</span>
+          <span class="page-btn disabled">&#8250;</span>
+        </div>
+      </div>
+
+      <!-- ==================== PAGE 5: OPERATION LOGS ==================== -->
+      <div class="page" id="page-logs">
+        <div class="page-title">操作日志</div>
+        <div class="page-desc">记录平台管理员的所有操作行为，支持按条件筛选和查看详情</div>
+
+        <div class="filter-bar">
+          <select class="form-control" style="min-width:140px;">
+            <option value="">全部操作人</option>
+            <option>超级管理员</option>
+            <option>王伟</option>
+            <option>李娜</option>
+            <option>张明</option>
+            <option>陈晓</option>
+          </select>
+          <select class="form-control" style="min-width:160px;">
+            <option value="">全部操作类型</option>
+            <option>企业管理</option>
+            <option>管理员管理</option>
+            <option>平台配置</option>
+            <option>安全配置</option>
+            <option>数据导出</option>
+          </select>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <input class="form-control" type="date" value="2026-04-01" style="min-width:140px;">
+            <span style="color:rgba(0,0,0,.25);">至</span>
+            <input class="form-control" type="date" value="2026-04-11" style="min-width:140px;">
+          </div>
+          <button class="btn">查询</button>
+          <button class="btn">重置</button>
+          <button class="btn">导出日志</button>
+        </div>
+
+        <div class="card" style="padding:0;">
+          <div class="table-wrapper">
+            <table>
+              <thead><tr><th>操作人</th><th>操作类型</th><th>操作对象</th><th>描述</th><th>IP 地址</th><th>操作时间</th><th>操作</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td><div style="display:flex;align-items:center;gap:6px;"><div style="width:24px;height:24px;border-radius:50%;background:#1677ff;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;">超</div>超级管理员</div></td>
+                  <td><span class="tag tag-blue">企业管理</span></td>
+                  <td>腾讯科技有限公司</td>
+                  <td>创建企业账号，套餐 ENTERPRISE</td>
+                  <td><code style="background:#f5f5f5;padding:2px 6px;border-radius:3px;font-size:12px;">192.168.1.100</code></td>
+                  <td>2026-04-11 10:30:15</td>
+                  <td><button class="btn-link btn-sm" onclick="openModal('log-detail-modal')">详情</button></td>
+                </tr>
+                <tr>
+                  <td><div style="display:flex;align-items:center;gap:6px;"><div style="width:24px;height:24px;border-radius:50%;background:#722ed1;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;">王</div>王伟</div></td>
+                  <td><span class="tag tag-orange">管理员管理</span></td>
+                  <td>管理员 li.na</td>
+                  <td>修改管理员角色 admin → viewer</td>
+                  <td><code style="background:#f5f5f5;padding:2px 6px;border-radius:3px;font-size:12px;">10.0.0.55</code></td>
+                  <td>2026-04-11 09:15:42</td>
+                  <td><button class="btn-link btn-sm" onclick="openModal('log-detail-modal')">详情</button></td>
+                </tr>
+                <tr>
+                  <td><div style="display:flex;align-items:center;gap:6px;"><div style="width:24px;height:24px;border-radius:50%;background:#fa8c16;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;">李</div>李娜</div></td>
+                  <td><span class="tag tag-purple">平台配置</span></td>
+                  <td>默认规则模板</td>
+                  <td>更新默认时段规则"午间打卡"基础积分范围</td>
+                  <td><code style="background:#f5f5f5;padding:2px 6px;border-radius:3px;font-size:12px;">172.16.0.23</code></td>
+                  <td>2026-04-10 16:45:08</td>
+                  <td><button class="btn-link btn-sm" onclick="openModal('log-detail-modal')">详情</button></td>
+                </tr>
+                <tr>
+                  <td><div style="display:flex;align-items:center;gap:6px;"><div style="width:24px;height:24px;border-radius:50%;background:#1677ff;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;">超</div>超级管理员</div></td>
+                  <td><span class="tag tag-blue">企业管理</span></td>
+                  <td>华为技术有限公司</td>
+                  <td>暂停企业账号，原因：违规使用</td>
+                  <td><code style="background:#f5f5f5;padding:2px 6px;border-radius:3px;font-size:12px;">192.168.1.100</code></td>
+                  <td>2026-04-10 14:20:33</td>
+                  <td><button class="btn-link btn-sm" onclick="openModal('log-detail-modal')">详情</button></td>
+                </tr>
+                <tr>
+                  <td><div style="display:flex;align-items:center;gap:6px;"><div style="width:24px;height:24px;border-radius:50%;background:#52c41a;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;">张</div>张明</div></td>
+                  <td><span class="tag tag-cyan">安全配置</span></td>
+                  <td>密码策略</td>
+                  <td>更新密码最小长度 8 → 10</td>
+                  <td><code style="background:#f5f5f5;padding:2px 6px;border-radius:3px;font-size:12px;">10.0.0.78</code></td>
+                  <td>2026-04-10 11:08:56</td>
+                  <td><button class="btn-link btn-sm" onclick="openModal('log-detail-modal')">详情</button></td>
+                </tr>
+                <tr>
+                  <td><div style="display:flex;align-items:center;gap:6px;"><div style="width:24px;height:24px;border-radius:50%;background:#13c2c2;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;">陈</div>陈晓</div></td>
+                  <td><span class="tag tag-gold">数据导出</span></td>
+                  <td>平台运营报表</td>
+                  <td>导出2026年3月平台运营数据Excel</td>
+                  <td><code style="background:#f5f5f5;padding:2px 6px;border-radius:3px;font-size:12px;">172.16.0.45</code></td>
+                  <td>2026-04-09 15:30:12</td>
+                  <td><button class="btn-link btn-sm" onclick="openModal('log-detail-modal')">详情</button></td>
+                </tr>
+                <tr>
+                  <td><div style="display:flex;align-items:center;gap:6px;"><div style="width:24px;height:24px;border-radius:50%;background:#722ed1;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;">王</div>王伟</div></td>
+                  <td><span class="tag tag-orange">管理员管理</span></td>
+                  <td>管理员 chen.xiao</td>
+                  <td>新增管理员账号，角色 viewer</td>
+                  <td><code style="background:#f5f5f5;padding:2px 6px;border-radius:3px;font-size:12px;">10.0.0.55</code></td>
+                  <td>2026-04-08 10:22:45</td>
+                  <td><button class="btn-link btn-sm" onclick="openModal('log-detail-modal')">详情</button></td>
+                </tr>
+                <tr>
+                  <td><div style="display:flex;align-items:center;gap:6px;"><div style="width:24px;height:24px;border-radius:50%;background:#fa8c16;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;">李</div>李娜</div></td>
+                  <td><span class="tag tag-blue">企业管理</span></td>
+                  <td>美团点评</td>
+                  <td>企业到期，系统自动标记为到期状态</td>
+                  <td><code style="background:#f5f5f5;padding:2px 6px;border-radius:3px;font-size:12px;">127.0.0.1</code></td>
+                  <td>2026-04-07 00:00:01</td>
+                  <td><button class="btn-link btn-sm" onclick="openModal('log-detail-modal')">详情</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="pagination">
+          <span class="page-info">共 256 条</span>
+          <span class="page-btn disabled">&#8249;</span>
+          <span class="page-btn active">1</span>
+          <span class="page-btn">2</span>
+          <span class="page-btn">3</span>
+          <span class="page-btn">...</span>
+          <span class="page-btn">26</span>
+          <span class="page-btn">&#8250;</span>
+        </div>
+      </div>
+
+      <!-- ==================== PAGE 6: SECURITY CONFIG ==================== -->
+      <div class="page" id="page-security">
+        <div class="page-title">安全配置</div>
+        <div class="page-desc">配置平台级安全策略，包括验证码、锁定策略和密码策略</div>
+
+        <!-- CAPTCHA CONFIG -->
+        <div class="security-card">
+          <div class="security-card-header">
+            <div class="sc-icon" style="background:#e6f4ff;color:#1677ff;">&#9919;</div>
+            <div>
+              <div class="sc-title">验证码配置</div>
+              <div class="sc-desc">配置登录和敏感操作的验证码策略</div>
+            </div>
+          </div>
+          <div class="security-card-body">
+            <div class="config-grid">
+              <div class="config-item">
+                <div class="config-label">验证码类型</div>
+                <div class="config-desc">选择验证码展示形式</div>
+                <select class="form-control" style="margin-top:4px;">
+                  <option>图片验证码</option>
+                  <option>滑块拼图</option>
+                </select>
+              </div>
+              <div class="config-item">
+                <div class="config-label">验证码长度</div>
+                <div class="config-desc">图片验证码字符位数</div>
+                <div class="number-input" style="margin-top:4px;">
+                  <div class="num-btn" onclick="adjustNum(this,-1)">-</div>
+                  <input type="text" value="4">
+                  <div class="num-btn" onclick="adjustNum(this,1)">+</div>
+                </div>
+              </div>
+              <div class="config-item">
+                <div class="config-label">验证码有效期（秒）</div>
+                <div class="config-desc">验证码过期时间</div>
+                <div class="number-input" style="margin-top:4px;">
+                  <div class="num-btn" onclick="adjustNum(this,-1)">-</div>
+                  <input type="text" value="300">
+                  <div class="num-btn" onclick="adjustNum(this,1)">+</div>
+                </div>
+              </div>
+              <div class="config-item">
+                <div class="config-label">触发阈值（次）</div>
+                <div class="config-desc">连续失败多少次后弹出验证码</div>
+                <div class="number-input" style="margin-top:4px;">
+                  <div class="num-btn" onclick="adjustNum(this,-1)">-</div>
+                  <input type="text" value="3">
+                  <div class="num-btn" onclick="adjustNum(this,1)">+</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- LOCKOUT CONFIG -->
+        <div class="security-card">
+          <div class="security-card-header">
+            <div class="sc-icon" style="background:#fff7e6;color:#fa8c16;">&#9888;</div>
+            <div>
+              <div class="sc-title">锁定策略</div>
+              <div class="sc-desc">配置 IP 和账号的自动锁定规则</div>
+            </div>
+          </div>
+          <div class="security-card-body">
+            <div style="margin-bottom:20px;">
+              <div style="font-size:14px;font-weight:500;color:rgba(0,0,0,.85);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f0f0f0;">IP 锁定</div>
+              <div class="config-grid">
+                <div class="config-item">
+                  <div class="config-label">锁定阈值（次）</div>
+                  <div class="config-desc">同一 IP 连续失败次数上限</div>
+                  <div class="number-input" style="margin-top:4px;">
+                    <div class="num-btn" onclick="adjustNum(this,-1)">-</div>
+                    <input type="text" value="10">
+                    <div class="num-btn" onclick="adjustNum(this,1)">+</div>
+                  </div>
+                </div>
+                <div class="config-item">
+                  <div class="config-label">锁定时长（分钟）</div>
+                  <div class="config-desc">IP 被锁定后的持续时间</div>
+                  <div class="number-input" style="margin-top:4px;">
+                    <div class="num-btn" onclick="adjustNum(this,-1)">-</div>
+                    <input type="text" value="30">
+                    <div class="num-btn" onclick="adjustNum(this,1)">+</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:14px;font-weight:500;color:rgba(0,0,0,.85);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f0f0f0;">账号锁定</div>
+              <div class="config-grid">
+                <div class="config-item">
+                  <div class="config-label">锁定阈值（次）</div>
+                  <div class="config-desc">同一账号连续失败次数上限</div>
+                  <div class="number-input" style="margin-top:4px;">
+                    <div class="num-btn" onclick="adjustNum(this,-1)">-</div>
+                    <input type="text" value="5">
+                    <div class="num-btn" onclick="adjustNum(this,1)">+</div>
+                  </div>
+                </div>
+                <div class="config-item">
+                  <div class="config-label">锁定时长（分钟）</div>
+                  <div class="config-desc">账号被锁定后的持续时间</div>
+                  <div class="number-input" style="margin-top:4px;">
+                    <div class="num-btn" onclick="adjustNum(this,-1)">-</div>
+                    <input type="text" value="15">
+                    <div class="num-btn" onclick="adjustNum(this,1)">+</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PASSWORD POLICY -->
+        <div class="security-card">
+          <div class="security-card-header">
+            <div class="sc-icon" style="background:#f6ffed;color:#52c41a;">&#9919;</div>
+            <div>
+              <div class="sc-title">密码策略</div>
+              <div class="sc-desc">配置密码复杂度要求和过期策略</div>
+            </div>
+          </div>
+          <div class="security-card-body">
+            <div class="config-grid">
+              <div class="config-item">
+                <div class="config-label">最小长度</div>
+                <div class="number-input" style="margin-top:4px;">
+                  <div class="num-btn" onclick="adjustNum(this,-1)">-</div>
+                  <input type="text" value="10">
+                  <div class="num-btn" onclick="adjustNum(this,1)">+</div>
+                </div>
+              </div>
+              <div class="config-item">
+                <div class="config-label">最大长度</div>
+                <div class="number-input" style="margin-top:4px;">
+                  <div class="num-btn" onclick="adjustNum(this,-1)">-</div>
+                  <input type="text" value="32">
+                  <div class="num-btn" onclick="adjustNum(this,1)">+</div>
+                </div>
+              </div>
+              <div class="config-item">
+                <div class="config-label">密码过期天数</div>
+                <div class="config-desc">0 表示永不过期</div>
+                <div class="number-input" style="margin-top:4px;">
+                  <div class="num-btn" onclick="adjustNum(this,-1)">-</div>
+                  <input type="text" value="90">
+                  <div class="num-btn" onclick="adjustNum(this,1)">+</div>
+                </div>
+              </div>
+              <div class="config-item">
+                <div class="config-label">历史密码检查数</div>
+                <div class="config-desc">新密码不能与最近 N 次相同</div>
+                <div class="number-input" style="margin-top:4px;">
+                  <div class="num-btn" onclick="adjustNum(this,-1)">-</div>
+                  <input type="text" value="5">
+                  <div class="num-btn" onclick="adjustNum(this,1)">+</div>
+                </div>
+              </div>
+            </div>
+            <div style="margin-top:20px;padding-top:16px;border-top:1px solid #f0f0f0;">
+              <div style="font-size:14px;font-weight:500;color:rgba(0,0,0,.85);margin-bottom:12px;">复杂度要求</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div class="switch" onclick="toggleSwitch(this)" style="justify-content:space-between;">
+                  <div>
+                    <div style="font-size:13px;color:rgba(0,0,0,.85);">包含大写字母</div>
+                    <div style="font-size:12px;color:rgba(0,0,0,.35);">A-Z</div>
+                  </div>
+                  <div class="switch-track on"><div class="switch-thumb"></div></div>
+                </div>
+                <div class="switch" onclick="toggleSwitch(this)" style="justify-content:space-between;">
+                  <div>
+                    <div style="font-size:13px;color:rgba(0,0,0,.85);">包含小写字母</div>
+                    <div style="font-size:12px;color:rgba(0,0,0,.35);">a-z</div>
+                  </div>
+                  <div class="switch-track on"><div class="switch-thumb"></div></div>
+                </div>
+                <div class="switch" onclick="toggleSwitch(this)" style="justify-content:space-between;">
+                  <div>
+                    <div style="font-size:13px;color:rgba(0,0,0,.85);">包含数字</div>
+                    <div style="font-size:12px;color:rgba(0,0,0,.35);">0-9</div>
+                  </div>
+                  <div class="switch-track on"><div class="switch-thumb"></div></div>
+                </div>
+                <div class="switch" onclick="toggleSwitch(this)" style="justify-content:space-between;">
+                  <div>
+                    <div style="font-size:13px;color:rgba(0,0,0,.85);">包含特殊字符</div>
+                    <div style="font-size:12px;color:rgba(0,0,0,.35);">!@#$%^&*</div>
+                  </div>
+                  <div class="switch-track on"><div class="switch-thumb"></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:8px;">
+          <button class="btn">重置为默认</button>
+          <button class="btn btn-primary">保存配置</button>
+        </div>
+      </div>
+
+    </div><!-- end content-area -->
+  </div><!-- end main-area -->
+</div><!-- end layout -->
+
+<!-- ========== MODALS ========== -->
+
+<!-- Create Tenant Modal -->
+<div class="modal-overlay" id="create-tenant-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>新建企业</h3>
+      <div class="modal-close" onclick="closeModal('create-tenant-modal')">&times;</div>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-item" style="flex:1;">
+          <label><span class="req">*</span>企业名称</label>
+          <input class="form-control" placeholder="请输入企业名称">
+        </div>
+        <div class="form-item">
+          <label><span class="req">*</span>套餐类型</label>
+          <select class="form-control">
+            <option value="">请选择</option>
+            <option>FREE</option>
+            <option>PRO</option>
+            <option>ENTERPRISE</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-item">
+          <label><span class="req">*</span>用户上限</label>
+          <input class="form-control" type="number" placeholder="请输入用户上限" value="500">
+        </div>
+        <div class="form-item">
+          <label><span class="req">*</span>到期时间</label>
+          <input class="form-control" type="date" value="2027-04-11">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-item">
+          <label>企业 Logo</label>
+          <div class="upload-area">
+            <div class="upload-icon">+</div>
+            <div class="upload-text">点击上传</div>
+          </div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-item" style="flex:1;">
+          <label>备注</label>
+          <textarea class="form-control" placeholder="请输入备注信息（可选）" rows="3"></textarea>
+        </div>
+      </div>
+      <div style="background:#fffbe6;border:1px solid #ffe58f;border-radius:6px;padding:12px 16px;font-size:13px;color:#d48806;display:flex;gap:8px;align-items:flex-start;">
+        <span style="font-size:16px;">&#9432;</span>
+        <div>创建企业后将自动初始化：<strong>4个预设角色</strong>（超级管理员/管理员/部门主管/普通员工）和 <strong>3条默认时段规则</strong>（早间/午间/晚间打卡）。</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('create-tenant-modal')">取消</button>
+      <button class="btn btn-primary" onclick="closeModal('create-tenant-modal')">确认创建</button>
+    </div>
+  </div>
+</div>
+
+<!-- Create Admin Modal -->
+<div class="modal-overlay" id="create-admin-modal">
+  <div class="modal" style="width:500px;">
+    <div class="modal-header">
+      <h3>新增管理员</h3>
+      <div class="modal-close" onclick="closeModal('create-admin-modal')">&times;</div>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-item" style="flex:1;">
+          <label><span class="req">*</span>用户名</label>
+          <input class="form-control" placeholder="请输入用户名">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-item" style="flex:1;">
+          <label><span class="req">*</span>昵称</label>
+          <input class="form-control" placeholder="请输入昵称">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-item" style="flex:1;">
+          <label><span class="req">*</span>初始密码</label>
+          <input class="form-control" type="password" placeholder="请输入初始密码">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-item" style="flex:1;">
+          <label><span class="req">*</span>角色</label>
+          <select class="form-control">
+            <option value="">请选择角色</option>
+            <option>super_admin - 超级管理员</option>
+            <option>admin - 管理员</option>
+            <option>viewer - 查看者</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-item">
+          <label>状态</label>
+          <div class="switch" onclick="toggleSwitch(this)" style="margin-top:6px;">
+            <div class="switch-track on"><div class="switch-thumb"></div></div>
+            <span class="switch-label">启用</span>
+          </div>
+        </div>
+      </div>
+      <div style="background:#fffbe6;border:1px solid #ffe58f;border-radius:6px;padding:12px 16px;font-size:13px;color:#d48806;display:flex;gap:8px;align-items:flex-start;">
+        <span style="font-size:16px;">&#9432;</span>
+        <div>角色权限说明：<strong>super_admin</strong> 拥有全部权限且不可被禁用；<strong>admin</strong> 可管理企业和配置；<strong>viewer</strong> 仅可查看数据。</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('create-admin-modal')">取消</button>
+      <button class="btn btn-primary" onclick="closeModal('create-admin-modal')">确认创建</button>
+    </div>
+  </div>
+</div>
+
+<!-- Notification Preview Modal -->
+<div class="modal-overlay" id="preview-modal">
+  <div class="modal" style="width:520px;">
+    <div class="modal-header">
+      <h3>通知模板预览</h3>
+      <div class="modal-close" onclick="closeModal('preview-modal')">&times;</div>
+    </div>
+    <div class="modal-body">
+      <div style="margin-bottom:16px;">
+        <div style="font-size:14px;font-weight:500;color:rgba(0,0,0,.85);margin-bottom:8px;">升级通知</div>
+        <div style="font-size:12px;color:rgba(0,0,0,.45);">触发场景：用户等级提升</div>
+      </div>
+      <div style="margin-bottom:16px;">
+        <div style="font-size:13px;color:rgba(0,0,0,.65);margin-bottom:8px;">模板内容</div>
+        <div style="background:#fafafa;border:1px solid #f0f0f0;border-radius:6px;padding:16px;font-size:14px;line-height:2;color:rgba(0,0,0,.65);">
+          尊敬的 <span style="color:#1677ff;font-weight:500;background:#e6f4ff;padding:1px 4px;border-radius:3px;">{user_name}</span>，恭喜您！<br>
+          您的等级已提升至 <span style="color:#1677ff;font-weight:500;background:#e6f4ff;padding:1px 4px;border-radius:3px;">{level_name}</span>。<br>
+          新等级积分系数为 <span style="color:#1677ff;font-weight:500;background:#e6f4ff;padding:1px 4px;border-radius:3px;">{coefficient}</span>，<br>
+          未来每次打卡将获得更多积分奖励！<br>
+          继续坚持，向更高等级迈进！
+        </div>
+      </div>
+      <div style="border-top:1px solid #f0f0f0;padding-top:16px;">
+        <div style="font-size:13px;color:rgba(0,0,0,.65);margin-bottom:8px;">实际发送预览</div>
+        <div class="preview-box">
+          <div class="preview-title">推送内容</div>
+          <div class="preview-content">
+            尊敬的 <span class="preview-var">张三</span>，恭喜您！<br>
+            您的等级已提升至 <span class="preview-var">Lv.3 黄金</span>。<br>
+            新等级积分系数为 <span class="preview-var">1.2x</span>，<br>
+            未来每次打卡将获得更多积分奖励！<br>
+            继续坚持，向更高等级迈进！
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('preview-modal')">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- Log Detail Modal -->
+<div class="modal-overlay" id="log-detail-modal">
+  <div class="modal" style="width:600px;">
+    <div class="modal-header">
+      <h3>操作日志详情</h3>
+      <div class="modal-close" onclick="closeModal('log-detail-modal')">&times;</div>
+    </div>
+    <div class="modal-body">
+      <div class="log-detail-grid">
+        <div class="log-detail-item">
+          <div class="ld-label">操作人</div>
+          <div class="ld-value">
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div style="width:28px;height:28px;border-radius:50%;background:#722ed1;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;">王</div>
+              王伟 (wang.wei)
+            </div>
+          </div>
+        </div>
+        <div class="log-detail-item">
+          <div class="ld-label">操作类型</div>
+          <div class="ld-value"><span class="tag tag-orange">管理员管理</span></div>
+        </div>
+        <div class="log-detail-item">
+          <div class="ld-label">操作对象</div>
+          <div class="ld-value">管理员 li.na (李娜)</div>
+        </div>
+        <div class="log-detail-item">
+          <div class="ld-label">IP 地址</div>
+          <div class="ld-value"><code style="background:#f5f5f5;padding:2px 6px;border-radius:3px;font-size:13px;">10.0.0.55</code></div>
+        </div>
+        <div class="log-detail-item">
+          <div class="ld-label">User-Agent</div>
+          <div class="ld-value" style="font-size:12px;word-break:break-all;">Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/123.0</div>
+        </div>
+        <div class="log-detail-item">
+          <div class="ld-label">操作时间</div>
+          <div class="ld-value">2026-04-11 09:15:42</div>
+        </div>
+      </div>
+      <div class="log-detail-full" style="margin-top:20px;padding-top:16px;border-top:1px solid #f0f0f0;">
+        <div class="ld-label">操作描述</div>
+        <div class="ld-value">修改管理员角色：将管理员账号 <strong>li.na (李娜)</strong> 的角色从 <span class="tag tag-orange" style="font-size:11px;">admin</span> 变更为 <span class="tag tag-blue" style="font-size:11px;">viewer</span>。操作原因为权限回收。</div>
+      </div>
+      <div class="log-detail-full">
+        <div class="ld-label">变更详情</div>
+        <div class="ld-value" style="font-family:monospace;font-size:12px;">
+          <div style="margin-bottom:4px;"><span style="color:#ff4d4f;">- role: "admin"</span></div>
+          <div><span style="color:#52c41a;">+ role: "viewer"</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('log-detail-modal')">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== JAVASCRIPT ========== -->
+<script>
+// Page switching
+function switchPage(pageId, menuEl) {
+  // Hide all pages
+  document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+  // Show target page
+  document.getElementById('page-' + pageId).classList.add('active');
+  // Update menu
+  document.querySelectorAll('.menu-item').forEach(function(m) { m.classList.remove('active'); });
+  menuEl.classList.add('active');
+  // Update breadcrumb
+  var names = {
+    dashboard: '全平台看板',
+    tenant: '企业管理',
+    config: '平台配置',
+    admin: '管理员管理',
+    logs: '操作日志',
+    security: '安全配置'
+  };
+  document.getElementById('breadcrumb-current').textContent = names[pageId] || pageId;
+  // Reset tenant detail view
+  if (pageId !== 'tenant') {
+    document.getElementById('tenant-list-view').style.display = 'block';
+    document.getElementById('tenant-detail-view').style.display = 'none';
+  }
+}
+
+// Tab switching
+function switchTab(section, index, tabEl) {
+  var parent = tabEl.closest('.tabs');
+  parent.querySelectorAll('.tab-item').forEach(function(t) { t.classList.remove('active'); });
+  tabEl.classList.add('active');
+  var i = 0;
+  parent.querySelectorAll('.tab-panel').forEach(function(p) {
+    if (i === index) { p.classList.add('active'); } else { p.classList.remove('active'); }
+    i++;
+  });
+}
+
+// Toggle switch
+function toggleSwitch(el) {
+  var track = el.querySelector('.switch-track');
+  track.classList.toggle('on');
+}
+
+// Number input adjust
+function adjustNum(btn, delta) {
+  var input = btn.parentElement.querySelector('input');
+  var val = parseInt(input.value) || 0;
+  val = val + delta;
+  if (val < 0) val = 0;
+  input.value = val;
+}
+
+// Modal open/close
+function openModal(id) {
+  document.getElementById(id).classList.add('show');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('show');
+}
+
+// Close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(function(overlay) {
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) {
+      overlay.classList.remove('show');
+    }
+  });
+});
+
+// Tenant detail view
+function showTenantDetail() {
+  document.getElementById('tenant-list-view').style.display = 'none';
+  document.getElementById('tenant-detail-view').style.display = 'block';
+  document.getElementById('breadcrumb-current').textContent = '企业详情';
+}
+function hideTenantDetail() {
+  document.getElementById('tenant-list-view').style.display = 'block';
+  document.getElementById('tenant-detail-view').style.display = 'none';
+  document.getElementById('breadcrumb-current').textContent = '企业管理';
+}
+</script>
+</body>
+</html>

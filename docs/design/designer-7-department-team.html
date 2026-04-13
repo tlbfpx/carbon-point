@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>碳积分平台 - 部门管理 & 团队排行榜</title>
+<style>
+/* ===== RESET & BASE ===== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:14px;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei',Helvetica,Arial,sans-serif;color:rgba(0,0,0,.88);line-height:1.5714;background:#f5f5f5}
+a{color:#1677ff;text-decoration:none;cursor:pointer}
+a:hover{color:#4096ff}
+input,select,textarea,button{font-family:inherit;font-size:inherit}
+button{cursor:pointer;border:none;background:none}
+
+/* ===== LAYOUT ===== */
+.app-layout{display:flex;min-height:100vh}
+.sidebar{width:220px;background:#001529;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100}
+.sidebar-logo{height:64px;display:flex;align-items:center;padding:0 20px;border-bottom:1px solid rgba(255,255,255,.08)}
+.sidebar-logo .logo-icon{width:32px;height:32px;background:linear-gradient(135deg,#52c41a,#73d13d);border-radius:6px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:16px;margin-right:10px;flex-shrink:0}
+.sidebar-logo span{color:#fff;font-size:15px;font-weight:600;white-space:nowrap}
+.sidebar-menu{flex:1;padding:8px 0;overflow-y:auto}
+.menu-item{display:flex;align-items:center;padding:0 20px;height:42px;color:rgba(255,255,255,.65);font-size:14px;cursor:pointer;transition:all .2s}
+.menu-item:hover{color:#fff;background:rgba(255,255,255,.06)}
+.menu-item.active{color:#fff;background:#1677ff}
+.menu-item .menu-icon{width:18px;height:18px;margin-right:10px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.menu-item .menu-label{flex:1;white-space:nowrap}
+.menu-section{padding:16px 20px 6px;font-size:11px;color:rgba(255,255,255,.35);letter-spacing:.5px;font-weight:500}
+
+.header-bar{position:fixed;top:0;left:220px;right:0;height:64px;background:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 24px;box-shadow:0 1px 4px rgba(0,0,0,.06);z-index:99}
+.header-left{display:flex;align-items:center}
+.breadcrumb{display:flex;align-items:center;color:rgba(0,0,0,.45);font-size:14px}
+.breadcrumb .bc-sep{margin:0 8px;color:rgba(0,0,0,.25)}
+.breadcrumb .bc-current{color:rgba(0,0,0,.88);font-weight:500}
+.header-right{display:flex;align-items:center;gap:16px}
+.header-action{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:rgba(0,0,0,.45);cursor:pointer;transition:all .2s;font-size:17px}
+.header-action:hover{background:#f5f5f5;color:rgba(0,0,0,.88)}
+.user-info{display:flex;align-items:center;gap:8px;cursor:pointer;padding:4px 8px;border-radius:8px;transition:background .2s}
+.user-info:hover{background:#f5f5f5}
+.user-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#1677ff,#69b1ff);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:600}
+.user-name{font-size:14px;color:rgba(0,0,0,.88)}
+
+.main-content{margin-left:220px;margin-top:64px;padding:20px 24px;min-height:calc(100vh - 64px)}
+.page-container{display:none}
+.page-container.active{display:block}
+
+/* ===== COMMON ===== */
+.card{background:#fff;border-radius:8px;box-shadow:0 1px 2px rgba(0,0,0,.03),0 1px 6px -1px rgba(0,0,0,.02),0 2px 4px rgba(0,0,0,.02);padding:20px 24px;margin-bottom:20px}
+.card-title{font-size:16px;font-weight:600;color:rgba(0,0,0,.88);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+.card-title .subtitle{font-size:13px;color:rgba(0,0,0,.45);font-weight:400}
+
+.tabs{display:flex;border-bottom:1px solid #f0f0f0;margin-bottom:20px}
+.tab-item{padding:10px 20px;font-size:14px;color:rgba(0,0,0,.65);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap}
+.tab-item:hover{color:#1677ff}
+.tab-item.active{color:#1677ff;border-bottom-color:#1677ff;font-weight:500}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:5px 16px;border-radius:6px;font-size:14px;height:34px;line-height:1.5714;transition:all .2s;font-weight:400;white-space:nowrap}
+.btn-primary{background:#1677ff;color:#fff;border:1px solid #1677ff}
+.btn-primary:hover{background:#4096ff;border-color:#4096ff}
+.btn-default{background:#fff;color:rgba(0,0,0,.88);border:1px solid #d9d9d9}
+.btn-default:hover{color:#1677ff;border-color:#1677ff}
+.btn-danger-solid{background:#ff4d4f;color:#fff;border:1px solid #ff4d4f}
+.btn-danger-solid:hover{background:#ff7875;border-color:#ff7875}
+.btn-sm{height:28px;padding:2px 10px;font-size:13px;border-radius:4px}
+
+.table-wrapper{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+thead th{background:#fafafa;padding:12px 16px;text-align:left;font-weight:600;font-size:13px;color:rgba(0,0,0,.88);border-bottom:1px solid #f0f0f0;white-space:nowrap}
+tbody td{padding:12px 16px;border-bottom:1px solid #f0f0f0;font-size:14px;color:rgba(0,0,0,.88)}
+tbody tr:hover{background:#fafafa}
+tbody tr{transition:background .2s}
+tbody tr.highlight{background:#f6ffed}
+tbody tr.highlight:hover{background:#f0ffe6}
+
+.tag{display:inline-flex;align-items:center;padding:0 8px;height:22px;border-radius:4px;font-size:12px;line-height:20px;white-space:nowrap}
+.tag-blue{background:#e6f4ff;color:#1677ff;border:1px solid #91caff}
+.tag-green{background:#f6ffed;color:#52c41a;border:1px solid #b7eb8f}
+.tag-orange{background:#fff7e6;color:#fa8c16;border:1px solid #ffd591}
+.tag-gold{background:#fffbe6;color:#faad14;border:1px solid #ffe58f}
+
+.stat-card{background:#fff;border-radius:8px;padding:20px;box-shadow:0 1px 2px rgba(0,0,0,.03),0 1px 6px -1px rgba(0,0,0,.02)}
+.stat-card .stat-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:12px}
+.stat-card .stat-icon.blue{background:#e6f4ff;color:#1677ff}
+.stat-card .stat-icon.green{background:#f6ffed;color:#52c41a}
+.stat-card .stat-icon.orange{background:#fff7e6;color:#fa8c16}
+.stat-card .stat-icon.purple{background:#f9f0ff;color:#722ed1}
+.stat-card .stat-label{font-size:13px;color:rgba(0,0,0,.45);margin-bottom:4px}
+.stat-card .stat-value{font-size:28px;font-weight:600;color:rgba(0,0,0,.88)}
+.stat-card .stat-trend{font-size:12px;margin-top:6px;display:flex;align-items:center;gap:4px}
+.stat-card .stat-trend.up{color:#52c41a}
+.stat-card .stat-trend.down{color:#ff4d4f}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px}
+
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:#fff;border-radius:8px;box-shadow:0 6px 16px rgba(0,0,0,.08),0 3px 6px -4px rgba(0,0,0,.12),0 9px 28px 8px rgba(0,0,0,.05);width:580px;max-width:90vw;max-height:85vh;display:flex;flex-direction:column}
+.modal-header{padding:16px 24px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-size:16px;font-weight:600;color:rgba(0,0,0,.88)}
+.modal-close{width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:4px;color:rgba(0,0,0,.45);cursor:pointer;font-size:16px;transition:all .2s}
+.modal-close:hover{background:#f5f5f5;color:rgba(0,0,0,.88)}
+.modal-body{padding:24px;overflow-y:auto;flex:1}
+.modal-footer{padding:12px 24px;border-top:1px solid #f0f0f0;display:flex;justify-content:flex-end;gap:8px}
+
+.drawer-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);z-index:1000}
+.drawer-overlay.show{display:block}
+.drawer{position:fixed;top:0;right:-680px;width:680px;height:100vh;background:#fff;box-shadow:-6px 0 16px rgba(0,0,0,.08);z-index:1001;transition:right .3s cubic-bezier(.23,1,.32,1);display:flex;flex-direction:column}
+.drawer.show{right:0}
+.drawer-header{padding:16px 24px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.drawer-title{font-size:16px;font-weight:600;color:rgba(0,0,0,.88)}
+.drawer-close{width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:4px;color:rgba(0,0,0,.45);cursor:pointer;font-size:16px;transition:all .2s}
+.drawer-close:hover{background:#f5f5f5;color:rgba(0,0,0,.88)}
+.drawer-body{padding:24px;overflow-y:auto;flex:1}
+
+.form-item{margin-bottom:20px}
+.form-label{display:block;font-size:14px;color:rgba(0,0,0,.88);margin-bottom:6px;font-weight:500}
+.form-label .required{color:#ff4d4f;margin-right:2px}
+.form-input{width:100%;height:34px;padding:4px 12px;border:1px solid #d9d9d9;border-radius:6px;font-size:14px;color:rgba(0,0,0,.88);transition:all .2s;background:#fff}
+.form-input:hover{border-color:#4096ff}
+.form-input:focus{border-color:#1677ff;outline:none;box-shadow:0 0 0 2px rgba(22,119,255,.06)}
+.form-select{width:100%;height:34px;padding:4px 12px;border:1px solid #d9d9d9;border-radius:6px;font-size:14px;color:rgba(0,0,0,.88);transition:all .2s;background:#fff;appearance:auto}
+.form-select:hover{border-color:#4096ff}
+.form-select:focus{border-color:#1677ff;outline:none;box-shadow:0 0 0 2px rgba(22,119,255,.06)}
+.form-textarea{width:100%;padding:8px 12px;border:1px solid #d9d9d9;border-radius:6px;font-size:14px;color:rgba(0,0,0,.88);transition:all .2s;min-height:80px;resize:vertical;background:#fff}
+.form-textarea:hover{border-color:#4096ff}
+.form-textarea:focus{border-color:#1677ff;outline:none;box-shadow:0 0 0 2px rgba(22,119,255,.06)}
+
+.search-bar{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.search-bar .form-input{width:auto;min-width:220px}
+
+.btn-group{display:inline-flex;border:1px solid #d9d9d9;border-radius:6px;overflow:hidden}
+.btn-group .btn-toggle{padding:4px 14px;font-size:13px;background:#fff;color:rgba(0,0,0,.65);border:none;border-right:1px solid #d9d9d9;cursor:pointer;transition:all .2s;height:32px;display:flex;align-items:center}
+.btn-group .btn-toggle:last-child{border-right:none}
+.btn-group .btn-toggle.active{background:#1677ff;color:#fff}
+.btn-group .btn-toggle:hover:not(.active){background:#f5f5f5}
+
+.pagination{display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-top:16px;font-size:13px;color:rgba(0,0,0,.65)}
+.page-btn{min-width:32px;height:32px;border:1px solid #d9d9d9;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:#fff;transition:all .2s;font-size:13px}
+.page-btn:hover{color:#1677ff;border-color:#1677ff}
+.page-btn.active{background:#1677ff;color:#fff;border-color:#1677ff}
+
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-thumb{background:rgba(0,0,0,.15);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:rgba(0,0,0,.25)}
+::-webkit-scrollbar-track{background:transparent}
+
+/* ===== DEPARTMENT TREE ===== */
+.dept-tree-toggle{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;cursor:pointer;color:rgba(0,0,0,.45);transition:all .15s;border-radius:4px;margin-right:6px;flex-shrink:0;font-size:11px}
+.dept-tree-toggle:hover{color:#1677ff;background:#f0f5ff}
+.dept-tree-toggle.expanded{transform:rotate(90deg)}
+.dept-tree-toggle.leaf{visibility:hidden}
+.dept-name-cell{display:flex;align-items:center}
+.dept-indent{display:inline-block;width:24px;flex-shrink:0}
+.dept-name{display:flex;align-items:center;gap:8px}
+.dept-name .dept-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.dept-icon.level-0{background:#e6f4ff;color:#1677ff}
+.dept-icon.level-1{background:#f6ffed;color:#52c41a}
+.dept-icon.level-2{background:#fff7e6;color:#fa8c16}
+
+/* ===== MEDAL RANK ===== */
+.medal{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
+.medal-1{background:linear-gradient(135deg,#ffd700,#ffb800);box-shadow:0 2px 8px rgba(255,215,0,.4)}
+.medal-2{background:linear-gradient(135deg,#c0c0c0,#a8a8a8);box-shadow:0 2px 8px rgba(192,192,192,.4)}
+.medal-3{background:linear-gradient(135deg,#cd7f32,#b8690e);box-shadow:0 2px 8px rgba(205,127,50,.4)}
+.rank-num{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;font-size:14px;font-weight:500;color:rgba(0,0,0,.45)}
+
+/* ===== MINI CHART ===== */
+.mini-chart{display:flex;align-items:flex-end;gap:2px;height:40px}
+.mini-chart .bar{width:6px;border-radius:2px 2px 0 0;background:#1677ff;opacity:.65;transition:all .2s;min-height:2px}
+.mini-chart .bar:hover{opacity:1}
+
+/* ===== ORG CHART ===== */
+.org-chart{display:flex;justify-content:center;padding:30px 20px;overflow-x:auto}
+.org-chart ul{padding-top:20px;position:relative;display:flex;justify-content:center;list-style:none}
+.org-chart li{display:flex;flex-direction:column;align-items:center;position:relative;padding:20px 10px 0}
+.org-chart li::before,.org-chart li::after{content:'';position:absolute;top:0;right:50%;border-top:2px solid #d9d9d9;width:50%;height:20px}
+.org-chart li::after{right:auto;left:50%;border-left:2px solid #d9d9d9}
+.org-chart li::before{border-right:2px solid #d9d9d9}
+.org-chart li:only-child::after,.org-chart li:only-child::before{display:none}
+.org-chart li:only-child{padding-top:0}
+.org-chart li:first-child::before{border:0 none;border-right:2px solid #d9d9d9}
+.org-chart li:last-child::after{border:0 none;border-left:2px solid #d9d9d9}
+.org-chart li:last-child::before{border-right:2px solid #d9d9d9;border-radius:0 5px 0 0}
+.org-chart li:first-child::after{border-radius:5px 0 0 0}
+.org-chart ul ul::before{content:'';position:absolute;top:0;left:50%;border-left:2px solid #d9d9d9;width:0;height:20px}
+.org-chart li a{display:inline-flex;flex-direction:column;align-items:center;padding:10px 16px;border:2px solid #d9d9d9;border-radius:8px;text-decoration:none;color:rgba(0,0,0,.88);background:#fff;transition:all .2s;min-width:120px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.org-chart li a:hover{border-color:#1677ff;box-shadow:0 2px 8px rgba(22,119,255,.12);transform:translateY(-2px)}
+.org-chart li a.root-node{border-color:#1677ff;background:#e6f4ff}
+.org-chart li a .org-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:#fff;margin-bottom:6px}
+.org-chart li a .org-dept{font-size:13px;font-weight:600;white-space:nowrap}
+.org-chart li a .org-count{font-size:11px;color:rgba(0,0,0,.45);margin-top:2px}
+
+/* ===== DETAIL ===== */
+.detail-header{display:flex;align-items:center;gap:16px;margin-bottom:20px}
+.detail-back{width:36px;height:36px;border-radius:8px;border:1px solid #d9d9d9;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;color:rgba(0,0,0,.45);font-size:16px;background:#fff}
+.detail-back:hover{color:#1677ff;border-color:#1677ff}
+.detail-title{font-size:20px;font-weight:600;color:rgba(0,0,0,.88)}
+.detail-desc{font-size:13px;color:rgba(0,0,0,.45)}
+
+/* ===== USER SELECTOR ===== */
+.user-selector{position:relative}
+.user-sel-input{display:flex;align-items:center;gap:6px;min-height:34px;padding:4px 12px;border:1px solid #d9d9d9;border-radius:6px;cursor:pointer;background:#fff;transition:all .2s;flex-wrap:wrap}
+.user-sel-input:hover{border-color:#4096ff}
+.user-sel-input.focus{border-color:#1677ff;box-shadow:0 0 0 2px rgba(22,119,255,.06)}
+.user-sel-placeholder{color:rgba(0,0,0,.25);font-size:14px}
+.user-sel-dropdown{display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #d9d9d9;border-radius:8px;box-shadow:0 6px 16px rgba(0,0,0,.08);z-index:100;margin-top:4px;max-height:240px;overflow-y:auto}
+.user-sel-dropdown.show{display:block}
+.user-sel-search{padding:8px;border-bottom:1px solid #f0f0f0}
+.user-sel-search input{width:100%;height:30px;border:1px solid #d9d9d9;border-radius:4px;padding:0 8px;font-size:13px}
+.user-sel-search input:focus{border-color:#1677ff;outline:none}
+.user-sel-option{display:flex;align-items:center;gap:10px;padding:8px 12px;cursor:pointer;transition:background .15s}
+.user-sel-option:hover{background:#f5f5f5}
+.user-sel-option.selected{background:#e6f4ff}
+.user-sel-option .opt-avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:600;flex-shrink:0}
+.user-sel-option .opt-name{font-size:13px;color:rgba(0,0,0,.88)}
+.user-sel-option .opt-role{font-size:12px;color:rgba(0,0,0,.45);margin-left:auto}
+
+/* ===== TREE SELECT ===== */
+.tree-select{position:relative}
+.tree-sel-input{display:flex;align-items:center;height:34px;padding:0 12px;border:1px solid #d9d9d9;border-radius:6px;cursor:pointer;background:#fff;transition:all .2s;font-size:14px;color:rgba(0,0,0,.88);justify-content:space-between}
+.tree-sel-input:hover{border-color:#4096ff}
+.tree-sel-input.focus{border-color:#1677ff;box-shadow:0 0 0 2px rgba(22,119,255,.06)}
+.tree-sel-placeholder{color:rgba(0,0,0,.25)}
+.tree-sel-arrow{color:rgba(0,0,0,.25);font-size:12px;transition:transform .2s}
+.tree-sel-arrow.open{transform:rotate(180deg)}
+.tree-sel-dropdown{display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #d9d9d9;border-radius:8px;box-shadow:0 6px 16px rgba(0,0,0,.08);z-index:100;margin-top:4px;max-height:280px;overflow-y:auto;padding:4px 0}
+.tree-sel-dropdown.show{display:block}
+.tree-sel-node{padding:6px 12px;cursor:pointer;font-size:13px;transition:background .15s;display:flex;align-items:center;gap:6px}
+.tree-sel-node:hover{background:#f5f5f5}
+.tree-sel-node.selected{color:#1677ff;background:#e6f4ff}
+.tree-sel-node .node-indent{display:inline-block;width:16px;flex-shrink:0}
+
+/* ===== AVATAR ===== */
+.avatar-sm{width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:600;flex-shrink:0}
+
+/* ===== PROGRESS ===== */
+.progress-bar{height:8px;background:#f0f0f0;border-radius:4px;overflow:hidden;width:100%}
+.progress-bar .progress-fill{height:100%;border-radius:4px;transition:width .3s}
+.progress-fill.blue{background:#1677ff}
+.progress-fill.green{background:#52c41a}
+.progress-fill.orange{background:#fa8c16}
+
+/* ===== ACTION LINKS ===== */
+.action-cell{display:flex;align-items:center;gap:4px}
+.action-link{color:#1677ff;font-size:13px;cursor:pointer;padding:0 4px;transition:color .15s;border:none;background:none}
+.action-link:hover{color:#4096ff;text-decoration:underline}
+.action-link.danger{color:#ff4d4f}
+.action-link.danger:hover{color:#ff7875}
+
+/* ===== CONFIRM ===== */
+.confirm-content{text-align:center;padding:8px 0}
+.confirm-content .confirm-icon{font-size:48px;margin-bottom:12px}
+.confirm-content .confirm-text{font-size:14px;color:rgba(0,0,0,.88)}
+.confirm-content .confirm-sub{font-size:13px;color:rgba(0,0,0,.45);margin-top:4px}
+</style>
+</head>
+<body>
+
+<div class="app-layout">
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">C</div>
+      <span>碳积分平台</span>
+    </div>
+    <nav class="sidebar-menu">
+      <div class="menu-section">概览</div>
+      <div class="menu-item">
+        <span class="menu-icon">&#9776;</span>
+        <span class="menu-label">工作台</span>
+      </div>
+      <div class="menu-section">业务管理</div>
+      <div class="menu-item active" id="nav-dept">
+        <span class="menu-icon">&#9878;</span>
+        <span class="menu-label">部门管理</span>
+      </div>
+      <div class="menu-item">
+        <span class="menu-icon">&#128100;</span>
+        <span class="menu-label">用户管理</span>
+      </div>
+      <div class="menu-item">
+        <span class="menu-icon">&#11088;</span>
+        <span class="menu-label">积分管理</span>
+      </div>
+      <div class="menu-item">
+        <span class="menu-icon">&#9200;</span>
+        <span class="menu-label">打卡管理</span>
+      </div>
+      <div class="menu-item">
+        <span class="menu-icon">&#127918;</span>
+        <span class="menu-label">积分商城</span>
+      </div>
+      <div class="menu-section">数据中心</div>
+      <div class="menu-item">
+        <span class="menu-icon">&#127942;</span>
+        <span class="menu-label">团队排行</span>
+      </div>
+      <div class="menu-item">
+        <span class="menu-icon">&#128202;</span>
+        <span class="menu-label">数据报表</span>
+      </div>
+      <div class="menu-section">系统</div>
+      <div class="menu-item">
+        <span class="menu-icon">&#9881;</span>
+        <span class="menu-label">租户设置</span>
+      </div>
+      <div class="menu-item">
+        <span class="menu-icon">&#128274;</span>
+        <span class="menu-label">权限管理</span>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- ===== HEADER ===== -->
+  <header class="header-bar">
+    <div class="header-left">
+      <div class="breadcrumb">
+        <span>首页</span>
+        <span class="bc-sep">/</span>
+        <span class="bc-current" id="breadcrumb-current">部门管理</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="header-action" title="通知">&#128276;</div>
+      <div class="header-action" title="全屏">&#128267;</div>
+      <div class="user-info">
+        <span class="user-avatar">张</span>
+        <span class="user-name">管理员</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <main class="main-content">
+
+    <!-- ========== PAGE: 部门管理 (with tabs) ========== -->
+    <div class="page-container active" id="page-dept">
+      <div class="card">
+        <div class="card-title">
+          <span>部门管理</span>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+          <div class="tab-item active" onclick="switchTab('dept-list')">部门列表</div>
+          <div class="tab-item" onclick="switchTab('leaderboard')">团队排行</div>
+          <div class="tab-item" onclick="switchTab('org')">组织架构</div>
+        </div>
+
+        <!-- TAB: 部门列表 -->
+        <div class="tab-content active" id="tab-dept-list">
+          <div class="search-bar">
+            <input class="form-input" placeholder="搜索部门名称..." id="dept-search" oninput="filterDepts()">
+            <select class="form-select" style="width:140px">
+              <option>全部状态</option>
+              <option>启用</option>
+              <option>停用</option>
+            </select>
+            <div style="flex:1"></div>
+            <button class="btn btn-primary" onclick="openAddDept()">+ 新增部门</button>
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th style="min-width:240px">部门名称</th>
+                  <th>负责人</th>
+                  <th>成员数</th>
+                  <th>总积分</th>
+                  <th>创建时间</th>
+                  <th style="width:160px">操作</th>
+                </tr>
+              </thead>
+              <tbody id="dept-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- TAB: 团队排行榜 -->
+        <div class="tab-content" id="tab-leaderboard">
+          <div class="search-bar">
+            <div class="btn-group">
+              <button class="btn-toggle active" onclick="setTimeFilter(this,'week')">本周</button>
+              <button class="btn-toggle" onclick="setTimeFilter(this,'month')">本月</button>
+              <button class="btn-toggle" onclick="setTimeFilter(this,'quarter')">本季</button>
+            </div>
+            <div style="flex:1"></div>
+            <span style="font-size:13px;color:rgba(0,0,0,.45)">当前部门: <b style="color:#1677ff">前端组</b> 排名 #5</span>
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:60px">排名</th>
+                  <th>部门</th>
+                  <th>总积分</th>
+                  <th>人均积分</th>
+                  <th>打卡率</th>
+                  <th>活跃人数</th>
+                  <th style="width:100px">积分趋势</th>
+                </tr>
+              </thead>
+              <tbody id="leaderboard-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- TAB: 组织架构 -->
+        <div class="tab-content" id="tab-org">
+          <div class="card-title" style="margin-bottom:20px">
+            <span>组织架构图</span>
+            <span class="subtitle">共 1 个总公司 · 5 个一级部门 · 5 个二级部门</span>
+          </div>
+          <div class="org-chart" id="org-chart-container"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== PAGE: 部门详情 ========== -->
+    <div class="page-container" id="page-detail">
+      <div class="detail-header">
+        <div class="detail-back" onclick="switchPage('dept')">&#8592;</div>
+        <div>
+          <div class="detail-title" id="detail-dept-name">技术部</div>
+          <div class="detail-desc" id="detail-dept-desc">上级部门: 总公司 · 创建于 2024-01-15</div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stat-grid" id="detail-stats">
+        <div class="stat-card">
+          <div class="stat-icon blue">&#128101;</div>
+          <div class="stat-label">成员数</div>
+          <div class="stat-value" id="stat-members">42</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green">&#127942;</div>
+          <div class="stat-label">总积分</div>
+          <div class="stat-value" id="stat-total-pts">128,560</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon orange">&#128200;</div>
+          <div class="stat-label">人均积分</div>
+          <div class="stat-value" id="stat-avg-pts">3,061</div>
+          <div class="stat-trend up">&#9650; 12.3% 较上月</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon purple">&#128197;</div>
+          <div class="stat-label">本月打卡率</div>
+          <div class="stat-value" id="stat-rate">87.5%</div>
+          <div class="stat-trend up">&#9650; 5.2% 较上月</div>
+        </div>
+      </div>
+
+      <!-- Trend Chart -->
+      <div class="card">
+        <div class="card-title">
+          <span>积分趋势</span>
+          <div class="btn-group">
+            <button class="btn-toggle active">近7天</button>
+            <button class="btn-toggle">近30天</button>
+          </div>
+        </div>
+        <div id="detail-trend-chart" style="display:flex;align-items:flex-end;gap:4px;height:180px;padding:0 8px"></div>
+        <div id="detail-trend-labels" style="display:flex;justify-content:space-between;margin-top:8px;padding:0 8px;font-size:11px;color:rgba(0,0,0,.4)"></div>
+      </div>
+
+      <!-- Members -->
+      <div class="card">
+        <div class="card-title">
+          <span>成员列表</span>
+          <button class="btn btn-primary btn-sm" onclick="openMemberDrawer()">+ 添加成员</button>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:50px">头像</th>
+                <th>姓名</th>
+                <th>积分</th>
+                <th>等级</th>
+                <th>连续天数</th>
+                <th>本月打卡率</th>
+                <th style="width:80px">操作</th>
+              </tr>
+            </thead>
+            <tbody id="detail-members-tbody"></tbody>
+          </table>
+        </div>
+        <div class="pagination">
+          <span class="page-info" style="margin-right:8px">共 42 条</span>
+          <button class="page-btn">&laquo;</button>
+          <button class="page-btn active">1</button>
+          <button class="page-btn">2</button>
+          <button class="page-btn">3</button>
+          <button class="page-btn">&raquo;</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ===== MODAL: 新增/编辑部门 ===== -->
+<div class="modal-overlay" id="modal-dept">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-dept-title">新增部门</span>
+      <div class="modal-close" onclick="closeDeptModal()">&#10005;</div>
+    </div>
+    <div class="modal-body">
+      <div class="form-item">
+        <label class="form-label"><span class="required">*</span>部门名称</label>
+        <input class="form-input" id="form-dept-name" placeholder="请输入部门名称">
+      </div>
+      <div class="form-item">
+        <label class="form-label">上级部门</label>
+        <div class="tree-select" id="parent-dept-select">
+          <div class="tree-sel-input" id="tree-sel-input" onclick="toggleTreeSelect(event)">
+            <span id="tree-sel-text" class="tree-sel-placeholder">请选择上级部门</span>
+            <span class="tree-sel-arrow" id="tree-sel-arrow">&#9660;</span>
+          </div>
+          <div class="tree-sel-dropdown" id="tree-dropdown"></div>
+        </div>
+      </div>
+      <div class="form-item">
+        <label class="form-label"><span class="required">*</span>负责人</label>
+        <div class="user-selector" id="user-sel">
+          <div class="user-sel-input" id="user-sel-input" onclick="toggleUserSel(event)">
+            <span id="user-sel-text" class="user-sel-placeholder">请选择负责人</span>
+          </div>
+          <div class="user-sel-dropdown" id="user-dropdown">
+            <div class="user-sel-search">
+              <input placeholder="搜索用户..." oninput="filterUsers(this.value)">
+            </div>
+            <div id="user-options">
+              <div class="user-sel-option" onclick="selectUser(this,'张伟','前端组')"><div class="opt-avatar" style="background:#1677ff">张</div><span class="opt-name">张伟</span><span class="opt-role">前端组</span></div>
+              <div class="user-sel-option" onclick="selectUser(this,'李明','后端组')"><div class="opt-avatar" style="background:#52c41a">李</div><span class="opt-name">李明</span><span class="opt-role">后端组</span></div>
+              <div class="user-sel-option" onclick="selectUser(this,'王芳','产品组')"><div class="opt-avatar" style="background:#fa8c16">王</div><span class="opt-name">王芳</span><span class="opt-role">产品组</span></div>
+              <div class="user-sel-option" onclick="selectUser(this,'赵敏','测试组')"><div class="opt-avatar" style="background:#722ed1">赵</div><span class="opt-name">赵敏</span><span class="opt-role">测试组</span></div>
+              <div class="user-sel-option" onclick="selectUser(this,'陈杰','运营组')"><div class="opt-avatar" style="background:#eb2f96">陈</div><span class="opt-name">陈杰</span><span class="opt-role">运营组</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-item">
+        <label class="form-label">描述</label>
+        <textarea class="form-textarea" id="form-dept-desc" placeholder="请输入部门描述（选填）"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeDeptModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveDept()">确定</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== DRAWER: 成员管理 ===== -->
+<div class="drawer-overlay" id="drawer-member-overlay" onclick="closeMemberDrawer()"></div>
+<div class="drawer" id="drawer-member">
+  <div class="drawer-header">
+    <span class="drawer-title">部门成员管理 &middot; <span id="drawer-dept-name">技术部</span></span>
+    <div class="drawer-close" onclick="closeMemberDrawer()">&#10005;</div>
+  </div>
+  <div class="drawer-body">
+    <div style="margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:13px;color:rgba(0,0,0,.45)">共 <b style="color:rgba(0,0,0,.88)" id="drawer-member-count">8</b> 名成员</span>
+      <button class="btn btn-primary btn-sm" onclick="toggleAddMember()">+ 添加成员</button>
+    </div>
+
+    <!-- Add Member Panel -->
+    <div id="add-member-panel" style="display:none;margin-bottom:16px;padding:16px;background:#fafafa;border-radius:8px;border:1px solid #f0f0f0">
+      <div style="font-size:13px;font-weight:500;margin-bottom:8px;color:rgba(0,0,0,.88)">搜索并添加成员</div>
+      <div style="display:flex;gap:8px">
+        <input class="form-input" placeholder="输入姓名搜索..." style="flex:1">
+        <button class="btn btn-sm btn-default" onclick="toggleAddMember()">取消</button>
+      </div>
+      <div style="margin-top:8px;max-height:150px;overflow-y:auto" id="add-member-results">
+        <div class="user-sel-option" onclick="addMember(this,'刘洋','#eb2f96')"><div class="opt-avatar" style="background:#eb2f96">刘</div><span class="opt-name">刘洋</span><span class="opt-role">未分配部门</span></div>
+        <div class="user-sel-option" onclick="addMember(this,'陈杰','#13c2c2')"><div class="opt-avatar" style="background:#13c2c2">陈</div><span class="opt-name">陈杰</span><span class="opt-role">未分配</span></div>
+        <div class="user-sel-option" onclick="addMember(this,'周婷','#fa541c')"><div class="opt-avatar" style="background:#fa541c">周</div><span class="opt-name">周婷</span><span class="opt-role">未分配部门</span></div>
+      </div>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:50px">头像</th>
+            <th>姓名</th>
+            <th>积分</th>
+            <th>连续天数</th>
+            <th style="width:80px">操作</th>
+          </tr>
+        </thead>
+        <tbody id="drawer-members-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: 确认删除 ===== -->
+<div class="modal-overlay" id="modal-confirm">
+  <div class="modal" style="width:400px">
+    <div class="modal-header">
+      <span class="modal-title">确认删除</span>
+      <div class="modal-close" onclick="closeConfirm()">&#10005;</div>
+    </div>
+    <div class="modal-body">
+      <div class="confirm-content">
+        <div class="confirm-icon">&#9888;&#65039;</div>
+        <div class="confirm-text" id="confirm-text">确定要删除部门 "测试部" 吗？</div>
+        <div class="confirm-sub" id="confirm-sub">删除后该部门下所有成员将移至未分配</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeConfirm()">取消</button>
+      <button class="btn btn-danger-solid" onclick="closeConfirm()">确定删除</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ==================== DATA ====================
+const departments = [
+  { id:1,  name:'总公司',     parentId:null, leader:'张总',   members:156,  points:523400, created:'2024-01-01', icon:'&#127970;' },
+  { id:2,  name:'技术部',     parentId:1,   leader:'王建国', members:42,   points:128560, created:'2024-01-15', icon:'&#128187;' },
+  { id:3,  name:'市场部',     parentId:1,   leader:'赵丽',   members:28,   points:95200,  created:'2024-02-01', icon:'&#128200;' },
+  { id:4,  name:'行政部',     parentId:1,   leader:'孙明',   members:15,   points:45800,  created:'2024-01-20', icon:'&#127970;' },
+  { id:5,  name:'产品部',     parentId:1,   leader:'周婷',   members:18,   points:68400,  created:'2024-03-10', icon:'&#128161;' },
+  { id:6,  name:'财务部',     parentId:1,   leader:'吴芳',   members:12,   points:35200,  created:'2024-02-15', icon:'&#128176;' },
+  { id:7,  name:'前端组',     parentId:2,   leader:'张伟',   members:16,   points:52400,  created:'2024-01-20', icon:'&#127912;' },
+  { id:8,  name:'后端组',     parentId:2,   leader:'李明',   members:18,   points:48600,  created:'2024-01-20', icon:'&#9881;' },
+  { id:9,  name:'测试组',     parentId:2,   leader:'赵敏',   members:8,    points:27560,  created:'2024-02-01', icon:'&#128269;' },
+  { id:10, name:'品牌推广组', parentId:3,   leader:'钱进',   members:15,   points:48200,  created:'2024-02-10', icon:'&#127775;' },
+  { id:11, name:'渠道运营组', parentId:3,   leader:'孙丽',   members:13,   points:47000,  created:'2024-02-10', icon:'&#128279;' },
+];
+
+const leaderboardData = [
+  { rank:1,  dept:'技术部',     total:128560, avg:3061, rate:'92.3%', active:40, trend:[65,72,68,80,85,78,92], highlight:false },
+  { rank:2,  dept:'市场部',     total:95200,  avg:3400, rate:'88.5%', active:26, trend:[55,60,58,70,72,68,75], highlight:false },
+  { rank:3,  dept:'产品部',     total:68400,  avg:3800, rate:'85.2%', active:17, trend:[40,45,50,48,55,52,60], highlight:false },
+  { rank:4,  dept:'行政部',     total:45800,  avg:3053, rate:'78.6%', active:13, trend:[30,32,35,33,38,36,40], highlight:false },
+  { rank:5,  dept:'前端组',     total:52400,  avg:3275, rate:'90.1%', active:15, trend:[50,52,55,58,60,55,62], highlight:true },
+  { rank:6,  dept:'后端组',     total:48600,  avg:2700, rate:'86.4%', active:16, trend:[45,48,50,46,52,48,55], highlight:false },
+  { rank:7,  dept:'品牌推广组', total:48200,  avg:3213, rate:'82.7%', active:14, trend:[38,42,45,44,48,46,50], highlight:false },
+  { rank:8,  dept:'渠道运营组', total:47000,  avg:3615, rate:'80.3%', active:12, trend:[35,38,42,40,44,42,48], highlight:false },
+  { rank:9,  dept:'财务部',     total:35200,  avg:2933, rate:'75.8%', active:10, trend:[28,30,32,28,34,32,35], highlight:false },
+  { rank:10, dept:'测试组',     total:27560,  avg:3445, rate:'91.7%', active:8,  trend:[22,25,28,26,30,28,32], highlight:false },
+];
+
+const detailMembers = [
+  { name:'张伟', pts:8960, level:'Lv.4',  days:45, rate:'95.2%', color:'#1677ff' },
+  { name:'李明', pts:7820, level:'Lv.3',  days:38, rate:'92.1%', color:'#52c41a' },
+  { name:'王芳', pts:6540, level:'Lv.3',  days:32, rate:'88.5%', color:'#fa8c16' },
+  { name:'赵敏', pts:5680, level:'Lv.3',  days:28, rate:'85.3%', color:'#722ed1' },
+  { name:'陈杰', pts:4520, level:'Lv.2',  days:22, rate:'82.0%', color:'#eb2f96' },
+  { name:'刘洋', pts:3980, level:'Lv.2',  days:18, rate:'78.6%', color:'#13c2c2' },
+  { name:'杨磊', pts:3450, level:'Lv.2',  days:15, rate:'75.4%', color:'#faad14' },
+  { name:'周婷', pts:2890, level:'Lv.2',  days:12, rate:'72.1%', color:'#f5222d' },
+];
+
+// ==================== PAGE NAVIGATION ====================
+function switchPage(page) {
+  document.querySelectorAll('.page-container').forEach(function(p) { p.classList.remove('active'); });
+  if (page === 'dept') {
+    document.getElementById('page-dept').classList.add('active');
+    document.getElementById('breadcrumb-current').textContent = '部门管理';
+  } else if (page === 'detail') {
+    document.getElementById('page-detail').classList.add('active');
+  }
+}
+
+// ==================== TABS ====================
+function switchTab(tab) {
+  var tabs = document.querySelectorAll('#page-dept .tab-item');
+  var contents = document.querySelectorAll('#page-dept .tab-content');
+  tabs.forEach(function(t) { t.classList.remove('active'); });
+  contents.forEach(function(c) { c.classList.remove('active'); });
+
+  if (tab === 'dept-list') {
+    tabs[0].classList.add('active');
+    document.getElementById('tab-dept-list').classList.add('active');
+  } else if (tab === 'leaderboard') {
+    tabs[1].classList.add('active');
+    document.getElementById('tab-leaderboard').classList.add('active');
+  } else if (tab === 'org') {
+    tabs[2].classList.add('active');
+    document.getElementById('tab-org').classList.add('active');
+  }
+}
+
+// ==================== DEPARTMENT TREE TABLE ====================
+var expandedIds = new Set([1, 2, 3]);
+
+function getChildren(parentId) {
+  return departments.filter(function(d) { return d.parentId === parentId; });
+}
+
+function getLevel(deptId) {
+  var level = 0;
+  var curr = deptId;
+  while (true) {
+    var dept = departments.find(function(d) { return d.id === curr; });
+    if (!dept || dept.parentId === null) break;
+    level++;
+    curr = dept.parentId;
+  }
+  return level;
+}
+
+function renderDeptTree() {
+  var tbody = document.getElementById('dept-tbody');
+  var searchVal = (document.getElementById('dept-search').value || '').toLowerCase();
+  tbody.innerHTML = '';
+
+  var roots = departments.filter(function(d) { return d.parentId === null; });
+
+  function matchesSearch(dept) {
+    if (!searchVal) return true;
+    if (dept.name.toLowerCase().indexOf(searchVal) !== -1) return true;
+    var children = getChildren(dept.id);
+    for (var i = 0; i < children.length; i++) {
+      if (matchesSearch(children[i])) return true;
+    }
+    return false;
+  }
+
+  function renderNode(dept, depth) {
+    if (!matchesSearch(dept)) return;
+
+    var children = getChildren(dept.id);
+    var hasChildren = children.length > 0;
+    var isExpanded = expandedIds.has(dept.id);
+    var level = getLevel(dept.id);
+
+    var indent = '';
+    for (var i = 0; i < depth; i++) indent += '<span class="dept-indent"></span>';
+
+    var toggleCls = hasChildren ? (isExpanded ? 'expanded' : '') : 'leaf';
+    var iconColors = ['level-0','level-1','level-2'];
+    var iconColor = iconColors[Math.min(level, 2)];
+
+    var tr = document.createElement('tr');
+    tr.setAttribute('data-id', dept.id);
+    tr.innerHTML =
+      '<td>' +
+        '<div class="dept-name-cell">' +
+          indent +
+          '<span class="dept-tree-toggle ' + toggleCls + '" onclick="toggleDept(' + dept.id + ')">&#9654;</span>' +
+          '<div class="dept-name">' +
+            '<div class="dept-icon ' + iconColor + '">' + dept.icon + '</div>' +
+            '<span>' + dept.name + '</span>' +
+          '</div>' +
+        '</div>' +
+      '</td>' +
+      '<td>' + dept.leader + '</td>' +
+      '<td>' + dept.members + ' 人</td>' +
+      '<td><b style="color:#1677ff">' + dept.points.toLocaleString() + '</b></td>' +
+      '<td>' + dept.created + '</td>' +
+      '<td>' +
+        '<div class="action-cell">' +
+          '<button class="action-link" onclick="openEditDept(' + dept.id + ')">编辑</button>' +
+          '<button class="action-link" onclick="openDetail(' + dept.id + ')">详情</button>' +
+          '<button class="action-link" onclick="openMemberDrawerFor(' + dept.id + ')">成员</button>' +
+          '<button class="action-link danger" onclick="confirmDelete(' + dept.id + ')">删除</button>' +
+        '</div>' +
+      '</td>';
+
+    tbody.appendChild(tr);
+
+    if (hasChildren && isExpanded) {
+      children.forEach(function(c) { renderNode(c, depth + 1); });
+    }
+  }
+
+  roots.forEach(function(r) { renderNode(r, 0); });
+}
+
+function toggleDept(id) {
+  if (expandedIds.has(id)) expandedIds.delete(id);
+  else expandedIds.add(id);
+  renderDeptTree();
+}
+
+function filterDepts() {
+  renderDeptTree();
+}
+
+// ==================== LEADERBOARD ====================
+function renderLeaderboard() {
+  var tbody = document.getElementById('leaderboard-tbody');
+  tbody.innerHTML = '';
+
+  leaderboardData.forEach(function(row) {
+    var tr = document.createElement('tr');
+    if (row.highlight) tr.classList.add('highlight');
+
+    var rankHtml = '';
+    if (row.rank <= 3) {
+      var medals = ['','medal-1','medal-2','medal-3'];
+      rankHtml = '<span class="medal ' + medals[row.rank] + '">' + row.rank + '</span>';
+    } else {
+      rankHtml = '<span class="rank-num">' + row.rank + '</span>';
+    }
+
+    var maxTrend = Math.max.apply(null, row.trend);
+    var barsHtml = row.trend.map(function(v) {
+      return '<div class="bar" style="height:' + Math.max(4, (v / maxTrend) * 100) + '%"></div>';
+    }).join('');
+
+    var rateNum = parseFloat(row.rate);
+    var progressClass = rateNum > 85 ? 'green' : (rateNum > 75 ? 'blue' : 'orange');
+    var deptStyle = row.highlight ? 'font-weight:600;color:#1677ff' : '';
+
+    tr.innerHTML =
+      '<td>' + rankHtml + '</td>' +
+      '<td style="' + deptStyle + '">' + row.dept + '</td>' +
+      '<td><b>' + row.total.toLocaleString() + '</b></td>' +
+      '<td>' + row.avg.toLocaleString() + '</td>' +
+      '<td>' +
+        '<div style="display:flex;align-items:center;gap:8px">' +
+          '<div class="progress-bar" style="width:80px">' +
+            '<div class="progress-fill ' + progressClass + '" style="width:' + row.rate + '"></div>' +
+          '</div>' +
+          '<span style="font-size:13px">' + row.rate + '</span>' +
+        '</div>' +
+      '</td>' +
+      '<td>' + row.active + ' 人</td>' +
+      '<td><div class="mini-chart">' + barsHtml + '</div></td>';
+
+    tbody.appendChild(tr);
+  });
+}
+
+function setTimeFilter(btn) {
+  var siblings = btn.parentElement.querySelectorAll('.btn-toggle');
+  siblings.forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+}
+
+// ==================== ORG CHART ====================
+function renderOrgChart() {
+  var container = document.getElementById('org-chart-container');
+  var colors = {1:'#001529', 2:'#1677ff', 3:'#52c41a', 4:'#fa8c16', 5:'#722ed1', 6:'#eb2f96', 7:'#1677ff', 8:'#52c41a', 9:'#722ed1', 10:'#fa8c16', 11:'#13c2c2'};
+
+  function buildTree(parentId) {
+    var children = departments.filter(function(d) { return d.parentId === parentId; });
+    if (children.length === 0) return '';
+    var html = '<ul>';
+    children.forEach(function(dept) {
+      var color = colors[dept.id] || '#1677ff';
+      html += '<li>' +
+        '<a>' +
+          '<div class="org-avatar" style="background:' + color + '">' + dept.icon + '</div>' +
+          '<div class="org-dept">' + dept.name + '</div>' +
+          '<div class="org-count">' + dept.members + '人 · ' + (dept.points / 1000).toFixed(1) + 'k分</div>' +
+        '</a>' +
+        buildTree(dept.id) +
+      '</li>';
+    });
+    html += '</ul>';
+    return html;
+  }
+
+  var root = departments.find(function(d) { return d.parentId === null; });
+  container.innerHTML =
+    '<ul><li>' +
+      '<a class="root-node">' +
+        '<div class="org-avatar" style="background:#001529">' + root.icon + '</div>' +
+        '<div class="org-dept">' + root.name + '</div>' +
+        '<div class="org-count">' + root.members + '人 · ' + (root.points / 1000).toFixed(1) + 'k分</div>' +
+      '</a>' +
+      buildTree(root.id) +
+    '</li></ul>';
+}
+
+// ==================== DETAIL PAGE ====================
+function openDetail(id) {
+  var dept = departments.find(function(d) { return d.id === id; });
+  if (!dept) return;
+
+  var parent = departments.find(function(d) { return d.id === dept.parentId; });
+  document.getElementById('detail-dept-name').textContent = dept.name;
+  document.getElementById('detail-dept-desc').textContent =
+    '上级部门: ' + (parent ? parent.name : '无') + ' · 创建于 ' + dept.created;
+  document.getElementById('stat-members').textContent = dept.members;
+  document.getElementById('stat-total-pts').textContent = dept.points.toLocaleString();
+  document.getElementById('stat-avg-pts').textContent = Math.round(dept.points / dept.members).toLocaleString();
+
+  // Random check-in rate for variety
+  var rate = (80 + Math.random() * 15).toFixed(1);
+  document.getElementById('stat-rate').textContent = rate + '%';
+
+  renderDetailTrendChart();
+  renderDetailMembers();
+
+  switchPage('detail');
+  document.getElementById('breadcrumb-current').textContent = dept.name + ' 详情';
+}
+
+function renderDetailTrendChart() {
+  var chartEl = document.getElementById('detail-trend-chart');
+  var labelsEl = document.getElementById('detail-trend-labels');
+  var days = ['周一','周二','周三','周四','周五','周六','周日'];
+  var values = [3200, 4100, 3800, 4500, 5200, 2800, 3600];
+  var maxV = Math.max.apply(null, values);
+
+  chartEl.innerHTML = values.map(function(v, i) {
+    var bg = (i === 4) ? '#1677ff' : 'rgba(22,119,255,.35)';
+    return '<div style="flex:1;border-radius:4px 4px 0 0;background:' + bg + ';height:' + (v / maxV * 100) + '%;position:relative;min-height:4px;transition:opacity .2s;cursor:pointer" title="' + v + '分">' +
+      '<div style="position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-size:11px;color:rgba(0,0,0,.45);white-space:nowrap">' + v.toLocaleString() + '</div>' +
+    '</div>';
+  }).join('');
+
+  labelsEl.innerHTML = days.map(function(d) { return '<span>' + d + '</span>'; }).join('');
+}
+
+function renderDetailMembers() {
+  var tbody = document.getElementById('detail-members-tbody');
+  tbody.innerHTML = '';
+
+  detailMembers.forEach(function(m) {
+    var tr = document.createElement('tr');
+    var rateNum = parseFloat(m.rate);
+    var progressClass = rateNum > 85 ? 'green' : 'blue';
+
+    tr.innerHTML =
+      '<td><div class="avatar-sm" style="background:' + m.color + '">' + m.name[0] + '</div></td>' +
+      '<td>' + m.name + '</td>' +
+      '<td><b>' + m.pts.toLocaleString() + '</b></td>' +
+      '<td><span class="tag tag-blue">' + m.level + '</span></td>' +
+      '<td><b>' + m.days + '</b> 天</td>' +
+      '<td>' +
+        '<div style="display:flex;align-items:center;gap:8px">' +
+          '<div class="progress-bar" style="width:60px">' +
+            '<div class="progress-fill ' + progressClass + '" style="width:' + m.rate + '"></div>' +
+          '</div>' +
+          '<span style="font-size:12px">' + m.rate + '</span>' +
+        '</div>' +
+      '</td>' +
+      '<td><button class="action-link danger" onclick="confirmRemoveMember(\'' + m.name + '\')">移除</button></td>';
+
+    tbody.appendChild(tr);
+  });
+}
+
+// ==================== MODAL: 新增/编辑部门 ====================
+var editingDeptId = null;
+
+function openAddDept() {
+  editingDeptId = null;
+  document.getElementById('modal-dept-title').textContent = '新增部门';
+  document.getElementById('form-dept-name').value = '';
+  document.getElementById('form-dept-desc').value = '';
+  document.getElementById('tree-sel-text').textContent = '请选择上级部门';
+  document.getElementById('tree-sel-text').className = 'tree-sel-placeholder';
+  document.getElementById('user-sel-text').textContent = '请选择负责人';
+  document.getElementById('user-sel-text').className = 'user-sel-placeholder';
+  document.getElementById('modal-dept').classList.add('show');
+  renderTreeSelect();
+}
+
+function openEditDept(id) {
+  editingDeptId = id;
+  var dept = departments.find(function(d) { return d.id === id; });
+  document.getElementById('modal-dept-title').textContent = '编辑部门';
+  document.getElementById('form-dept-name').value = dept.name;
+  document.getElementById('form-dept-desc').value = '部门描述信息';
+
+  var parent = departments.find(function(d) { return d.id === dept.parentId; });
+  if (parent) {
+    document.getElementById('tree-sel-text').textContent = parent.name;
+    document.getElementById('tree-sel-text').className = '';
+  }
+  document.getElementById('user-sel-text').textContent = dept.leader;
+  document.getElementById('user-sel-text').className = '';
+
+  document.getElementById('modal-dept').classList.add('show');
+  renderTreeSelect();
+}
+
+function closeDeptModal() {
+  document.getElementById('modal-dept').classList.remove('show');
+  document.getElementById('form-dept-name').style.borderColor = '';
+}
+
+function saveDept() {
+  var name = document.getElementById('form-dept-name').value.trim();
+  if (!name) {
+    document.getElementById('form-dept-name').style.borderColor = '#ff4d4f';
+    return;
+  }
+  document.getElementById('form-dept-name').style.borderColor = '';
+  closeDeptModal();
+}
+
+// ==================== TREE SELECT ====================
+function renderTreeSelect() {
+  var dropdown = document.getElementById('tree-dropdown');
+  var html = '<div class="tree-sel-node" onclick="selectTreeDept(null,\'无 (顶级)\')"><span class="node-indent"></span>无 (顶级)</div>';
+
+  function renderNode(dept, depth) {
+    var children = departments.filter(function(d) { return d.parentId === dept.id; });
+    var indents = '';
+    for (var i = 0; i < depth; i++) indents += '<span class="node-indent"></span>';
+    html += '<div class="tree-sel-node" onclick="selectTreeDept(' + dept.id + ',\'' + dept.name + '\')">' +
+      indents + dept.name + '</div>';
+    children.forEach(function(c) { renderNode(c, depth + 1); });
+  }
+
+  var roots = departments.filter(function(d) { return d.parentId === null; });
+  roots.forEach(function(r) { renderNode(r, 0); });
+
+  dropdown.innerHTML = html;
+}
+
+function toggleTreeSelect(e) {
+  e.stopPropagation();
+  document.getElementById('tree-dropdown').classList.toggle('show');
+  document.getElementById('tree-sel-arrow').classList.toggle('open');
+  document.getElementById('tree-sel-input').classList.toggle('focus');
+}
+
+function selectTreeDept(id, name) {
+  document.getElementById('tree-sel-text').textContent = name;
+  document.getElementById('tree-sel-text').className = '';
+  document.getElementById('tree-dropdown').classList.remove('show');
+  document.getElementById('tree-sel-arrow').classList.remove('open');
+  document.getElementById('tree-sel-input').classList.remove('focus');
+}
+
+// ==================== USER SELECTOR ====================
+function toggleUserSel(e) {
+  e.stopPropagation();
+  document.getElementById('user-dropdown').classList.toggle('show');
+  document.getElementById('user-sel-input').classList.toggle('focus');
+}
+
+function selectUser(el, name, role) {
+  document.getElementById('user-sel-text').textContent = name;
+  document.getElementById('user-sel-text').className = '';
+  document.getElementById('user-dropdown').classList.remove('show');
+  document.getElementById('user-sel-input').classList.remove('focus');
+  var options = el.parentElement.querySelectorAll('.user-sel-option');
+  options.forEach(function(o) { o.classList.remove('selected'); });
+  el.classList.add('selected');
+}
+
+function filterUsers(val) {
+  var options = document.querySelectorAll('#user-options .user-sel-option');
+  options.forEach(function(opt) {
+    var name = opt.querySelector('.opt-name').textContent;
+    opt.style.display = (!val || name.indexOf(val) !== -1) ? '' : 'none';
+  });
+}
+
+// ==================== MEMBER DRAWER ====================
+function openMemberDrawerFor(id) {
+  var dept = departments.find(function(d) { return d.id === id; });
+  document.getElementById('drawer-dept-name').textContent = dept.name;
+  document.getElementById('drawer-member-count').textContent = dept.members;
+  renderDrawerMembers();
+  document.getElementById('drawer-member-overlay').classList.add('show');
+  document.getElementById('drawer-member').classList.add('show');
+}
+
+function openMemberDrawer() {
+  document.getElementById('drawer-dept-name').textContent = '技术部';
+  renderDrawerMembers();
+  document.getElementById('drawer-member-overlay').classList.add('show');
+  document.getElementById('drawer-member').classList.add('show');
+}
+
+function closeMemberDrawer() {
+  document.getElementById('drawer-member-overlay').classList.remove('show');
+  document.getElementById('drawer-member').classList.remove('show');
+  document.getElementById('add-member-panel').style.display = 'none';
+}
+
+function renderDrawerMembers() {
+  var tbody = document.getElementById('drawer-members-tbody');
+  tbody.innerHTML = '';
+
+  detailMembers.forEach(function(m) {
+    var tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td><div class="avatar-sm" style="background:' + m.color + '">' + m.name[0] + '</div></td>' +
+      '<td>' + m.name + '</td>' +
+      '<td>' + m.pts.toLocaleString() + '</td>' +
+      '<td>' + m.days + ' 天</td>' +
+      '<td><button class="action-link danger" onclick="removeDrawerMember(this)">移除</button></td>';
+    tbody.appendChild(tr);
+  });
+}
+
+function toggleAddMember() {
+  var panel = document.getElementById('add-member-panel');
+  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+
+function addMember(el, name, color) {
+  el.remove();
+  var tbody = document.getElementById('drawer-members-tbody');
+  var tr = document.createElement('tr');
+  tr.innerHTML =
+    '<td><div class="avatar-sm" style="background:' + color + '">' + name[0] + '</div></td>' +
+    '<td>' + name + '</td>' +
+    '<td>0</td>' +
+    '<td>0 天</td>' +
+    '<td><button class="action-link danger" onclick="removeDrawerMember(this)">移除</button></td>';
+  tr.style.background = '#f6ffed';
+  setTimeout(function() { tr.style.background = ''; }, 1500);
+  tbody.insertBefore(tr, tbody.firstChild);
+}
+
+function removeDrawerMember(btn) {
+  var tr = btn.closest('tr');
+  tr.style.opacity = '0.3';
+  setTimeout(function() { tr.remove(); }, 300);
+}
+
+// ==================== CONFIRM DIALOG ====================
+function confirmDelete(id) {
+  var dept = departments.find(function(d) { return d.id === id; });
+  document.getElementById('confirm-text').textContent = '确定要删除部门 "' + dept.name + '" 吗？';
+  document.getElementById('confirm-sub').textContent = '删除后该部门下所有成员将移至未分配';
+  document.getElementById('modal-confirm').classList.add('show');
+}
+
+function confirmRemoveMember(name) {
+  document.getElementById('confirm-text').textContent = '确定要将 "' + name + '" 移出该部门吗？';
+  document.getElementById('confirm-sub').textContent = '移除后该用户将变为未分配状态';
+  document.getElementById('modal-confirm').classList.add('show');
+}
+
+function closeConfirm() {
+  document.getElementById('modal-confirm').classList.remove('show');
+}
+
+// ==================== GLOBAL CLICK HANDLERS ====================
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.tree-select')) {
+    var dd = document.getElementById('tree-dropdown');
+    var arrow = document.getElementById('tree-sel-arrow');
+    var input = document.getElementById('tree-sel-input');
+    if (dd) dd.classList.remove('show');
+    if (arrow) arrow.classList.remove('open');
+    if (input) input.classList.remove('focus');
+  }
+  if (!e.target.closest('.user-selector')) {
+    var udd = document.getElementById('user-dropdown');
+    var uinput = document.getElementById('user-sel-input');
+    if (udd) udd.classList.remove('show');
+    if (uinput) uinput.classList.remove('focus');
+  }
+});
+
+// ==================== INIT ====================
+renderDeptTree();
+renderLeaderboard();
+renderOrgChart();
+</script>
+</body>
+</html>

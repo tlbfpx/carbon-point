@@ -1,0 +1,2405 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>碳积分打卡 - H5原型</title>
+<style>
+/* ============================================
+   RESET & BASE
+   ============================================ */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  background: #e8e8e8;
+  overflow: hidden;
+}
+
+/* ============================================
+   PHONE FRAME
+   ============================================ */
+.phone-frame {
+  position: relative;
+  width: 375px;
+  height: 812px;
+  margin: 20px auto;
+  background: #000;
+  border-radius: 44px;
+  padding: 12px;
+  box-shadow:
+    0 0 0 2px #333,
+    0 0 0 4px #1a1a1a,
+    0 20px 60px rgba(0,0,0,0.4);
+  overflow: hidden;
+}
+
+.phone-screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 34px;
+  overflow: hidden;
+  background: #f5f5f5;
+}
+
+/* Status bar */
+.status-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  z-index: 100;
+  font-size: 12px;
+  font-weight: 600;
+  color: #333;
+}
+
+.status-bar.light {
+  color: #fff;
+}
+
+.status-bar-time {
+  font-weight: 700;
+}
+
+.status-bar-icons {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.status-bar-icons svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Dynamic Island */
+.dynamic-island {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 34px;
+  background: #000;
+  border-radius: 20px;
+  z-index: 101;
+}
+
+/* Home indicator */
+.home-indicator {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 134px;
+  height: 5px;
+  background: #333;
+  border-radius: 3px;
+  z-index: 100;
+}
+
+/* ============================================
+   PAGES
+   ============================================ */
+.page {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease;
+  will-change: transform, opacity;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.page.hidden-right {
+  transform: translateX(100%);
+  opacity: 0;
+}
+
+.page.hidden-left {
+  transform: translateX(-100%);
+  opacity: 0;
+}
+
+.page.active {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.page::-webkit-scrollbar {
+  display: none;
+}
+
+/* ============================================
+   LOGIN PAGE
+   ============================================ */
+.login-page {
+  background: linear-gradient(165deg, #2ecc71 0%, #27ae60 30%, #1e8449 70%, #145a32 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 44px 32px 32px;
+}
+
+.login-logo-area {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.login-logo {
+  width: 80px;
+  height: 80px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.3);
+}
+
+.login-logo svg {
+  width: 48px;
+  height: 48px;
+}
+
+.login-title {
+  color: #fff;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.login-subtitle {
+  color: rgba(255,255,255,0.75);
+  font-size: 14px;
+  margin-top: 8px;
+  letter-spacing: 1px;
+}
+
+.login-form {
+  width: 100%;
+  max-width: 311px;
+}
+
+.form-field {
+  position: relative;
+  margin-bottom: 16px;
+}
+
+.form-field input {
+  width: 100%;
+  height: 52px;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 14px;
+  padding: 0 16px 0 48px;
+  color: #fff;
+  font-size: 16px;
+  outline: none;
+  transition: all 0.3s;
+  backdrop-filter: blur(5px);
+}
+
+.form-field input::placeholder {
+  color: rgba(255,255,255,0.55);
+}
+
+.form-field input:focus {
+  background: rgba(255,255,255,0.25);
+  border-color: rgba(255,255,255,0.5);
+  box-shadow: 0 0 0 3px rgba(255,255,255,0.1);
+}
+
+.form-field .field-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  opacity: 0.7;
+}
+
+.form-field .field-icon svg {
+  width: 100%;
+  height: 100%;
+  fill: #fff;
+}
+
+.form-field .toggle-password {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.6);
+  cursor: pointer;
+  padding: 4px;
+}
+
+.login-btn {
+  width: 100%;
+  height: 52px;
+  background: #fff;
+  color: #27ae60;
+  border: none;
+  border-radius: 14px;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: all 0.2s;
+  letter-spacing: 2px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+}
+
+.login-btn:active {
+  transform: scale(0.97);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.login-links {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.login-links a {
+  color: rgba(255,255,255,0.8);
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 0.2s;
+}
+
+.login-links a:hover {
+  color: #fff;
+}
+
+.login-divider {
+  display: flex;
+  align-items: center;
+  margin: 32px 0 20px;
+  width: 100%;
+}
+
+.login-divider::before,
+.login-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255,255,255,0.2);
+}
+
+.login-divider span {
+  color: rgba(255,255,255,0.5);
+  font-size: 12px;
+  padding: 0 16px;
+}
+
+.login-bottom-link {
+  color: #fff;
+  font-size: 15px;
+  text-decoration: none;
+  font-weight: 600;
+  padding: 12px 32px;
+  border: 1.5px solid rgba(255,255,255,0.4);
+  border-radius: 14px;
+  transition: all 0.2s;
+  letter-spacing: 1px;
+}
+
+.login-bottom-link:active {
+  background: rgba(255,255,255,0.1);
+  transform: scale(0.97);
+}
+
+/* Floating leaves decoration */
+.leaf {
+  position: absolute;
+  opacity: 0.08;
+  pointer-events: none;
+}
+
+.leaf-1 { top: 8%; right: -10px; width: 60px; height: 60px; transform: rotate(30deg); }
+.leaf-2 { top: 25%; left: -20px; width: 80px; height: 80px; transform: rotate(-20deg); }
+.leaf-3 { bottom: 15%; right: -15px; width: 50px; height: 50px; transform: rotate(60deg); }
+.leaf-4 { bottom: 30%; left: -10px; width: 40px; height: 40px; transform: rotate(-40deg); }
+
+/* ============================================
+   REGISTER PAGE
+   ============================================ */
+.register-page {
+  background: linear-gradient(165deg, #2ecc71 0%, #27ae60 30%, #1e8449 70%, #145a32 100%);
+  display: flex;
+  flex-direction: column;
+  padding: 54px 32px 32px;
+}
+
+.register-back {
+  position: absolute;
+  top: 54px;
+  left: 20px;
+  background: rgba(255,255,255,0.15);
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  backdrop-filter: blur(5px);
+}
+
+.register-back svg {
+  width: 20px;
+  height: 20px;
+  fill: #fff;
+}
+
+.register-title {
+  color: #fff;
+  font-size: 26px;
+  font-weight: 700;
+  margin-top: 20px;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.register-subtitle {
+  color: rgba(255,255,255,0.7);
+  font-size: 14px;
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.invite-card {
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 20px;
+  backdrop-filter: blur(10px);
+}
+
+.invite-card-label {
+  color: rgba(255,255,255,0.7);
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.invite-card-company {
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.invite-card-code {
+  color: rgba(255,255,255,0.5);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.register-form {
+  width: 100%;
+}
+
+.agreement-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 16px 0 24px;
+}
+
+.agreement-row input[type="checkbox"] {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid rgba(255,255,255,0.4);
+  border-radius: 4px;
+  cursor: pointer;
+  flex-shrink: 0;
+  position: relative;
+  transition: all 0.2s;
+}
+
+.agreement-row input[type="checkbox"]:checked {
+  background: #fff;
+  border-color: #fff;
+}
+
+.agreement-row input[type="checkbox"]:checked::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 2px;
+  width: 5px;
+  height: 9px;
+  border: solid #27ae60;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.agreement-row label {
+  color: rgba(255,255,255,0.75);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.agreement-row label a {
+  color: #fff;
+  text-decoration: underline;
+}
+
+/* ============================================
+   HOME PAGE
+   ============================================ */
+.home-page {
+  background: #f5f7f5;
+  padding-bottom: 90px;
+}
+
+.home-header {
+  background: linear-gradient(135deg, #2ecc71, #27ae60);
+  padding: 54px 20px 24px;
+  border-radius: 0 0 24px 24px;
+}
+
+.home-greeting {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.home-greeting-text h2 {
+  color: #fff;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.home-greeting-text p {
+  color: rgba(255,255,255,0.75);
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+.home-notification {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: none;
+  backdrop-filter: blur(5px);
+}
+
+.home-notification svg {
+  width: 22px;
+  height: 22px;
+  fill: #fff;
+}
+
+.notification-dot {
+  position: absolute;
+  top: 8px;
+  right: 9px;
+  width: 8px;
+  height: 8px;
+  background: #ff4d4f;
+  border-radius: 50%;
+  border: 1.5px solid #2ecc71;
+}
+
+/* Level Card */
+.level-card {
+  background: rgba(255,255,255,0.15);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+.level-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ffd700, #ffb347);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.level-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.level-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, #ffd700, #ffb347);
+  color: #8B4513;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.level-progress-wrap {
+  width: 100%;
+}
+
+.level-progress-label {
+  display: flex;
+  justify-content: space-between;
+  color: rgba(255,255,255,0.75);
+  font-size: 11px;
+  margin-bottom: 4px;
+}
+
+.level-progress-bar {
+  height: 6px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.level-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ffd700, #ffb347);
+  border-radius: 3px;
+  transition: width 1s ease-out;
+  width: 0;
+}
+
+.level-progress-fill.animated {
+  width: 26%;
+}
+
+/* Points Summary */
+.points-summary {
+  display: flex;
+  margin: 16px 12px 0;
+  background: #fff;
+  border-radius: 16px;
+  padding: 16px 8px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+.points-item {
+  flex: 1;
+  text-align: center;
+  position: relative;
+}
+
+.points-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 25%;
+  height: 50%;
+  width: 1px;
+  background: #eee;
+}
+
+.points-value {
+  font-size: 22px;
+  font-weight: 800;
+  color: #27ae60;
+  line-height: 1.2;
+}
+
+.points-value .unit {
+  font-size: 13px;
+  font-weight: 600;
+  color: #999;
+}
+
+.points-label {
+  font-size: 12px;
+  color: #999;
+  margin-top: 4px;
+}
+
+/* Time Slot Cards */
+.section-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #333;
+  margin: 20px 16px 12px;
+}
+
+.timeslot-cards {
+  padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.timeslot-card {
+  display: flex;
+  align-items: center;
+  padding: 14px 16px;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+  border-left: 4px solid #ddd;
+  transition: all 0.2s;
+}
+
+.timeslot-card.done {
+  border-left-color: #52c41a;
+}
+
+.timeslot-card.waiting {
+  border-left-color: #faad14;
+}
+
+.timeslot-card.upcoming {
+  border-left-color: #d9d9d9;
+}
+
+.timeslot-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.timeslot-card.done .timeslot-icon {
+  background: #f6ffed;
+}
+
+.timeslot-card.waiting .timeslot-icon {
+  background: #fffbe6;
+}
+
+.timeslot-card.upcoming .timeslot-icon {
+  background: #f5f5f5;
+}
+
+.timeslot-info {
+  flex: 1;
+}
+
+.timeslot-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+}
+
+.timeslot-detail {
+  font-size: 12px;
+  color: #999;
+  margin-top: 2px;
+}
+
+.timeslot-status {
+  text-align: right;
+}
+
+.timeslot-status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.timeslot-card.done .timeslot-status-badge {
+  background: #f6ffed;
+  color: #52c41a;
+}
+
+.timeslot-card.waiting .timeslot-status-badge {
+  background: #fffbe6;
+  color: #faad14;
+}
+
+.timeslot-card.upcoming .timeslot-status-badge {
+  background: #f5f5f5;
+  color: #999;
+}
+
+.timeslot-points {
+  font-size: 11px;
+  color: #52c41a;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+/* Quick Actions */
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  padding: 16px;
+  margin: 4px 0;
+}
+
+.quick-action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.quick-action-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  transition: transform 0.2s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.quick-action-icon:active {
+  transform: scale(0.9);
+}
+
+.quick-action-icon.green {
+  background: linear-gradient(135deg, #52c41a, #389e0d);
+}
+
+.quick-action-icon.blue {
+  background: linear-gradient(135deg, #1890ff, #096dd9);
+}
+
+.quick-action-icon.orange {
+  background: linear-gradient(135deg, #fa8c16, #d48806);
+}
+
+.quick-action-icon.purple {
+  background: linear-gradient(135deg, #722ed1, #531dab);
+}
+
+.quick-action-label {
+  font-size: 12px;
+  color: #666;
+  font-weight: 500;
+}
+
+/* Streak Banner */
+.streak-banner {
+  margin: 4px 16px 16px;
+  background: linear-gradient(135deg, #fff7e6, #fff1b8);
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid #ffe58f;
+}
+
+.streak-fire {
+  font-size: 28px;
+}
+
+.streak-info {
+  flex: 1;
+}
+
+.streak-info h4 {
+  font-size: 14px;
+  font-weight: 700;
+  color: #d48806;
+}
+
+.streak-info p {
+  font-size: 12px;
+  color: #ad6800;
+  margin-top: 2px;
+}
+
+/* ============================================
+   BOTTOM TAB BAR
+   ============================================ */
+.tab-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 83px;
+  background: #fff;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-around;
+  padding-top: 8px;
+  border-top: 1px solid #f0f0f0;
+  z-index: 50;
+}
+
+.tab-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  cursor: pointer;
+  padding: 4px 12px;
+  transition: all 0.2s;
+  border: none;
+  background: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tab-item svg {
+  width: 24px;
+  height: 24px;
+  fill: #999;
+  transition: fill 0.2s;
+}
+
+.tab-item span {
+  font-size: 10px;
+  color: #999;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.tab-item.active svg {
+  fill: #52c41a;
+}
+
+.tab-item.active span {
+  color: #52c41a;
+  font-weight: 600;
+}
+
+/* Center tab special */
+.tab-item.center-tab .tab-icon-wrap {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #52c41a, #389e0d);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: -20px;
+  box-shadow: 0 2px 12px rgba(82,196,26,0.4);
+}
+
+.tab-item.center-tab .tab-icon-wrap svg {
+  fill: #fff;
+  width: 26px;
+  height: 26px;
+}
+
+/* ============================================
+   CHECK-IN PAGE
+   ============================================ */
+.checkin-page {
+  background: #f5f7f5;
+  padding-bottom: 90px;
+}
+
+.checkin-header {
+  background: linear-gradient(135deg, #2ecc71, #27ae60);
+  padding: 54px 20px 20px;
+  text-align: center;
+}
+
+.checkin-header h2 {
+  color: #fff;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.checkin-clock {
+  margin-top: 8px;
+}
+
+.checkin-clock .current-time {
+  color: #fff;
+  font-size: 42px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.15);
+}
+
+.checkin-clock .current-date {
+  color: rgba(255,255,255,0.75);
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+/* Active Slot Card */
+.active-slot {
+  margin: 16px;
+  background: #fff;
+  border-radius: 20px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  border: 2px solid #52c41a;
+  animation: pulse-border 2s ease-in-out infinite;
+  box-shadow: 0 4px 20px rgba(82,196,26,0.2);
+}
+
+@keyframes pulse-border {
+  0%, 100% { box-shadow: 0 4px 20px rgba(82,196,26,0.2); }
+  50% { box-shadow: 0 4px 30px rgba(82,196,26,0.45); }
+}
+
+.active-slot-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #f6ffed;
+  color: #52c41a;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.active-slot-label .dot {
+  width: 6px;
+  height: 6px;
+  background: #52c41a;
+  border-radius: 50%;
+  animation: blink 1.5s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.active-slot-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: #333;
+}
+
+.active-slot-time {
+  font-size: 14px;
+  color: #999;
+  margin-top: 4px;
+}
+
+.active-slot-points {
+  margin-top: 12px;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.active-slot-points .range {
+  font-size: 28px;
+  font-weight: 800;
+  color: #52c41a;
+}
+
+.active-slot-points .label {
+  font-size: 13px;
+  color: #999;
+}
+
+/* Decorative background shape */
+.active-slot::before {
+  content: '';
+  position: absolute;
+  top: -30px;
+  right: -30px;
+  width: 100px;
+  height: 100px;
+  background: rgba(82,196,26,0.06);
+  border-radius: 50%;
+}
+
+.active-slot::after {
+  content: '';
+  position: absolute;
+  bottom: -20px;
+  left: -20px;
+  width: 60px;
+  height: 60px;
+  background: rgba(82,196,26,0.04);
+  border-radius: 50%;
+}
+
+/* Check-in Button */
+.checkin-btn-wrap {
+  padding: 0 16px;
+  margin-top: 20px;
+}
+
+.checkin-btn {
+  width: 100%;
+  height: 56px;
+  background: linear-gradient(135deg, #52c41a, #389e0d);
+  color: #fff;
+  border: none;
+  border-radius: 16px;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 3px;
+  transition: all 0.15s;
+  box-shadow: 0 4px 16px rgba(82,196,26,0.35);
+  position: relative;
+  overflow: hidden;
+}
+
+.checkin-btn:active {
+  transform: scale(0.95);
+  box-shadow: 0 2px 8px rgba(82,196,26,0.25);
+}
+
+.checkin-btn.tapping {
+  animation: btn-tap 0.3s ease;
+}
+
+@keyframes btn-tap {
+  0% { transform: scale(1); }
+  40% { transform: scale(0.92); }
+  100% { transform: scale(1); }
+}
+
+/* Ripple */
+.checkin-btn .ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.4);
+  transform: scale(0);
+  animation: ripple-anim 0.6s ease-out;
+  pointer-events: none;
+}
+
+@keyframes ripple-anim {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+/* Other Slots */
+.other-slots {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.other-slot-card {
+  display: flex;
+  align-items: center;
+  padding: 14px 16px;
+  background: #fff;
+  border-radius: 14px;
+  opacity: 0.7;
+}
+
+.other-slot-card .slot-time-range {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  width: 110px;
+}
+
+.other-slot-card .slot-status {
+  flex: 1;
+  font-size: 13px;
+  color: #999;
+}
+
+.other-slot-card .slot-points {
+  font-size: 13px;
+  color: #bbb;
+  font-weight: 600;
+}
+
+/* Streak Progress */
+.streak-progress {
+  margin: 4px 16px 16px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+}
+
+.streak-progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.streak-progress-header h4 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #333;
+}
+
+.streak-days {
+  font-size: 24px;
+  font-weight: 800;
+  color: #fa8c16;
+}
+
+.streak-days span {
+  font-size: 13px;
+  font-weight: 500;
+  color: #999;
+}
+
+.streak-bar {
+  height: 8px;
+  background: #f0f0f0;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.streak-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #fa8c16, #ffd666);
+  border-radius: 4px;
+  transition: width 1s ease-out;
+}
+
+.streak-next-reward {
+  font-size: 12px;
+  color: #999;
+  text-align: center;
+}
+
+/* ============================================
+   CALENDAR PAGE
+   ============================================ */
+.calendar-page {
+  background: #f5f7f5;
+  padding: 54px 0 90px;
+}
+
+.calendar-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: #fff;
+}
+
+.calendar-header-bar h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #333;
+}
+
+.calendar-nav {
+  display: flex;
+  gap: 12px;
+}
+
+.calendar-nav button {
+  width: 32px;
+  height: 32px;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: #666;
+}
+
+.calendar-month {
+  text-align: center;
+  padding: 16px 20px 12px;
+  background: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  color: #333;
+}
+
+.calendar-grid {
+  background: #fff;
+  padding: 0 12px 16px;
+}
+
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.calendar-weekdays span {
+  font-size: 12px;
+  color: #999;
+  font-weight: 600;
+  padding: 4px 0;
+}
+
+.calendar-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  position: relative;
+}
+
+.calendar-day .day-num {
+  line-height: 1;
+}
+
+.calendar-day .day-mark {
+  font-size: 10px;
+  margin-top: 2px;
+}
+
+.calendar-day.checked {
+  background: #f6ffed;
+  color: #52c41a;
+  font-weight: 700;
+}
+
+.calendar-day.missed {
+  color: #d9d9d9;
+}
+
+.calendar-day.missed .day-mark {
+  color: #ff7875;
+}
+
+.calendar-day.today {
+  background: linear-gradient(135deg, #52c41a, #389e0d);
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(82,196,26,0.3);
+}
+
+.calendar-day.future {
+  color: #d9d9d9;
+}
+
+.calendar-day.empty {
+  pointer-events: none;
+}
+
+.calendar-stats {
+  display: flex;
+  margin: 16px 12px;
+  gap: 10px;
+}
+
+.calendar-stat-card {
+  flex: 1;
+  background: #fff;
+  border-radius: 14px;
+  padding: 14px;
+  text-align: center;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+}
+
+.calendar-stat-card .stat-value {
+  font-size: 22px;
+  font-weight: 800;
+  color: #52c41a;
+}
+
+.calendar-stat-card .stat-label {
+  font-size: 12px;
+  color: #999;
+  margin-top: 4px;
+}
+
+.calendar-stat-card.orange .stat-value {
+  color: #fa8c16;
+}
+
+/* ============================================
+   CHECK-IN SUCCESS OVERLAY
+   ============================================ */
+.success-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 200;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.success-overlay.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.success-overlay .overlay-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(4px);
+}
+
+.success-overlay .overlay-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.8);
+  width: 320px;
+  background: #fff;
+  border-radius: 24px;
+  padding: 32px 24px;
+  text-align: center;
+  z-index: 1;
+  opacity: 0;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.success-overlay.visible .overlay-content {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+}
+
+.success-icon {
+  width: 64px;
+  height: 64px;
+  background: linear-gradient(135deg, #52c41a, #389e0d);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+
+.success-icon svg {
+  width: 36px;
+  height: 36px;
+  fill: #fff;
+}
+
+.success-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.success-subtitle {
+  font-size: 14px;
+  color: #999;
+  margin-bottom: 24px;
+}
+
+.success-points-display {
+  margin-bottom: 24px;
+}
+
+.success-total {
+  font-size: 40px;
+  font-weight: 900;
+  color: #faad14;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.success-total span {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.success-total-label {
+  font-size: 13px;
+  color: #999;
+}
+
+.success-breakdown {
+  background: #f6ffed;
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 24px;
+  text-align: left;
+}
+
+.success-breakdown-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+}
+
+.success-breakdown-row:not(:last-child) {
+  border-bottom: 1px solid rgba(82,196,26,0.1);
+}
+
+.breakdown-label {
+  font-size: 13px;
+  color: #666;
+}
+
+.breakdown-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: #52c41a;
+}
+
+.breakdown-value.gold {
+  color: #faad14;
+}
+
+.success-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.success-actions button {
+  flex: 1;
+  height: 44px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: none;
+}
+
+.success-actions button:active {
+  transform: scale(0.95);
+}
+
+.success-actions .btn-detail {
+  background: #f0f0f0;
+  color: #666;
+}
+
+.success-actions .btn-continue {
+  background: linear-gradient(135deg, #52c41a, #389e0d);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(82,196,26,0.3);
+}
+
+/* ============================================
+   CONFETTI
+   ============================================ */
+.confetti-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 201;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.confetti-piece {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  top: -10px;
+  animation: confetti-fall linear forwards;
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(0) rotateZ(0deg) rotateX(0deg);
+    opacity: 1;
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(900px) rotateZ(720deg) rotateX(360deg);
+    opacity: 0;
+  }
+}
+
+.confetti-piece.circle {
+  border-radius: 50%;
+}
+
+/* Number roll up */
+.number-roll {
+  display: inline-block;
+  overflow: hidden;
+  height: 48px;
+  line-height: 48px;
+}
+
+.number-roll-inner {
+  display: inline-block;
+  transition: transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ============================================
+   ANIMATIONS & TRANSITIONS
+   ============================================ */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-in {
+  animation: fadeInUp 0.5s ease forwards;
+}
+
+/* Page transition helpers */
+.slide-in-right {
+  animation: slideInRight 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.slide-out-left {
+  animation: slideOutLeft 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes slideOutLeft {
+  from { transform: translateX(0); }
+  to { transform: translateX(-100%); }
+}
+
+.slide-in-left {
+  animation: slideInLeft 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes slideInLeft {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+.slide-out-right {
+  animation: slideOutRight 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes slideOutRight {
+  from { transform: translateX(0); }
+  to { transform: translateX(100%); }
+}
+
+/* ============================================
+   UTILITY
+   ============================================ */
+.hidden { display: none !important; }
+
+/* Custom scrollbar for webkit */
+.page::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <div class="phone-screen" id="phoneScreen">
+
+    <!-- Dynamic Island -->
+    <div class="dynamic-island"></div>
+
+    <!-- Status Bar -->
+    <div class="status-bar light" id="statusBar">
+      <span class="status-bar-time">14:32</span>
+      <div class="status-bar-icons">
+        <svg viewBox="0 0 24 24"><path fill="currentColor" d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
+        <svg viewBox="0 0 24 24"><path fill="currentColor" d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg>
+      </div>
+    </div>
+
+    <!-- Home Indicator -->
+    <div class="home-indicator"></div>
+
+    <!-- ===================== LOGIN PAGE ===================== -->
+    <div class="page login-page active" id="loginPage">
+      <!-- Decorative leaves -->
+      <div class="leaf leaf-1">
+        <svg viewBox="0 0 100 100"><path fill="#fff" d="M50 5C30 25 10 45 20 70c5 12 20 25 30 25s25-13 30-25C90 45 70 25 50 5z"/></svg>
+      </div>
+      <div class="leaf leaf-2">
+        <svg viewBox="0 0 100 100"><path fill="#fff" d="M50 5C30 25 10 45 20 70c5 12 20 25 30 25s25-13 30-25C90 45 70 25 50 5z"/></svg>
+      </div>
+      <div class="leaf leaf-3">
+        <svg viewBox="0 0 100 100"><path fill="#fff" d="M50 5C30 25 10 45 20 70c5 12 20 25 30 25s25-13 30-25C90 45 70 25 50 5z"/></svg>
+      </div>
+      <div class="leaf leaf-4">
+        <svg viewBox="0 0 100 100"><path fill="#fff" d="M50 5C30 25 10 45 20 70c5 12 20 25 30 25s25-13 30-25C90 45 70 25 50 5z"/></svg>
+      </div>
+
+      <div class="login-logo-area">
+        <div class="login-logo">
+          <svg viewBox="0 0 48 48" fill="none">
+            <circle cx="24" cy="24" r="20" stroke="#fff" stroke-width="2.5"/>
+            <path d="M24 10c-2 4-8 10-8 16s4 10 8 12c4-2 8-6 8-12s-6-12-8-16z" fill="#fff" opacity="0.9"/>
+            <path d="M24 16c-1 3-4 6-4 9s2 5 4 6c2-1 4-3 4-6s-3-6-4-9z" fill="#27ae60" opacity="0.8"/>
+          </svg>
+        </div>
+        <div class="login-title">碳积分打卡</div>
+        <div class="login-subtitle">每一次攀爬，都是对地球的承诺</div>
+      </div>
+
+      <div class="login-form">
+        <div class="form-field">
+          <div class="field-icon">
+            <svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+          </div>
+          <input type="tel" placeholder="请输入手机号" maxlength="11" id="loginPhone" value="138****8888">
+        </div>
+        <div class="form-field">
+          <div class="field-icon">
+            <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+          </div>
+          <input type="password" placeholder="请输入密码" id="loginPassword" value="••••••••">
+          <button class="toggle-password" onclick="togglePasswordVisibility(this)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+          </button>
+        </div>
+        <button class="login-btn" onclick="navigateTo('homePage', 'right')">登 录</button>
+        <div class="login-links">
+          <a href="javascript:void(0)">忘记密码?</a>
+          <a href="javascript:void(0)" onclick="navigateTo('registerPage', 'right')">新用户注册</a>
+        </div>
+      </div>
+
+      <div class="login-divider"><span>其他方式</span></div>
+      <a class="login-bottom-link" href="javascript:void(0)" onclick="navigateTo('registerPage', 'right')">加入企业，开始绿色之旅</a>
+    </div>
+
+    <!-- ===================== REGISTER PAGE ===================== -->
+    <div class="page register-page hidden-right" id="registerPage">
+      <button class="register-back" onclick="navigateTo('loginPage', 'left')">
+        <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+      </button>
+
+      <div class="login-logo-area" style="margin-bottom: 16px; margin-top: 20px;">
+        <div class="login-logo">
+          <svg viewBox="0 0 48 48" fill="none">
+            <circle cx="24" cy="24" r="20" stroke="#fff" stroke-width="2.5"/>
+            <path d="M24 10c-2 4-8 10-8 16s4 10 8 12c4-2 8-6 8-12s-6-12-8-16z" fill="#fff" opacity="0.9"/>
+            <path d="M24 16c-1 3-4 6-4 9s2 5 4 6c2-1 4-3 4-6s-3-6-4-9z" fill="#27ae60" opacity="0.8"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="register-title">创建账户</div>
+      <div class="register-subtitle">加入碳积分打卡，开启绿色生活</div>
+
+      <div class="invite-card">
+        <div class="invite-card-label">邀请您加入</div>
+        <div class="invite-card-company">🌿 绿源科技有限公司</div>
+        <div class="invite-card-code">邀请码: GV2026TEAM （已自动填充）</div>
+      </div>
+
+      <div class="register-form">
+        <div class="form-field">
+          <div class="field-icon">
+            <svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+          </div>
+          <input type="tel" placeholder="请输入手机号" maxlength="11">
+        </div>
+        <div class="form-field">
+          <div class="field-icon">
+            <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+          </div>
+          <input type="password" placeholder="设置密码 (至少8位)">
+        </div>
+        <div class="form-field">
+          <div class="field-icon">
+            <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+          </div>
+          <input type="password" placeholder="确认密码">
+        </div>
+        <div class="agreement-row">
+          <input type="checkbox" id="agreeCheck" checked>
+          <label for="agreeCheck">我已阅读并同意 <a href="javascript:void(0)">《用户服务协议》</a>和<a href="javascript:void(0)">《隐私政策》</a></label>
+        </div>
+        <button class="login-btn" onclick="navigateTo('homePage', 'right')" style="background: #fff; color: #27ae60;">注 册</button>
+      </div>
+    </div>
+
+    <!-- ===================== HOME PAGE ===================== -->
+    <div class="page home-page hidden-right" id="homePage">
+      <div class="home-header">
+        <div class="home-greeting">
+          <div class="home-greeting-text">
+            <h2>下午好, 小明 👋</h2>
+            <p>今天也要坚持打卡哦</p>
+          </div>
+          <button class="home-notification">
+            <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+            <div class="notification-dot"></div>
+          </button>
+        </div>
+
+        <div class="level-card">
+          <div class="level-avatar">👨</div>
+          <div class="level-info">
+            <div class="level-badge">⭐ Lv.3 黄金会员</div>
+            <div class="level-progress-wrap">
+              <div class="level-progress-label">
+                <span>距 Lv.4 白金会员</span>
+                <span>5,230 / 20,000</span>
+              </div>
+              <div class="level-progress-bar">
+                <div class="level-progress-fill" id="levelProgressFill"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Points Summary -->
+      <div class="points-summary">
+        <div class="points-item">
+          <div class="points-value" data-count="1280">0 <span class="unit">分</span></div>
+          <div class="points-label">可用积分</div>
+        </div>
+        <div class="points-item">
+          <div class="points-value" data-count="5230">0 <span class="unit">分</span></div>
+          <div class="points-label">累计积分</div>
+        </div>
+        <div class="points-item">
+          <div class="points-value" data-count="12">0 <span class="unit">天</span></div>
+          <div class="points-label">连续打卡</div>
+        </div>
+      </div>
+
+      <!-- Today's Time Slots -->
+      <div class="section-title">📍 今日打卡</div>
+      <div class="timeslot-cards">
+        <div class="timeslot-card done">
+          <div class="timeslot-icon">🌅</div>
+          <div class="timeslot-info">
+            <div class="timeslot-name">早卡</div>
+            <div class="timeslot-detail">06:00 - 09:00 · 今日 08:32 完成</div>
+          </div>
+          <div class="timeslot-status">
+            <div class="timeslot-status-badge">✓ 已打卡</div>
+            <div class="timeslot-points">+12积分</div>
+          </div>
+        </div>
+
+        <div class="timeslot-card waiting">
+          <div class="timeslot-icon">☀️</div>
+          <div class="timeslot-info">
+            <div class="timeslot-name">午卡</div>
+            <div class="timeslot-detail">11:30 - 13:30 · 等待打卡中</div>
+          </div>
+          <div class="timeslot-status">
+            <div class="timeslot-status-badge">○ 等待中</div>
+            <div class="timeslot-points">10-15积分</div>
+          </div>
+        </div>
+
+        <div class="timeslot-card upcoming">
+          <div class="timeslot-icon">🌙</div>
+          <div class="timeslot-info">
+            <div class="timeslot-name">晚卡</div>
+            <div class="timeslot-detail">17:00 - 21:00 · 未开始</div>
+          </div>
+          <div class="timeslot-status">
+            <div class="timeslot-status-badge">○ 未开始</div>
+            <div class="timeslot-points">10-15积分</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="section-title">⚡ 快捷功能</div>
+      <div class="quick-actions">
+        <div class="quick-action" onclick="navigateTo('checkinPage', 'right')">
+          <div class="quick-action-icon green">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="#fff"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+          </div>
+          <span class="quick-action-label">打卡</span>
+        </div>
+        <div class="quick-action">
+          <div class="quick-action-icon blue">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="#fff"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10H7v-2h10v2z"/></svg>
+          </div>
+          <span class="quick-action-label">积分明细</span>
+        </div>
+        <div class="quick-action">
+          <div class="quick-action-icon orange">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="#fff"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+          </div>
+          <span class="quick-action-label">积分商城</span>
+        </div>
+        <div class="quick-action">
+          <div class="quick-action-icon purple">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="#fff"><path d="M7.5 21H2V9h5.5v12zm7.25-18h-5.5v18h5.5V3zM22 11h-5.5v10H22V11z"/></svg>
+          </div>
+          <span class="quick-action-label">排行榜</span>
+        </div>
+      </div>
+
+      <!-- Streak Banner -->
+      <div class="streak-banner">
+        <div class="streak-fire">🔥</div>
+        <div class="streak-info">
+          <h4>连续打卡 12 天!</h4>
+          <p>再坚持 2 天即可获得 14天连续奖励 +100积分</p>
+        </div>
+      </div>
+
+      <!-- Tab Bar -->
+      <div class="tab-bar" id="tabBar">
+        <button class="tab-item active" onclick="switchTab(this, 'homePage')">
+          <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+          <span>首页</span>
+        </button>
+        <button class="tab-item center-tab" onclick="navigateTo('checkinPage', 'right')">
+          <div class="tab-icon-wrap">
+            <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+          </div>
+          <span style="margin-top:4px">打卡</span>
+        </button>
+        <button class="tab-item" onclick="navigateTo('calendarPage', 'right')">
+          <svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM9 10H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2z"/></svg>
+          <span>日历</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ===================== CHECK-IN PAGE ===================== -->
+    <div class="page checkin-page hidden-right" id="checkinPage">
+      <div class="checkin-header">
+        <h2>📍 爬楼打卡</h2>
+        <div class="checkin-clock">
+          <div class="current-time" id="checkinTime">14:32</div>
+          <div class="current-date" id="checkinDate">2026年4月11日 星期六</div>
+        </div>
+      </div>
+
+      <!-- Active Slot -->
+      <div class="active-slot">
+        <div class="active-slot-label">
+          <span class="dot"></span>
+          当前可打卡
+        </div>
+        <div class="active-slot-name">☀️ 午间打卡</div>
+        <div class="active-slot-time">11:30 - 13:30 · 爬 3 层楼以上即可</div>
+        <div class="active-slot-points">
+          <span class="range">10 ~ 15</span>
+          <span class="label">基础积分</span>
+        </div>
+      </div>
+
+      <!-- Check-in Button -->
+      <div class="checkin-btn-wrap">
+        <button class="checkin-btn" id="checkinBtn" onclick="doCheckIn(event)">
+          立 即 打 卡
+        </button>
+      </div>
+
+      <!-- Other Slots -->
+      <div class="section-title">今日时段</div>
+      <div class="other-slots">
+        <div class="other-slot-card">
+          <div class="slot-time-range">🌅 早卡 06:00-09:00</div>
+          <div class="slot-status" style="color: #52c41a;">✓ 已打卡 08:32</div>
+          <div class="slot-points">+12分</div>
+        </div>
+        <div class="other-slot-card">
+          <div class="slot-time-range">🌙 晚卡 17:00-21:00</div>
+          <div class="slot-status">○ 未开始</div>
+          <div class="slot-points">10-15分</div>
+        </div>
+      </div>
+
+      <!-- Streak Progress -->
+      <div class="streak-progress">
+        <div class="streak-progress-header">
+          <h4>🔥 连续打卡</h4>
+          <div class="streak-days">12 <span>天</span></div>
+        </div>
+        <div class="streak-bar">
+          <div class="streak-bar-fill" style="width: 86%;"></div>
+        </div>
+        <div class="streak-next-reward">连续12天 → 下一个奖励: 14天 +100积分</div>
+      </div>
+
+      <!-- Tab Bar (checkin page) -->
+      <div class="tab-bar">
+        <button class="tab-item" onclick="switchTab(this, 'homePage')">
+          <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+          <span>首页</span>
+        </button>
+        <button class="tab-item center-tab active" onclick="switchTab(this, 'checkinPage')">
+          <div class="tab-icon-wrap">
+            <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+          </div>
+          <span style="margin-top:4px">打卡</span>
+        </button>
+        <button class="tab-item" onclick="navigateTo('calendarPage', 'right')">
+          <svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM9 10H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2z"/></svg>
+          <span>日历</span>
+        </button>
+      </div>
+
+      <!-- Success Overlay -->
+      <div class="success-overlay" id="successOverlay">
+        <div class="overlay-bg" onclick="closeSuccessOverlay()"></div>
+        <div class="confetti-container" id="confettiContainer"></div>
+        <div class="overlay-content">
+          <div class="success-icon">
+            <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+          </div>
+          <div class="success-title">太棒了!</div>
+          <div class="success-subtitle">午间打卡成功 · 爬楼4层</div>
+          <div class="success-points-display">
+            <div class="success-total">
+              <span>+</span><span id="rollupNumber">0</span>
+            </div>
+            <div class="success-total-label">本次获得积分</div>
+          </div>
+          <div class="success-breakdown">
+            <div class="success-breakdown-row">
+              <span class="breakdown-label">📊 基础积分</span>
+              <span class="breakdown-value" id="basePoints">+10</span>
+            </div>
+            <div class="success-breakdown-row">
+              <span class="breakdown-label">⭐ 等级加成 (×1.2)</span>
+              <span class="breakdown-value gold" id="bonusPoints">+2</span>
+            </div>
+            <div class="success-breakdown-row">
+              <span class="breakdown-label">🔥 连续打卡 12天</span>
+              <span class="breakdown-value gold" id="streakPoints">+12</span>
+            </div>
+          </div>
+          <div class="success-actions">
+            <button class="btn-detail" onclick="closeSuccessOverlay()">查看详情</button>
+            <button class="btn-continue" onclick="closeSuccessOverlay()">继续打卡</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== CALENDAR PAGE ===================== -->
+    <div class="page calendar-page hidden-right" id="calendarPage">
+      <div class="calendar-header-bar">
+        <button class="register-back" style="position:static; width:32px; height:32px;" onclick="navigateTo('homePage', 'left')">
+          <svg viewBox="0 0 24 24" style="width:18px;height:18px"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        </button>
+        <h3>📅 打卡日历</h3>
+        <div style="width: 32px;"></div>
+      </div>
+
+      <div class="calendar-month">
+        <div class="calendar-nav" style="display:inline-flex; gap:20px; align-items:center;">
+          <button style="width:28px;height:28px;border-radius:6px;border:1px solid #e8e8e8;background:#fff;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;">‹</button>
+          <span>2026年4月</span>
+          <button style="width:28px;height:28px;border-radius:6px;border:1px solid #e8e8e8;background:#fff;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;">›</button>
+        </div>
+      </div>
+
+      <div class="calendar-grid">
+        <div class="calendar-weekdays">
+          <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
+        </div>
+        <div class="calendar-days" id="calendarDays">
+          <!-- Generated by JS -->
+        </div>
+      </div>
+
+      <div class="calendar-stats">
+        <div class="calendar-stat-card">
+          <div class="stat-value">8</div>
+          <div class="stat-label">本月打卡</div>
+        </div>
+        <div class="calendar-stat-card orange">
+          <div class="stat-value">12</div>
+          <div class="stat-label">连续天数</div>
+        </div>
+        <div class="calendar-stat-card">
+          <div class="stat-value">92</div>
+          <div class="stat-label">累计积分</div>
+        </div>
+      </div>
+
+      <div class="streak-banner" style="margin: 0 12px 16px;">
+        <div class="streak-fire">🏆</div>
+        <div class="streak-info">
+          <h4>本月打卡率 80%</h4>
+          <p>超过 78% 的同事，继续保持!</p>
+        </div>
+      </div>
+
+      <!-- Tab Bar (calendar page) -->
+      <div class="tab-bar">
+        <button class="tab-item" onclick="switchTab(this, 'homePage')">
+          <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+          <span>首页</span>
+        </button>
+        <button class="tab-item center-tab" onclick="navigateTo('checkinPage', 'right')">
+          <div class="tab-icon-wrap">
+            <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+          </div>
+          <span style="margin-top:4px">打卡</span>
+        </button>
+        <button class="tab-item active" onclick="switchTab(this, 'calendarPage')">
+          <svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM9 10H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2z"/></svg>
+          <span>日历</span>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ============================================
+// NAVIGATION
+// ============================================
+let currentPageId = 'loginPage';
+const pageHistory = ['loginPage'];
+
+function navigateTo(targetId, direction) {
+  const currentEl = document.getElementById(currentPageId);
+  const targetEl = document.getElementById(targetId);
+
+  if (!currentEl || !targetEl || currentPageId === targetId) return;
+
+  if (direction === 'right') {
+    targetEl.className = 'page slide-in-right';
+    currentEl.className = 'page slide-out-left';
+  } else {
+    targetEl.className = 'page slide-in-left';
+    currentEl.className = 'page slide-out-right';
+  }
+
+  setTimeout(() => {
+    targetEl.className = 'page active';
+    currentEl.className = 'page hidden-' + (direction === 'right' ? 'left' : 'right');
+    currentPageId = targetId;
+    onPageEnter(targetId);
+  }, 360);
+
+  pageHistory.push(targetId);
+}
+
+function switchTab(btn, targetId) {
+  navigateTo(targetId, targetId === 'homePage' ? 'left' : 'right');
+}
+
+function onPageEnter(pageId) {
+  if (pageId === 'homePage') {
+    animateProgress();
+    animateCounters();
+  }
+  if (pageId === 'checkinPage') {
+    startClock();
+  }
+  if (pageId === 'calendarPage') {
+    renderCalendar();
+  }
+
+  // Update status bar color
+  const statusBar = document.getElementById('statusBar');
+  if (pageId === 'loginPage' || pageId === 'registerPage') {
+    statusBar.className = 'status-bar light';
+  } else {
+    statusBar.className = 'status-bar light';
+  }
+}
+
+// ============================================
+// HOME ANIMATIONS
+// ============================================
+function animateProgress() {
+  const fill = document.getElementById('levelProgressFill');
+  if (fill) {
+    fill.style.width = '0%';
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        fill.classList.add('animated');
+      });
+    });
+  }
+}
+
+function animateCounters() {
+  const counters = document.querySelectorAll('.points-value[data-count]');
+  counters.forEach(el => {
+    const target = parseInt(el.getAttribute('data-count'));
+    const suffix = el.querySelector('.unit') ? ' <span class="unit">' + el.querySelector('.unit').textContent + '</span>' : '';
+    let current = 0;
+    const duration = 1000;
+    const start = performance.now();
+
+    function step(timestamp) {
+      const progress = Math.min((timestamp - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      current = Math.floor(eased * target);
+      el.innerHTML = current.toLocaleString() + suffix;
+      if (progress < 1) {
+        requestAnimationFrame(step);
+      }
+    }
+    requestAnimationFrame(step);
+  });
+}
+
+// ============================================
+// CHECK-IN CLOCK
+// ============================================
+function startClock() {
+  function updateTime() {
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2, '0');
+    const m = String(now.getMinutes()).padStart(2, '0');
+    const s = String(now.getSeconds()).padStart(2, '0');
+
+    const timeEl = document.getElementById('checkinTime');
+    const dateEl = document.getElementById('checkinDate');
+
+    if (timeEl) timeEl.textContent = h + ':' + m + ':' + s;
+
+    if (dateEl) {
+      const days = ['日', '一', '二', '三', '四', '五', '六'];
+      dateEl.textContent = now.getFullYear() + '年' + (now.getMonth() + 1) + '月' + now.getDate() + '日 星期' + days[now.getDay()];
+    }
+  }
+  updateTime();
+  const clockInterval = setInterval(updateTime, 1000);
+
+  // Clear on page leave (simplified)
+  const checkinPage = document.getElementById('checkinPage');
+  const observer = new MutationObserver(() => {
+    if (!checkinPage.classList.contains('active')) {
+      clearInterval(clockInterval);
+    }
+  });
+  observer.observe(checkinPage, { attributes: true, attributeFilter: ['class'] });
+}
+
+// ============================================
+// CHECK-IN ACTION
+// ============================================
+function doCheckIn(event) {
+  const btn = document.getElementById('checkinBtn');
+
+  // Add ripple
+  const rect = btn.getBoundingClientRect();
+  const ripple = document.createElement('span');
+  ripple.className = 'ripple';
+  const size = Math.max(rect.width, rect.height);
+  ripple.style.width = ripple.style.height = size + 'px';
+  ripple.style.left = (event.clientX - rect.left - size / 2) + 'px';
+  ripple.style.top = (event.clientY - rect.top - size / 2) + 'px';
+  btn.appendChild(ripple);
+
+  // Tap animation
+  btn.classList.add('tapping');
+
+  setTimeout(() => {
+    btn.classList.remove('tapping');
+    ripple.remove();
+    showSuccessOverlay();
+  }, 400);
+}
+
+function showSuccessOverlay() {
+  const overlay = document.getElementById('successOverlay');
+  overlay.classList.add('visible');
+
+  // Spawn confetti
+  spawnConfetti();
+
+  // Roll up number
+  const numberEl = document.getElementById('rollupNumber');
+  const target = 24;
+  const duration = 1200;
+  const start = performance.now();
+
+  function roll(timestamp) {
+    const progress = Math.min((timestamp - start) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 4);
+    numberEl.textContent = Math.floor(eased * target);
+    if (progress < 1) {
+      requestAnimationFrame(roll);
+    } else {
+      numberEl.textContent = target;
+    }
+  }
+  requestAnimationFrame(roll);
+}
+
+function closeSuccessOverlay() {
+  const overlay = document.getElementById('successOverlay');
+  overlay.classList.remove('visible');
+  const container = document.getElementById('confettiContainer');
+  container.innerHTML = '';
+}
+
+// ============================================
+// CONFETTI
+// ============================================
+function spawnConfetti() {
+  const container = document.getElementById('confettiContainer');
+  container.innerHTML = '';
+
+  const colors = ['#52c41a', '#389e0d', '#faad14', '#ffd666', '#1890ff', '#722ed1', '#ff4d4f', '#ff85c0', '#fff'];
+
+  for (let i = 0; i < 60; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece' + (Math.random() > 0.5 ? ' circle' : '');
+
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    const left = Math.random() * 100;
+    const delay = Math.random() * 0.6;
+    const duration = 1.5 + Math.random() * 2;
+    const size = 6 + Math.random() * 8;
+
+    piece.style.backgroundColor = color;
+    piece.style.left = left + '%';
+    piece.style.width = size + 'px';
+    piece.style.height = size + 'px';
+    piece.style.animationDelay = delay + 's';
+    piece.style.animationDuration = duration + 's';
+
+    container.appendChild(piece);
+  }
+
+  // Clean up after animation
+  setTimeout(() => {
+    container.innerHTML = '';
+  }, 4000);
+}
+
+// ============================================
+// CALENDAR
+// ============================================
+function renderCalendar() {
+  const container = document.getElementById('calendarDays');
+  if (container.children.length > 0) return;
+
+  // April 2026 starts on Wednesday (3)
+  // 30 days total
+  const startDay = 3; // 0=Sun, 3=Wed
+  const totalDays = 30;
+  const today = 11;
+
+  // Checked days (with streak of 12 ending on 11th)
+  const checkedDays = new Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
+  // Missed days (before the streak started)
+  const missedDays = new Set([]);
+
+  let html = '';
+
+  // Empty cells before the 1st
+  for (let i = 0; i < startDay; i++) {
+    html += '<div class="calendar-day empty"></div>';
+  }
+
+  for (let day = 1; day <= totalDays; day++) {
+    let cls = '';
+    let mark = '';
+
+    if (day === today) {
+      cls = 'today';
+      mark = '<span class="day-mark" style="color:#fff;">今天</span>';
+    } else if (checkedDays.has(day)) {
+      cls = 'checked';
+      mark = '<span class="day-mark">✓</span>';
+    } else if (day > today) {
+      cls = 'future';
+      mark = '';
+    } else {
+      cls = 'missed';
+      mark = '<span class="day-mark">✗</span>';
+    }
+
+    html += '<div class="calendar-day ' + cls + '"><span class="day-num">' + day + '</span>' + mark + '</div>';
+  }
+
+  container.innerHTML = html;
+}
+
+// ============================================
+// UTILITIES
+// ============================================
+function togglePasswordVisibility(btn) {
+  const input = btn.parentElement.querySelector('input');
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/></svg>';
+  } else {
+    input.type = 'password';
+    btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>';
+  }
+}
+
+// Initialize clock display
+(function() {
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2, '0');
+  const m = String(now.getMinutes()).padStart(2, '0');
+  document.querySelector('.status-bar-time').textContent = h + ':' + m;
+})();
+</script>
+
+</body>
+</html>

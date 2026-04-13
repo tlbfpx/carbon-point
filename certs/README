@@ -1,0 +1,7 @@
+# SSL Certificates Directory
+# Place your SSL certificate files here for HTTPS support:
+#   - certs/server.crt   (SSL certificate)
+#   - certs/server.key    (SSL private key)
+# For production, use Let's Encrypt or your CA's certificates.
+# Without these files, nginx will fail to start with SSL enabled.
+# To disable SSL, comment out the 443 listener in nginx.conf.
