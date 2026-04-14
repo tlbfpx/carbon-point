@@ -54,9 +54,10 @@ public class ProductController {
     public Result<Page<Product>> list(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int size,
-            @RequestParam(required = false) String status) {
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String type) {
         Long tenantId = TenantContext.getTenantId();
-        return Result.success(productService.list(tenantId, page, size, status));
+        return Result.success(productService.list(tenantId, page, size, status, type));
     }
 
     @GetMapping("/{id}")

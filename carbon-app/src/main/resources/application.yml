@@ -2,7 +2,7 @@ server:
   port: 8080
 
 cors:
-  allowed-origins: http://localhost:5173,http://localhost:3000,http://localhost:3001
+  allowed-origins: http://localhost:5173,http://localhost:3000,http://localhost:3001,http://localhost:3003,http://localhost:8081
 
 spring:
   application:
@@ -37,7 +37,10 @@ spring:
 
   sql:
     init:
-      mode: never
+      mode: always
+      schema-locations: classpath:db/schema.sql,classpath:db/platform-schema.sql,classpath:db/migration/V1__schema_optimization.sql,classpath:db/migration/V2__roles_extended_fields.sql,classpath:db/migration/V3__add_version_columns.sql
+      data-locations: classpath:data.sql
+      continue-on-error: true
 
 mybatis-plus:
   configuration:
@@ -61,7 +64,7 @@ jwt:
 # Security configuration for Phase 13
 security:
   captcha:
-    enabled: true
+    enabled: false
     length: 4
     expire-minutes: 5
     failure-threshold: 3

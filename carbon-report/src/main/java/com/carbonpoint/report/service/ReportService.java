@@ -60,21 +60,21 @@ public class ReportService {
         Long todayCheckin = checkInRecordMapper.selectCount(
             new LambdaQueryWrapper<CheckInRecordEntity>()
                 .eq(CheckInRecordEntity::getTenantId, tenantId)
-                .ge(CheckInRecordEntity::getCreatedAt, todayStart)
-                .le(CheckInRecordEntity::getCreatedAt, todayEnd)
+                .ge(CheckInRecordEntity::getCheckinDate, today)
+                .le(CheckInRecordEntity::getCheckinDate, today)
         );
         dto.setTodayCheckinCount(todayCheckin != null ? todayCheckin.intValue() : 0);
 
-        // Today points issued
-        List<PointTransactionEntity> todayTxs = pointTransactionMapper.selectList(
-            new LambdaQueryWrapper<PointTransactionEntity>()
-                .eq(PointTransactionEntity::getTenantId, tenantId)
-                .ge(PointTransactionEntity::getCreatedAt, todayStart)
-                .le(PointTransactionEntity::getCreatedAt, todayEnd)
-                .in(PointTransactionEntity::getType, Arrays.asList("check_in", "streak_bonus"))
-        );
-        int todayPoints = todayTxs.stream().mapToInt(PointTransactionEntity::getAmount).filter(a -> a > 0).sum();
-        dto.setTodayPointsIssued(todayPoints);
+         // Today points issued
+         List<PointTransactionEntity> todayTxs = pointTransactionMapper.selectList(
+             new LambdaQueryWrapper<PointTransactionEntity>()
+                 .eq(PointTransactionEntity::getTenantId, tenantId)
+                 .ge(PointTransactionEntity::getCreatedAt, todayStart)
+                 .le(PointTransactionEntity::getCreatedAt, todayEnd)
+                 .in(PointTransactionEntity::getType, Arrays.asList("check_in", "streak_bonus"))
+         );
+         int todayPoints = todayTxs.stream().filter(tx -> tx.getAmount() != null && tx.getAmount() > 0).mapToInt(tx -> (int) tx.getAmount()).sum();
+         dto.setTodayPointsIssued(todayPoints);
 
         // Week trend
         List<EnterpriseDashboardDTO.DailyTrend> weekTrend = new ArrayList<>();
@@ -82,14 +82,13 @@ public class ReportService {
             LocalDate date = weekStart.plusDays(i);
             LocalDateTime dayStart = date.atStartOfDay();
             LocalDateTime dayEnd = date.atTime(LocalTime.MAX);
-            
+
             Long dayCheckin = checkInRecordMapper.selectCount(
                 new LambdaQueryWrapper<CheckInRecordEntity>()
                     .eq(CheckInRecordEntity::getTenantId, tenantId)
-                    .ge(CheckInRecordEntity::getCreatedAt, dayStart)
-                    .le(CheckInRecordEntity::getCreatedAt, dayEnd)
+                    .eq(CheckInRecordEntity::getCheckinDate, date)
             );
-            
+
             List<PointTransactionEntity> dayTxs = pointTransactionMapper.selectList(
                 new LambdaQueryWrapper<PointTransactionEntity>()
                     .eq(PointTransactionEntity::getTenantId, tenantId)
@@ -97,8 +96,8 @@ public class ReportService {
                     .le(PointTransactionEntity::getCreatedAt, dayEnd)
                     .in(PointTransactionEntity::getType, Arrays.asList("check_in", "streak_bonus"))
             );
-            int dayPoints = dayTxs.stream().mapToInt(PointTransactionEntity::getAmount).filter(a -> a > 0).sum();
-            
+             int dayPoints = dayTxs.stream().filter(tx -> tx.getAmount() != null && tx.getAmount() > 0).mapToInt(tx -> (int) tx.getAmount()).sum();
+
             EnterpriseDashboardDTO.DailyTrend trend = new EnterpriseDashboardDTO.DailyTrend();
             trend.setDate(date.toString());
             trend.setCheckinCount(dayCheckin != null ? dayCheckin.intValue() : 0);
@@ -107,22 +106,24 @@ public class ReportService {
         }
         dto.setWeekTrend(weekTrend);
 
-        // Active users this week
-        Long activeWeek = checkInRecordMapper.selectCount(
+        // Active users this week (distinct users with check-ins this week)
+        List<CheckInRecordEntity> weekRecords = checkInRecordMapper.selectList(
             new LambdaQueryWrapper<CheckInRecordEntity>()
                 .eq(CheckInRecordEntity::getTenantId, tenantId)
-                .ge(CheckInRecordEntity::getCreatedAt, weekStart.atStartOfDay())
+                .ge(CheckInRecordEntity::getCheckinDate, weekStart)
         );
-        dto.setActiveUsersWeek(activeWeek != null ? activeWeek.intValue() : 0);
+        long activeWeek = weekRecords.stream().map(CheckInRecordEntity::getUserId).distinct().count();
+        dto.setActiveUsersWeek((int) activeWeek);
 
         // Active users this month
         LocalDate monthStart = today.withDayOfMonth(1);
-        Long activeMonth = checkInRecordMapper.selectCount(
+        List<CheckInRecordEntity> monthRecords = checkInRecordMapper.selectList(
             new LambdaQueryWrapper<CheckInRecordEntity>()
                 .eq(CheckInRecordEntity::getTenantId, tenantId)
-                .ge(CheckInRecordEntity::getCreatedAt, monthStart.atStartOfDay())
+                .ge(CheckInRecordEntity::getCheckinDate, monthStart)
         );
-        dto.setActiveUsersMonth(activeMonth != null ? activeMonth.intValue() : 0);
+        long activeMonth = monthRecords.stream().map(CheckInRecordEntity::getUserId).distinct().count();
+        dto.setActiveUsersMonth((int) activeMonth);
 
         // Top 10 products by exchange count
         List<ExchangeOrder> fulfilledOrders = exchangeOrderMapper.selectList(
@@ -411,5 +412,152 @@ public class ReportService {
         for (int i = 0; i < cols.length; i++) {
             sheet.autoSizeColumn(i);
         }
+    }
+
+    /**
+     * Dashboard stats summary for the frontend Dashboard component.
+     */
+    public Map<String, Object> getDashboardStats(Long tenantId) {
+        LocalDate today = LocalDate.now();
+        LocalDateTime todayStart = today.atStartOfDay();
+        LocalDateTime todayEnd = today.atTime(LocalTime.MAX);
+        LocalDate weekStart = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        LocalDate monthStart = today.withDayOfMonth(1);
+
+        // Today check-in count (use checkinDate for correctness)
+        Long todayCheckin = checkInRecordMapper.selectCount(
+            new LambdaQueryWrapper<CheckInRecordEntity>()
+                .eq(CheckInRecordEntity::getTenantId, tenantId)
+                .ge(CheckInRecordEntity::getCheckinDate, today)
+                .le(CheckInRecordEntity::getCheckinDate, today)
+        );
+
+        // Today points issued
+        List<PointTransactionEntity> todayTxs = pointTransactionMapper.selectList(
+            new LambdaQueryWrapper<PointTransactionEntity>()
+                .eq(PointTransactionEntity::getTenantId, tenantId)
+                .ge(PointTransactionEntity::getCreatedAt, todayStart)
+                .le(PointTransactionEntity::getCreatedAt, todayEnd)
+                .in(PointTransactionEntity::getType, Arrays.asList("check_in", "streak_bonus"))
+        );
+         int todayPoints = todayTxs.stream().filter(tx -> tx.getAmount() != null && tx.getAmount() > 0).mapToInt(tx -> (int) tx.getAmount()).sum();
+
+        // Active users this month (distinct users with check-in records)
+        List<CheckInRecordEntity> monthRecords = checkInRecordMapper.selectList(
+            new LambdaQueryWrapper<CheckInRecordEntity>()
+                .eq(CheckInRecordEntity::getTenantId, tenantId)
+                .ge(CheckInRecordEntity::getCheckinDate, monthStart)
+        );
+        long activeUsersMonth = monthRecords.stream().map(CheckInRecordEntity::getUserId).distinct().count();
+
+        // Month exchange count (fulfilled orders)
+        Long monthExchangeCount = exchangeOrderMapper.selectCount(
+            new LambdaQueryWrapper<ExchangeOrder>()
+                .eq(ExchangeOrder::getTenantId, tenantId)
+                .eq(ExchangeOrder::getOrderStatus, "fulfilled")
+                .ge(ExchangeOrder::getFulfilledAt, monthStart.atStartOfDay())
+        );
+
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("todayCheckInCount", todayCheckin != null ? todayCheckin.intValue() : 0);
+        stats.put("todayPointsGranted", todayPoints);
+        stats.put("activeUsers", (int) activeUsersMonth);
+        stats.put("monthExchangeCount", monthExchangeCount != null ? monthExchangeCount.intValue() : 0);
+        return stats;
+    }
+
+    /**
+     * Daily check-in trend for the last N days.
+     */
+    public List<Map<String, Object>> getCheckInTrend(Long tenantId, int days) {
+        LocalDate today = LocalDate.now();
+        List<Map<String, Object>> trend = new ArrayList<>();
+        for (int i = days - 1; i >= 0; i--) {
+            LocalDate date = today.minusDays(i);
+            Long count = checkInRecordMapper.selectCount(
+                new LambdaQueryWrapper<CheckInRecordEntity>()
+                    .eq(CheckInRecordEntity::getTenantId, tenantId)
+                    .eq(CheckInRecordEntity::getCheckinDate, date)
+            );
+            Map<String, Object> point = new HashMap<>();
+            point.put("date", date.toString());
+            point.put("count", count != null ? count.intValue() : 0);
+            trend.add(point);
+        }
+        return trend;
+    }
+
+    /**
+     * Points trend (granted vs consumed) for the last N days.
+     */
+    public List<Map<String, Object>> getPointsTrend(Long tenantId, int days) {
+        LocalDate today = LocalDate.now();
+        List<Map<String, Object>> trend = new ArrayList<>();
+        for (int i = days - 1; i >= 0; i--) {
+            LocalDate date = today.minusDays(i);
+            LocalDateTime dayStart = date.atStartOfDay();
+            LocalDateTime dayEnd = date.atTime(LocalTime.MAX);
+
+            List<PointTransactionEntity> dayTxs = pointTransactionMapper.selectList(
+                new LambdaQueryWrapper<PointTransactionEntity>()
+                    .eq(PointTransactionEntity::getTenantId, tenantId)
+                    .ge(PointTransactionEntity::getCreatedAt, dayStart)
+                    .le(PointTransactionEntity::getCreatedAt, dayEnd)
+            );
+
+            long granted = dayTxs.stream()
+                .filter(tx -> tx.getAmount() != null && tx.getAmount() > 0)
+                .mapToLong(tx -> (long) tx.getAmount())
+                .sum();
+            long consumed = dayTxs.stream()
+                .filter(tx -> tx.getAmount() != null && tx.getAmount() < 0)
+                .mapToLong(tx -> Math.abs((long) tx.getAmount()))
+                .sum();
+
+            Map<String, Object> point = new HashMap<>();
+            point.put("date", date.toString());
+            point.put("granted", granted);
+            point.put("consumed", consumed);
+            trend.add(point);
+        }
+        return trend;
+    }
+
+    /**
+     * Top exchanged products.
+     */
+    public List<Map<String, Object>> getHotProducts(Long tenantId, int limit) {
+        LocalDate monthStart = LocalDate.now().withDayOfMonth(1);
+
+        // Get fulfilled orders in current month
+        List<ExchangeOrder> fulfilledOrders = exchangeOrderMapper.selectList(
+            new LambdaQueryWrapper<ExchangeOrder>()
+                .eq(ExchangeOrder::getTenantId, tenantId)
+                .eq(ExchangeOrder::getOrderStatus, "fulfilled")
+                .ge(ExchangeOrder::getFulfilledAt, monthStart.atStartOfDay())
+        );
+
+        // Group by product and count
+        Map<Long, List<ExchangeOrder>> byProduct = fulfilledOrders.stream()
+            .collect(Collectors.groupingBy(ExchangeOrder::getProductId));
+
+        return byProduct.entrySet().stream()
+            .sorted((a, b) -> Integer.compare(b.getValue().size(), a.getValue().size()))
+            .limit(limit)
+            .map(entry -> {
+                Long productId = entry.getKey();
+                List<ExchangeOrder> orders = entry.getValue();
+                Product product = productMapper.selectById(productId);
+                Map<String, Object> item = new HashMap<>();
+                item.put("productId", productId.toString());
+                item.put("productName", product != null ? product.getName() : "未知商品");
+                item.put("exchangeCount", orders.size());
+                 item.put("totalPoints", orders.stream()
+                     .filter(o -> o.getPointsSpent() != null)
+                     .mapToInt(o -> (int) o.getPointsSpent())
+                     .sum());
+                return item;
+            })
+            .collect(Collectors.toList());
     }
 }

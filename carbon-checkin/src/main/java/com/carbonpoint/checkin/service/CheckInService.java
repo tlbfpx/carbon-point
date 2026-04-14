@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.carbonpoint.checkin.dto.CheckInRecordDTO;
 import com.carbonpoint.checkin.dto.CheckInRequestDTO;
 import com.carbonpoint.checkin.dto.CheckInResponseDTO;
+import com.carbonpoint.checkin.dto.TimeSlotDTO;
 import com.carbonpoint.checkin.entity.CheckInRecordEntity;
 import com.carbonpoint.checkin.mapper.CheckInRecordMapper;
 import com.carbonpoint.checkin.mapper.CheckinUserMapper;
@@ -32,6 +33,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -255,8 +258,10 @@ public class CheckInService {
      * Get check-in records for a user.
      */
     public Page<CheckInRecordDTO> getRecords(Long userId, int page, int size) {
+        Long tenantId = TenantContext.getTenantId();
         LambdaQueryWrapper<CheckInRecordEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(CheckInRecordEntity::getUserId, userId)
+                .eq(CheckInRecordEntity::getTenantId, tenantId)
                 .orderByDesc(CheckInRecordEntity::getCheckinDate);
 
         Page<CheckInRecordEntity> result = checkInRecordMapper.selectPage(new Page<>(page, size), wrapper);
@@ -277,5 +282,75 @@ public class CheckInService {
             return d;
         }).toList());
         return dtoPage;
+    }
+
+    /**
+     * 获取当前租户下所有时段规则的打卡状态。
+     */
+    public List<TimeSlotDTO> getTimeSlots(Long userId) {
+        Long tenantId = TenantContext.getTenantId();
+        LocalDate today = LocalDate.now();
+        LocalTime now = LocalTime.now();
+
+        // Load today's check-in records for this user
+        LambdaQueryWrapper<CheckInRecordEntity> recordWrapper = new LambdaQueryWrapper<>();
+        recordWrapper.eq(CheckInRecordEntity::getUserId, userId)
+                .eq(CheckInRecordEntity::getCheckinDate, today);
+        List<CheckInRecordEntity> todayRecords = checkInRecordMapper.selectList(recordWrapper);
+
+        // Build a map from ruleId -> record for quick lookup
+        Map<Long, CheckInRecordEntity> recordMap = todayRecords.stream()
+                .collect(java.util.stream.Collectors.toMap(
+                        CheckInRecordEntity::getTimeSlotRuleId,
+                        r -> r,
+                        (a, b) -> a));
+
+        // Load all enabled time slot rules for this tenant
+        List<PointRule> timeSlotRules = pointRuleService.getRulesByType(tenantId, PointRuleService.TYPE_TIME_SLOT);
+
+        return timeSlotRules.stream().map(rule -> {
+            TimeSlotDTO dto = new TimeSlotDTO();
+            dto.setRuleId(rule.getId());
+            dto.setName(rule.getName());
+
+            // Parse start/end time from config JSON
+            LocalTime slotStart = null;
+            LocalTime slotEnd = null;
+            try {
+                JsonNode config = objectMapper.readTree(rule.getConfig());
+                String startStr = config.get("startTime").asText();
+                String endStr = config.get("endTime").asText();
+                slotStart = startStr.length() == 8
+                        ? LocalTime.parse(startStr, DateTimeFormatter.ofPattern("HH:mm:ss"))
+                        : LocalTime.parse(startStr, DateTimeFormatter.ofPattern("HH:mm"));
+                slotEnd = endStr.length() == 8
+                        ? LocalTime.parse(endStr, DateTimeFormatter.ofPattern("HH:mm:ss"))
+                        : LocalTime.parse(endStr, DateTimeFormatter.ofPattern("HH:mm"));
+            } catch (Exception e) {
+                log.warn("Failed to parse time slot config for rule {}, config: {}", rule.getId(), rule.getConfig(), e);
+                dto.setStatus("config_error");
+            }
+            dto.setStartTime(slotStart);
+            dto.setEndTime(slotEnd);
+
+            // Determine status
+            CheckInRecordEntity record = recordMap.get(rule.getId());
+            if (record != null) {
+                dto.setStatus("checked_in");
+                dto.setRecordId(record.getId());
+            } else if (slotStart != null && slotEnd != null) {
+                if (now.isBefore(slotStart)) {
+                    dto.setStatus("not_started");
+                } else if (now.isAfter(slotEnd) || now.equals(slotEnd)) {
+                    dto.setStatus("ended");
+                } else {
+                    dto.setStatus("available");
+                }
+            } else {
+                dto.setStatus("not_started");
+            }
+
+            return dto;
+        }).toList();
     }
 }

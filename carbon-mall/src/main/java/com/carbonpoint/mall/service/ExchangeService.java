@@ -235,18 +235,7 @@ public class ExchangeService {
         if (!"pending".equals(order.getOrderStatus())) {
             throw new BusinessException(ErrorCode.ORDER_STATUS_ERROR, "只能取消待处理订单");
         }
-
-        order.setOrderStatus("cancelled");
-        order.setUpdatedAt(LocalDateTime.now());
-        exchangeOrderMapper.updateById(order);
-
-        // unfreeze and return points
-        pointAccountService.unfreezePoints(order.getUserId(), order.getPointsSpent(),
-                "order_" + orderId, "订单取消退还积分");
-
-        // restore stock with conditional update (prevent double-restore)
-        restoreStockWithRetry(order.getProductId());
-
+        cancelOrderInternal(order, "订单取消退还积分");
         log.info("cancelOrder: orderId={}", orderId);
     }
 
@@ -263,28 +252,29 @@ public class ExchangeService {
         if (!"pending".equals(order.getOrderStatus())) {
             throw new BusinessException(ErrorCode.ORDER_STATUS_ERROR, "只能取消待处理订单");
         }
+        cancelOrderInternal(order, "管理员取消订单退还积分");
+        log.info("adminCancelOrder: orderId={}, adminId={}", orderId, adminId);
+    }
 
+    /**
+     * Shared cancellation logic: update status, unfreeze points, restore stock.
+     */
+    private void cancelOrderInternal(ExchangeOrder order, String reason) {
         order.setOrderStatus("cancelled");
         order.setUpdatedAt(LocalDateTime.now());
         exchangeOrderMapper.updateById(order);
 
-        // unfreeze and return points
         pointAccountService.unfreezePoints(order.getUserId(), order.getPointsSpent(),
-                "order_" + orderId, "管理员取消订单退还积分");
+                "order_" + order.getId(), reason);
 
-        // restore stock with conditional update
         restoreStockWithRetry(order.getProductId());
-
-        log.info("adminCancelOrder: orderId={}, adminId={}", orderId, adminId);
     }
 
-    @Transactional
-    public void fulfillOrder(Long orderId, Long adminId) {
-        ExchangeOrder order = exchangeOrderMapper.selectById(orderId);
-        if (order == null) {
-            throw new BusinessException(ErrorCode.ORDER_NOT_FOUND);
-        }
-        // 幂等性检查：已使用则返回成功，不重复操作
+    /**
+     * Validate that an order is in a fulfillable state (status == "fulfilled").
+     * Throws ORDER_COUPON_ALREADY_USED if already used, ORDER_STATUS_ERROR otherwise.
+     */
+    private void validateFulfillable(ExchangeOrder order) {
         if ("used".equals(order.getOrderStatus())) {
             throw new BusinessException(ErrorCode.ORDER_COUPON_ALREADY_USED, "该券码已使用");
         }
@@ -294,6 +284,15 @@ public class ExchangeService {
         if (!"fulfilled".equals(order.getOrderStatus())) {
             throw new BusinessException(ErrorCode.ORDER_STATUS_ERROR);
         }
+    }
+
+    @Transactional
+    public void fulfillOrder(Long orderId, Long adminId) {
+        ExchangeOrder order = exchangeOrderMapper.selectById(orderId);
+        if (order == null) {
+            throw new BusinessException(ErrorCode.ORDER_NOT_FOUND);
+        }
+        validateFulfillable(order);
 
         order.setOrderStatus("used");
         order.setUsedAt(LocalDateTime.now());
@@ -323,15 +322,7 @@ public class ExchangeService {
             throw new BusinessException(ErrorCode.MALL_COUPON_NOT_FOUND, "券码不存在");
         }
 
-        // 幂等性：已使用
-        if ("used".equals(order.getOrderStatus())) {
-            throw new BusinessException(ErrorCode.ORDER_COUPON_ALREADY_USED, "该券码已使用");
-        }
-        // 非终态才能核销
-        if (!"fulfilled".equals(order.getOrderStatus())) {
-            throw new BusinessException(ErrorCode.ORDER_STATUS_ERROR,
-                    "该券码当前状态为 " + order.getOrderStatus() + "，无法核销");
-        }
+        validateFulfillable(order);
 
         order.setOrderStatus("used");
         order.setUsedAt(LocalDateTime.now());
@@ -352,16 +343,7 @@ public class ExchangeService {
         if (!order.getUserId().equals(userId)) {
             throw new BusinessException(ErrorCode.FORBIDDEN);
         }
-        // 幂等性检查：已使用则返回成功，不重复操作
-        if ("used".equals(order.getOrderStatus())) {
-            throw new BusinessException(ErrorCode.ORDER_COUPON_ALREADY_USED, "该券码已使用");
-        }
-        if ("expired".equals(order.getOrderStatus()) || "cancelled".equals(order.getOrderStatus())) {
-            throw new BusinessException(ErrorCode.ORDER_STATUS_ERROR);
-        }
-        if (!"fulfilled".equals(order.getOrderStatus())) {
-            throw new BusinessException(ErrorCode.ORDER_STATUS_ERROR);
-        }
+        validateFulfillable(order);
 
         order.setOrderStatus("used");
         order.setUsedAt(LocalDateTime.now());
@@ -469,22 +451,18 @@ public class ExchangeService {
         qw.eq(ExchangeOrder::getUserId, userId)
           .eq(ExchangeOrder::getProductType, "coupon");
         if (status != null) {
-            // Map frontend status to orderStatus
-            String orderStatus;
             switch (status) {
-                case "available": orderStatus = null; break; // pending or fulfilled
-                case "used": orderStatus = "used"; break;
-                case "expired": orderStatus = "expired"; break;
-                default: orderStatus = null;
-            }
-            if (orderStatus != null) {
-                qw.eq(ExchangeOrder::getOrderStatus, orderStatus);
-            } else {
-                // "available" — show pending or fulfilled
-                if ("available".equals(status)) {
+                case "used":
+                    qw.eq(ExchangeOrder::getOrderStatus, "used");
+                    break;
+                case "expired":
+                    qw.eq(ExchangeOrder::getOrderStatus, "expired");
+                    break;
+                case "available":
                     qw.and(w -> w.eq(ExchangeOrder::getOrderStatus, "pending")
                             .or().eq(ExchangeOrder::getOrderStatus, "fulfilled"));
-                }
+                    break;
+                // other → no status filter
             }
         }
         qw.ne(ExchangeOrder::getOrderStatus, "cancelled");

@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletResponse;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/reports")
@@ -27,6 +29,53 @@ public class ReportController {
     public Result<EnterpriseDashboardDTO> getEnterpriseDashboard(
             @AuthenticationPrincipal JwtUserPrincipal principal) {
         return Result.success(reportService.getEnterpriseDashboard(principal.getTenantId()));
+    }
+
+    /**
+     * Dashboard stats summary.
+     * GET /api/reports/report/dashboard/stats
+     */
+    @GetMapping("/report/dashboard/stats")
+    @RequirePerm("enterprise:report:view")
+    public Result<Map<String, Object>> getDashboardStats(
+            @AuthenticationPrincipal JwtUserPrincipal principal) {
+        return Result.success(reportService.getDashboardStats(principal.getTenantId()));
+    }
+
+    /**
+     * Check-in trend for the last N days.
+     * GET /api/reports/report/dashboard/checkin-trend?tenantId=&days=
+     */
+    @GetMapping("/report/dashboard/checkin-trend")
+    @RequirePerm("enterprise:report:view")
+    public Result<List<Map<String, Object>>> getCheckInTrend(
+            @AuthenticationPrincipal JwtUserPrincipal principal,
+            @RequestParam(defaultValue = "7") int days) {
+        return Result.success(reportService.getCheckInTrend(principal.getTenantId(), days));
+    }
+
+    /**
+     * Points trend (granted vs consumed) for the last N days.
+     * GET /api/reports/report/dashboard/points-trend?tenantId=&days=
+     */
+    @GetMapping("/report/dashboard/points-trend")
+    @RequirePerm("enterprise:report:view")
+    public Result<List<Map<String, Object>>> getPointsTrend(
+            @AuthenticationPrincipal JwtUserPrincipal principal,
+            @RequestParam(defaultValue = "7") int days) {
+        return Result.success(reportService.getPointsTrend(principal.getTenantId(), days));
+    }
+
+    /**
+     * Top exchanged products.
+     * GET /api/reports/report/dashboard/hot-products?tenantId=&limit=
+     */
+    @GetMapping("/report/dashboard/hot-products")
+    @RequirePerm("enterprise:report:view")
+    public Result<List<Map<String, Object>>> getHotProducts(
+            @AuthenticationPrincipal JwtUserPrincipal principal,
+            @RequestParam(defaultValue = "5") int limit) {
+        return Result.success(reportService.getHotProducts(principal.getTenantId(), limit));
     }
 
     @GetMapping("/platform/dashboard")
