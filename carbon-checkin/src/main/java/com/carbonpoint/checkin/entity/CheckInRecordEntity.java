@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @TableName("check_in_records")
 public class CheckInRecordEntity {
 
-    @TableId(type = IdType.NONE)
+    @TableId(type = IdType.AUTO)
     private Long id;
 
     private Long userId;
@@ -49,4 +49,10 @@ public class CheckInRecordEntity {
 
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdAt;
+
+    @TableLogic
+    private Integer deleted;
+
+    @Version
+    private Long version;
 }

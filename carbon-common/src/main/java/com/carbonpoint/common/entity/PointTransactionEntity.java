@@ -39,4 +39,10 @@ public class PointTransactionEntity {
 
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdAt;
+
+    @Version
+    private Long version;
+
+    @TableLogic
+    private Integer deleted;
 }

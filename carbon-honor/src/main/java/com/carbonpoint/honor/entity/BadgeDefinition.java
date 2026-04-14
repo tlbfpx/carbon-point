@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 public class BadgeDefinition {
 
     @TableId(type = IdType.AUTO)
-    private Integer id;
+    private Long id;
 
     /** 徽章唯一标识，如 first_checkin */
     private String badgeId;
@@ -34,4 +34,7 @@ public class BadgeDefinition {
 
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdAt;
+
+    @TableLogic
+    private Integer deleted;
 }

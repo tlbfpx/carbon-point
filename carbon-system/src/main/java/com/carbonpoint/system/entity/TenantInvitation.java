@@ -24,4 +24,7 @@ public class TenantInvitation {
 
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdAt;
+
+    @TableLogic
+    private Integer deleted;
 }

@@ -19,6 +19,8 @@ CREATE TABLE tenants (
     expires_at      DATETIME COMMENT '套餐到期时间',
     created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    level_mode      VARCHAR(20) NOT NULL DEFAULT 'strict' COMMENT '等级模式: strict(只升不降)/flexible(每月降级)',
+    deleted         TINYINT(1) NOT NULL DEFAULT 0 COMMENT '软删除标记',
 
     INDEX idx_status (status),
     INDEX idx_package (package_type)
@@ -35,15 +37,10 @@ CREATE TABLE platform_admins (
     last_login_ip   VARCHAR(45) COMMENT '最后登录IP',
     created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted         TINYINT(1) NOT NULL DEFAULT 0 COMMENT '软删除标记',
 
     INDEX idx_status (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='平台管理员表';
--- ============================================================
--- 初始化数据：platform_admins（平台超管账号）
--- Password: admin123 (BCrypt 编码)
--- ============================================================
-INSERT INTO platform_admins (username, password_hash, display_name, role, status) VALUES
-('admin', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6z2Xy', '超级管理员', 'super_admin', 'active');
 
 -- ============================================================
 -- 2. 用户管理
@@ -52,18 +49,20 @@ INSERT INTO platform_admins (username, password_hash, display_name, role, status
 CREATE TABLE users (
     id                  BIGINT PRIMARY KEY AUTO_INCREMENT,
     tenant_id           BIGINT NOT NULL COMMENT '所属企业',
-    phone               VARCHAR(20) NOT NULL COMMENT '手机号（全局唯一，一人一企业）',
+    phone               VARCHAR(20) NOT NULL COMMENT '手机号（全局唯一）',
     password_hash       VARCHAR(255) NOT NULL COMMENT 'Argon2id哈希',
     nickname            VARCHAR(50) COMMENT '昵称',
     avatar              VARCHAR(500) COMMENT '头像URL',
     status              VARCHAR(20) NOT NULL DEFAULT 'active' COMMENT '状态: active/disabled/deleted',
     level               INT NOT NULL DEFAULT 1 COMMENT '用户等级(1-5)，由total_points自动计算',
     total_points        INT NOT NULL DEFAULT 0 COMMENT '累计积分',
-    available_points    INT NOT NULL DEFAULT 0 COMMENT '可用积分',
-    frozen_points       INT NOT NULL DEFAULT 0 COMMENT '冻结积分（兑换中）',
+    available_points    INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '可用积分（乐观锁扣减，非负）',
+    frozen_points       INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '冻结积分（兑换中）',
+    version             BIGINT NOT NULL DEFAULT 0 COMMENT '乐观锁版本号，扣减时校验',
     consecutive_days    INT NOT NULL DEFAULT 0 COMMENT '当前连续打卡天数',
     last_checkin_date   DATE COMMENT '最后打卡日期',
     department_id       BIGINT COMMENT '所属部门ID',
+    deleted             TINYINT(1) NOT NULL DEFAULT 0 COMMENT '软删除标记',
     created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
@@ -82,6 +81,7 @@ CREATE TABLE tenant_invitations (
     used_count      INT NOT NULL DEFAULT 0 COMMENT '已使用次数',
     expires_at      DATETIME NOT NULL COMMENT '过期时间',
     created_by      BIGINT NOT NULL COMMENT '创建人ID',
+    deleted         TINYINT(1) NOT NULL DEFAULT 0 COMMENT '软删除标记',
     created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     UNIQUE KEY uk_invite_code (invite_code),
@@ -96,6 +96,7 @@ CREATE TABLE batch_imports (
     success_count   INT NOT NULL DEFAULT 0 COMMENT '成功数',
     fail_count      INT NOT NULL DEFAULT 0 COMMENT '失败数',
     fail_detail     JSON COMMENT '失败明细（JSON数组）',
+    deleted         TINYINT(1) NOT NULL DEFAULT 0 COMMENT '软删除标记',
     created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     INDEX idx_tenant (tenant_id)
@@ -111,6 +112,7 @@ CREATE TABLE permissions (
     operation       VARCHAR(20) NOT NULL COMMENT '操作: create',
     description     VARCHAR(100) COMMENT '权限描述',
     sort_order      INT NOT NULL DEFAULT 0,
+    deleted         TINYINT(1) NOT NULL DEFAULT 0 COMMENT '软删除标记',
 
     INDEX idx_module (module)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='权限定义表';
@@ -119,7 +121,10 @@ CREATE TABLE roles (
     id              BIGINT PRIMARY KEY AUTO_INCREMENT,
     tenant_id       BIGINT NOT NULL COMMENT '所属企业',
     name            VARCHAR(50) NOT NULL COMMENT '角色名称',
+    role_type       VARCHAR(20) NOT NULL DEFAULT 'custom' COMMENT '角色类型: super_admin/operator/custom',
+    is_editable     TINYINT(1) NOT NULL DEFAULT 1 COMMENT '是否可编辑/删除: 1=可, 0=不可(超管)',
     is_preset       TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否系统预设',
+    deleted         TINYINT(1) NOT NULL DEFAULT 0 COMMENT '软删除标记',
     created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     UNIQUE KEY uk_tenant_name (tenant_id, name)
@@ -128,16 +133,20 @@ CREATE TABLE roles (
 CREATE TABLE role_permissions (
     role_id         BIGINT NOT NULL,
     permission_code VARCHAR(60) NOT NULL,
+    deleted         TINYINT(1) NOT NULL DEFAULT 0 COMMENT '软删除标记',
 
     PRIMARY KEY (role_id, permission_code),
-    INDEX idx_role (role_id) COMMENT '角色变更时批量查找关联'
+    INDEX idx_role (role_id) COMMENT '角色变更时批量查找关联',
+    INDEX idx_role_permission (role_id, permission_code)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='角色-权限关联表';
 
 CREATE TABLE user_roles (
     user_id         BIGINT NOT NULL,
     role_id         BIGINT NOT NULL,
+    deleted         TINYINT(1) NOT NULL DEFAULT 0 COMMENT '软删除标记',
 
     PRIMARY KEY (user_id, role_id),
+    INDEX idx_user (user_id),
     INDEX idx_role (role_id) COMMENT '角色变更时批量刷新缓存'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户-角色关联表';
 
@@ -153,6 +162,7 @@ CREATE TABLE point_rules (
     config          JSON NOT NULL COMMENT '规则配置（不同type结构不同）',
     enabled         TINYINT(1) NOT NULL DEFAULT 1,
     sort_order      INT NOT NULL DEFAULT 0,
+    deleted         TINYINT(1) NOT NULL DEFAULT 0 COMMENT '软删除标记',
     created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
@@ -164,26 +174,48 @@ CREATE TABLE point_rules (
 -- 5. 打卡系统
 -- ============================================================
 
+CREATE TABLE time_slot_rules (
+    id              BIGINT PRIMARY KEY AUTO_INCREMENT,
+    tenant_id       BIGINT NOT NULL COMMENT '所属企业',
+    name            VARCHAR(100) NOT NULL COMMENT '时段名称',
+    start_time      TIME NOT NULL COMMENT '时段开始时间',
+    end_time        TIME NOT NULL COMMENT '时段结束时间',
+    base_points_min INT NOT NULL COMMENT '基础积分最小值',
+    base_points_max INT NOT NULL COMMENT '基础积分最大值',
+    enabled         TINYINT(1) NOT NULL DEFAULT 1 COMMENT '是否启用',
+    sort_order      INT NOT NULL DEFAULT 0 COMMENT '排序',
+    deleted         TINYINT(1) NOT NULL DEFAULT 0 COMMENT '软删除标记',
+    created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    INDEX idx_tenant_enabled (tenant_id, enabled),
+    INDEX idx_tenant_sort (tenant_id, sort_order)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='打卡时段规则表';
+
 CREATE TABLE check_in_records (
     id                  BIGINT PRIMARY KEY AUTO_INCREMENT,
     user_id             BIGINT NOT NULL,
     tenant_id           BIGINT NOT NULL,
     time_slot_rule_id   BIGINT NOT NULL COMMENT '匹配的时段规则ID',
     checkin_date        DATE NOT NULL COMMENT '打卡日期（服务器日期）',
-    checkin_time        DATETIME(3) NOT NULL COMMENT '用户实际打卡时间（精确到毫秒），用于排行榜排序',
+    checkin_time        DATETIME(3) NOT NULL COMMENT '精确到毫秒，用于排行榜排序',
     base_points         INT NOT NULL COMMENT '随机基础积分',
     final_points        INT NOT NULL COMMENT '最终积分（经过所有规则计算后）',
     multiplier          DECIMAL(5,2) DEFAULT 1.0 COMMENT '特殊日期倍率',
     level_coefficient   DECIMAL(5,2) DEFAULT 1.0 COMMENT '等级系数',
     consecutive_days    INT DEFAULT 1 COMMENT '打卡后的连续天数',
     streak_bonus        INT DEFAULT 0 COMMENT '连续打卡奖励积分',
+    version             BIGINT NOT NULL DEFAULT 0 COMMENT '乐观锁版本号',
+    deleted             TINYINT(1) NOT NULL DEFAULT 0 COMMENT '软删除标记',
     created_at          DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     -- 防重复打卡唯一约束
     UNIQUE KEY uk_user_date_slot (user_id, checkin_date, time_slot_rule_id),
     -- 高频查询索引
     INDEX idx_tenant_date (tenant_id, checkin_date),
-    INDEX idx_user_date (user_id, checkin_date)
+    INDEX idx_user_date (user_id, checkin_date),
+    INDEX idx_tenant_created (tenant_id, created_at),
+    INDEX idx_user_created (user_id, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='打卡记录表';
 
 -- ============================================================
@@ -201,6 +233,8 @@ CREATE TABLE point_transactions (
     frozen_after    INT NOT NULL DEFAULT 0 COMMENT '变动后冻结余额',
     remark          VARCHAR(200),
     expire_time     DATETIME COMMENT '积分过期时间（FIFO）',
+    version         BIGINT NOT NULL DEFAULT 0 COMMENT '乐观锁版本号',
+    deleted         TINYINT(1) NOT NULL DEFAULT 0 COMMENT '软删除标记',
     created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     INDEX idx_user_created (user_id, created_at),
@@ -229,15 +263,17 @@ CREATE TABLE products (
     type                VARCHAR(20) NOT NULL COMMENT '类型: coupon/recharge/privilege',
     points_price        INT NOT NULL COMMENT '兑换所需积分',
     stock               INT COMMENT '库存（null=无限）',
-    max_per_user        INT DEFAULT 1 COMMENT '每人限兑数量',
+    max_per_user         INT DEFAULT 1 COMMENT '每人限兑数量',
     validity_days       INT NOT NULL DEFAULT 30 COMMENT '有效期天数',
     fulfillment_config  JSON COMMENT '发放配置（不同type结构不同）',
     status              VARCHAR(20) NOT NULL DEFAULT 'inactive' COMMENT '状态: inactive/active/sold_out',
     sort_order          INT NOT NULL DEFAULT 0,
+    version             INT NOT NULL DEFAULT 0 COMMENT '乐观锁版本号',
+    deleted             TINYINT(1) NOT NULL DEFAULT 0 COMMENT '软删除标记',
     created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
-    INDEX idx_tenant_status (tenant_id, status),
+    INDEX idx_tenant_status (tenant_id, status, sort_order),
     INDEX idx_tenant_sort (tenant_id, sort_order)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='虚拟商品表';
 
@@ -255,13 +291,15 @@ CREATE TABLE exchange_orders (
     fulfilled_at        DATETIME COMMENT '发放时间',
     used_at             DATETIME COMMENT '核销时间',
     used_by             VARCHAR(20) COMMENT '核销方式: admin/self',
+    deleted             TINYINT(1) NOT NULL DEFAULT 0 COMMENT '软删除标记',
     created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
     UNIQUE KEY uk_coupon (coupon_code),
     INDEX idx_tenant_status (tenant_id, order_status),
     INDEX idx_user_status (user_id, order_status),
-    INDEX idx_expires (expires_at) COMMENT '过期检查'
+    INDEX idx_expires (expires_at) COMMENT '过期检查',
+    INDEX idx_tenant_user_status (tenant_id, user_id, order_status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='兑换订单表';
 
 -- ============================================================
@@ -273,6 +311,7 @@ CREATE TABLE departments (
     tenant_id       BIGINT NOT NULL,
     name            VARCHAR(100) NOT NULL COMMENT '部门名称',
     leader_id       BIGINT COMMENT '部门负责人用户ID',
+    deleted         TINYINT(1) NOT NULL DEFAULT 0 COMMENT '软删除标记',
     created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
@@ -291,14 +330,17 @@ CREATE TABLE badge_definitions (
     icon            VARCHAR(100) COMMENT '徽章图标URL',
     rarity          VARCHAR(20) NOT NULL COMMENT '稀有度: common/rare/epic',
     condition_expr  VARCHAR(200) COMMENT '获得条件表达式',
+    deleted         TINYINT(1) NOT NULL DEFAULT 0 COMMENT '软删除标记',
     created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='徽章定义表（全局）';
 
 CREATE TABLE user_badges (
     id              BIGINT PRIMARY KEY AUTO_INCREMENT,
     user_id         BIGINT NOT NULL,
+    tenant_id       BIGINT NOT NULL DEFAULT 0 COMMENT '所属租户',
     badge_id        VARCHAR(50) NOT NULL,
     earned_at       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted         TINYINT(1) NOT NULL DEFAULT 0 COMMENT '软删除标记',
 
     UNIQUE KEY uk_user_badge (user_id, badge_id),
     INDEX idx_user (user_id)
@@ -389,6 +431,17 @@ CREATE TABLE password_history (
     INDEX idx_user_created (user_id, created_at DESC)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='密码历史记录表';
 
+CREATE TABLE jwt_signing_keys (
+    id              BIGINT PRIMARY KEY AUTO_INCREMENT,
+    kid             VARCHAR(64) NOT NULL COMMENT '密钥版本标识',
+    secret_key      VARCHAR(256) NOT NULL COMMENT '密钥内容（加密存储）',
+    status          ENUM('ACTIVE', 'RETIRED', 'EXPIRED') NOT NULL DEFAULT 'ACTIVE',
+    created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    expired_at      DATETIME COMMENT '过期时间（RETIRED后保留7天）',
+
+    UNIQUE INDEX uk_kid (kid)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='JWT签名密钥表';
+
 -- ============================================================
 -- 12. 字典管理
 -- ============================================================
@@ -430,19 +483,44 @@ CREATE TABLE leaderboard_snapshots (
 -- ============================================================
 -- 14. 积分过期配置与记录（产品改进文档 §2）
 -- ============================================================
-CREATE TABLE IF NOT EXISTS point_expiration_config (
-    id                  BIGINT PRIMARY KEY AUTO_INCREMENT,
-    tenant_id           BIGINT NOT NULL UNIQUE COMMENT '所属企业',
-    expiration_months  INT NOT NULL DEFAULT 12 COMMENT '积分过期月数',
-    notify_days_before  INT NOT NULL DEFAULT 30 COMMENT '提前通知天数',
-    extension_enabled   BOOLEAN DEFAULT TRUE COMMENT '允许手动延期',
-    extension_months    INT DEFAULT 3 COMMENT '延期时长（月）',
-    expired_handling    VARCHAR(20) DEFAULT 'forfeit' COMMENT '过期处理: forfeit(没收)/donate(捐赠)',
-    created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
-    INDEX idx_tenant_id (tenant_id)
+CREATE TABLE point_expiration_config (
+    id                  BIGINT PRIMARY KEY AUTO_INCREMENT,
+    tenant_id           BIGINT NOT NULL UNIQUE,
+    expiration_months   INT NOT NULL DEFAULT 12 COMMENT '过期月数',
+    notify_days_before  INT NOT NULL DEFAULT 30 COMMENT '提前通知天数',
+    extension_enabled   TINYINT(1) DEFAULT 1 COMMENT '允许手动延期',
+    extension_months    INT DEFAULT 3 COMMENT '延期时长',
+    expired_handling    VARCHAR(20) DEFAULT 'forfeit' COMMENT 'forfeit/donate',
+    created_at          DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at          DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='积分过期配置表';
+
+-- ============================================================
+-- 15. 权限套餐
+-- ============================================================
+
+CREATE TABLE permission_packages (
+    id              BIGINT PRIMARY KEY AUTO_INCREMENT,
+    code            VARCHAR(20) NOT NULL UNIQUE COMMENT '套餐编码: free/pro/enterprise',
+    name            VARCHAR(50) NOT NULL COMMENT '套餐名称',
+    description     VARCHAR(200) COMMENT '套餐描述',
+    max_users       INT NOT NULL DEFAULT 50 COMMENT '最大用户数',
+    status          TINYINT(1) NOT NULL DEFAULT 1 COMMENT '状态: 1=启用, 0=禁用',
+    created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='权限套餐表';
+
+CREATE TABLE package_permissions (
+    id              BIGINT PRIMARY KEY AUTO_INCREMENT,
+    package_id      BIGINT NOT NULL COMMENT '套餐ID',
+    permission_code VARCHAR(60) NOT NULL COMMENT '权限编码',
+    created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    UNIQUE KEY uk_package_permission (package_id, permission_code),
+    INDEX idx_package_id (package_id),
+    INDEX idx_permission_code (permission_code)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='套餐权限关联表';
 
 -- ============================================================
 -- 初始化数据：权限定义

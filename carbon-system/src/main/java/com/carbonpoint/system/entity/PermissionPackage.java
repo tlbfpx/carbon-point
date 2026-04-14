@@ -17,6 +17,8 @@ public class PermissionPackage {
 
     private String description;
 
+    private Integer maxUsers;
+
     private Boolean status;
 
     @TableField(fill = FieldFill.INSERT)
