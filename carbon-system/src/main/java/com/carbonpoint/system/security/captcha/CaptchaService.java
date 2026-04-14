@@ -95,6 +95,44 @@ public class CaptchaService {
         return sb.toString();
     }
 
+    /**
+     * Get captcha fonts with fallback chain.
+     * Tries DejaVu Sans (available after font-dejavu install), then Lucida Sans,
+     * then any available sans-serif, finally default Dialog.
+     */
+    private Font[] getCaptchaFonts() {
+        // Preferred font names in order of preference
+        String[] preferredFonts = {"DejaVu Sans", "Lucida Sans", "SansSerif", "Dialog"};
+        Font[] result = new Font[4];
+
+        for (int i = 0; i < result.length; i++) {
+            result[i] = createFont(preferredFonts, Font.BOLD, 20 + (i * 2));
+        }
+        return result;
+    }
+
+    /**
+     * Try to create a font from preferred names, falling back to default.
+     */
+    private Font createFont(String[] preferredNames, int style, int size) {
+        for (String name : preferredNames) {
+            try {
+                Font font = new Font(name, style, size);
+                if (canDisplay(font, 'A')) {
+                    return font;
+                }
+            } catch (Exception e) {
+                // try next
+            }
+        }
+        // Ultimate fallback - Java's logical font always works
+        return new Font(Font.SANS_SERIF, style, size);
+    }
+
+    private boolean canDisplay(Font font, char c) {
+        return font.canDisplay(c);
+    }
+
     private String generateImage(String code) {
         BufferedImage image = new BufferedImage(IMG_WIDTH, IMG_HEIGHT, BufferedImage.TYPE_INT_RGB);
         Graphics2D g = image.createGraphics();
@@ -117,13 +155,8 @@ public class CaptchaService {
                 g.fillOval(random.nextInt(IMG_WIDTH), random.nextInt(IMG_HEIGHT), 2, 2);
             }
 
-            // 渲染字符
-            Font[] fonts = {
-                    new Font("DejaVu Sans", Font.BOLD, 22),
-                    new Font("DejaVu Sans", Font.BOLD, 20),
-                    new Font("DejaVu Sans", Font.BOLD, 24),
-                    new Font("DejaVu Sans", Font.BOLD, 22)
-            };
+            // 渲染字符 - try DejaVu Sans first, then fall back to any available sans-serif
+            Font[] fonts = getCaptchaFonts();
 
             int charWidth = IMG_WIDTH / code.length();
             for (int i = 0; i < code.length(); i++) {

@@ -25,4 +25,10 @@ public interface PermissionPackageMapper extends BaseMapper<PermissionPackage> {
     @InterceptorIgnore
     @Select("SELECT COUNT(*) FROM tenants WHERE package_id = #{packageId}")
     long countTenantsByPackageId(@Param("packageId") Long packageId);
+
+    @InterceptorIgnore
+    @Select("<script>SELECT package_id, COUNT(*) as cnt FROM tenants WHERE package_id IN " +
+            "<foreach item='id' collection='packageIds' open='(' separator=',' close=')'>#{id}</foreach>" +
+            " GROUP BY package_id</script>")
+    List<java.util.Map<String, Object>> countTenantsByPackageIds(@Param("packageIds") List<Long> packageIds);
 }

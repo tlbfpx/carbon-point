@@ -4,12 +4,14 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.carbonpoint.common.result.Result;
 import com.carbonpoint.system.dto.req.*;
 import com.carbonpoint.system.dto.res.*;
+import com.carbonpoint.system.security.PlatformAdminOnly;
 import com.carbonpoint.system.service.TenantService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/tenant")
+@PlatformAdminOnly
 public class TenantController {
 
     @Autowired

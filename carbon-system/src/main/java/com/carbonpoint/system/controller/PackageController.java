@@ -2,6 +2,7 @@ package com.carbonpoint.system.controller;
 
 import com.carbonpoint.common.result.Result;
 import com.carbonpoint.system.dto.req.PackageCreateReq;
+import com.carbonpoint.system.dto.req.PackagePermissionsUpdateReq;
 import com.carbonpoint.system.dto.req.PackageUpdateReq;
 import com.carbonpoint.system.dto.res.PackageRes;
 import com.carbonpoint.system.security.PlatformAdminOnly;
@@ -51,6 +52,15 @@ public class PackageController {
     @PlatformAdminOnly
     public Result<Void> delete(@PathVariable Long id) {
         packageService.delete(id);
+        return Result.success();
+    }
+
+    @PutMapping("/{id}/permissions")
+    @PlatformAdminOnly
+    public Result<Void> updatePermissions(
+            @PathVariable Long id,
+            @RequestBody PackagePermissionsUpdateReq req) {
+        packageService.updatePermissions(id, req.getPermissionCodes());
         return Result.success();
     }
 }

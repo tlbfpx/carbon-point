@@ -53,6 +53,7 @@ public enum ErrorCode {
     ROLE_SUPER_ADMIN_IMMUTABLE(4006, "超管角色不可修改"),
     ROLE_PERMISSION_EXCEED_PACKAGE(4007, "角色权限超出套餐范围"),
     ROLE_SUPER_ADMIN_ASSIGN_FORBIDDEN(4008, "超管角色不允许从企业侧分配"),
+    ROLE_NOT_IN_TENANT(4009, "角色不属于用户所在租户"),
 
     // ── Check-in  (10001–10100) ────────────────────────────────────────────────
     CHECKIN_NOT_IN_TIME_SLOT(10001, "不在可打卡时段内"),

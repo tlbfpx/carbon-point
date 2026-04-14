@@ -17,11 +17,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Platform admin authentication service implementation.
@@ -200,17 +204,48 @@ public class PlatformAuthServiceImpl implements PlatformAuthService {
     }
 
     private void invalidateAllForAdmin(Long adminId) {
-        // For platform admins, we don't maintain a user-level index yet.
-        // Just mark the current token as used — in a production system,
-        // you'd add an admin-level token index similar to the user-level one.
-        log.info("Platform admin account disabled, tokens need manual cleanup: adminId={}", adminId);
+        // Scan all platform refresh token metadata keys and delete those
+        // belonging to this admin (plus blacklist the tokens themselves).
+        String pattern = REFRESH_TOKEN_META_PREFIX + "*";
+        Set<String> keys = redisTemplate.keys(pattern);
+        if (keys == null) {
+            return;
+        }
+        int invalidated = 0;
+        for (String key : keys) {
+            Map<Object, Object> meta = redisTemplate.opsForHash().entries(key);
+            if (String.valueOf(adminId).equals(meta.get("adminId"))) {
+                String jti = (String) meta.get("jti");
+                // Delete metadata
+                redisTemplate.delete(key);
+                // Blacklist the token by storing its hash with a short TTL
+                // (we can't reconstruct the raw token, so we blacklist by jti lookup)
+                if (jti != null) {
+                    redisTemplate.opsForValue().set(
+                            REFRESH_TOKEN_BLACKLIST_PREFIX + "jti:" + jti,
+                            "1",
+                            Duration.ofMillis(604800000L)
+                    );
+                }
+                invalidated++;
+            }
+        }
+        log.info("Invalidated {} refresh tokens for platform adminId={}", invalidated, adminId);
     }
 
     /**
-     * Simple hash of token for use as Redis key (avoid storing raw JWT in keys).
+     * SHA-256 hash of token, Base64-encoded, for use as Redis key.
+     * Avoids storing raw JWT tokens in Redis keys and provides
+     * collision-resistant hashing (unlike String.hashCode()).
      */
     private String hashToken(String token) {
-        return String.valueOf(token.hashCode());
+        try {
+            byte[] digest = MessageDigest.getInstance("SHA-256")
+                    .digest(token.getBytes(StandardCharsets.UTF_8));
+            return Base64.getUrlEncoder().withoutPadding().encodeToString(digest);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to hash token", e);
+        }
     }
 
     private PlatformAdminVO toVO(PlatformAdminEntity admin) {

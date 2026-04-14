@@ -50,6 +50,7 @@ public class AuthServiceImpl implements com.carbonpoint.system.service.AuthServi
         // Step 1: Check if account is locked
         if (accountLockService.isLocked(phone)) {
             loginSecurityLogService.logFailure(phone, clientIp, null, null, "ACCOUNT_LOCKED");
+            log.warn("用户登录失败(账号锁定): phone={}, clientIp={}", phone, clientIp);
             throw new BusinessException(ErrorCode.AUTH_IP_LOCKED);
         }
 
@@ -63,26 +64,40 @@ public class AuthServiceImpl implements com.carbonpoint.system.service.AuthServi
             if (!captchaService.verify(req.getCaptchaUuid(), req.getCaptchaCode())) {
                 loginRateLimitService.recordFailure(clientIp, phone);
                 loginSecurityLogService.logFailure(phone, clientIp, null, null, "CAPTCHA_WRONG");
+                log.warn("用户登录失败(验证码错误): phone={}, clientIp={}", phone, clientIp);
                 throw new BusinessException(ErrorCode.AUTH_CAPTCHA_WRONG);
             }
         }
 
-        // Step 3: Authenticate credentials (uses selectByPhone to bypass tenant filter for login)
+        // Step 3: Authenticate credentials.
+        // SECURITY: selectByPhone bypasses the MyBatis-Plus tenant isolation interceptor.
+        // This is intentional and required: during login, the user's tenant_id is unknown,
+        // so TenantContext cannot be set. The TenantLineInnerInterceptor would append
+        // "WHERE tenant_id = null" to the query, which MySQL evaluates as always false,
+        // preventing any user from logging in. The mapper uses @InterceptorIgnore(tenantLine = "true")
+        // to bypass this. After successful authentication, the tenant_id is resolved from the
+        // user record and set in TenantContext (see refreshToken method for the pattern).
+        // The bypass is safe here because phone-based lookup is not a data-leak vector:
+        // an attacker gains nothing by discovering whether a phone exists across tenants,
+        // and the password check prevents cross-tenant impersonation.
         User user = userMapper.selectByPhone(phone);
 
         if (user == null || !passwordEncoder.matches(req.getPassword(), user.getPasswordHash())) {
             loginRateLimitService.recordFailure(clientIp, phone);
             loginSecurityLogService.logFailure(phone, clientIp, null, null, "WRONG_PASSWORD");
+            log.warn("用户登录失败(密码错误或用户不存在): phone={}, clientIp={}", phone, clientIp);
             throw new BusinessException(ErrorCode.AUTH_CREDENTIALS_INVALID);
         }
 
         if (!"active".equals(user.getStatus())) {
+            log.warn("用户登录失败(账号禁用): phone={}, clientIp={}", phone, clientIp);
             throw new BusinessException(ErrorCode.USER_DISABLED);
         }
 
         // Step 4: Clear failure counts on successful login
         loginRateLimitService.clearFailure(clientIp, phone);
         loginSecurityLogService.logSuccess(user.getId(), phone, clientIp, null, null, null, false, false, false);
+        log.info("用户登录成功: userId={}, tenantId={}, clientIp={}", user.getId(), user.getTenantId(), clientIp);
 
         // Step 5: Async upgrade BCrypt password to Argon2id if needed
         if (passwordEncoder.needsUpgrade(user.getPasswordHash())) {
@@ -219,13 +234,21 @@ public class AuthServiceImpl implements com.carbonpoint.system.service.AuthServi
                 .user(AuthRes.UserInfo.builder()
                         .userId(user.getId())
                         .tenantId(user.getTenantId())
-                        .phone(user.getPhone())
+                        .phone(maskPhone(user.getPhone()))
                         .nickname(user.getNickname())
                         .avatar(user.getAvatar())
                         .level(user.getLevel())
                         .status(user.getStatus())
                         .build())
                 .build();
+    }
+
+    /**
+     * Mask phone number for privacy: 138****8888
+     */
+    private String maskPhone(String phone) {
+        if (phone == null || phone.length() < 7) return phone;
+        return phone.substring(0, 3) + "****" + phone.substring(phone.length() - 4);
     }
 
     /**

@@ -6,6 +6,7 @@ import com.carbonpoint.system.dto.res.*;
 import com.carbonpoint.system.security.CurrentUser;
 import com.carbonpoint.system.security.RequirePerm;
 import com.carbonpoint.system.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -41,25 +42,28 @@ public class UserController {
     }
 
     @PutMapping("/{id}/enable")
+    @RequirePerm("user:disable")
     public Result<Void> enable(@PathVariable Long id) {
         userService.enable(id);
         return Result.success();
     }
 
     @PutMapping("/{id}/disable")
+    @RequirePerm("user:disable")
     public Result<Void> disable(@PathVariable Long id) {
         userService.disable(id);
         return Result.success();
     }
 
     @PostMapping("/import")
+    @RequirePerm("user:import")
     public Result<BatchImportRes> batchImport(@RequestParam("file") MultipartFile file) {
         return Result.success(userService.batchImport(file));
     }
 
     @PostMapping
     @RequirePerm("user:create")
-    public Result<UserDetailRes> create(@RequestBody UserCreateReq req) {
+    public Result<UserDetailRes> create(@RequestBody @Valid UserCreateReq req) {
         return Result.success(userService.createUser(req));
     }
 }

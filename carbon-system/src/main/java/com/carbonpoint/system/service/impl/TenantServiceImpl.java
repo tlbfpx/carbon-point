@@ -9,26 +9,21 @@ import com.carbonpoint.system.dto.res.*;
 import com.carbonpoint.system.entity.*;
 import com.carbonpoint.system.mapper.*;
 import com.carbonpoint.system.service.TenantService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class TenantServiceImpl implements TenantService {
 
-    @Autowired
-    private TenantMapper tenantMapper;
-
-    @Autowired
-    private RoleMapper roleMapper;
-
-    @Autowired
-    private RolePermissionMapper rolePermissionMapper;
-
-    @Autowired
-    private UserMapper userMapper;
+    private final TenantMapper tenantMapper;
+    private final RoleMapper roleMapper;
+    private final RolePermissionMapper rolePermissionMapper;
+    private final UserMapper userMapper;
 
     @Override
     @Transactional
@@ -192,21 +187,24 @@ public class TenantServiceImpl implements TenantService {
         long total = tenantMapper.countForPlatform(req.getKeyword());
         List<Tenant> tenants = tenantMapper.selectPageForPlatform(req.getKeyword(), offset, pageSize);
 
-        List<TenantDetailRes> records = tenants.stream().map(t -> {
-            long userCount = userMapper.selectCount(
-                    new LambdaQueryWrapper<User>().eq(User::getTenantId, t.getId()));
-            return TenantDetailRes.builder()
-                    .id(t.getId())
-                    .name(t.getName())
-                    .logoUrl(t.getLogoUrl())
-                    .packageType(t.getPackageType())
-                    .maxUsers(t.getMaxUsers())
-                    .status(t.getStatus())
-                    .expireTime(t.getExpireTime())
-                    .userCount((int) userCount)
-                    .createdAt(t.getCreatedAt())
-                    .build();
-        }).toList();
+        // Fetch all user counts in a single query to avoid N+1
+        Map<Long, Integer> userCountMap = tenantMapper.countUsersByTenantId().stream()
+                .collect(Collectors.toMap(
+                        m -> ((Number) m.get("tenant_id")).longValue(),
+                        m -> ((Number) m.get("cnt")).intValue()));
+
+        List<TenantDetailRes> records = tenants.stream().map(t ->
+                TenantDetailRes.builder()
+                        .id(t.getId())
+                        .name(t.getName())
+                        .logoUrl(t.getLogoUrl())
+                        .packageType(t.getPackageType())
+                        .maxUsers(t.getMaxUsers())
+                        .status(t.getStatus())
+                        .expireTime(t.getExpireTime())
+                        .userCount(userCountMap.getOrDefault(t.getId(), 0))
+                        .createdAt(t.getCreatedAt())
+                        .build()).toList();
 
         return PageRes.<TenantDetailRes>builder()
                 .total(total)

@@ -3,6 +3,7 @@ package com.carbonpoint.system.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.carbonpoint.system.entity.RolePermission;
 import org.apache.ibatis.annotations.Delete;
+import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -23,4 +24,16 @@ public interface RolePermissionMapper extends BaseMapper<RolePermission> {
 
     @Select("SELECT permission_code FROM role_permissions WHERE role_id = #{roleId}")
     List<String> selectPermissionCodesByRoleId(@Param("roleId") Long roleId);
+
+    @Select("<script>SELECT role_id, permission_code FROM role_permissions WHERE role_id IN "
+            + "<foreach item='id' collection='roleIds' open='(' separator=',' close=')'>#{id}</foreach></script>")
+    List<RolePermission> selectByRoleIds(@Param("roleIds") List<Long> roleIds);
+
+    @Insert("<script>" +
+            "INSERT INTO role_permissions (role_id, permission_code) VALUES " +
+            "<foreach collection='list' item='item' separator=','>" +
+            "(#{item.roleId}, #{item.permissionCode})" +
+            "</foreach>" +
+            "</script>")
+    int batchInsertRolePerms(@Param("list") List<RolePermission> list);
 }
