@@ -21,7 +21,7 @@ spring:
     username: ${SPRING_DATASOURCE_USERNAME:root}
     password: ${SPRING_DATASOURCE_PASSWORD:}
     hikari:
-      maximum-pool-size: ${SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE:20}
+      maximum-pool-size: ${SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE:30}
       minimum-idle: ${SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE:5}
       connection-timeout: 30000
       idle-timeout: 600000
@@ -71,8 +71,9 @@ mybatis-plus:
   mapper-locations: classpath*:/mapper/**/*.xml
 
 jwt:
-  # SECURITY: MUST be set via JWT_SECRET env var in production. Fallback below meets 256-bit minimum for HS256.
-  secret: ${JWT_SECRET:carbon-point-jwt-secret-key-insecure-fallback-please-set-JWT_SECRET-env-var}
+  # SECURITY: JWT_SECRET MUST be set via environment variable in production.
+  # Application will fail to start if not set.
+  secret: ${JWT_SECRET}
   access-token-expiration: ${JWT_ACCESS_TOKEN_EXPIRATION:86400000}
   refresh-token-expiration: ${JWT_REFRESH_TOKEN_EXPIRATION:604800000}
 

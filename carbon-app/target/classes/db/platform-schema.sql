@@ -38,6 +38,5 @@ CREATE TABLE IF NOT EXISTS platform_operation_logs (
 
 -- 初始化平台管理员默认账号
 -- 密码: admin123 (Argon2id hash, for demo/development only)
-INSERT INTO platform_admins (username, password_hash, display_name, role, status)
-VALUES ('admin', '$argon2id$v=19$m=65536,t=3,p=4$X09iamVsdXNlcm5hbWU$hWF0wFD7VHJlbWVtYmVyT2ZNaXNzaW5nQ29tbWVudHMh', '平台超级管理员', 'super_admin', 'active')
-ON DUPLICATE KEY UPDATE username = username, password_hash = VALUES(password_hash), display_name = VALUES(display_name);
+INSERT IGNORE INTO platform_admins (username, password_hash, display_name, role, status)
+VALUES ('admin', '$argon2id$v=19$m=65536,t=3,p=4$X09iamVsdXNlcm5hbWU$hWF0wFD7VHJlbWVtYmVyT2ZNaXNzaW5nQ29tbWVudHMh', '平台超级管理员', 'super_admin', 'active');

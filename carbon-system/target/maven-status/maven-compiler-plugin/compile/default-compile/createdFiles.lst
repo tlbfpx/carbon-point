@@ -42,7 +42,9 @@ com/carbonpoint/system/dto/TenantVO$TenantVOBuilder.class
 com/carbonpoint/system/service/impl/InvitationServiceImpl.class
 com/carbonpoint/system/dto/req/RefreshTokenReq.class
 com/carbonpoint/system/security/sliding/SlidingCaptchaService.class
+com/carbonpoint/system/security/JwtSecretValidator.class
 com/carbonpoint/system/dto/RefreshTokenRequest.class
+com/carbonpoint/system/dto/req/PackagePermissionsUpdateReq.class
 com/carbonpoint/system/dto/res/RoleDetailRes.class
 com/carbonpoint/system/security/JwtUtils.class
 com/carbonpoint/system/mapper/PermissionPackageMapper.class
@@ -96,6 +98,7 @@ com/carbonpoint/system/mapper/ExchangeOrderQueryMapper$ExpiringCouponRecord.clas
 com/carbonpoint/system/security/forgot/ForgotPasswordController$ValidateCodeResponse.class
 com/carbonpoint/system/dto/req/RoleCreateReq.class
 com/carbonpoint/system/security/RefreshTokenMetadataService.class
+com/carbonpoint/system/security/PlatformPermissionService.class
 com/carbonpoint/system/dto/res/PermissionTreeRes$PermissionTreeResBuilder.class
 com/carbonpoint/system/dto/req/RoleUpdateReq.class
 com/carbonpoint/system/mapper/PointTransactionQueryMapper.class
@@ -123,6 +126,7 @@ com/carbonpoint/system/service/InvitationService.class
 com/carbonpoint/system/entity/PlatformConfigEntity.class
 com/carbonpoint/system/entity/Permission.class
 com/carbonpoint/system/service/PlatformConfigService.class
+com/carbonpoint/system/listener/PackagePermissionRebuildListener.class
 com/carbonpoint/system/security/RequirePerm.class
 com/carbonpoint/system/security/TokenBlacklist.class
 com/carbonpoint/system/dto/req/PackageUpdateReq.class
@@ -131,6 +135,7 @@ com/carbonpoint/system/dto/PlatformOperationLogVO.class
 com/carbonpoint/system/service/impl/UserRoleServiceImpl.class
 com/carbonpoint/system/security/forgot/ForgotPasswordService.class
 com/carbonpoint/system/controller/PlatformOperationLogController.class
+com/carbonpoint/system/event/PackagePermissionUpdatedEvent.class
 com/carbonpoint/system/service/impl/PlatformConfigServiceImpl.class
 com/carbonpoint/system/entity/RolePermission.class
 com/carbonpoint/system/controller/RoleController.class
