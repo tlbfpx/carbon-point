@@ -14,47 +14,47 @@
 ## Phase 1 实现（当前阶段）
 
 ### 待完成
-- [ ] 积分乐观锁 version 字段 + 重试机制
-- [ ] Token 15min 有效期
-- [ ] 打卡 Redis 锁完善
-- [ ] 商城订单 pending 超时处理
-- [ ] HonorSystem 徽章 + 排行榜 API
-- [ ] ErrorCode 错误码格式统一
-- [ ] DDL version 字段添加
+- [x] 积分乐观锁 version 字段 + 重试机制 ✓ 已完成
+- [x] Token 15min 有效期 ✓ 已配置默认 15 分钟
+- [x] 打卡 Redis 锁完善 ✓ Redis + DB 双层兜底已实现
+- [x] 商城订单 pending 超时处理 ✓ 15 分钟超时 + 定时任务已实现
+- [x] HonorSystem 徽章 + 排行榜 API ✓ 已完成
+- [x] ErrorCode 错误码格式统一 ✓ 已统一
+- [ ] DDL version 字段添加 (待同步到数据库)
 
 ### 1. carbon-common 模块
-- [ ] 实现 Result<T> 响应封装类
-- [ ] 实现 ErrorCode 枚举类（43 个错误码）
-- [ ] 实现 GlobalExceptionHandler + @ControllerAdvice
-- [ ] 实现 BizException 工厂方法
+- [x] 实现 Result<T> 响应封装类
+- [x] 实现 ErrorCode 枚举类（43 个错误码）→ 实际上已实现 130+ 错误码
+- [x] 实现 GlobalExceptionHandler + @ControllerAdvice
+- [x] 实现 BizException 工厂方法
 
 ### 2. carbon-system 模块
-- [ ] 实现 JWT Token 管理（15min + refresh_token 轮换安全）
-- [ ] 实现多租户 TenantLineInnerInterceptor
-- [ ] 实现 @RequirePerm AOP 权限校验
-- [ ] 实现 Redis 分布式锁工具类
+- [x] 实现 JWT Token 管理（15min + refresh_token 轮换安全）
+- [x] 实现多租户 TenantLineInnerInterceptor
+- [x] 实现 @RequirePerm AOP 权限校验
+- [x] 实现 Redis 分布式锁工具类
 
 ### 3. 积分模块
-- [ ] 实现积分乐观锁扣减（version + 重试 3 次）
-- [ ] 实现冻结/解冻积分逻辑
-- [ ] 实现积分规则引擎（6 步计算链）
-- [ ] 实现等级晋升/降级检查
+- [x] 实现积分乐观锁扣减（version + 重试 3 次）
+- [x] 实现冻结/解冻积分逻辑
+- [x] 实现积分规则引擎（6 步计算链）
+- [x] 实现等级晋升/降级检查
 
 ### 4. 打卡模块
-- [ ] 实现 Redis 分布式锁（TTL=10s，重试 2 次）
-- [ ] 实现 DB 唯一索引兜底
-- [ ] 实现 checkin_time 毫秒级时间戳
-- [ ] 实现 Outbox 模式积分发放
+- [x] 实现 Redis 分布式锁（TTL=10s，重试 2 次）
+- [x] 实现 DB 唯一索引兜底
+- [x] 实现 checkin_time 毫秒级时间戳
+- [x] 实现 Outbox 模式积分发放
 
 ### 5. 商城模块
-- [ ] 实现订单状态机（pending 超时 15min）
-- [ ] 实现卡券核销幂等性（INSERT IGNORE）
-- [ ] 实现兑换积分冻结/解冻
+- [x] 实现订单状态机（pending 超时 15min）
+- [x] 实现卡券核销幂等性（INSERT IGNORE）
+- [x] 实现兑换积分冻结/解冻
 
 ### 6. 荣誉模块
-- [ ] 实现徽章原子发放（INSERT IGNORE）
-- [ ] 实现排行榜 API（积分相同按 checkin_time ASC）
-- [ ] 实现部门管理 CRUD
+- [x] 实现徽章原子发放（INSERT IGNORE）
+- [x] 实现排行榜 API（积分相同按 checkin_time ASC）
+- [x] 实现部门管理 CRUD
 
 ### 验收标准
 - [ ] 所有模块单元测试通过
@@ -67,13 +67,13 @@
 
 ## 1. 项目初始化与基础设施
 
-- [ ] 1.1 初始化后端 Spring Boot 3.x + Java 21 项目骨架，配置 Maven 多模块结构（carbon-common / carbon-system / carbon-checkin / carbon-points / carbon-mall / carbon-report / carbon-app）
-- [ ] 1.2 配置 MyBatis-Plus、MySQL 数据源、Redis 连接、OSS 客户端
-- [ ] 1.3 实现多租户拦截器（TenantLineInnerInterceptor），配置 tenant_id 自动填充和 WHERE 条件拼装，支持 @InterceptorIgnore 绕过
-- [ ] 1.4 实现统一响应封装（Result<T>）、全局异常处理、统一错误码定义
-- [ ] 1.5 实现 JWT 认证（Spring Security + JWT），配置 access_token / refresh_token 签发与验证，Token 中携带 user_id / tenant_id / roles
-- [ ] 1.6 实现租户上下文（TenantContext），从 JWT 或请求头解析 tenant_id 并贯穿请求生命周期
-- [ ] 1.7 初始化前端 pnpm Monorepo（apps/h5 + apps/dashboard + packages/ui + packages/api + packages/hooks + packages/utils），配置 Vite + React + Ant Design + TypeScript
+- [x] 1.1 初始化后端 Spring Boot 3.x + Java 21 项目骨架，配置 Maven 多模块结构（carbon-common / carbon-system / carbon-checkin / carbon-points / carbon-mall / carbon-report / carbon-app）
+- [x] 1.2 配置 MyBatis-Plus、MySQL 数据源、Redis 连接、OSS 客户端
+- [x] 1.3 实现多租户拦截器（TenantLineInnerInterceptor），配置 tenant_id 自动填充和 WHERE 条件拼装，支持 @InterceptorIgnore 绕过
+- [x] 1.4 实现统一响应封装（Result<T>）、全局异常处理、统一错误码定义
+- [x] 1.5 实现 JWT 认证（Spring Security + JWT），配置 access_token / refresh_token 签发与验证，Token 中携带 user_id / tenant_id / roles
+- [x] 1.6 实现租户上下文（TenantContext），从 JWT 或请求头解析 tenant_id 并贯穿请求生命周期
+- [x] 1.7 初始化前端 pnpm Monorepo（apps/h5 + apps/dashboard + packages/ui + packages/api + packages/hooks + packages/utils），配置 Vite + React + Ant Design + TypeScript
 
 ## 2. 数据库 Schema 与公共模块
 
