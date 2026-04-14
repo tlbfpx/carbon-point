@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 @Data
 @TableName("users")
 public class User {
-    @TableId(type = IdType.NONE)
+    @TableId(type = IdType.AUTO)
     private Long id;
 
     private Long tenantId;
@@ -39,6 +39,9 @@ public class User {
 
     @Version
     private Long version;
+
+    @TableLogic
+    private Integer deleted;
 
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdAt;

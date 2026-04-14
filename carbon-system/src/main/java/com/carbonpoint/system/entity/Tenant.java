@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 @Data
 @TableName("tenants")
 public class Tenant {
+    @TableId(type = IdType.AUTO)
     private Long id;
     private String name;
     @TableField("logo")
@@ -37,4 +38,7 @@ public class Tenant {
      * 详见 point-engine spec 的"降级规则"章节。
      */
     private String levelMode;
+
+    @TableLogic
+    private Integer deleted;
 }

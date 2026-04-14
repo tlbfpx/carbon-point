@@ -16,8 +16,13 @@ public class UserBadge {
 
     private Long userId;
 
+    private Long tenantId;
+
     private String badgeId;
 
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime earnedAt;
+
+    @TableLogic
+    private Integer deleted;
 }

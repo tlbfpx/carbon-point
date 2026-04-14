@@ -12,38 +12,29 @@ import com.carbonpoint.system.mapper.*;
 import com.carbonpoint.system.security.CurrentUser;
 import com.carbonpoint.system.security.PermissionService;
 import com.carbonpoint.system.service.RoleService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class RoleServiceImpl implements RoleService {
 
-    @Autowired
-    private RoleMapper roleMapper;
-
-    @Autowired
-    private RolePermissionMapper rolePermissionMapper;
-
-    @Autowired
-    private UserRoleMapper userRoleMapper;
-
-    @Autowired
-    private UserMapper userMapper;
-
-    @Autowired
-    private PermissionService permissionService;
-
-    @Autowired
-    private CurrentUser currentUser;
-
-    @Autowired
-    private PackagePermissionMapper packagePermissionMapper;
+    private final RoleMapper roleMapper;
+    private final RolePermissionMapper rolePermissionMapper;
+    private final UserRoleMapper userRoleMapper;
+    private final UserMapper userMapper;
+    private final PermissionService permissionService;
+    private final CurrentUser currentUser;
+    private final PackagePermissionMapper packagePermissionMapper;
+    private final TenantMapper tenantMapper;
 
     private static final String ROLE_TYPE_SUPER_ADMIN = "super_admin";
     private static final String ROLE_TYPE_OPERATOR = "operator";
@@ -80,7 +71,7 @@ public class RoleServiceImpl implements RoleService {
         roleMapper.insert(role);
 
         if (req.getPermissionCodes() != null && !req.getPermissionCodes().isEmpty()) {
-            // Validate subset against super_admin permissions
+            // Validate: non-super_admin role permissions must be within tenant's package scope
             validatePermissionSubset(tenantId, req.getPermissionCodes());
             for (String code : req.getPermissionCodes()) {
                 RolePermission rp = new RolePermission();
@@ -131,10 +122,9 @@ public class RoleServiceImpl implements RoleService {
         Role role = roleMapper.selectById(id);
         if (role == null) throw new BusinessException(ErrorCode.NOT_FOUND);
 
-        // Check editability: super_admin (role_type=super_admin) is immutable
-        if (ROLE_TYPE_SUPER_ADMIN.equals(role.getRoleType())
-                || (!Boolean.TRUE.equals(role.getIsEditable())
-                    && (role.getIsPreset() == null || role.getIsPreset()))) {
+        // Check editability: preset/immutable roles cannot be deleted
+        if (!Boolean.TRUE.equals(role.getIsEditable())
+                && (role.getIsPreset() == null || role.getIsPreset())) {
             throw new BusinessException(ErrorCode.ROLE_SUPER_ADMIN_IMMUTABLE);
         }
 
@@ -196,19 +186,31 @@ public class RoleServiceImpl implements RoleService {
                 // Order: super_admin first, then operator, then custom, then by createdAt
                 .last("ORDER BY FIELD(role_type, 'super_admin', 'operator', 'custom'), created_at ASC");
         List<Role> roles = roleMapper.selectList(wrapper);
-        return roles.stream().map(r -> {
-            List<String> permCodes = rolePermissionMapper.selectPermissionCodesByRoleId(r.getId());
-            return RoleDetailRes.builder()
-                    .id(r.getId())
-                    .tenantId(r.getTenantId())
-                    .name(r.getName())
-                    .isPreset(r.getIsPreset())
-                    .roleType(r.getRoleType())
-                    .isEditable(r.getIsEditable())
-                    .permissionCodes(permCodes)
-                    .createdAt(r.getCreatedAt())
-                    .build();
-        }).toList();
+
+        // Batch-fetch all permissions in a single query to avoid N+1
+        Map<Long, List<String>> permMap;
+        if (!roles.isEmpty()) {
+            List<Long> roleIds = roles.stream().map(Role::getId).toList();
+            permMap = rolePermissionMapper.selectByRoleIds(roleIds).stream()
+                    .collect(Collectors.groupingBy(
+                            RolePermission::getRoleId,
+                            Collectors.mapping(RolePermission::getPermissionCode, Collectors.toList())
+                    ));
+        } else {
+            permMap = Map.of();
+        }
+
+        final var resolvedPermMap = permMap;
+        return roles.stream().map(r -> RoleDetailRes.builder()
+                .id(r.getId())
+                .tenantId(r.getTenantId())
+                .name(r.getName())
+                .isPreset(r.getIsPreset())
+                .roleType(r.getRoleType())
+                .isEditable(r.getIsEditable())
+                .permissionCodes(resolvedPermMap.getOrDefault(r.getId(), List.of()))
+                .createdAt(r.getCreatedAt())
+                .build()).toList();
     }
 
     @Override
@@ -314,7 +316,7 @@ public class RoleServiceImpl implements RoleService {
 
         Long tenantId = role.getTenantId();
 
-        // Validate: newPermissions must be subset of super_admin permissions
+        // Validate: non-super_admin role permissions must be within tenant's package scope
         if (permissionCodes != null && !permissionCodes.isEmpty()) {
             validatePermissionSubset(tenantId, permissionCodes);
         }

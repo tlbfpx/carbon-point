@@ -273,6 +273,51 @@ class TenantPackageChangeTest {
             ArgumentCaptor<RolePermission> rpCaptor = ArgumentCaptor.forClass(RolePermission.class);
             verify(rolePermissionMapper, atLeast(1)).insert(rpCaptor.capture());
         }
+
+        @Test
+        @DisplayName("套餐降级时超管角色权限应收缩至新套餐交集范围")
+        void downgradeShouldShrinkSuperAdminPermissions() {
+            // Given: super_admin has all pro perms, downgrading to free
+            // super_admin should also shrink (intersect), not keep all pro perms
+            List<String> freePerms = List.of("enterprise:dashboard:view");
+            List<String> proPerms = List.of(
+                    "enterprise:dashboard:view",
+                    "enterprise:member:list",
+                    "enterprise:member:create",
+                    "enterprise:member:edit"
+            );
+
+            when(tenantMapper.selectByIdForPlatform(100L)).thenReturn(tenant);
+            when(packageMapper.selectById(1L)).thenReturn(freePackage);
+            when(packagePermissionMapper.selectCodesByPackageId(1L)).thenReturn(freePerms);
+            when(roleMapper.selectByTenantIdForPlatform(100L)).thenReturn(new ArrayList<>(List.of(superAdminRole, operatorRole)));
+            // Super admin has all pro perms (4)
+            when(rolePermissionMapper.selectPermissionCodesByRoleId(10L)).thenReturn(new ArrayList<>(proPerms));
+            // Operator has all pro perms (4)
+            when(rolePermissionMapper.selectPermissionCodesByRoleId(20L)).thenReturn(new ArrayList<>(proPerms));
+            when(userRoleMapper.selectUserIdsByRoleId(10L)).thenReturn(new ArrayList<>(List.of(1L)));
+            when(userRoleMapper.selectUserIdsByRoleId(20L)).thenReturn(new ArrayList<>(List.of(2L)));
+
+            TenantPackageChangeReq req = new TenantPackageChangeReq();
+            req.setPackageId(1L);
+            req.setReason("测试降级收缩");
+
+            // When
+            packageService.changeTenantPackage(100L, req, 999L);
+
+            // Then: super_admin's old permissions should be deleted
+            verify(rolePermissionMapper).deleteByRoleId(10L);
+            // super_admin should only get 1 intersected perm (dashboard:view)
+            verify(rolePermissionMapper, times(1)).insert(argThat((RolePermission rp) ->
+                    rp.getRoleId().equals(10L) && rp.getPermissionCode().equals("enterprise:dashboard:view")));
+            // Operator should only get 1 intersected perm (dashboard:view)
+            verify(rolePermissionMapper, times(1)).insert(argThat((RolePermission rp) ->
+                    rp.getRoleId().equals(20L) && rp.getPermissionCode().equals("enterprise:dashboard:view")));
+            // Total inserts: 2 (1 for super_admin + 1 for operator)
+            verify(rolePermissionMapper, times(2)).insert(any(RolePermission.class));
+            // Cache refresh for super admin user
+            verify(permissionService).refreshUserCache(1L);
+        }
     }
 
     @Nested

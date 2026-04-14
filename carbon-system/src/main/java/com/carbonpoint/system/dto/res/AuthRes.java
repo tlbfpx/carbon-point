@@ -27,5 +27,6 @@ public class AuthRes {
         private String avatar;
         private Integer level;
         private String status;
+        private String tenantName;
     }
 }

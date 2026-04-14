@@ -11,8 +11,6 @@ com/carbonpoint/common/security/EnhancedPasswordEncoder.class
 com/carbonpoint/common/annotation/RequirePerm.class
 com/carbonpoint/common/security/JwtUserPrincipal.class
 com/carbonpoint/common/config/MyMetaObjectHandler.class
-com/carbonpoint/common/entity/PermissionEntity.class
-com/carbonpoint/common/entity/RolePermissionEntity.class
 com/carbonpoint/common/mapper/PasswordHistoryMapper.class
 com/carbonpoint/common/entity/LoginSecurityLogEntity.class
 com/carbonpoint/common/security/PasswordValidator$StrengthLevel.class
@@ -22,6 +20,7 @@ com/carbonpoint/common/service/PasswordHistoryService.class
 com/carbonpoint/common/exception/BusinessException.class
 com/carbonpoint/common/security/SecurityProperties.class
 com/carbonpoint/common/security/SecurityHeadersFilter.class
+com/carbonpoint/common/logging/MdcFilter.class
 com/carbonpoint/common/security/JwtUtil.class
 com/carbonpoint/common/security/SecurityConfig.class
 com/carbonpoint/common/exception/GlobalExceptionHandler.class
@@ -37,7 +36,6 @@ com/carbonpoint/common/security/SecurityProperties$LockProperties.class
 com/carbonpoint/common/security/AppPasswordEncoder.class
 com/carbonpoint/common/security/PlatformJwtUtil.class
 com/carbonpoint/common/result/ErrorCode.class
-com/carbonpoint/common/mapper/CommonPermissionMapper.class
 com/carbonpoint/common/security/JwtAuthenticationFilter.class
 com/carbonpoint/common/security/SpringSecurityPasswordEncoderAdapter.class
 com/carbonpoint/common/tenant/InterceptorIgnore.class

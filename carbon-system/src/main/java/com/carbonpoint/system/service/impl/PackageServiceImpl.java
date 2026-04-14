@@ -9,11 +9,13 @@ import com.carbonpoint.system.dto.req.TenantPackageChangeReq;
 import com.carbonpoint.system.dto.res.PackageRes;
 import com.carbonpoint.system.dto.res.TenantPackageRes;
 import com.carbonpoint.system.entity.*;
+import com.carbonpoint.system.event.PackagePermissionUpdatedEvent;
 import com.carbonpoint.system.mapper.*;
 import com.carbonpoint.system.security.PermissionService;
 import com.carbonpoint.system.service.PackageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,11 +35,12 @@ public class PackageServiceImpl implements PackageService {
     private final RolePermissionMapper rolePermissionMapper;
     private final UserRoleMapper userRoleMapper;
     private final PermissionService permissionService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public List<PackageRes> list() {
         List<PermissionPackage> packages = packageMapper.selectList(null);
-        return packages.stream().map(this::toRes).toList();
+        return toResList(packages);
     }
 
     @Override
@@ -67,16 +70,19 @@ public class PackageServiceImpl implements PackageService {
         packageMapper.insert(pkg);
 
         if (req.getPermissionCodes() != null && !req.getPermissionCodes().isEmpty()) {
-            for (String code : req.getPermissionCodes()) {
-                PackagePermission pp = new PackagePermission();
-                pp.setPackageId(pkg.getId());
-                pp.setPermissionCode(code);
-                packagePermissionMapper.insert(pp);
-            }
+            List<PackagePermission> perms = req.getPermissionCodes().stream()
+                    .map(code -> {
+                        PackagePermission pp = new PackagePermission();
+                        pp.setPackageId(pkg.getId());
+                        pp.setPermissionCode(code);
+                        return pp;
+                    })
+                    .collect(Collectors.toList());
+            packagePermissionMapper.batchInsert(perms);
         }
 
         log.info("Package created: id={}, code={}, name={}", pkg.getId(), pkg.getCode(), pkg.getName());
-        return toRes(packageMapper.selectById(pkg.getId()));
+        return toRes(pkg);
     }
 
     @Override
@@ -85,6 +91,16 @@ public class PackageServiceImpl implements PackageService {
         PermissionPackage pkg = packageMapper.selectById(id);
         if (pkg == null) {
             throw new BusinessException(ErrorCode.PACKAGE_NOT_FOUND);
+        }
+
+        // Check code uniqueness if code is being changed
+        if (req.getCode() != null && !req.getCode().equals(pkg.getCode())) {
+            LambdaQueryWrapper<PermissionPackage> w = new LambdaQueryWrapper<>();
+            w.eq(PermissionPackage::getCode, req.getCode());
+            if (packageMapper.selectCount(w) > 0) {
+                throw new BusinessException(ErrorCode.PACKAGE_CODE_DUPLICATE);
+            }
+            pkg.setCode(req.getCode());
         }
 
         if (req.getName() != null) {
@@ -143,21 +159,21 @@ public class PackageServiceImpl implements PackageService {
         w.eq(PackagePermission::getPackageId, packageId);
         packagePermissionMapper.delete(w);
 
-        // Add new permissions
+        // Add new permissions using batch insert
         if (permissionCodes != null && !permissionCodes.isEmpty()) {
-            for (String code : permissionCodes) {
-                PackagePermission pp = new PackagePermission();
-                pp.setPackageId(packageId);
-                pp.setPermissionCode(code);
-                packagePermissionMapper.insert(pp);
-            }
+            List<PackagePermission> perms = permissionCodes.stream()
+                    .map(code -> {
+                        PackagePermission pp = new PackagePermission();
+                        pp.setPackageId(packageId);
+                        pp.setPermissionCode(code);
+                        return pp;
+                    })
+                    .collect(Collectors.toList());
+            packagePermissionMapper.batchInsert(perms);
         }
 
-        // If this package is in use, rebuild all affected tenant roles
-        long tenantCount = packageMapper.countTenantsByPackageId(packageId);
-        if (tenantCount > 0) {
-            rebuildAllTenantsRolesByPackage(packageId);
-        }
+        // Publish event for async tenant role rebuild (runs AFTER_COMMIT)
+        eventPublisher.publishEvent(new PackagePermissionUpdatedEvent(packageId));
 
         log.info("Package permissions updated: packageId={}, newCount={}", packageId,
                 permissionCodes != null ? permissionCodes.size() : 0);
@@ -223,11 +239,16 @@ public class PackageServiceImpl implements PackageService {
                 .toList();
         for (Role superAdminRole : superAdminRoles) {
             rolePermissionMapper.deleteByRoleId(superAdminRole.getId());
-            for (String perm : newPackagePerms) {
-                RolePermission rp = new RolePermission();
-                rp.setRoleId(superAdminRole.getId());
-                rp.setPermissionCode(perm);
-                rolePermissionMapper.insert(rp);
+            if (!newPackagePerms.isEmpty()) {
+                List<RolePermission> perms = newPackagePerms.stream()
+                        .map(code -> {
+                            RolePermission rp = new RolePermission();
+                            rp.setRoleId(superAdminRole.getId());
+                            rp.setPermissionCode(code);
+                            return rp;
+                        })
+                        .collect(Collectors.toList());
+                rolePermissionMapper.batchInsertRolePerms(perms);
             }
             // Refresh cache for all users with super_admin role
             List<Long> userIds = userRoleMapper.selectUserIdsByRoleId(superAdminRole.getId());
@@ -248,11 +269,16 @@ public class PackageServiceImpl implements PackageService {
             // Only update if permissions changed
             if (intersectedPerms.size() != currentPerms.size()) {
                 rolePermissionMapper.deleteByRoleId(role.getId());
-                for (String perm : intersectedPerms) {
-                    RolePermission rp = new RolePermission();
-                    rp.setRoleId(role.getId());
-                    rp.setPermissionCode(perm);
-                    rolePermissionMapper.insert(rp);
+                if (!intersectedPerms.isEmpty()) {
+                    List<RolePermission> perms = intersectedPerms.stream()
+                            .map(code -> {
+                                RolePermission rp = new RolePermission();
+                                rp.setRoleId(role.getId());
+                                rp.setPermissionCode(code);
+                                return rp;
+                            })
+                            .collect(Collectors.toList());
+                    rolePermissionMapper.batchInsertRolePerms(perms);
                 }
                 // Refresh cache
                 List<Long> userIds = userRoleMapper.selectUserIdsByRoleId(role.getId());
@@ -281,6 +307,54 @@ public class PackageServiceImpl implements PackageService {
                 tenantId, oldPackageId, newPkg.getId(), operatorId);
     }
 
+    /**
+     * Batch-convert packages to PackageRes, fetching permissions and tenant counts
+     * in single queries to avoid N+1.
+     */
+    private List<PackageRes> toResList(List<PermissionPackage> packages) {
+        if (packages.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<Long> packageIds = packages.stream()
+                .map(PermissionPackage::getId)
+                .collect(Collectors.toList());
+
+        // Single query: fetch all permissions for all packages
+        List<PackagePermission> allPerms = packagePermissionMapper.selectByPackageIds(packageIds);
+        Map<Long, List<String>> permsByPackage = allPerms.stream()
+                .collect(Collectors.groupingBy(
+                        PackagePermission::getPackageId,
+                        Collectors.mapping(PackagePermission::getPermissionCode, Collectors.toList())));
+
+        // Single query: fetch tenant counts for all packages
+        List<Map<String, Object>> tenantCounts = packageMapper.countTenantsByPackageIds(packageIds);
+        Map<Long, Long> tenantCountByPackage = new HashMap<>();
+        for (Map<String, Object> row : tenantCounts) {
+            tenantCountByPackage.put(
+                    ((Number) row.get("package_id")).longValue(),
+                    ((Number) row.get("cnt")).longValue());
+        }
+
+        return packages.stream()
+                .map(pkg -> {
+                    List<String> codes = permsByPackage.getOrDefault(pkg.getId(), Collections.emptyList());
+                    return PackageRes.builder()
+                            .id(pkg.getId())
+                            .code(pkg.getCode())
+                            .name(pkg.getName())
+                            .description(pkg.getDescription())
+                            .status(pkg.getStatus())
+                            .permissionCount(codes.size())
+                            .tenantCount(tenantCountByPackage.getOrDefault(pkg.getId(), 0L))
+                            .createdAt(pkg.getCreatedAt())
+                            .updatedAt(pkg.getUpdatedAt())
+                            .permissionCodes(codes)
+                            .build();
+                })
+                .toList();
+    }
+
     private PackageRes toRes(PermissionPackage pkg) {
         List<String> codes = packagePermissionMapper.selectCodesByPackageId(pkg.getId());
         return PackageRes.builder()
@@ -295,61 +369,5 @@ public class PackageServiceImpl implements PackageService {
                 .updatedAt(pkg.getUpdatedAt())
                 .permissionCodes(codes)
                 .build();
-    }
-
-    private void rebuildAllTenantsRolesByPackage(Long packageId) {
-        // Get all tenants using this package
-        LambdaQueryWrapper<Tenant> w = new LambdaQueryWrapper<>();
-        w.eq(Tenant::getPackageId, packageId);
-        List<Tenant> tenants = tenantMapper.selectList(w);
-
-        Set<String> newPackagePerms = new HashSet<>(
-                packagePermissionMapper.selectCodesByPackageId(packageId));
-
-        for (Tenant tenant : tenants) {
-            // Rebuild super_admin role
-            List<Role> superAdminRoles = roleMapper.selectByTenantIdForPlatform(tenant.getId()).stream()
-                    .filter(r -> "super_admin".equals(r.getRoleType()))
-                    .toList();
-            for (Role superAdminRole : superAdminRoles) {
-                rolePermissionMapper.deleteByRoleId(superAdminRole.getId());
-                for (String perm : newPackagePerms) {
-                    RolePermission rp = new RolePermission();
-                    rp.setRoleId(superAdminRole.getId());
-                    rp.setPermissionCode(perm);
-                    rolePermissionMapper.insert(rp);
-                }
-                List<Long> userIds = userRoleMapper.selectUserIdsByRoleId(superAdminRole.getId());
-                for (Long userId : userIds) {
-                    permissionService.refreshUserCache(userId);
-                }
-            }
-
-            // Rebuild operator/custom roles: intersect with new package
-            List<Role> otherRoles = roleMapper.selectByTenantIdForPlatform(tenant.getId()).stream()
-                    .filter(r -> !"super_admin".equals(r.getRoleType()))
-                    .toList();
-            for (Role role : otherRoles) {
-                List<String> currentPerms = rolePermissionMapper.selectPermissionCodesByRoleId(role.getId());
-                List<String> intersectedPerms = currentPerms.stream()
-                        .filter(newPackagePerms::contains)
-                        .toList();
-                if (intersectedPerms.size() != currentPerms.size()) {
-                    rolePermissionMapper.deleteByRoleId(role.getId());
-                    for (String perm : intersectedPerms) {
-                        RolePermission rp = new RolePermission();
-                        rp.setRoleId(role.getId());
-                        rp.setPermissionCode(perm);
-                        rolePermissionMapper.insert(rp);
-                    }
-                    List<Long> userIds = userRoleMapper.selectUserIdsByRoleId(role.getId());
-                    for (Long userId : userIds) {
-                        permissionService.refreshUserCache(userId);
-                    }
-                }
-            }
-
-            log.info("Rebuilt tenant roles after package permission update: tenantId={}", tenant.getId());
-        }
     }
 }

@@ -5,11 +5,13 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.carbonpoint.common.tenant.InterceptorIgnore;
 import com.carbonpoint.system.entity.Tenant;
+import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface TenantMapper extends BaseMapper<Tenant> {
@@ -36,4 +38,8 @@ public interface TenantMapper extends BaseMapper<Tenant> {
     List<Tenant> selectPageForPlatform(@Param("keyword") String keyword,
                                        @Param("offset") long offset,
                                        @Param("limit") long limit);
+
+    @InterceptorIgnore
+    @Select("SELECT tenant_id, COUNT(*) AS cnt FROM users GROUP BY tenant_id")
+    List<Map<String, Object>> countUsersByTenantId();
 }

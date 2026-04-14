@@ -64,6 +64,18 @@ public class PermissionService {
     }
 
     /**
+     * Refresh permission cache for a batch of users.
+     */
+    public void refreshUsersCache(List<Long> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            return;
+        }
+        for (Long userId : userIds) {
+            redissonClient.getSet(PERMISSION_CACHE_KEY + userId).delete();
+        }
+    }
+
+    /**
      * Refresh permission cache for all users in a tenant.
      */
     public void refreshTenantCache(Long tenantId) {

@@ -36,6 +36,7 @@
         <spring-security.version>6.2.0</spring-security.version>
         <argon2.version>2.15</argon2.version>
         <lombok.version>1.18.38</lombok.version>
+        <hutool.version>5.8.26</hutool.version>
     </properties>
 
     <dependencyManagement>
@@ -124,6 +125,13 @@
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcprov-jdk15on</artifactId>
                 <version>1.70</version>
+            </dependency>
+
+            <!-- Hutool for utilities -->
+            <dependency>
+                <groupId>cn.hutool</groupId>
+                <artifactId>hutool-all</artifactId>
+                <version>${hutool.version}</version>
             </dependency>
 
             <!-- Internal Modules -->

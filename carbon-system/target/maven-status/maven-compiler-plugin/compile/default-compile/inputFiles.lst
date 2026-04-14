@@ -38,6 +38,7 @@
 /Users/muxi/workspace/carbon-point/carbon-system/src/main/java/com/carbonpoint/system/entity/TenantInvitation.java
 /Users/muxi/workspace/carbon-point/carbon-system/src/main/java/com/carbonpoint/system/entity/NotificationTemplate.java
 /Users/muxi/workspace/carbon-point/carbon-system/src/main/java/com/carbonpoint/system/mapper/PackagePermissionMapper.java
+/Users/muxi/workspace/carbon-point/carbon-system/src/main/java/com/carbonpoint/system/security/PlatformPermissionService.java
 /Users/muxi/workspace/carbon-point/carbon-system/src/main/java/com/carbonpoint/system/service/RoleService.java
 /Users/muxi/workspace/carbon-point/carbon-system/src/main/java/com/carbonpoint/system/dto/PlatformAdminVO.java
 /Users/muxi/workspace/carbon-point/carbon-system/src/main/java/com/carbonpoint/system/dto/res/UserDetailRes.java
@@ -47,6 +48,7 @@
 /Users/muxi/workspace/carbon-point/carbon-system/src/main/java/com/carbonpoint/system/service/UserRoleService.java
 /Users/muxi/workspace/carbon-point/carbon-system/src/main/java/com/carbonpoint/system/security/captcha/CaptchaController.java
 /Users/muxi/workspace/carbon-point/carbon-system/src/main/java/com/carbonpoint/system/mapper/TenantMapper.java
+/Users/muxi/workspace/carbon-point/carbon-system/src/main/java/com/carbonpoint/system/dto/req/PackagePermissionsUpdateReq.java
 /Users/muxi/workspace/carbon-point/carbon-system/src/main/java/com/carbonpoint/system/entity/PlatformAdminEntity.java
 /Users/muxi/workspace/carbon-point/carbon-system/src/main/java/com/carbonpoint/system/mapper/UserNotificationPreferenceMapper.java
 /Users/muxi/workspace/carbon-point/carbon-system/src/main/java/com/carbonpoint/system/security/PlatformRequirePermAspect.java
@@ -59,6 +61,7 @@
 /Users/muxi/workspace/carbon-point/carbon-system/src/main/java/com/carbonpoint/system/mapper/PermissionMapper.java
 /Users/muxi/workspace/carbon-point/carbon-system/src/main/java/com/carbonpoint/system/service/PlatformConfigService.java
 /Users/muxi/workspace/carbon-point/carbon-system/src/main/java/com/carbonpoint/system/controller/PlatformOperationLogController.java
+/Users/muxi/workspace/carbon-point/carbon-system/src/main/java/com/carbonpoint/system/event/PackagePermissionUpdatedEvent.java
 /Users/muxi/workspace/carbon-point/carbon-system/src/main/java/com/carbonpoint/system/dto/res/UserNotificationPreferenceRes.java
 /Users/muxi/workspace/carbon-point/carbon-system/src/main/java/com/carbonpoint/system/entity/SmsSendLog.java
 /Users/muxi/workspace/carbon-point/carbon-system/src/main/java/com/carbonpoint/system/entity/PermissionPackage.java
@@ -142,9 +145,11 @@
 /Users/muxi/workspace/carbon-point/carbon-system/src/main/java/com/carbonpoint/system/service/PackageService.java
 /Users/muxi/workspace/carbon-point/carbon-system/src/main/java/com/carbonpoint/system/controller/PlatformPermissionController.java
 /Users/muxi/workspace/carbon-point/carbon-system/src/main/java/com/carbonpoint/system/dto/res/AuthRes.java
+/Users/muxi/workspace/carbon-point/carbon-system/src/main/java/com/carbonpoint/system/security/JwtSecretValidator.java
 /Users/muxi/workspace/carbon-point/carbon-system/src/main/java/com/carbonpoint/system/entity/PackageChangeLog.java
 /Users/muxi/workspace/carbon-point/carbon-system/src/main/java/com/carbonpoint/system/service/impl/RoleServiceImpl.java
 /Users/muxi/workspace/carbon-point/carbon-system/src/main/java/com/carbonpoint/system/service/impl/InvitationServiceImpl.java
 /Users/muxi/workspace/carbon-point/carbon-system/src/main/java/com/carbonpoint/system/mapper/SmsSendLogMapper.java
 /Users/muxi/workspace/carbon-point/carbon-system/src/main/java/com/carbonpoint/system/dto/TenantVO.java
+/Users/muxi/workspace/carbon-point/carbon-system/src/main/java/com/carbonpoint/system/listener/PackagePermissionRebuildListener.java
 /Users/muxi/workspace/carbon-point/carbon-system/src/main/java/com/carbonpoint/system/mapper/BatchImportMapper.java

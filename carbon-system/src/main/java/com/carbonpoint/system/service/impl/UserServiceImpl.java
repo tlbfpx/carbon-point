@@ -12,9 +12,12 @@ import com.carbonpoint.system.dto.res.*;
 import com.carbonpoint.system.entity.*;
 import com.carbonpoint.system.mapper.*;
 import com.carbonpoint.system.service.UserService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,24 +26,18 @@ import java.io.IOException;
 import java.util.*;
 
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
-    @Autowired
-    private UserMapper userMapper;
+    private final UserMapper userMapper;
+    private final TenantMapper tenantMapper;
+    private final UserRoleMapper userRoleMapper;
+    private final BatchImportMapper batchImportMapper;
+    private final AppPasswordEncoder passwordEncoder;
+    private final ObjectMapper objectMapper;
 
-    @Autowired
-    private TenantMapper tenantMapper;
-
-    @Autowired
-    private UserRoleMapper userRoleMapper;
-
-    @Autowired
-    private BatchImportMapper batchImportMapper;
-
-    @Autowired
-    private AppPasswordEncoder passwordEncoder;
-
-    private static final String DEFAULT_PASSWORD = "carbon123";
+    @Value("${app.default-password:carbon123}")
+    private String defaultPassword;
 
     @Override
     @Transactional
@@ -67,7 +64,7 @@ public class UserServiceImpl implements UserService {
         User user = new User();
         user.setTenantId(tenantId);
         user.setPhone(req.getPhone());
-        user.setPasswordHash(passwordEncoder.encode(req.getPassword() != null ? req.getPassword() : DEFAULT_PASSWORD));
+        user.setPasswordHash(passwordEncoder.encode(req.getPassword() != null ? req.getPassword() : defaultPassword));
         user.setNickname(req.getNickname() != null ? req.getNickname() : "用户" + req.getPhone().substring(7));
         user.setDepartmentId(req.getDepartmentId());
         user.setStatus("active");
@@ -90,6 +87,8 @@ public class UserServiceImpl implements UserService {
         // Check user limit
         Tenant tenant = tenantMapper.selectById(tenantId);
         if (tenant == null) throw new BusinessException(ErrorCode.NOT_FOUND);
+        long currentCount = userMapper.selectCount(
+                new LambdaQueryWrapper<User>().eq(User::getTenantId, tenantId));
 
         List<Map<String, String>> failDetails = new ArrayList<>();
         int successCount = 0;
@@ -110,6 +109,13 @@ public class UserServiceImpl implements UserService {
                     continue;
                 }
 
+                // Check user limit before each insert
+                if (currentCount + successCount >= tenant.getMaxUsers()) {
+                    failDetails.add(Map.of("row", String.valueOf(i + 1), "phone", phone,
+                            "reason", "租户用户数已达上限"));
+                    continue;
+                }
+
                 try {
                     LambdaQueryWrapper<User> w = new LambdaQueryWrapper<>();
                     w.eq(User::getPhone, phone);
@@ -121,7 +127,7 @@ public class UserServiceImpl implements UserService {
                     User user = new User();
                     user.setTenantId(tenantId);
                     user.setPhone(phone);
-                    user.setPasswordHash(passwordEncoder.encode(DEFAULT_PASSWORD));
+                    user.setPasswordHash(passwordEncoder.encode(defaultPassword));
                     user.setNickname(nickname != null ? nickname : "用户" + phone.substring(7));
                     user.setStatus("active");
                     user.setLevel(1);
@@ -167,20 +173,11 @@ public class UserServiceImpl implements UserService {
     }
 
     private String toJson(List<Map<String, String>> data) {
-        StringBuilder sb = new StringBuilder("[");
-        for (int i = 0; i < data.size(); i++) {
-            if (i > 0) sb.append(",");
-            sb.append("{");
-            var entryIter = data.get(i).entrySet().iterator();
-            while (entryIter.hasNext()) {
-                var e = entryIter.next();
-                sb.append("\"").append(e.getKey()).append("\":\"").append(e.getValue()).append("\"");
-                if (entryIter.hasNext()) sb.append(",");
-            }
-            sb.append("}");
+        try {
+            return objectMapper.writeValueAsString(data);
+        } catch (JsonProcessingException e) {
+            return "[]";
         }
-        sb.append("]");
-        return sb.toString();
     }
 
     @Override
@@ -242,7 +239,7 @@ public class UserServiceImpl implements UserService {
         return UserDetailRes.builder()
                 .id(user.getId())
                 .tenantId(user.getTenantId())
-                .phone(user.getPhone())
+                .phone(maskPhone(user.getPhone()))
                 .nickname(user.getNickname())
                 .avatar(user.getAvatar())
                 .status(user.getStatus())
@@ -253,5 +250,13 @@ public class UserServiceImpl implements UserService {
                 .departmentId(user.getDepartmentId())
                 .createdAt(user.getCreatedAt())
                 .build();
+    }
+
+    /**
+     * Mask phone number for privacy: 138****8888
+     */
+    private String maskPhone(String phone) {
+        if (phone == null || phone.length() < 7) return phone;
+        return phone.substring(0, 3) + "****" + phone.substring(phone.length() - 4);
     }
 }

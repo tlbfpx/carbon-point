@@ -1,5 +1,7 @@
 package com.carbonpoint.points.service;
 
+import com.carbonpoint.common.exception.BusinessException;
+import com.carbonpoint.common.result.ErrorCode;
 import com.carbonpoint.points.LevelConstants;
 import com.carbonpoint.points.dto.PointCalcResult;
 import com.carbonpoint.points.entity.PointRule;
@@ -43,7 +45,7 @@ public class PointEngineService {
     public PointCalcResult calculate(Long userId, Long ruleId, int userLevel) {
         PointRule timeSlotRule = pointRuleService.getById(ruleId);
         if (timeSlotRule == null) {
-            throw new RuntimeException("时段规则不存在");
+            throw new BusinessException(ErrorCode.POINT_RULE_NOT_FOUND);
         }
         return calculate(userId, timeSlotRule, userLevel);
     }
@@ -106,7 +108,7 @@ public class PointEngineService {
                 .stream()
                 .filter(r -> isTimeInSlot(now, r.getConfig()))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("当前不在任何打卡时段内"));
+                .orElseThrow(() -> new BusinessException(ErrorCode.CHECKIN_NOT_IN_TIME_SLOT));
 
         return calculate(userId, activeRule.getId(), userLevel);
     }

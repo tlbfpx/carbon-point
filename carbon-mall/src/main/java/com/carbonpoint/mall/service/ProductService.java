@@ -126,15 +126,16 @@ public class ProductService {
         return newStock;
     }
 
-    public Page<Product> list(Long tenantId, int page, int size, String status) {
+    public Page<Product> list(Long tenantId, int page, int size, String status, String type) {
         int effectiveSize = Math.min(size, MAX_PAGE_SIZE);
         Page<Product> p = new Page<>(page, effectiveSize);
         LambdaQueryWrapper<Product> qw = new LambdaQueryWrapper<>();
         qw.eq(tenantId != null, Product::getTenantId, tenantId);
-        if (status != null) {
+        if (status != null && !status.isBlank()) {
             qw.eq(Product::getStatus, status);
-        } else {
-            qw.eq(Product::getStatus, "active");
+        }
+        if (type != null && !type.isBlank()) {
+            qw.eq(Product::getType, type);
         }
         qw.orderByAsc(Product::getSortOrder).orderByDesc(Product::getCreatedAt);
         return productMapper.selectPage(p, qw);

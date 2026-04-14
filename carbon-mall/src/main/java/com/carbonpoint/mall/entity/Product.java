@@ -59,4 +59,7 @@ public class Product {
     /** Optimistic locking version for concurrent stock updates */
     @Version
     private Integer version;
+
+    @TableLogic
+    private Integer deleted;
 }

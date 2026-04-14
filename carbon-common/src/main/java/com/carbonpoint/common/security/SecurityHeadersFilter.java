@@ -4,6 +4,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -18,15 +19,23 @@ import java.io.IOException;
  *   <li>X-Content-Type-Options: nosniff</li>
  *   <li>X-Frame-Options: DENY</li>
  *   <li>X-XSS-Protection: 1; mode=block</li>
- *   <li>Content-Security-Policy: ...</li>
+ *   <li>Content-Security-Policy: configurable per environment</li>
  *   <li>Referrer-Policy: strict-origin-when-cross-origin</li>
  *   <li>Permissions-Policy: ...</li>
  * </ul>
  *
  * <p>Registered manually in SecurityConfig to ensure correct filter ordering.
+ * <p>CSP and HSTS are configurable via application.yml per environment
+ * (dev allows localhost origins; production restricts to same-origin only).
  */
 @Component
 public class SecurityHeadersFilter extends OncePerRequestFilter {
+
+    @Value("${security.headers.csp:default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'}")
+    private String cspValue;
+
+    @Value("${security.headers.hsts:max-age=31536000; includeSubDomains; preload}")
+    private String hstsValue;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -34,9 +43,8 @@ public class SecurityHeadersFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
         HttpServletResponse res = response;
 
-        // Strict Transport Security — enforce HTTPS
-        res.setHeader("Strict-Transport-Security",
-                "max-age=31536000; includeSubDomains; preload");
+        // Strict Transport Security — enforce HTTPS (configurable per environment)
+        res.setHeader("Strict-Transport-Security", hstsValue);
 
         // Prevent MIME type sniffing
         res.setHeader("X-Content-Type-Options", "nosniff");
@@ -47,15 +55,8 @@ public class SecurityHeadersFilter extends OncePerRequestFilter {
         // XSS protection (legacy browsers)
         res.setHeader("X-XSS-Protection", "1; mode=block");
 
-        // Content Security Policy
-        res.setHeader("Content-Security-Policy",
-                "default-src 'self'; " +
-                        "script-src 'self' 'unsafe-inline'; " +
-                        "style-src 'self' 'unsafe-inline'; " +
-                        "img-src 'self' data: blob:; " +
-                        "font-src 'self'; " +
-                        "connect-src 'self'; " +
-                        "frame-ancestors 'none';");
+        // Content Security Policy — configurable per environment
+        res.setHeader("Content-Security-Policy", cspValue);
 
         // Referrer policy
         res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");

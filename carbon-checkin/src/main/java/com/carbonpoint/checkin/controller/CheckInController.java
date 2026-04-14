@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.carbonpoint.checkin.dto.CheckInRecordDTO;
 import com.carbonpoint.checkin.dto.CheckInRequestDTO;
 import com.carbonpoint.checkin.dto.CheckInResponseDTO;
+import com.carbonpoint.checkin.dto.TimeSlotDTO;
 import com.carbonpoint.checkin.service.CheckInService;
 import com.carbonpoint.common.result.Result;
 import com.carbonpoint.common.security.JwtUserPrincipal;
@@ -11,6 +12,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/checkin")
@@ -48,5 +51,15 @@ public class CheckInController {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int size) {
         return Result.success(checkInService.getRecords(principal.getUserId(), page, size));
+    }
+
+    /**
+     * Get all time slot rules with their current check-in status.
+     * Returns each slot with status: checked_in / available / not_started / ended.
+     */
+    @GetMapping("/time-slots")
+    public Result<List<TimeSlotDTO>> getTimeSlots(
+            @AuthenticationPrincipal JwtUserPrincipal principal) {
+        return Result.success(checkInService.getTimeSlots(principal.getUserId()));
     }
 }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, SearchBar, TabBar, List, Button, Badge } from 'antd-mobile';
 import { useQuery } from '@tanstack/react-query';
@@ -17,6 +17,7 @@ const MallPage: React.FC = () => {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const [activeTab] = useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
   const tabs = ['全部', '优惠券', '直充', '权益'];
 
   const { data: productsData } = useQuery({
@@ -27,15 +28,23 @@ const MallPage: React.FC = () => {
 
   const products = (productsData?.data?.records || []) as Product[];
 
+  const filteredProducts = useMemo(() => {
+    if (!searchQuery) return products;
+    const query = searchQuery.toLowerCase();
+    return products.filter(
+      (p) => p.name.toLowerCase().includes(query) || p.description.toLowerCase().includes(query)
+    );
+  }, [products, searchQuery]);
+
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#f5f5f5' }}>
       <div style={{ background: '#fff', padding: '8px 16px', borderBottom: '1px solid #eee' }}>
-        <SearchBar placeholder="搜索商品" />
+        <SearchBar placeholder="搜索商品" value={searchQuery} onChange={(val) => setSearchQuery(val)} />
       </div>
 
       <div style={{ flex: 1, overflow: 'auto', padding: 16 }}>
         <List>
-          {products.map((product) => (
+          {filteredProducts.map((product) => (
             <Card
               key={product.id}
               style={{ marginBottom: 12 }}

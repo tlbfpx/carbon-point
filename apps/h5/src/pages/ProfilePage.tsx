@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { List, Card, Avatar, Button, Switch, Toast } from 'antd-mobile';
 import { useAuthStore } from '@/store/authStore';
@@ -6,6 +6,8 @@ import { useAuthStore } from '@/store/authStore';
 const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
 
   const handleLogout = () => {
     logout();
@@ -58,14 +60,28 @@ const ProfilePage: React.FC = () => {
       <Card style={{ margin: '0 16px 16px' }} title="设置">
         <List>
           <List.Item
-            extra={<Switch />}
-            onClick={() => {}}
+            extra={
+              <Switch
+                checked={notificationsEnabled}
+                onChange={(checked) => {
+                  setNotificationsEnabled(checked);
+                  Toast.show(checked ? '已开启消息通知' : '已关闭消息通知');
+                }}
+              />
+            }
           >
             消息通知
           </List.Item>
           <List.Item
-            extra={<Switch defaultChecked />}
-            onClick={() => {}}
+            extra={
+              <Switch
+                checked={soundEnabled}
+                onChange={(checked) => {
+                  setSoundEnabled(checked);
+                  Toast.show(checked ? '已开启声音提示' : '已关闭声音提示');
+                }}
+              />
+            }
           >
             声音提示
           </List.Item>

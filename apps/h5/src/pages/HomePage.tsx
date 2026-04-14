@@ -5,6 +5,13 @@ import { useQuery } from '@tanstack/react-query';
 import { getTodayCheckInStatus } from '@/api/checkin';
 import { useAuthStore } from '@/store/authStore';
 
+const greeting = () => {
+  const hour = new Date().getHours();
+  if (hour < 12) return '早上好';
+  if (hour < 18) return '下午好';
+  return '晚上好';
+};
+
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
@@ -14,12 +21,9 @@ const HomePage: React.FC = () => {
     queryFn: getTodayCheckInStatus,
   });
 
-  const greeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return '早上好';
-    if (hour < 18) return '下午好';
-    return '晚上好';
-  };
+  const checkedIn = checkInStatus?.data?.checkedIn;
+  const consecutiveDays = checkInStatus?.data?.consecutiveDays || 0;
+  const pointsEarned = checkInStatus?.data?.pointsEarned || 0;
 
   return (
     <div style={{ minHeight: '100vh', background: '#f5f5f5', padding: '16px' }}>
@@ -35,18 +39,28 @@ const HomePage: React.FC = () => {
           <div style={{ display: 'flex', justifyContent: 'center', padding: 20 }}>
             <DotLoading />
           </div>
-        ) : checkInStatus?.data?.checkedIn ? (
+        ) : checkedIn ? (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <div style={{ fontSize: 48, color: '#52c41a' }}>✓</div>
             <p style={{ color: '#52c41a', fontWeight: 'bold' }}>今日已打卡</p>
+            {consecutiveDays > 0 && (
+              <p style={{ color: '#fa8c16', fontSize: 13, fontWeight: 500 }}>
+                已连续 {consecutiveDays} 天打卡
+              </p>
+            )}
             <p style={{ color: '#999', fontSize: 12 }}>
-              获得 {checkInStatus?.data?.pointsEarned || 0} 积分
+              获得 {pointsEarned} 积分
             </p>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <div style={{ fontSize: 48, color: '#faad14' }}>⏰</div>
             <p style={{ fontWeight: 'bold' }}>今日尚未打卡</p>
+            {consecutiveDays > 0 && (
+              <p style={{ color: '#fa8c16', fontSize: 13 }}>
+                已连续 {consecutiveDays} 天，继续加油！
+              </p>
+            )}
             <Button color="primary" onClick={() => navigate('/checkin')} style={{ marginTop: 12 }}>
               立即打卡
             </Button>

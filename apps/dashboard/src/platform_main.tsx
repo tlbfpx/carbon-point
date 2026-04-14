@@ -5,7 +5,7 @@ import { ConfigProvider } from 'antd';
 import zhCN from 'antd/locale/zh_CN';
 import dayjs from 'dayjs';
 import 'dayjs/locale/zh-cn';
-import App from './App';
+import PlatformApp from './PlatformApp';
 import './index.css';
 
 dayjs.locale('zh-cn');
@@ -25,7 +25,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <ConfigProvider locale={zhCN}>
-        <App isPlatformApp={true} />
+        <PlatformApp />
       </ConfigProvider>
     </QueryClientProvider>
   </React.StrictMode>

@@ -57,7 +57,7 @@ public class AuthController {
         return Result.success(AuthRes.UserInfo.builder()
                 .userId(user.getId())
                 .tenantId(user.getTenantId())
-                .phone(user.getPhone())
+                .phone(maskPhone(user.getPhone()))
                 .nickname(user.getNickname())
                 .avatar(user.getAvatar())
                 .level(user.getLevel())
@@ -79,5 +79,13 @@ public class AuthController {
             return xri.trim();
         }
         return request.getRemoteAddr();
+    }
+
+    /**
+     * Mask phone number for privacy: 138****8888
+     */
+    private String maskPhone(String phone) {
+        if (phone == null || phone.length() < 7) return phone;
+        return phone.substring(0, 3) + "****" + phone.substring(phone.length() - 4);
     }
 }

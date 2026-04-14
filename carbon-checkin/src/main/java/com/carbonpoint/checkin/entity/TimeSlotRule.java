@@ -17,7 +17,7 @@ import java.time.LocalTime;
 @TableName("time_slot_rules")
 public class TimeSlotRule {
 
-    @TableId(type = IdType.NONE)
+    @TableId(type = IdType.AUTO)
     private Long id;
 
     /** 所属租户 */
@@ -40,4 +40,7 @@ public class TimeSlotRule {
 
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private java.time.LocalDateTime updatedAt;
+
+    @TableLogic
+    private Integer deleted;
 }

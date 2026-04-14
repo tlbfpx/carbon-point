@@ -6,9 +6,11 @@ import lombok.Data;
 @Data
 @TableName("permissions")
 public class Permission {
-    @TableId(type = IdType.AUTO)
-    private Long id;
-
+    /**
+     * Permission code is the primary key (VARCHAR), not auto-increment.
+     * The DDL uses code VARCHAR(60) PRIMARY KEY.
+     */
+    @TableId("code")
     private String code;
 
     private String module;
@@ -18,4 +20,7 @@ public class Permission {
     private String description;
 
     private Integer sortOrder;
+
+    @TableLogic
+    private Integer deleted;
 }

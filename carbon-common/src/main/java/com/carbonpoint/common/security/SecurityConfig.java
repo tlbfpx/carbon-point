@@ -31,9 +31,13 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final PlatformAuthenticationFilter platformAuthenticationFilter;
     private final SecurityHeadersFilter securityHeadersFilter;
+    private final com.carbonpoint.common.logging.MdcFilter mdcFilter;
     private final EnhancedPasswordEncoder passwordEncoder;
 
-    @Value("${cors.allowed-origins:http://localhost:5173,http://localhost:3000}")
+    // Allow multiple local dev ports for frontend development (3000-3010 + 5173)
+    // Allow all localhost origins for development (any port)
+    // In production, configure allowed-origins explicitly
+    @Value("${cors.allowed-origins:http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:3003,http://localhost:3004,http://localhost:3005,http://localhost:3006,http://localhost:3007,http://localhost:3008,http://localhost:3009,http://localhost:3010,http://localhost:5173}")
     private List<String> allowedOrigins;
 
     @Bean
@@ -57,6 +61,8 @@ public class SecurityConfig {
                 )
                 // Security headers filter (applied first)
                 .addFilterBefore(securityHeadersFilter, UsernamePasswordAuthenticationFilter.class)
+                // MDC filter: sets requestId for all requests, runs before JWT auth
+                .addFilterBefore(mdcFilter, JwtAuthenticationFilter.class)
                 // JWT authentication filter (for tenant user APIs)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 // Platform admin authentication filter (for platform admin APIs)

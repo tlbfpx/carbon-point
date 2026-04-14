@@ -7,6 +7,7 @@ com/carbonpoint/checkin/service/CheckInService.class
 com/carbonpoint/checkin/entity/CheckInRecordEntity.class
 com/carbonpoint/checkin/mapper/CheckInRecordMapper.class
 com/carbonpoint/checkin/dto/CheckInRecordDTO.class
+com/carbonpoint/checkin/dto/TimeSlotDTO.class
 com/carbonpoint/checkin/entity/TimeSlotRule.class
 com/carbonpoint/checkin/mapper/CheckinUserMapper.class
 com/carbonpoint/checkin/dto/CheckInRequestDTO.class

@@ -11,8 +11,6 @@ import com.carbonpoint.common.security.AppPasswordEncoder;
 import com.carbonpoint.checkin.entity.CheckInRecordEntity;
 import com.carbonpoint.checkin.mapper.CheckInRecordMapper;
 import com.carbonpoint.common.mapper.PointTransactionMapper;
-import com.carbonpoint.mall.mapper.ExchangeOrderMapper;
-import com.carbonpoint.mall.mapper.ProductMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -64,12 +62,6 @@ public abstract class BaseIntegrationTest {
 
     @Autowired
     protected CheckInRecordMapper checkInRecordMapper;
-
-    @Autowired
-    protected ProductMapper productMapper;
-
-    @Autowired
-    protected ExchangeOrderMapper exchangeOrderMapper;
 
     @AfterEach
     protected void tearDown() {

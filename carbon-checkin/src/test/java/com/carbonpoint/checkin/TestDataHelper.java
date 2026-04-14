@@ -6,10 +6,6 @@ import com.carbonpoint.checkin.mapper.CheckInRecordMapper;
 import com.carbonpoint.checkin.mapper.TimeSlotRuleMapper;
 import com.carbonpoint.common.entity.PointTransactionEntity;
 import com.carbonpoint.common.mapper.PointTransactionMapper;
-import com.carbonpoint.mall.entity.ExchangeOrder;
-import com.carbonpoint.mall.entity.Product;
-import com.carbonpoint.mall.mapper.ExchangeOrderMapper;
-import com.carbonpoint.mall.mapper.ProductMapper;
 import com.carbonpoint.points.entity.PointRule;
 import com.carbonpoint.points.mapper.PointRuleMapper;
 import com.carbonpoint.system.entity.User;
@@ -39,8 +35,6 @@ public class TestDataHelper {
     @Autowired private CheckInRecordMapper checkInRecordMapper;
     @Autowired private PointTransactionMapper pointTransactionMapper;
     @Autowired private PointRuleMapper pointRuleMapper;
-    @Autowired private ProductMapper productMapper;
-    @Autowired private ExchangeOrderMapper exchangeOrderMapper;
     @Autowired private AppPasswordEncoder passwordEncoder;
 
     // ─────────────────────────────────────────
@@ -278,86 +272,6 @@ public class TestDataHelper {
         TenantContext.setTenantId(tenantId);
         pointTransactionMapper.insert(tx);
         return tx;
-    }
-
-    // ─────────────────────────────────────────
-    // Product helpers
-    // ─────────────────────────────────────────
-
-    public ProductBuilder product(Long tenantId, String name, String type, int pointsPrice, Integer stock) {
-        return new ProductBuilder(tenantId, name, type, pointsPrice, stock);
-    }
-
-    public class ProductBuilder {
-        private final Product product = new Product();
-
-        private ProductBuilder(Long tenantId, String name, String type, int pointsPrice, Integer stock) {
-            product.setTenantId(tenantId);
-            product.setName(name);
-            product.setType(type);
-            product.setPointsPrice(pointsPrice);
-            product.setStock(stock);
-            product.setMaxPerUser(1);
-            product.setValidityDays(30);
-            product.setFulfillmentConfig("{\"codeLength\":12}");
-            product.setStatus("active");
-            product.setSortOrder(0);
-            TenantContext.setTenantId(tenantId);
-        }
-
-        public ProductBuilder id(Long id) {
-            product.setId(id);
-            return this;
-        }
-
-        public ProductBuilder inactive() {
-            product.setStatus("inactive");
-            return this;
-        }
-
-        public ProductBuilder maxPerUser(int maxPerUser) {
-            product.setMaxPerUser(maxPerUser);
-            return this;
-        }
-
-        public Product save() {
-            // Always use insert - MyBatis-Plus respects explicit IDs for inserts
-            productMapper.insert(product);
-            return product;
-        }
-    }
-
-    // ─────────────────────────────────────────
-    // ExchangeOrder helpers
-    // ─────────────────────────────────────────
-
-    public ExchangeOrderBuilder exchangeOrder(Long tenantId, Long userId, Long productId, String productName, int pointsSpent, String status) {
-        return new ExchangeOrderBuilder(tenantId, userId, productId, productName, pointsSpent, status);
-    }
-
-    public class ExchangeOrderBuilder {
-        private final ExchangeOrder order = new ExchangeOrder();
-
-        private ExchangeOrderBuilder(Long tenantId, Long userId, Long productId, String productName, int pointsSpent, String status) {
-            order.setTenantId(tenantId);
-            order.setUserId(userId);
-            order.setProductId(productId);
-            order.setProductName(productName);
-            order.setProductType("coupon");
-            order.setPointsSpent(pointsSpent);
-            order.setOrderStatus(status);
-            TenantContext.setTenantId(tenantId);
-        }
-
-        public ExchangeOrderBuilder couponCode(String code) {
-            order.setCouponCode(code);
-            return this;
-        }
-
-        public ExchangeOrder save() {
-            exchangeOrderMapper.insert(order);
-            return order;
-        }
     }
 
     // ─────────────────────────────────────────
