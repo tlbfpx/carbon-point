@@ -10,3 +10,24 @@ dist/
 e2e/reports/
 e2e/.auth/
 e2e/test-results/
+apps/dashboard/e2e/reports/
+apps/dashboard/e2e/.auth/
+apps/dashboard/test-results/
+
+# Java build artifacts
+**/target/
+*.class
+*.jar
+*.ear
+*.war
+
+# IDE metadata
+.idea/
+*.iml
+.classpath
+.project
+.factorypath
+.settings/
+
+# OS
+Thumbs.db
