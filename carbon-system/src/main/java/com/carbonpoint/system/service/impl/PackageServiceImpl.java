@@ -234,58 +234,93 @@ public class PackageServiceImpl implements PackageService {
                 packagePermissionMapper.selectCodesByPackageId(newPkg.getId()));
 
         // 1. Update super_admin role: replace with new package permissions
-        List<Role> superAdminRoles = roleMapper.selectByTenantIdForPlatform(tenantId).stream()
+        List<Role> allTenantRoles = roleMapper.selectByTenantIdForPlatform(tenantId);
+        List<Role> superAdminRoles = allTenantRoles.stream()
                 .filter(r -> "super_admin".equals(r.getRoleType()))
                 .toList();
-        for (Role superAdminRole : superAdminRoles) {
-            rolePermissionMapper.deleteByRoleId(superAdminRole.getId());
+
+        // Collect all user IDs that need cache refresh
+        Set<Long> usersToRefresh = new HashSet<>();
+
+        if (!superAdminRoles.isEmpty()) {
+            List<Long> superAdminRoleIds = superAdminRoles.stream().map(Role::getId).toList();
+
+            // Batch delete old permissions
+            rolePermissionMapper.deleteByRoleIds(superAdminRoleIds);
+
+            // Batch insert new permissions
             if (!newPackagePerms.isEmpty()) {
                 List<RolePermission> perms = newPackagePerms.stream()
-                        .map(code -> {
-                            RolePermission rp = new RolePermission();
-                            rp.setRoleId(superAdminRole.getId());
-                            rp.setPermissionCode(code);
-                            return rp;
-                        })
-                        .collect(Collectors.toList());
+                        .flatMap(code -> superAdminRoles.stream()
+                                .map(role -> {
+                                    RolePermission rp = new RolePermission();
+                                    rp.setRoleId(role.getId());
+                                    rp.setPermissionCode(code);
+                                    return rp;
+                                }))
+                        .toList();
                 rolePermissionMapper.batchInsertRolePerms(perms);
             }
-            // Refresh cache for all users with super_admin role
-            List<Long> userIds = userRoleMapper.selectUserIdsByRoleId(superAdminRole.getId());
-            for (Long userId : userIds) {
-                permissionService.refreshUserCache(userId);
-            }
+
+            // Collect users to refresh (batch query)
+            List<Long> superAdminUserIds = userRoleMapper.selectUserIdsByRoleIds(superAdminRoleIds);
+            usersToRefresh.addAll(superAdminUserIds);
         }
 
         // 2. Update operator/custom roles: intersect with new package permissions
-        List<Role> otherRoles = roleMapper.selectByTenantIdForPlatform(tenantId).stream()
+        List<Role> otherRoles = allTenantRoles.stream()
                 .filter(r -> !"super_admin".equals(r.getRoleType()))
                 .toList();
-        for (Role role : otherRoles) {
-            List<String> currentPerms = rolePermissionMapper.selectPermissionCodesByRoleId(role.getId());
-            List<String> intersectedPerms = currentPerms.stream()
-                    .filter(newPackagePerms::contains)
-                    .toList();
-            // Only update if permissions changed
-            if (intersectedPerms.size() != currentPerms.size()) {
-                rolePermissionMapper.deleteByRoleId(role.getId());
-                if (!intersectedPerms.isEmpty()) {
-                    List<RolePermission> perms = intersectedPerms.stream()
+
+        if (!otherRoles.isEmpty()) {
+            List<Long> otherRoleIds = otherRoles.stream().map(Role::getId).toList();
+            // Batch query current permissions
+            List<RolePermission> allCurrentPerms = rolePermissionMapper.selectByRoleIds(otherRoleIds);
+
+            // Group by role and calculate intersections
+            Map<Long, List<String>> permsByRole = allCurrentPerms.stream()
+                    .collect(Collectors.groupingBy(RolePermission::getRoleId,
+                            Collectors.mapping(RolePermission::getPermissionCode, Collectors.toList())));
+
+            List<Role> rolesWithChangedPerms = new ArrayList<>();
+            List<RolePermission> newPermsToInsert = new ArrayList<>();
+
+            for (Role role : otherRoles) {
+                List<String> currentPerms = permsByRole.getOrDefault(role.getId(), List.of());
+                List<String> intersectedPerms = currentPerms.stream()
+                        .filter(newPackagePerms::contains)
+                        .toList();
+                // Only update if permissions changed
+                if (intersectedPerms.size() != currentPerms.size()) {
+                    rolesWithChangedPerms.add(role);
+                    newPermsToInsert.addAll(intersectedPerms.stream()
                             .map(code -> {
                                 RolePermission rp = new RolePermission();
                                 rp.setRoleId(role.getId());
                                 rp.setPermissionCode(code);
                                 return rp;
                             })
-                            .collect(Collectors.toList());
-                    rolePermissionMapper.batchInsertRolePerms(perms);
-                }
-                // Refresh cache
-                List<Long> userIds = userRoleMapper.selectUserIdsByRoleId(role.getId());
-                for (Long userId : userIds) {
-                    permissionService.refreshUserCache(userId);
+                            .toList());
                 }
             }
+
+            if (!rolesWithChangedPerms.isEmpty()) {
+                List<Long> changedRoleIds = rolesWithChangedPerms.stream().map(Role::getId).toList();
+                // Batch delete
+                rolePermissionMapper.deleteByRoleIds(changedRoleIds);
+                // Batch insert
+                if (!newPermsToInsert.isEmpty()) {
+                    rolePermissionMapper.batchInsertRolePerms(newPermsToInsert);
+                }
+                // Collect users to refresh
+                List<Long> changedUserIds = userRoleMapper.selectUserIdsByRoleIds(changedRoleIds);
+                usersToRefresh.addAll(changedUserIds);
+            }
+        }
+
+        // Refresh cache for all affected users at once (using Redis pipeline)
+        if (!usersToRefresh.isEmpty()) {
+            permissionService.refreshUsersCache(new ArrayList<>(usersToRefresh));
         }
 
         // 3. Update tenant's package_id

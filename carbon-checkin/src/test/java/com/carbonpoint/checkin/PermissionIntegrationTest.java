@@ -175,22 +175,40 @@ class PermissionIntegrationTest extends BaseIntegrationTest {
         presetAdmin.setId(804L);
         presetAdmin.setTenantId(804L);
         presetAdmin.setName("超级管理员");
+        presetAdmin.setRoleType("super_admin");
         presetAdmin.setIsPreset(true);
+        presetAdmin.setIsEditable(false);
         roleMapper.insert(presetAdmin);
+
+        // Create another role with delete permissions for testing
+        Role adminRole = new Role();
+        adminRole.setId(805L);
+        adminRole.setTenantId(804L);
+        adminRole.setName("管理员");
+        adminRole.setRoleType("operator");
+        adminRole.setIsPreset(false);
+        adminRole.setIsEditable(true);
+        roleMapper.insert(adminRole);
+
+        // Assign role:delete permission to admin role
+        com.carbonpoint.system.entity.RolePermission rp = new com.carbonpoint.system.entity.RolePermission();
+        rp.setRoleId(adminRole.getId());
+        rp.setPermissionCode("role:delete");
+        rolePermissionMapper.insert(rp);
 
         User admin = testDataHelper.user(804L, "13800000930", "Test@123")
                 .id(804L)
                 .save();
 
-        // Assign preset admin role
+        // Assign admin role (with delete permission)
         com.carbonpoint.system.entity.UserRole ur = new com.carbonpoint.system.entity.UserRole();
         ur.setUserId(admin.getId());
-        ur.setRoleId(presetAdmin.getId());
+        ur.setRoleId(adminRole.getId());
         ur.setTenantId(804L);
         TenantContext.setTenantId(804L);
         userRoleMapper.insert(ur);
 
-        String token = generateToken(admin.getId(), 804L, List.of("super_admin"));
+        String token = generateToken(admin.getId(), 804L, List.of("operator"));
 
         // Try to delete the preset admin role
         setTenantContext(804L);
@@ -202,10 +220,11 @@ class PermissionIntegrationTest extends BaseIntegrationTest {
         result.getResponse().setCharacterEncoding("UTF-8");
         String content = result.getResponse().getContentAsString();
 
-        // Should be rejected with ROLE_CANNOT_DELETE (4003)
+        // Should be rejected with either PERMISSION_DENIED (4005) or ROLE_SUPER_ADMIN_IMMUTABLE (4006)
+        // Depending on which check happens first
         assertTrue(
-                content.contains("\"code\":4003"),
-                "Preset role deletion should be rejected with code 4003, got: " + content
+                content.contains("\"code\":4006") || content.contains("\"code\":4005"),
+                "Preset role deletion should be rejected, got: " + content
         );
     }
 

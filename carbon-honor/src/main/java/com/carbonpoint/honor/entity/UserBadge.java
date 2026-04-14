@@ -16,6 +16,7 @@ public class UserBadge {
 
     private Long userId;
 
+    @TableField("tenant_id")
     private Long tenantId;
 
     private String badgeId;

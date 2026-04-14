@@ -34,7 +34,7 @@ import static org.mockito.Mockito.*;
 @SpringBootApplication(scanBasePackages = "com.carbonpoint")
 @EnableScheduling
 @EnableConfigurationProperties(SecurityProperties.class)
-@MapperScan({"com.carbonpoint.system.mapper", "com.carbonpoint.checkin.mapper", "com.carbonpoint.points.mapper", "com.carbonpoint.mall.mapper", "com.carbonpoint.report.mapper", "com.carbonpoint.common.mapper"})
+@MapperScan({"com.carbonpoint.system.mapper", "com.carbonpoint.checkin.mapper", "com.carbonpoint.points.mapper", "com.carbonpoint.mall.mapper", "com.carbonpoint.report.mapper", "com.carbonpoint.honor.mapper", "com.carbonpoint.common.mapper"})
 public class TestApplication {
 
     public static void main(String[] args) {

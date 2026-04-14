@@ -1,6 +1,7 @@
 package com.carbonpoint.system.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.carbonpoint.common.exception.BusinessException;
 import com.carbonpoint.common.result.ErrorCode;
 import com.carbonpoint.common.security.AppPasswordEncoder;
@@ -129,13 +130,11 @@ public class TenantServiceImpl implements TenantService {
         }
         tenant.setStatus("suspended");
         tenantMapper.updateById(tenant);
-        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(User::getTenantId, id);
-        List<User> users = userMapper.selectList(wrapper);
-        for (User user : users) {
-            user.setStatus("disabled");
-            userMapper.updateById(user);
-        }
+
+        // Batch update all users to inactive status
+        LambdaUpdateWrapper<User> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(User::getTenantId, id).set(User::getStatus, "inactive");
+        userMapper.update(null, updateWrapper);
     }
 
     @Override
@@ -147,13 +146,11 @@ public class TenantServiceImpl implements TenantService {
         }
         tenant.setStatus("active");
         tenantMapper.updateById(tenant);
-        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(User::getTenantId, id);
-        List<User> users = userMapper.selectList(wrapper);
-        for (User user : users) {
-            user.setStatus("active");
-            userMapper.updateById(user);
-        }
+
+        // Batch update all users to active status
+        LambdaUpdateWrapper<User> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(User::getTenantId, id).set(User::getStatus, "active");
+        userMapper.update(null, updateWrapper);
     }
 
     @Override

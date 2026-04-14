@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -29,18 +31,26 @@ public class UserRoleServiceImpl implements UserRoleService {
     @Override
     public List<RoleDetailRes> getUserRoles(Long userId) {
         List<Long> roleIds = userRoleMapper.selectRoleIdsByUserId(userId);
-        return roleIds.stream().map(roleId -> {
-            Role role = roleMapper.selectById(roleId);
-            List<String> permCodes = rolePermissionMapper.selectPermissionCodesByRoleId(roleId);
-            return RoleDetailRes.builder()
-                    .id(role.getId())
-                    .tenantId(role.getTenantId())
-                    .name(role.getName())
-                    .isPreset(role.getIsPreset())
-                    .permissionCodes(permCodes)
-                    .createdAt(role.getCreatedAt())
-                    .build();
-        }).toList();
+        if (roleIds.isEmpty()) {
+            return List.of();
+        }
+
+        // Batch-fetch all roles and permissions to avoid N+1
+        List<Role> roles = roleMapper.selectBatchIds(roleIds);
+        Map<Long, List<String>> permMap = rolePermissionMapper.selectByRoleIds(roleIds).stream()
+                .collect(Collectors.groupingBy(
+                        RolePermission::getRoleId,
+                        Collectors.mapping(RolePermission::getPermissionCode,
+                                Collectors.toList())));
+
+        return roles.stream().map(role -> RoleDetailRes.builder()
+                .id(role.getId())
+                .tenantId(role.getTenantId())
+                .name(role.getName())
+                .isPreset(role.getIsPreset())
+                .permissionCodes(permMap.getOrDefault(role.getId(), List.of()))
+                .createdAt(role.getCreatedAt())
+                .build()).toList();
     }
 
     @Override
@@ -53,11 +63,12 @@ public class UserRoleServiceImpl implements UserRoleService {
         }
         Long userTenantId = user.getTenantId();
 
-        for (Long roleId : roleIds) {
-            Role role = roleMapper.selectById(roleId);
-            if (role == null) {
-                throw new BusinessException(ErrorCode.NOT_FOUND);
-            }
+        // Batch-fetch all roles to avoid N+1
+        List<Role> roles = roleMapper.selectBatchIds(roleIds);
+        if (roles.size() != roleIds.size()) {
+            throw new BusinessException(ErrorCode.NOT_FOUND);
+        }
+        for (Role role : roles) {
             if (!userTenantId.equals(role.getTenantId())) {
                 throw new BusinessException(ErrorCode.ROLE_NOT_IN_TENANT,
                         "角色 %s 不属于用户所在租户".formatted(role.getName()));
@@ -66,12 +77,16 @@ public class UserRoleServiceImpl implements UserRoleService {
 
         // Delete existing
         userRoleMapper.deleteByUserId(userId);
-        // Insert new
-        for (Long roleId : roleIds) {
-            UserRole ur = new UserRole();
-            ur.setUserId(userId);
-            ur.setRoleId(roleId);
-            userRoleMapper.insert(ur);
+        // Batch-insert new
+        if (!roleIds.isEmpty()) {
+            List<UserRole> urList = roleIds.stream()
+                    .map(roleId -> {
+                        UserRole ur = new UserRole();
+                        ur.setUserId(userId);
+                        ur.setRoleId(roleId);
+                        return ur;
+                    }).toList();
+            userRoleMapper.batchInsert(urList);
         }
         // Refresh permission cache
         permissionService.refreshUserCache(userId);

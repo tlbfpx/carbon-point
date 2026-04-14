@@ -64,15 +64,18 @@ public class PermissionService {
     }
 
     /**
-     * Refresh permission cache for a batch of users.
+     * Refresh permission cache for a batch of users using Redis pipeline.
      */
     public void refreshUsersCache(List<Long> userIds) {
         if (userIds == null || userIds.isEmpty()) {
             return;
         }
-        for (Long userId : userIds) {
-            redissonClient.getSet(PERMISSION_CACHE_KEY + userId).delete();
-        }
+        // Use Redis pipeline for batch delete - much faster than sequential calls
+        redissonClient.getKeys().deleteAsync(
+            userIds.stream()
+                .map(userId -> PERMISSION_CACHE_KEY + userId)
+                .toArray(String[]::new)
+        );
     }
 
     /**
@@ -80,18 +83,12 @@ public class PermissionService {
      */
     public void refreshTenantCache(Long tenantId) {
         List<Role> roles = roleMapper.selectByTenantIdForPlatform(tenantId);
-        if (roles != null) {
-            Set<Long> processedUserIds = new HashSet<>();
-            for (Role role : roles) {
-                List<Long> userIds = userRoleMapper.selectUserIdsByRoleId(role.getId());
-                if (userIds != null) {
-                    for (Long userId : userIds) {
-                        if (!processedUserIds.contains(userId)) {
-                            refreshUserCache(userId);
-                            processedUserIds.add(userId);
-                        }
-                    }
-                }
+        if (roles != null && !roles.isEmpty()) {
+            // Use batch query to get all user IDs for all roles at once
+            List<Long> roleIds = roles.stream().map(Role::getId).toList();
+            List<Long> allUserIds = userRoleMapper.selectUserIdsByRoleIds(roleIds);
+            if (allUserIds != null && !allUserIds.isEmpty()) {
+                refreshUsersCache(allUserIds);
             }
         }
     }

@@ -1,7 +1,7 @@
 package com.carbonpoint.points.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.carbonpoint.common.annotation.RequirePerm;
+import com.carbonpoint.system.security.RequirePerm;
 import com.carbonpoint.common.result.Result;
 import com.carbonpoint.common.tenant.TenantContext;
 import com.carbonpoint.points.dto.PointRuleCreateDTO;

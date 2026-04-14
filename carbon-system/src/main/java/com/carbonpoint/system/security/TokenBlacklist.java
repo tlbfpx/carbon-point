@@ -1,8 +1,8 @@
 package com.carbonpoint.system.security;
 
+import lombok.RequiredArgsConstructor;
 import org.redisson.api.RSet;
 import org.redisson.api.RedissonClient;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.TimeUnit;
@@ -11,12 +11,12 @@ import java.util.concurrent.TimeUnit;
  * Redis-based token blacklist for logout / forced expiry.
  */
 @Component
+@RequiredArgsConstructor
 public class TokenBlacklist {
 
     private static final String BLACKLIST_PREFIX = "token:blacklist:";
 
-    @Autowired
-    private RedissonClient redissonClient;
+    private final RedissonClient redissonClient;
 
     /**
      * Add a refresh token to the blacklist (for logout).

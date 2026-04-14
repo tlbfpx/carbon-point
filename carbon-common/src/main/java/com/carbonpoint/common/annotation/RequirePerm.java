@@ -10,7 +10,12 @@ import java.lang.annotation.Target;
  * Place on controller methods to enforce permission validation.
  *
  * Usage: @RequirePerm("user:create") — checks if the current user has the "user:create" permission.
+ *
+ * @deprecated Use {@link com.carbonpoint.system.security.RequirePerm} instead.
+ *     The canonical permission annotation is {@code com.carbonpoint.system.security.RequirePerm},
+ *     which is wired to {@link com.carbonpoint.system.security.RequirePermAspect}.
  */
+@Deprecated
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface RequirePerm {

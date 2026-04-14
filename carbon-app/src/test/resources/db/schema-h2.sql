@@ -1,16 +1,21 @@
 -- H2 test schema (MySQL compatibility mode)
 -- Minimal tables needed for integration tests
+-- Schema matches authoritative DDL in docs/review/ddl/carbon-point-schema.sql
+-- plus soft-delete columns (@TableLogic) required by entity classes
 
 CREATE TABLE IF NOT EXISTS tenants (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     logo VARCHAR(500),
     package_type VARCHAR(20) NOT NULL DEFAULT 'free',
+    package_id BIGINT,
     max_users INT NOT NULL DEFAULT 50,
     status VARCHAR(20) NOT NULL DEFAULT 'active',
     expires_at DATETIME,
+    level_mode VARCHAR(20) NOT NULL DEFAULT 'strict',
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted INT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS users (
@@ -28,8 +33,10 @@ CREATE TABLE IF NOT EXISTS users (
     consecutive_days INT NOT NULL DEFAULT 0,
     last_checkin_date DATE,
     department_id BIGINT,
+    version BIGINT NOT NULL DEFAULT 0,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted INT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS time_slot_rules (
@@ -40,7 +47,8 @@ CREATE TABLE IF NOT EXISTS time_slot_rules (
     end_time TIME NOT NULL,
     enabled BOOLEAN NOT NULL DEFAULT TRUE,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted INT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS check_in_records (
@@ -57,6 +65,7 @@ CREATE TABLE IF NOT EXISTS check_in_records (
     consecutive_days INT DEFAULT 1,
     streak_bonus INT DEFAULT 0,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted INT NOT NULL DEFAULT 0,
     UNIQUE (user_id, checkin_date, time_slot_rule_id)
 );
 
@@ -71,7 +80,8 @@ CREATE TABLE IF NOT EXISTS point_transactions (
     frozen_after INT NOT NULL DEFAULT 0,
     remark VARCHAR(200),
     expire_time DATETIME,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted INT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS point_rules (
@@ -83,7 +93,8 @@ CREATE TABLE IF NOT EXISTS point_rules (
     enabled BOOLEAN NOT NULL DEFAULT TRUE,
     sort_order INT NOT NULL DEFAULT 0,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted INT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS products (
@@ -102,7 +113,8 @@ CREATE TABLE IF NOT EXISTS products (
     sort_order INT NOT NULL DEFAULT 0,
     version INT NOT NULL DEFAULT 0,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted INT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS exchange_orders (
@@ -120,7 +132,8 @@ CREATE TABLE IF NOT EXISTS exchange_orders (
     used_at DATETIME,
     used_by VARCHAR(20),
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted INT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS roles (
@@ -128,29 +141,46 @@ CREATE TABLE IF NOT EXISTS roles (
     tenant_id BIGINT NOT NULL,
     name VARCHAR(50) NOT NULL,
     is_preset BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    role_type VARCHAR(20),
+    is_editable BOOLEAN DEFAULT TRUE,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted INT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS permissions (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    code VARCHAR(60) NOT NULL,
-    parent_id BIGINT,
-    name VARCHAR(50),
-    type VARCHAR(20),
-    path VARCHAR(200),
-    sort_order INT DEFAULT 0
+    code VARCHAR(60) PRIMARY KEY,
+    module VARCHAR(30) NOT NULL,
+    operation VARCHAR(20) NOT NULL,
+    description VARCHAR(100),
+    sort_order INT NOT NULL DEFAULT 0,
+    deleted INT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS role_permissions (
     role_id BIGINT NOT NULL,
     permission_code VARCHAR(60) NOT NULL,
+    deleted INT NOT NULL DEFAULT 0,
     PRIMARY KEY (role_id, permission_code)
 );
 
 CREATE TABLE IF NOT EXISTS user_roles (
     user_id BIGINT NOT NULL,
     role_id BIGINT NOT NULL,
+    tenant_id BIGINT NOT NULL,
+    deleted INT NOT NULL DEFAULT 0,
     PRIMARY KEY (user_id, role_id)
+);
+
+CREATE TABLE IF NOT EXISTS departments (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    tenant_id BIGINT NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    parent_id BIGINT,
+    sort_order INT DEFAULT 0,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted INT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS notifications (
@@ -163,11 +193,13 @@ CREATE TABLE IF NOT EXISTS notifications (
     reference_type VARCHAR(30),
     reference_id VARCHAR(64),
     is_read BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted INT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS login_security_logs (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    tenant_id BIGINT,
     user_type VARCHAR(20),
     user_id BIGINT,
     username VARCHAR(50),
@@ -183,14 +215,16 @@ CREATE TABLE IF NOT EXISTS login_security_logs (
     is_new_device BOOLEAN,
     is_abnormal_location BOOLEAN,
     is_abnormal_time BOOLEAN,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted INT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS password_history (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted INT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS user_notification_preferences (
@@ -199,7 +233,8 @@ CREATE TABLE IF NOT EXISTS user_notification_preferences (
     type VARCHAR(30) NOT NULL,
     enabled BOOLEAN NOT NULL DEFAULT TRUE,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted INT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS notification_templates (
@@ -210,5 +245,6 @@ CREATE TABLE IF NOT EXISTS notification_templates (
     content_template TEXT NOT NULL,
     is_preset BOOLEAN NOT NULL DEFAULT FALSE,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted INT NOT NULL DEFAULT 0
 );

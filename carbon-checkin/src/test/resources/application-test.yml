@@ -47,7 +47,7 @@ mybatis-plus:
       logic-not-delete-value: 0
 
 jwt:
-  secret: test-jwt-secret-key-for-integration-testing-only
+  secret: a3f8c9d2e1b47568a0f7e6d5c4b3a2918765432abcdef1234567890abcdef
   access-token-expiration: 86400000
   refresh-token-expiration: 604800000
 

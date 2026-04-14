@@ -1,6 +1,6 @@
 package com.carbonpoint.report.controller;
 
-import com.carbonpoint.common.annotation.RequirePerm;
+import com.carbonpoint.system.security.RequirePerm;
 import com.carbonpoint.common.result.Result;
 import com.carbonpoint.common.security.JwtUserPrincipal;
 import com.carbonpoint.report.dto.EnterpriseDashboardDTO;

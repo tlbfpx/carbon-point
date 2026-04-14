@@ -54,9 +54,9 @@ public class UserServiceImpl implements UserService {
             throw new BusinessException(ErrorCode.BATCH_IMPORT_FAILED);
         }
 
-        // Check phone uniqueness
+        // Check phone uniqueness within the same tenant
         LambdaQueryWrapper<User> phoneWrapper = new LambdaQueryWrapper<>();
-        phoneWrapper.eq(User::getPhone, req.getPhone());
+        phoneWrapper.eq(User::getTenantId, tenantId).eq(User::getPhone, req.getPhone());
         if (userMapper.selectCount(phoneWrapper) > 0) {
             throw new BusinessException(ErrorCode.USER_PHONE_DUPLICATE);
         }
@@ -205,7 +205,7 @@ public class UserServiceImpl implements UserService {
     public void disable(Long userId) {
         User user = userMapper.selectById(userId);
         if (user == null) throw new BusinessException(ErrorCode.NOT_FOUND);
-        user.setStatus("disabled");
+        user.setStatus("inactive");
         userMapper.updateById(user);
     }
 

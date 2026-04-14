@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -34,7 +35,6 @@ public class RoleServiceImpl implements RoleService {
     private final PermissionService permissionService;
     private final CurrentUser currentUser;
     private final PackagePermissionMapper packagePermissionMapper;
-    private final TenantMapper tenantMapper;
 
     private static final String ROLE_TYPE_SUPER_ADMIN = "super_admin";
     private static final String ROLE_TYPE_OPERATOR = "operator";
@@ -73,12 +73,14 @@ public class RoleServiceImpl implements RoleService {
         if (req.getPermissionCodes() != null && !req.getPermissionCodes().isEmpty()) {
             // Validate: non-super_admin role permissions must be within tenant's package scope
             validatePermissionSubset(tenantId, req.getPermissionCodes());
-            for (String code : req.getPermissionCodes()) {
-                RolePermission rp = new RolePermission();
-                rp.setRoleId(role.getId());
-                rp.setPermissionCode(code);
-                rolePermissionMapper.insert(rp);
-            }
+            List<RolePermission> perms = req.getPermissionCodes().stream()
+                    .map(code -> {
+                        RolePermission rp = new RolePermission();
+                        rp.setRoleId(role.getId());
+                        rp.setPermissionCode(code);
+                        return rp;
+                    }).toList();
+            rolePermissionMapper.batchInsertRolePerms(perms);
         }
 
         return getById(role.getId());
@@ -137,19 +139,43 @@ public class RoleServiceImpl implements RoleService {
             if (roleMapper.selectCount(w) == 0) {
                 // Check if any users would lose their last super admin role
                 List<Long> userIds = userRoleMapper.selectUserIdsByRoleId(id);
-                for (Long userId : userIds) {
-                    List<Long> otherRoles = userRoleMapper.selectRoleIdsByUserId(userId);
-                    otherRoles.remove(id);
-                    boolean hasOtherSuperAdmin = false;
-                    for (Long rid : otherRoles) {
-                        Role r = roleMapper.selectById(rid);
-                        if (r != null && ROLE_TYPE_SUPER_ADMIN.equals(r.getRoleType())) {
-                            hasOtherSuperAdmin = true;
-                            break;
-                        }
+
+                if (!userIds.isEmpty()) {
+                    // Batch-fetch all user-role mappings for all affected users
+                    List<UserRole> allMappings = userRoleMapper.selectByUserIds(userIds);
+
+                    // Build per-user role list map
+                    Map<Long, List<Long>> userToRoles = allMappings.stream()
+                            .collect(Collectors.groupingBy(
+                                    UserRole::getUserId,
+                                    Collectors.mapping(UserRole::getRoleId, Collectors.toList())));
+
+                    // Batch-fetch all other roles
+                    Set<Long> allOtherRoleIds = allMappings.stream()
+                            .map(UserRole::getRoleId)
+                            .filter(rid -> !rid.equals(id))
+                            .collect(Collectors.toSet());
+
+                    Map<Long, Role> otherRolesMap = Map.of();
+                    if (!allOtherRoleIds.isEmpty()) {
+                        List<Role> otherRoles = roleMapper.selectBatchIds(List.copyOf(allOtherRoleIds));
+                        otherRolesMap = otherRoles.stream()
+                                .collect(Collectors.toMap(Role::getId, r -> r));
                     }
-                    if (!hasOtherSuperAdmin && otherRoles.isEmpty()) {
-                        throw new BusinessException(ErrorCode.ROLE_LAST_SUPER_ADMIN);
+
+                    for (Long userId : userIds) {
+                        List<Long> otherRoles = userToRoles.getOrDefault(userId, List.of());
+                        otherRoles.remove(id);
+                        if (otherRoles.isEmpty()) {
+                            throw new BusinessException(ErrorCode.ROLE_LAST_SUPER_ADMIN);
+                        }
+                        boolean hasOtherSuperAdmin = otherRoles.stream()
+                                .map(otherRolesMap::get)
+                                .filter(Objects::nonNull)
+                                .anyMatch(r -> ROLE_TYPE_SUPER_ADMIN.equals(r.getRoleType()));
+                        if (!hasOtherSuperAdmin) {
+                            throw new BusinessException(ErrorCode.ROLE_LAST_SUPER_ADMIN);
+                        }
                     }
                 }
             }
@@ -237,28 +263,30 @@ public class RoleServiceImpl implements RoleService {
         w.eq(UserRole::getRoleId, roleId);
         userRoleMapper.delete(w);
 
-        Long tenantId = role.getTenantId();
+        if (!userIds.isEmpty()) {
+            Long tenantId = role.getTenantId();
 
-        // Add new assignments
-        for (Long userId : userIds) {
-            // Verify user belongs to the same tenant
-            User user = userMapper.selectById(userId);
-            if (user == null) {
-                throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+            // Batch-fetch all users to validate tenant membership
+            List<User> users = userMapper.selectBatchIds(userIds);
+            for (User user : users) {
+                if (!tenantId.equals(user.getTenantId())) {
+                    throw new BusinessException(ErrorCode.USER_NOT_IN_TENANT,
+                            "用户 %s 不属于该租户".formatted(user.getPhone()));
+                }
             }
-            if (!tenantId.equals(user.getTenantId())) {
-                throw new BusinessException(ErrorCode.USER_NOT_IN_TENANT);
-            }
 
-            UserRole ur = new UserRole();
-            ur.setUserId(userId);
-            ur.setRoleId(roleId);
-            userRoleMapper.insert(ur);
-        }
+            // Batch-insert new assignments
+            List<UserRole> urList = userIds.stream()
+                    .map(userId -> {
+                        UserRole ur = new UserRole();
+                        ur.setUserId(userId);
+                        ur.setRoleId(roleId);
+                        return ur;
+                    }).toList();
+            userRoleMapper.batchInsert(urList);
 
-        // Refresh cache
-        for (Long userId : userIds) {
-            permissionService.refreshUserCache(userId);
+            // Batch-refresh permission cache
+            permissionService.refreshUsersCache(userIds);
         }
     }
 
@@ -281,11 +309,15 @@ public class RoleServiceImpl implements RoleService {
         roleMapper.insert(superAdminRole);
 
         // 3. Copy all package permissions to the super_admin role
-        for (String code : packagePermissions) {
-            RolePermission rp = new RolePermission();
-            rp.setRoleId(superAdminRole.getId());
-            rp.setPermissionCode(code);
-            rolePermissionMapper.insert(rp);
+        if (!packagePermissions.isEmpty()) {
+            List<RolePermission> perms = packagePermissions.stream()
+                    .map(code -> {
+                        RolePermission rp = new RolePermission();
+                        rp.setRoleId(superAdminRole.getId());
+                        rp.setPermissionCode(code);
+                        return rp;
+                    }).toList();
+            rolePermissionMapper.batchInsertRolePerms(perms);
         }
 
         // 4. If initial admin user is specified, assign them to super_admin role
@@ -325,20 +357,20 @@ public class RoleServiceImpl implements RoleService {
         rolePermissionMapper.deleteByRoleId(roleId);
 
         // Insert new permissions
-        if (permissionCodes != null) {
-            for (String code : permissionCodes) {
-                RolePermission rp = new RolePermission();
-                rp.setRoleId(roleId);
-                rp.setPermissionCode(code);
-                rolePermissionMapper.insert(rp);
-            }
+        if (permissionCodes != null && !permissionCodes.isEmpty()) {
+            List<RolePermission> perms = permissionCodes.stream()
+                    .map(code -> {
+                        RolePermission rp = new RolePermission();
+                        rp.setRoleId(roleId);
+                        rp.setPermissionCode(code);
+                        return rp;
+                    }).toList();
+            rolePermissionMapper.batchInsertRolePerms(perms);
         }
 
         // Refresh permission cache for all affected users
         List<Long> userIds = userRoleMapper.selectUserIdsByRoleId(roleId);
-        for (Long userId : userIds) {
-            permissionService.refreshUserCache(userId);
-        }
+        permissionService.refreshUsersCache(userIds);
     }
 
     /**

@@ -725,7 +725,7 @@ class SecurityTest extends BaseIntegrationTest {
     @DisplayName("SECRET-01: JWT secret must be sufficiently strong")
     void testJwtSecretStrength() {
         // The test JWT secret should be at least 32 bytes for HS256
-        String secret = "test-jwt-secret-key-for-integration-testing-only";
+        String secret = "test-integration-key-for-unit-testing-only-32chars";
         assertTrue(secret.length() >= 32, "JWT secret must be at least 32 characters for HS256");
 
         // Verify it's not a known weak secret
@@ -778,7 +778,7 @@ class SecurityTest extends BaseIntegrationTest {
      */
     private String createExpiredJwt(Long userId, Long tenantId) {
         try {
-            String secret = "test-jwt-secret-key-for-integration-testing-only";
+            String secret = "test-integration-key-for-unit-testing-only-32chars";
             SecretKey key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
 
             return Jwts.builder()

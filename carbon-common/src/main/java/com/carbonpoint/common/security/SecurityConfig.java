@@ -61,10 +61,10 @@ public class SecurityConfig {
                 )
                 // Security headers filter (applied first)
                 .addFilterBefore(securityHeadersFilter, UsernamePasswordAuthenticationFilter.class)
-                // MDC filter: sets requestId for all requests, runs before JWT auth
-                .addFilterBefore(mdcFilter, JwtAuthenticationFilter.class)
-                // JWT authentication filter (for tenant user APIs)
+                // JWT authentication filter (register first so it can be referenced below)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                // MDC filter: runs before JWT auth, sets requestId for all requests
+                .addFilterBefore(mdcFilter, JwtAuthenticationFilter.class)
                 // Platform admin authentication filter (for platform admin APIs)
                 .addFilterAfter(platformAuthenticationFilter, JwtAuthenticationFilter.class)
                 .exceptionHandling(ex -> ex

@@ -63,4 +63,10 @@ public class PackageController {
         packageService.updatePermissions(id, req.getPermissionCodes());
         return Result.success();
     }
+
+    @GetMapping("/{id}/permissions")
+    @PlatformAdminOnly
+    public Result<List<String>> getPermissions(@PathVariable Long id) {
+        return Result.success(packageService.getPermissionsByPackageId(id));
+    }
 }

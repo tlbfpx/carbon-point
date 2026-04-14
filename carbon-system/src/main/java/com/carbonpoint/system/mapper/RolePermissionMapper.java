@@ -29,6 +29,10 @@ public interface RolePermissionMapper extends BaseMapper<RolePermission> {
             + "<foreach item='id' collection='roleIds' open='(' separator=',' close=')'>#{id}</foreach></script>")
     List<RolePermission> selectByRoleIds(@Param("roleIds") List<Long> roleIds);
 
+    @Delete("<script>DELETE FROM role_permissions WHERE role_id IN "
+            + "<foreach item='id' collection='roleIds' open='(' separator=',' close=')'>#{id}</foreach></script>")
+    int deleteByRoleIds(@Param("roleIds") List<Long> roleIds);
+
     @Insert("<script>" +
             "INSERT INTO role_permissions (role_id, permission_code) VALUES " +
             "<foreach collection='list' item='item' separator=','>" +

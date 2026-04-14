@@ -65,13 +65,16 @@
 
     <build>
         <plugins>
-            <!-- Skip integration tests that require Redis/MySQL infrastructure when running without it -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+            <!-- Skip integration tests that require Redis + MySQL (run via Docker in CI) -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <excludes>
-                        <!-- Integration tests that require Redis + MySQL (run via Docker in CI) -->
                         <exclude>**/*IntegrationTest*.java</exclude>
                         <exclude>**/*ConcurrencyTest*.java</exclude>
                         <exclude>**/LoginSecurityTest.java</exclude>

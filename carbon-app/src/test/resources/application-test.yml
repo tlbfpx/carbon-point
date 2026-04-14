@@ -1,6 +1,14 @@
 spring:
   application:
     name: carbon-point-test
+  main:
+    allow-bean-definition-overriding: true
+
+  autoconfigure:
+    exclude:
+      - org.redisson.spring.starter.RedissonAutoConfigurationV2
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
 
   datasource:
     driver-class-name: org.h2.Driver
@@ -36,7 +44,7 @@ mybatis-plus:
       logic-not-delete-value: 0
 
 jwt:
-  secret: test-jwt-secret-key-for-integration-testing-only
+  secret: test-integration-key-for-unit-testing-only-32chars
   access-token-expiration: 86400000
   refresh-token-expiration: 604800000
 

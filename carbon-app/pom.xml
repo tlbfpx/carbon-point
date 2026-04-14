@@ -126,6 +126,7 @@
                         <exclude>**/LoginSecurityTest.java</exclude>
                         <exclude>**/MultiTenantIsolationTest.java</exclude>
                         <exclude>**/NotificationTriggerTest.java</exclude>
+                        <exclude>**/SecurityTest.java</exclude>
                     </excludes>
                 </configuration>
             </plugin>

@@ -36,6 +36,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = Application.class)
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
+@org.springframework.context.annotation.Import(TestRedisConfig.class)
 public abstract class BaseIntegrationTest {
 
     @LocalServerPort
@@ -198,5 +199,25 @@ public abstract class BaseIntegrationTest {
                 content.contains("\"code\":" + errorCode) || content.contains("\"code\": " + errorCode),
                 "Expected error code " + errorCode + " but got: " + content
         );
+    }
+
+    // ─────────────────────────────────────────
+    // Security test logging (informational)
+    // ─────────────────────────────────────────
+
+    /**
+     * Log security test results for audit/compliance tracking.
+     * These are informational only and do not affect test pass/fail.
+     */
+    protected void logSecurityTest(String testId, String description, String result, String details) {
+        System.out.printf("[SECURITY-TEST] %s | %-30s | %-6s | %s%n", testId, description, result, details);
+    }
+
+    /**
+     * Log security test with additional expected status.
+     */
+    protected void logSecurityTest(String testId, String description, String expected, String actual, String details) {
+        System.out.printf("[SECURITY-TEST] %s | %-30s | expected=%s actual=%s | %s%n",
+                testId, description, expected, actual, details);
     }
 }

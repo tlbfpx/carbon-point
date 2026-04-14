@@ -219,14 +219,19 @@
                         </descriptors>
                     </configuration>
                 </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.2.5</version>
-                    <configuration>
-                        <argLine>-XX:+EnableDynamicAgentLoading</argLine>
-                    </configuration>
-                </plugin>
+                 <plugin>
+                     <groupId>org.apache.maven.plugins</groupId>
+                     <artifactId>maven-surefire-plugin</artifactId>
+                     <version>3.2.5</version>
+                     <configuration>
+                         <argLine>-XX:+EnableDynamicAgentLoading -Xmx512m</argLine>
+                         <parallel>methods</parallel>
+                         <useUnlimitedThreads>true</useUnlimitedThreads>
+                         <forkCount>1C</forkCount>
+                         <reuseForks>true</reuseForks>
+                         <skipTests>false</skipTests>
+                     </configuration>
+                 </plugin>
             </plugins>
         </pluginManagement>
     </build>
