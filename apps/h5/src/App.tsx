@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ConfigProvider } from 'antd-mobile';
 import HomePage from '@/pages/HomePage';
 import CheckInPage from '@/pages/CheckInPage';
@@ -12,6 +12,8 @@ import LoginPage from '@/pages/LoginPage';
 import RegisterPage from '@/pages/RegisterPage';
 import NotificationPage from '@/pages/NotificationPage';
 import { useAuthStore } from '@/store/authStore';
+import ErrorBoundary from '@/components/ErrorBoundary';
+import { routeLogger } from '@carbon-point/utils';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -21,11 +23,25 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   return <>{children}</>;
 };
 
+const RouteLogger: React.FC = () => {
+  const location = useLocation();
+  useEffect(() => {
+    routeLogger.info(`[路由切换] 导航到 ${location.pathname}${location.search}`);
+  }, [location.pathname, location.search]);
+  return null;
+};
+
 const App: React.FC = () => {
+  useEffect(() => {
+    useAuthStore.persist.rehydrate();
+  }, []);
+
   return (
     <ConfigProvider>
-      <BrowserRouter basename="/h5">
-        <Routes>
+      <ErrorBoundary>
+        <BrowserRouter basename="/h5">
+          <RouteLogger />
+          <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route
@@ -94,6 +110,7 @@ const App: React.FC = () => {
           />
         </Routes>
       </BrowserRouter>
+      </ErrorBoundary>
     </ConfigProvider>
   );
 };

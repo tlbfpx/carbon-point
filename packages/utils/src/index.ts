@@ -1,4 +1,6 @@
 import dayjs from 'dayjs';
+export { logger, apiLogger, routeLogger, componentLogger } from './logger';
+export type { LogLevel } from './logger';
 
 /**
  * Format a date to YYYY-MM-DD string

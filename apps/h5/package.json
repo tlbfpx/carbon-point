@@ -18,7 +18,8 @@
     "zustand": "^4.5.0",
     "antd-mobile": "^5.34.0",
     "axios": "^1.6.8",
-    "dayjs": "^1.11.10"
+    "dayjs": "^1.11.10",
+    "loglevel": "^1.9.1"
   },
   "devDependencies": {
     "@types/react": "^18.2.64",

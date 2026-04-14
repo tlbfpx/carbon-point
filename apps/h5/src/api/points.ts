@@ -20,10 +20,18 @@ export interface PointsHistoryItem {
 }
 
 export interface LeaderboardEntry {
-  userId: string;
-  username: string;
-  totalPoints: number;
   rank: number;
+  userId: number;
+  nickname: string;
+  avatar?: string;
+  points: number;
+  isCurrentUser: boolean;
+}
+
+export interface LeaderboardContext {
+  currentRank?: number;
+  changeFromLastWeek?: number;
+  percentile?: number;
 }
 
 export const getPointsAccount = async (tenantId: string, userId: string): Promise<{ data: PointsAccount }> => {
@@ -43,7 +51,12 @@ export const getPointsHistory = async (tenantId: string, userId: string): Promis
   return { data: Array.isArray(payload?.data) ? payload.data : [] };
 };
 
-export const getLeaderboard = async (tenantId: string): Promise<{ data: LeaderboardEntry[] }> => {
-  const res = await apiClient.get('/points/leaderboard', { params: { tenantId } });
+export const getLeaderboardHistory = async (): Promise<{ data: { list: LeaderboardEntry[]; currentUserRank?: number } }> => {
+  const res = await apiClient.get('/v1/leaderboard/history', { params: { page: 1, pageSize: 20 } });
+  return res.data;
+};
+
+export const getLeaderboardContext = async (): Promise<{ data: LeaderboardContext }> => {
+  const res = await apiClient.get('/v1/leaderboard/context');
   return res.data;
 };

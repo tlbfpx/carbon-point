@@ -1,8 +1,7 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Card, List, ProgressBar, DotLoading, Button } from 'antd-mobile';
+import { Card, List, ProgressBar, DotLoading } from 'antd-mobile';
 import { useQuery } from '@tanstack/react-query';
-import { getPointsAccount, getPointsHistory, PointsHistoryItem } from '@/api/points';
+import { getPointsAccount, getPointsHistory, getLeaderboardHistory, getLeaderboardContext, PointsHistoryItem, LeaderboardEntry } from '@/api/points';
 import { useAuthStore } from '@/store/authStore';
 
 const levelConfig = [
@@ -14,7 +13,6 @@ const levelConfig = [
 ];
 
 const PointsPage: React.FC = () => {
-  const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
 
   const { data: accountData, isLoading: accountLoading } = useQuery({
@@ -29,6 +27,16 @@ const PointsPage: React.FC = () => {
     enabled: !!user?.userId,
   });
 
+  const { data: leaderboardData, isLoading: leaderboardLoading } = useQuery({
+    queryKey: ['leaderboardHistory'],
+    queryFn: getLeaderboardHistory,
+  });
+
+  const { data: contextData } = useQuery({
+    queryKey: ['leaderboardContext'],
+    queryFn: getLeaderboardContext,
+  });
+
   const account = accountData?.data;
   const totalPoints = account?.totalPoints || 0;
   const currentLevel = levelConfig.find((l) => totalPoints >= l.min && totalPoints <= l.max) || levelConfig[0];
@@ -36,6 +44,10 @@ const PointsPage: React.FC = () => {
   const progressInLevel = nextLevel
     ? ((totalPoints - currentLevel.min) / (nextLevel.min - currentLevel.min)) * 100
     : 100;
+
+  const leaderboardList: LeaderboardEntry[] = leaderboardData?.data?.list || [];
+  const myRank = contextData?.data?.currentRank;
+  const myPercentile = contextData?.data?.percentile;
 
   return (
     <div style={{ minHeight: '100vh', background: '#f5f5f5' }}>
@@ -70,9 +82,7 @@ const PointsPage: React.FC = () => {
       </div>
 
       <div style={{ padding: 16 }}>
-        <Card style={{ marginBottom: 16 }} title="等级进度"
-          extra={<Button size="small" onClick={() => navigate('/points')}>查看全部</Button>}
-        >
+        <Card style={{ marginBottom: 16 }} title="等级进度">
           <ProgressBar
             percent={Math.round(progressInLevel)}
             style={{ '--fill-color': currentLevel.color } as React.CSSProperties}
@@ -101,6 +111,76 @@ const PointsPage: React.FC = () => {
                 </List.Item>
               ))}
             </List>
+          )}
+        </Card>
+
+        <Card style={{ marginBottom: 16 }} title="排行榜">
+          {leaderboardLoading ? (
+            <div style={{ display: 'flex', justifyContent: 'center', padding: 20 }}>
+              <DotLoading />
+            </div>
+          ) : (
+            <>
+              {myRank && (
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '8px 12px',
+                  background: '#e6f7ff',
+                  borderRadius: 8,
+                  marginBottom: 12,
+                }}>
+                  <span style={{ fontSize: 13, color: '#1890ff' }}>我的排名</span>
+                  <div style={{ display: 'flex', gap: 12, fontSize: 13 }}>
+                    <span style={{ color: '#1890ff', fontWeight: 'bold' }}>#{myRank}</span>
+                    {myPercentile !== undefined && (
+                      <span style={{ color: '#666' }}>超越 {myPercentile}% 用户</span>
+                    )}
+                  </div>
+                </div>
+              )}
+              <List>
+                {leaderboardList.map((entry) => (
+                  <List.Item
+                    key={entry.userId}
+                    extra={<span style={{ color: '#fa8c16', fontWeight: 'bold' }}>{entry.points} 分</span>}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{
+                        display: 'inline-block',
+                        width: 20,
+                        height: 20,
+                        borderRadius: '50%',
+                        textAlign: 'center',
+                        lineHeight: '20px',
+                        fontSize: 11,
+                        fontWeight: 'bold',
+                        background: entry.rank === 1 ? '#ffd700'
+                          : entry.rank === 2 ? '#c0c0c0'
+                          : entry.rank === 3 ? '#cd7f32'
+                          : '#f0f0f0',
+                        color: entry.rank <= 3 ? '#fff' : '#666',
+                      }}>
+                        {entry.rank}
+                      </span>
+                      <span style={{
+                        fontWeight: entry.isCurrentUser ? 'bold' : 'normal',
+                        color: entry.isCurrentUser ? '#1890ff' : '#333',
+                      }}>
+                        {entry.nickname}
+                        {entry.isCurrentUser && ' (我)'}
+                      </span>
+                    </div>
+                  </List.Item>
+                ))}
+                {leaderboardList.length === 0 && (
+                  <p style={{ textAlign: 'center', color: '#999', padding: '16px 0' }}>
+                    暂无排行数据
+                  </p>
+                )}
+              </List>
+            </>
           )}
         </Card>
       </div>
