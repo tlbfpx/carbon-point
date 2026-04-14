@@ -32,6 +32,9 @@ FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 
+# Install DejaVu Sans fonts for captcha image generation
+RUN apk add --no-cache font-dejavu
+
 # Add non-root user for security
 RUN addgroup -S carbon && adduser -S carbon -G carbon
 

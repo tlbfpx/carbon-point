@@ -4,9 +4,6 @@ import com.carbonpoint.system.entity.User;
 import com.carbonpoint.system.entity.Role;
 import com.carbonpoint.system.mapper.RoleMapper;
 import com.carbonpoint.system.mapper.UserRoleMapper;
-import com.carbonpoint.common.entity.PermissionEntity;
-import com.carbonpoint.common.mapper.CommonPermissionMapper;
-import com.carbonpoint.common.entity.RolePermissionEntity;
 import com.carbonpoint.system.mapper.RolePermissionMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,9 +33,6 @@ class PermissionIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
     private UserRoleMapper userRoleMapper;
-
-    @Autowired
-    private CommonPermissionMapper permissionMapper;
 
     @Autowired
     private RolePermissionMapper rolePermissionMapper;

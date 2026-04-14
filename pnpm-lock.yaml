@@ -25,6 +25,9 @@ importers:
       dayjs:
         specifier: ^1.11.10
         version: 1.11.20
+      loglevel:
+        specifier: ^1.9.1
+        version: 1.9.2
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -92,6 +95,9 @@ importers:
       dayjs:
         specifier: ^1.11.10
         version: 1.11.20
+      loglevel:
+        specifier: ^1.9.1
+        version: 1.9.2
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -177,6 +183,9 @@ importers:
       dayjs:
         specifier: ^1.11.10
         version: 1.11.20
+      loglevel:
+        specifier: ^1.9.1
+        version: 1.9.2
     devDependencies:
       typescript:
         specifier: ^5.4.2
@@ -2423,6 +2432,11 @@ packages:
 
   /lodash@4.18.1:
     resolution: {integrity: sha512-dMInicTPVE8d1e5otfwmmjlxkZoUpiVLwyeTdUsi/Caj/gfzzblBcCE5sRHV/AsjuCmxWrte2TNGSYuCeCq+0Q==}
+    dev: false
+
+  /loglevel@1.9.2:
+    resolution: {integrity: sha512-HgMmCqIJSAKqo68l0rS2AanEWfkxaZ5wNiEFb5ggm08lDs9Xl2KxBlX3PTcaD2chBM1gXAYf491/M2Rv8Jwayg==}
+    engines: {node: '>= 0.6.0'}
     dev: false
 
   /loose-envify@1.4.0:

@@ -121,3 +121,34 @@ packages/utils/    # 共享工具
 - 打卡防并发：数据库唯一索引 + Redis 分布式锁
 - 排行榜缓存 Redis，小时级更新
 - H5 需兼容微信小程序 WebView + APP WebView，注意内核版本差异
+
+## PROJECT ORGANIZATION
+
+### Python Test Scripts
+
+All Python test scripts generated during development **MUST** be organized into the `scripts/` directory:
+
+```
+scripts/
+├── e2e/         # End-to-end API and UI tests
+└── debug/       # Debugging and inspection scripts
+```
+
+**Rule**: Always move newly generated `.py` files into the appropriate subdirectory under `scripts/`. Keep the project root clean.
+
+### Example structure after organization:
+
+```
+carbon-point/
+├── scripts/
+│   ├── e2e/
+│   │   ├── e2e_employee_management_test.py
+│   │   ├── e2e_full_test.py
+│   │   ├── e2e_checkin_flow.py
+│   │   └── ...
+│   └── debug/
+│       ├── e2e_debug1.py
+│       ├── e2e_inspect1.py
+│       └── ...
+└── ...
+```
