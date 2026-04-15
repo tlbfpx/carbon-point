@@ -1,28 +1,46 @@
-import { type Page, type Locator } from '@playwright/test';
+import { Page, Locator, expect } from '@playwright/test';
 import { BASE_URL } from '../../config';
 
 export class PlatformDashboardPage {
   readonly page: Page;
+  readonly sidebar: Locator;
+  readonly segmented: Locator;
+  readonly exportButton: Locator;
   readonly statCards: Locator;
-  readonly charts: Locator;
+  readonly areaChart: Locator;
+  readonly lineChart: Locator;
+  readonly barChart: Locator;
+  readonly rankingTable: Locator;
 
   constructor(page: Page) {
     this.page = page;
-    this.statCards = page.locator('.ant-card');
-    this.charts = page.locator('.ant-card').filter({ hasText: /趋势|统计/ });
+    this.sidebar = page.locator('.ant-layout-sider');
+    this.segmented = page.locator('.ant-segmented');
+    this.exportButton = page.locator('button:has-text("导出报表")');
+    this.statCards = page.locator('.ant-statistic');
+    this.areaChart = page.locator('.recharts-areaChart').first();
+    this.lineChart = page.locator('.recharts-lineChart').first();
+    this.barChart = page.locator('.recharts-barChart').first();
+    this.rankingTable = page.locator('h2:has-text("企业排行详情") + * table');
   }
 
   async goto() {
-    await this.page.goto(`${BASE_URL}/#/platform/dashboard`);
-    await this.page.waitForSelector('.ant-layout', { timeout: 15000 });
+    await this.page.goto(`${BASE_URL}/platform.html#/platform/dashboard`);
+    await this.page.waitForLoadState('networkidle');
   }
 
-  async getEnterpriseCount(): Promise<string> {
-    const card = this.statCards.filter({ hasText: '企业总数' });
-    return await card.locator('.ant-statistic-content-value').textContent() || '0';
+  async expectVisible() {
+    await expect(this.sidebar).toBeVisible();
+    await expect(this.page.locator('text=平台看板').first()).toBeVisible();
   }
 
-  async expectChartsVisible() {
-    await this.charts.first().waitFor({ state: 'visible', timeout: 10000 });
+  async switchDimension(dim: 'day' | 'week' | 'month') {
+    const labels: Record<string, string> = {
+      day: '按日',
+      week: '按周',
+      month: '按月'
+    };
+    await this.segmented.locator(`text=${labels[dim]}`).click();
+    await this.page.waitForTimeout(1000);
   }
 }
