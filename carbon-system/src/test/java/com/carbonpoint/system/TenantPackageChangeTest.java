@@ -140,8 +140,7 @@ class TenantPackageChangeTest {
             // Operator current perms: dashboard:view + member:list (subset of pro, no change needed since same count)
             when(rolePermissionMapper.selectPermissionCodesByRoleId(20L)).thenReturn(
                     new ArrayList<>(List.of("enterprise:dashboard:view", "enterprise:member:list")));
-            when(userRoleMapper.selectUserIdsByRoleId(10L)).thenReturn(new ArrayList<>(List.of(1L)));
-            when(userRoleMapper.selectUserIdsByRoleId(20L)).thenReturn(new ArrayList<>(List.of(2L)));
+            when(userRoleMapper.selectUserIdsByRoleIds(List.of(10L))).thenReturn(new ArrayList<>(List.of(1L)));
 
             TenantPackageChangeReq req = new TenantPackageChangeReq();
             req.setPackageId(2L);
@@ -151,15 +150,13 @@ class TenantPackageChangeTest {
             packageService.changeTenantPackage(100L, req, 999L);
 
             // Then: super_admin permissions should be replaced with new package perms
-            ArgumentCaptor<RolePermission> rpCaptor = ArgumentCaptor.forClass(RolePermission.class);
-            verify(rolePermissionMapper, times(proPerms.size())).insert(rpCaptor.capture());
-            List<String> insertedPerms = rpCaptor.getAllValues().stream()
-                    .map(RolePermission::getPermissionCode)
-                    .toList();
-            assertTrue(insertedPerms.containsAll(proPerms));
+            verify(rolePermissionMapper).batchInsertRolePerms(argThat((List<RolePermission> list) ->
+                    list.size() == proPerms.size() &&
+                    list.stream().allMatch(rp -> rp.getRoleId().equals(10L)) &&
+                    list.stream().map(RolePermission::getPermissionCode).toList().containsAll(proPerms)));
 
             // Cache should be refreshed for super admin (operator's permissions unchanged so no refresh)
-            verify(permissionService).refreshUserCache(1L); // super admin user
+            verify(permissionService).refreshUsersCache(List.of(1L)); // super admin user
         }
 
         @Test
@@ -187,8 +184,11 @@ class TenantPackageChangeTest {
             packageService.changeTenantPackage(100L, req, 999L);
 
             // Then: old perms deleted and new perms inserted
-            verify(rolePermissionMapper).deleteByRoleId(10L); // clear old
-            verify(rolePermissionMapper, times(proPerms.size())).insert(any(RolePermission.class)); // insert new
+            verify(rolePermissionMapper).deleteByRoleIds(List.of(10L)); // clear old
+            verify(rolePermissionMapper).batchInsertRolePerms(argThat((List<RolePermission> list) ->
+                    list.size() == proPerms.size() &&
+                    list.stream().allMatch(rp -> rp.getRoleId().equals(10L)) &&
+                    list.stream().map(RolePermission::getPermissionCode).toList().containsAll(proPerms)));
         }
     }
 
@@ -216,8 +216,12 @@ class TenantPackageChangeTest {
 
             // Super admin currently has pro perms
             when(rolePermissionMapper.selectPermissionCodesByRoleId(10L)).thenReturn(new ArrayList<>(proPerms));
-            // Operator currently has all pro perms
-            when(rolePermissionMapper.selectPermissionCodesByRoleId(20L)).thenReturn(new ArrayList<>(proPerms));
+            // Mock selectByRoleIds for operator role - returns RolePermission objects
+            when(rolePermissionMapper.selectByRoleIds(List.of(20L))).thenReturn(new ArrayList<>(List.of(
+                    createRolePermission(20L, "enterprise:dashboard:view"),
+                    createRolePermission(20L, "enterprise:member:list"),
+                    createRolePermission(20L, "enterprise:member:create")
+            )));
             when(userRoleMapper.selectUserIdsByRoleId(10L)).thenReturn(new ArrayList<>(List.of(1L)));
             when(userRoleMapper.selectUserIdsByRoleId(20L)).thenReturn(new ArrayList<>(List.of(2L)));
 
@@ -230,13 +234,19 @@ class TenantPackageChangeTest {
 
             // Then: operator permissions should be intersected (only dashboard:view)
             // Verify operator's old permissions were deleted
-            verify(rolePermissionMapper).deleteByRoleId(20L);
-            // Super admin gets all free perms (1 perm)
-            verify(rolePermissionMapper, times(1)).insert(argThat((RolePermission rp) ->
-                    rp.getRoleId().equals(10L)));
-            // Operator gets 1 intersected perm
-            verify(rolePermissionMapper, times(1)).insert(argThat((RolePermission rp) ->
-                    rp.getRoleId().equals(20L) && rp.getPermissionCode().equals("enterprise:dashboard:view")));
+            verify(rolePermissionMapper).deleteByRoleIds(List.of(20L));
+            // Operator gets 1 intersected perm via batch
+            verify(rolePermissionMapper).batchInsertRolePerms(argThat((List<RolePermission> list) ->
+                    list.size() == 1 &&
+                    list.get(0).getRoleId().equals(20L) &&
+                    list.get(0).getPermissionCode().equals("enterprise:dashboard:view")));
+        }
+
+        private RolePermission createRolePermission(Long roleId, String permCode) {
+            RolePermission rp = new RolePermission();
+            rp.setRoleId(roleId);
+            rp.setPermissionCode(permCode);
+            return rp;
         }
 
         @Test
@@ -257,7 +267,11 @@ class TenantPackageChangeTest {
             when(roleMapper.selectByTenantIdForPlatform(100L)).thenReturn(new ArrayList<>(List.of(superAdminRole, operatorRole)));
             when(rolePermissionMapper.selectPermissionCodesByRoleId(10L)).thenReturn(new ArrayList<>(proPerms));
             // Operator has all pro perms including member:create (not in free)
-            when(rolePermissionMapper.selectPermissionCodesByRoleId(20L)).thenReturn(new ArrayList<>(proPerms));
+            when(rolePermissionMapper.selectByRoleIds(List.of(20L))).thenReturn(new ArrayList<>(List.of(
+                    createRolePermission(20L, "enterprise:dashboard:view"),
+                    createRolePermission(20L, "enterprise:member:list"),
+                    createRolePermission(20L, "enterprise:member:create")
+            )));
             when(userRoleMapper.selectUserIdsByRoleId(10L)).thenReturn(new ArrayList<>(List.of(1L)));
             when(userRoleMapper.selectUserIdsByRoleId(20L)).thenReturn(new ArrayList<>(List.of(2L)));
 
@@ -268,10 +282,12 @@ class TenantPackageChangeTest {
             packageService.changeTenantPackage(100L, req, 999L);
 
             // Verify operator's old permissions were deleted
-            verify(rolePermissionMapper).deleteByRoleId(20L);
-            // Verify intersected permissions were inserted (1 for operator: dashboard:view)
-            ArgumentCaptor<RolePermission> rpCaptor = ArgumentCaptor.forClass(RolePermission.class);
-            verify(rolePermissionMapper, atLeast(1)).insert(rpCaptor.capture());
+            verify(rolePermissionMapper).deleteByRoleIds(List.of(20L));
+            // Verify intersected permissions were inserted via batch
+            verify(rolePermissionMapper).batchInsertRolePerms(argThat((List<RolePermission> list) ->
+                    list.size() == 1 &&
+                    list.get(0).getRoleId().equals(20L) &&
+                    list.get(0).getPermissionCode().equals("enterprise:dashboard:view")));
         }
 
         @Test
@@ -293,10 +309,15 @@ class TenantPackageChangeTest {
             when(roleMapper.selectByTenantIdForPlatform(100L)).thenReturn(new ArrayList<>(List.of(superAdminRole, operatorRole)));
             // Super admin has all pro perms (4)
             when(rolePermissionMapper.selectPermissionCodesByRoleId(10L)).thenReturn(new ArrayList<>(proPerms));
-            // Operator has all pro perms (4)
-            when(rolePermissionMapper.selectPermissionCodesByRoleId(20L)).thenReturn(new ArrayList<>(proPerms));
-            when(userRoleMapper.selectUserIdsByRoleId(10L)).thenReturn(new ArrayList<>(List.of(1L)));
-            when(userRoleMapper.selectUserIdsByRoleId(20L)).thenReturn(new ArrayList<>(List.of(2L)));
+            // Operator has all pro perms (4) - mock selectByRoleIds for other roles branch
+            when(rolePermissionMapper.selectByRoleIds(List.of(20L))).thenReturn(new ArrayList<>(List.of(
+                    createRolePermission(20L, "enterprise:dashboard:view"),
+                    createRolePermission(20L, "enterprise:member:list"),
+                    createRolePermission(20L, "enterprise:member:create"),
+                    createRolePermission(20L, "enterprise:member:edit")
+            )));
+            when(userRoleMapper.selectUserIdsByRoleIds(List.of(10L))).thenReturn(new ArrayList<>(List.of(1L)));
+            when(userRoleMapper.selectUserIdsByRoleIds(List.of(20L))).thenReturn(new ArrayList<>(List.of(2L)));
 
             TenantPackageChangeReq req = new TenantPackageChangeReq();
             req.setPackageId(1L);
@@ -306,17 +327,19 @@ class TenantPackageChangeTest {
             packageService.changeTenantPackage(100L, req, 999L);
 
             // Then: super_admin's old permissions should be deleted
-            verify(rolePermissionMapper).deleteByRoleId(10L);
+            verify(rolePermissionMapper).deleteByRoleIds(List.of(10L));
             // super_admin should only get 1 intersected perm (dashboard:view)
-            verify(rolePermissionMapper, times(1)).insert(argThat((RolePermission rp) ->
-                    rp.getRoleId().equals(10L) && rp.getPermissionCode().equals("enterprise:dashboard:view")));
+            verify(rolePermissionMapper).batchInsertRolePerms(argThat((List<RolePermission> list) ->
+                    list.size() == 1 &&
+                    list.get(0).getRoleId().equals(10L) &&
+                    list.get(0).getPermissionCode().equals("enterprise:dashboard:view")));
             // Operator should only get 1 intersected perm (dashboard:view)
-            verify(rolePermissionMapper, times(1)).insert(argThat((RolePermission rp) ->
-                    rp.getRoleId().equals(20L) && rp.getPermissionCode().equals("enterprise:dashboard:view")));
-            // Total inserts: 2 (1 for super_admin + 1 for operator)
-            verify(rolePermissionMapper, times(2)).insert(any(RolePermission.class));
-            // Cache refresh for super admin user
-            verify(permissionService).refreshUserCache(1L);
+            verify(rolePermissionMapper).batchInsertRolePerms(argThat((List<RolePermission> list) ->
+                    list.size() == 1 &&
+                    list.get(0).getRoleId().equals(20L) &&
+                    list.get(0).getPermissionCode().equals("enterprise:dashboard:view")));
+            // Cache refresh for both users (super_admin and operator)
+            verify(permissionService).refreshUsersCache(List.of(1L, 2L));
         }
     }
 

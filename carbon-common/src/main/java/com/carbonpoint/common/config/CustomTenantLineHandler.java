@@ -34,6 +34,8 @@ public class CustomTenantLineHandler implements TenantLineHandler {
             "password_history",
             "user_notification_preferences"
     ));
+            "permission_packages",
+            "package_permissions",
 
     @Override
     public Expression getTenantId() {

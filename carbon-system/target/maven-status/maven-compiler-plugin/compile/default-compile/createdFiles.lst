@@ -24,7 +24,6 @@ com/carbonpoint/system/dto/req/TenantUpdateReq.class
 com/carbonpoint/system/controller/TenantController.class
 com/carbonpoint/system/dto/res/TenantDetailRes$TenantDetailResBuilder.class
 com/carbonpoint/system/mapper/ExchangeOrderQueryMapper$ExpiredCouponRecord.class
-com/carbonpoint/system/controller/PackagePermissionController.class
 com/carbonpoint/system/service/UserService.class
 com/carbonpoint/system/service/impl/TenantServiceImpl.class
 com/carbonpoint/system/mapper/UserMapper.class
@@ -124,6 +123,7 @@ com/carbonpoint/system/security/captcha/CaptchaController.class
 com/carbonpoint/system/dto/res/BatchImportRes.class
 com/carbonpoint/system/service/InvitationService.class
 com/carbonpoint/system/entity/PlatformConfigEntity.class
+com/carbonpoint/system/service/PasswordHistoryService.class
 com/carbonpoint/system/entity/Permission.class
 com/carbonpoint/system/service/PlatformConfigService.class
 com/carbonpoint/system/listener/PackagePermissionRebuildListener.class
@@ -147,6 +147,7 @@ com/carbonpoint/system/controller/UserController.class
 com/carbonpoint/system/dto/res/UserNotificationPreferenceRes.class
 com/carbonpoint/system/security/sliding/SlidingCaptchaController$VerifyResult.class
 com/carbonpoint/system/dto/req/TenantCreateReq.class
+com/carbonpoint/system/mapper/PasswordHistoryMapper.class
 com/carbonpoint/system/mapper/NotificationTemplateMapper.class
 com/carbonpoint/system/controller/PlatformTenantController.class
 com/carbonpoint/system/dto/req/NotificationPreferenceReq.class
@@ -179,6 +180,7 @@ com/carbonpoint/system/controller/PermissionController.class
 com/carbonpoint/system/dto/res/BatchImportRes$BatchImportResBuilder.class
 com/carbonpoint/system/dto/res/UnreadCountRes.class
 com/carbonpoint/system/security/forgot/ForgotPasswordController$SendCodeRequest.class
+com/carbonpoint/system/entity/PasswordHistory.class
 com/carbonpoint/system/dto/res/AuthRes.class
 com/carbonpoint/system/entity/UserNotificationPreference.class
 com/carbonpoint/system/dto/PlatformLoginRequest.class

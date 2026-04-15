@@ -18,6 +18,7 @@ import PlatformDashboard from '@/platform/pages/PlatformDashboard';
 import EnterpriseManagement from '@/platform/pages/EnterpriseManagement';
 import SystemManagement from '@/platform/pages/SystemManagement';
 import PlatformConfig from '@/platform/pages/PlatformConfig';
+import PackageManagement from '@/platform/pages/PackageManagement';
 import PlatformLoginPage from '@/shared/pages/PlatformLoginPage';
 
 import { useAuthStore } from '@/shared/store/authStore';
@@ -53,6 +54,7 @@ const PlatformMenuItems: MenuProps['items'] = [
   { key: '/platform/enterprises', icon: <TeamOutlined />, label: '企业管理' },
   { key: '/platform/system', icon: <SafetyOutlined />, label: '系统管理' },
   { key: '/platform/config', icon: <SettingOutlined />, label: '平台配置' },
+  { key: '/platform/packages', icon: <SafetyOutlined />, label: '套餐管理' },
 ];
 
 const PlatformContent: React.FC = () => {
@@ -164,6 +166,7 @@ const PlatformContent: React.FC = () => {
                  <Route path="/platform/enterprises" element={<EnterpriseManagement />} />
                  <Route path="/platform/system" element={<SystemManagement />} />
                  <Route path="/platform/config" element={<PlatformConfig />} />
+                  <Route path="/platform/packages" element={<PackageManagement />} />
                  <Route path="*" element={<Navigate to="/platform/dashboard" replace />} />
                </>
              )}

@@ -7,23 +7,20 @@ spring:
   autoconfigure:
     exclude:
       - org.redisson.spring.starter.RedissonAutoConfigurationV2
-      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
       - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
 
   datasource:
-    driver-class-name: org.h2.Driver
-    url: jdbc:h2:mem:testdb;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/carbon_point_test?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
+    username: root
+    password: root
     hikari:
-      maximum-pool-size: 100
-      minimum-idle: 10
-    username: sa
-    password:
+      maximum-pool-size: 10
+      minimum-idle: 2
 
   sql:
     init:
-      mode: embedded
-      schema-locations: classpath:db/schema-h2.sql
-      data-locations: classpath:db/data-test.sql
+      mode: always
 
   data:
     redis:
@@ -47,7 +44,7 @@ mybatis-plus:
       logic-not-delete-value: 0
 
 jwt:
-  secret: test-jwt-secret-key-for-integration-testing-only
+  secret: a3f8c9d2e1b47568a0f7e6d5c4b3a2918765432abcdef1234567890abcdef
   access-token-expiration: 86400000
   refresh-token-expiration: 604800000
 
