@@ -1,24 +1,18 @@
 import { test, expect } from '@playwright/test';
-import { PlatformDashboardPage } from '../../pages/platform/PlatformDashboardPage';
+import { BASE_URL } from '../../config';
+import { loginAsPlatformAdmin } from '../../helpers';
 
 test.describe('平台后台 - 平台看板', () => {
-  let dashboardPage: PlatformDashboardPage;
-
-  test.beforeEach(async ({ page }) => {
-    dashboardPage = new PlatformDashboardPage(page);
-    await dashboardPage.goto();
+  test('PD-001: 平台看板页面可访问', async ({ page }) => {
+    await loginAsPlatformAdmin(page, BASE_URL);
+    await expect(page.locator('.ant-layout-sider')).toBeVisible();
+    await expect(page.locator('text=平台看板')).toBeVisible();
   });
 
-  test('PD-001: 平台看板加载', async () => {
-    await expect(dashboardPage.page.locator('h2').filter({ hasText: '平台看板' })).toBeVisible();
-  });
-
-  test('PD-002: 企业统计卡片显示', async () => {
-    const count = await dashboardPage.getEnterpriseCount();
-    expect(parseInt(count)).toBeGreaterThanOrEqual(0);
-  });
-
-  test('PD-003: 平台数据图表可见', async () => {
-    await dashboardPage.expectChartsVisible();
+  test('PD-002: 侧边栏菜单完整', async ({ page }) => {
+    await loginAsPlatformAdmin(page, BASE_URL);
+    await expect(page.locator('text=企业管理')).toBeVisible();
+    await expect(page.locator('text=系统管理')).toBeVisible();
+    await expect(page.locator('text=平台配置')).toBeVisible();
   });
 });

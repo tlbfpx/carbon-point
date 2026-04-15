@@ -31,7 +31,7 @@ kill_port $FRONTEND_PORT
 # 启动 Docker 服务（如果没启动）
 if ! docker ps | grep -q "carbon-point-mysql"; then
     echo "Starting MySQL with Docker..."
-    docker-compose up -d mysql
+    docker compose up -d mysql
     sleep 5
 else
     echo "MySQL already running."
@@ -39,7 +39,7 @@ fi
 
 if ! docker ps | grep -q "carbon-point-redis"; then
     echo "Starting Redis with Docker..."
-    docker-compose up -d redis
+    docker compose up -d redis
     sleep 2
 else
     echo "Redis already running."
@@ -51,7 +51,7 @@ cd "$PROJECT_ROOT"
 
 echo ""
 echo "Starting backend (compiling, skipping tests)..."
-cd "$PROJECT_ROOT/carbon-app" && mvn clean spring-boot:run -Dmaven.test.skip=true -DskipTests &
+cd "$PROJECT_ROOT/carbon-app" && mvn clean spring-boot:run -Dmaven.test.skip=true -DskipTests -Dspring-boot.run.profiles.active=dev &
 BACKEND_PID=$!
 
 echo "Waiting for backend to start..."

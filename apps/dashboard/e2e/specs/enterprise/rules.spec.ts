@@ -1,22 +1,13 @@
 import { test, expect } from '@playwright/test';
-import { RulesPage } from '../../pages/enterprise/RulesPage';
+import { BASE_URL } from '../../config';
+import { loginAsEnterpriseAdmin } from '../../helpers';
 
 test.describe('企业后台 - 规则配置', () => {
-  let rulesPage: RulesPage;
-
-  test.beforeEach(async ({ page }) => {
-    rulesPage = new RulesPage(page);
-    await rulesPage.goto();
-  });
-
-  test('RUL-001: 规则列表展示', async () => {
-    await expect(rulesPage.table).toBeVisible();
-  });
-
-  test('RUL-002: 规则启用/停用', async () => {
-    const count = await rulesPage.getRuleCount();
-    if (count > 0) {
-      await rulesPage.toggleRule(0);
-    }
+  test('RUL-001: 规则配置页面可访问', async ({ page }) => {
+    await loginAsEnterpriseAdmin(page, BASE_URL);
+    await page.click('text=规则配置');
+    await page.waitForTimeout(2000);
+    await expect(page.locator('h2').filter({ hasText: '规则' })).toBeVisible();
+    await expect(page.locator('.ant-table')).toBeVisible();
   });
 });

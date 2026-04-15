@@ -59,7 +59,7 @@ mybatis-plus:
   mapper-locations: classpath*:/mapper/**/*.xml
 
 jwt:
-  secret: ${JWT_SECRET:dev-jwt-secret-key-change-in-production-12345678}
+  secret: ${JWT_SECRET:dev-jwt-key-localhost-only-min-32-chars-here}
   access-token-expiration: 86400000
   refresh-token-expiration: 604800000
 

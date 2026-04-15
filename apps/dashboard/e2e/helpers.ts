@@ -93,3 +93,27 @@ export async function logout(page: Page) {
     }
   }
 }
+
+/**
+ * Login as enterprise admin
+ */
+export async function loginAsEnterpriseAdmin(page: Page, baseUrl: string) {
+  await page.goto(`${baseUrl}/dashboard/login`);
+  await page.waitForLoadState('networkidle');
+  await page.locator('input[placeholder*="手机号"]').fill('13800138001');
+  await page.locator('input[placeholder*="密码"]').fill('password123');
+  await page.locator('button').filter({ hasText: '登 录' }).click();
+  await page.waitForURL(/dashboard/, { timeout: 15000 });
+}
+
+/**
+ * Login as platform admin
+ */
+export async function loginAsPlatformAdmin(page: Page, baseUrl: string) {
+  await page.goto(`${baseUrl}/saas/login`);
+  await page.waitForLoadState('networkidle');
+  await page.locator('input[placeholder*="管理员"]').fill('admin');
+  await page.locator('input[placeholder*="密码"]').fill('admin123');
+  await page.locator('button').filter({ hasText: '登 录' }).click();
+  await page.waitForURL(/platform|dashboard/, { timeout: 15000 });
+}

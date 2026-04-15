@@ -22,39 +22,11 @@ export default defineConfig({
 
   projects: [
     {
-      name: 'setup-platform-admin',
-      testMatch: /.*\.setup\.ts/,
-      grep: /platform admin login/,
-    },
-    {
-      name: 'setup-enterprise-admin',
-      testMatch: /.*\.setup\.ts/,
-      grep: /enterprise super admin login/,
-    },
-    {
-      name: 'setup-enterprise-operator',
-      testMatch: /.*\.setup\.ts/,
-      grep: /enterprise operator login/,
-    },
-
-    {
-      name: 'chromium-enterprise',
+      name: 'chromium',
       use: {
         ...devices['Desktop Chrome'],
-        storageState: 'e2e/.auth/enterprise-admin.json',
       },
-      testMatch: /e2e\/specs\/enterprise\/.*\.spec\.ts/,
-      dependencies: ['setup-enterprise-admin'],
-    },
-
-    {
-      name: 'chromium-platform',
-      use: {
-        ...devices['Desktop Chrome'],
-        storageState: 'e2e/.auth/platform-admin.json',
-      },
-      testMatch: /e2e\/specs\/platform\/.*\.spec\.ts/,
-      dependencies: ['setup-platform-admin'],
+      testMatch: 'specs/**/*.spec.ts',
     },
   ],
 

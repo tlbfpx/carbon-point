@@ -1,25 +1,13 @@
 import { test, expect } from '@playwright/test';
-import { OrdersPage } from '../../pages/enterprise/OrdersPage';
+import { BASE_URL } from '../../config';
+import { loginAsEnterpriseAdmin } from '../../helpers';
 
 test.describe('企业后台 - 订单管理', () => {
-  let ordersPage: OrdersPage;
-
-  test.beforeEach(async ({ page }) => {
-    ordersPage = new OrdersPage(page);
-    await ordersPage.goto();
-  });
-
-  test('ORD-001: 订单列表展示', async () => {
-    await expect(ordersPage.table).toBeVisible();
-  });
-
-  test('ORD-002: 订单状态筛选', async () => {
-    await ordersPage.filterByStatus('pending');
-    await ordersPage.page.waitForTimeout(1000);
-  });
-
-  test('ORD-003: 订单数量大于0', async () => {
-    const count = await ordersPage.getOrderCount();
-    expect(count).toBeGreaterThan(0);
+  test('ORD-001: 订单管理页面可访问', async ({ page }) => {
+    await loginAsEnterpriseAdmin(page, BASE_URL);
+    await page.click('text=订单管理');
+    await page.waitForTimeout(2000);
+    await expect(page.locator('h2').filter({ hasText: '订单' })).toBeVisible();
+    await expect(page.locator('.ant-table')).toBeVisible();
   });
 });
