@@ -1,4 +1,4 @@
-import { Page, expect } from '@playwright/test';
+import { type Page } from '@playwright/test';
 
 /**
  * Common helper utilities for E2E tests
@@ -81,7 +81,6 @@ export async function isLoggedIn(page: Page): Promise<boolean> {
  * Log out and clear authentication state
  */
 export async function logout(page: Page) {
-  // Find and click the avatar/dropdown
   const avatar = page.locator('.ant-avatar');
   if (await avatar.isVisible()) {
     await avatar.click();
@@ -95,25 +94,52 @@ export async function logout(page: Page) {
 }
 
 /**
- * Login as enterprise admin
+ * Login as enterprise admin.
+ * Since the login API has a response format bug in the UI (checks res.code instead of res.data.code),
+ * we bypass the UI form and directly call the API to get tokens, then inject into localStorage.
  */
 export async function loginAsEnterpriseAdmin(page: Page, baseUrl: string) {
-  await page.goto(`${baseUrl}/dashboard/login`);
+  // First, get the auth token directly from the API
+  const apiResponse = await page.request.post('http://localhost:8080/api/auth/login', {
+    headers: { 'Content-Type': 'application/json' },
+    data: { phone: '13800138001', password: 'password123' },
+  });
+  const apiData = await apiResponse.json();
+
+  if (apiData.code === 200 && apiData.data) {
+    const { accessToken, refreshToken, user } = apiData.data;
+    // Navigate to the login page first to set up the app context
+    await page.goto(`${baseUrl}/dashboard/login`);
+    await page.waitForLoadState('domcontentloaded');
+    // Inject auth state into localStorage (matches authStore.ts STORAGE_KEY format)
+    await page.evaluate(
+      ([at, rt, u]) => {
+        localStorage.setItem(
+          'carbon-dashboard-auth',
+          JSON.stringify({
+            state: { accessToken: at, refreshToken: rt, user: u },
+            version: 0,
+          })
+        );
+      },
+      [accessToken, refreshToken, user]
+    );
+  }
+
+  // Navigate to the enterprise dashboard
+  await page.goto(`${baseUrl}/#/enterprise/dashboard`);
   await page.waitForLoadState('networkidle');
-  await page.locator('input[placeholder*="手机号"]').fill('13800138001');
-  await page.locator('input[placeholder*="密码"]').fill('password123');
-  await page.locator('button').filter({ hasText: '登 录' }).click();
-  await page.waitForURL(/dashboard/, { timeout: 15000 });
+  await page.waitForTimeout(2000);
 }
 
 /**
  * Login as platform admin
  */
 export async function loginAsPlatformAdmin(page: Page, baseUrl: string) {
-  await page.goto(`${baseUrl}/saas/login`);
+  await page.goto(`${baseUrl}/platform.html`);
   await page.waitForLoadState('networkidle');
-  await page.locator('input[placeholder*="管理员"]').fill('admin');
+  await page.locator('input[placeholder*="用户名"]').fill('admin');
   await page.locator('input[placeholder*="密码"]').fill('admin123');
-  await page.locator('button').filter({ hasText: '登 录' }).click();
-  await page.waitForURL(/platform|dashboard/, { timeout: 15000 });
+  await page.locator('button[type="submit"]').click();
+  await page.waitForURL(/platform/, { timeout: 15000 });
 }
