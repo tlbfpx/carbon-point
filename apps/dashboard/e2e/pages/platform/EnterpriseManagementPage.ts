@@ -1,4 +1,5 @@
 import { type Page, type Locator } from '@playwright/test';
+import { BASE_URL } from '../../config';
 
 export class EnterpriseManagementPage {
   readonly page: Page;
@@ -14,7 +15,7 @@ export class EnterpriseManagementPage {
   }
 
   async goto() {
-    await this.page.goto('/#/platform/enterprises');
+    await this.page.goto(`${BASE_URL}/#/platform/enterprises`);
     await this.page.waitForSelector('.ant-table-tbody tr', { timeout: 10000 });
   }
 

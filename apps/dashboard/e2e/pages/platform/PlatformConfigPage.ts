@@ -1,4 +1,5 @@
 import { type Page, type Locator } from '@playwright/test';
+import { BASE_URL } from '../../config';
 
 export class PlatformConfigPage {
   readonly page: Page;
@@ -12,7 +13,7 @@ export class PlatformConfigPage {
   }
 
   async goto() {
-    await this.page.goto('/#/platform/config');
+    await this.page.goto(`${BASE_URL}/#/platform/config`);
     await this.form.waitFor({ state: 'visible', timeout: 15000 });
   }
 

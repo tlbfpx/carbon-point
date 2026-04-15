@@ -1,4 +1,5 @@
 import { type Page, type Locator } from '@playwright/test';
+import { BASE_URL } from '../config';
 
 export class DashboardPage {
   readonly page: Page;
@@ -14,7 +15,7 @@ export class DashboardPage {
   }
 
   async goto() {
-    await this.page.goto('/#/enterprise/dashboard');
+    await this.page.goto(`${BASE_URL}/#/enterprise/dashboard`);
     await this.page.waitForSelector('.ant-layout', { timeout: 15000 });
   }
 

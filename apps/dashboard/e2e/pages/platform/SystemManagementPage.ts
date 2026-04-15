@@ -1,4 +1,5 @@
 import { type Page, type Locator } from '@playwright/test';
+import { BASE_URL } from '../../config';
 
 export class SystemManagementPage {
   readonly page: Page;
@@ -12,7 +13,7 @@ export class SystemManagementPage {
   }
 
   async goto() {
-    await this.page.goto('/#/platform/system');
+    await this.page.goto(`${BASE_URL}/#/platform/system`);
     await this.page.waitForSelector('.ant-tabs', { timeout: 15000 });
   }
 
