@@ -336,9 +336,9 @@ export class DashboardPage {
   - 查询/重置/刷新按钮
   - 日志表格
 
-- [ ] **Task 41: Create SystemManagementPage POM**
-- [ ] **Task 42: Create system-management.spec.ts with 30 tests**
-- [ ] **Task 43: Run system-management tests and verify all pass**
+- [x] **Task 41: Create SystemManagementPage POM**
+- [x] **Task 42: Create system-management.spec.ts with 30 tests**
+- [x] **Task 43: Run system-management tests and verify all pass**
 - [ ] **Task 44: Commit**
 
 ### Module 12: 平台配置 (Platform Config) - 20 tests
