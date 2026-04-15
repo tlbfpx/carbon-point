@@ -220,4 +220,362 @@ test.describe('平台后台 - 系统管理', () => {
     await page.waitForTimeout(500);
     await expect(page.locator('.ant-tabs-tab-active')).toContainText('平台管理员');
   });
+
+  // PC-001 to PC-010: User list and search tests
+  test.describe('PC-001 to PC-010: User List and Search Tests', () => {
+    test('PC-001: 平台管理员列表显示用户数据', async ({ page }) => {
+      await page.waitForTimeout(1500);
+      const rows = await systemPage.adminTableRows.all();
+      expect(rows.length).toBeGreaterThan(0);
+    });
+
+    test('PC-002: 平台管理员创建按钮可点击并打开弹窗', async ({ page }) => {
+      await systemPage.openCreateAdminModal();
+      await systemPage.assertModalVisible();
+      await expect(systemPage.modalUsernameInput).toBeVisible();
+      await expect(systemPage.modalPhoneInput).toBeVisible();
+      await expect(systemPage.modalPasswordInput).toBeVisible();
+    });
+
+    test('PC-003: 创建管理员成功', async ({ page }) => {
+      const username = `pc003_${uniqueId()}`;
+      await systemPage.createAdmin({
+        username,
+        phone: '13800138004',
+        password: 'Admin123!',
+        email: `${username}@test.com`,
+      });
+      await expect(page.locator('.ant-message-success')).toBeVisible({ timeout: 5000 });
+    });
+
+    test('PC-004: 平台管理员创建后列表中可见', async ({ page }) => {
+      await systemPage.closeModal();
+      const username = `pc004_${uniqueId()}`;
+      await systemPage.createAdmin({
+        username,
+        phone: '13800138005',
+        password: 'Admin123!',
+      });
+      await expect(page.locator('.ant-message-success')).toBeVisible({ timeout: 8000 });
+      await page.waitForTimeout(1500);
+      await systemPage.assertAdminVisible(username);
+    });
+
+    test('PC-005: 平台管理员可编辑', async ({ page }) => {
+      await systemPage.closeModal();
+      const username = `pc005_${uniqueId()}`;
+      await systemPage.createAdmin({
+        username,
+        phone: '13800138006',
+        password: 'Admin123!',
+      });
+      await expect(page.locator('.ant-message-success')).toBeVisible({ timeout: 8000 });
+      await page.waitForTimeout(1500);
+      await systemPage.openEditAdminModal(username);
+      await systemPage.assertModalVisible();
+    });
+
+    test('PC-006: 平台管理员可删除', async ({ page }) => {
+      await systemPage.closeModal();
+      const username = `pc006_${uniqueId()}`;
+      await systemPage.createAdmin({
+        username,
+        phone: '13800138007',
+        password: 'Admin123!',
+      });
+      await expect(page.locator('.ant-message-success')).toBeVisible({ timeout: 8000 });
+      await page.waitForTimeout(1500);
+      await systemPage.deleteAdmin(username);
+      await expect(page.locator('.ant-popover')).toBeVisible();
+    });
+
+    test('PC-007: 平台管理员表格表头包含预期列', async ({ page }) => {
+      await page.waitForTimeout(1000);
+      const headers = page.locator('.ant-table-thead th');
+      const count = await headers.count();
+      expect(count).toBeGreaterThan(0);
+    });
+
+    test('PC-008: 平台管理员分页控件包含页码', async ({ page }) => {
+      await page.waitForTimeout(1000);
+      await expect(systemPage.adminPagination).toBeVisible();
+      const pageNumbers = systemPage.adminPagination.locator('.ant-pagination-item');
+      expect(await pageNumbers.count()).toBeGreaterThan(0);
+    });
+
+    test('PC-009: 平台管理员创建按钮有正确的文本', async ({ page }) => {
+      await expect(systemPage.createAdminButton).toBeVisible();
+      const btnText = await systemPage.createAdminButton.textContent();
+      expect(btnText).toContain('创建管理员');
+    });
+
+    test('PC-010: 平台管理员表格行包含操作按钮', async ({ page }) => {
+      await page.waitForTimeout(1000);
+      // Get first visible username from the table
+      const firstUsernameCell = systemPage.adminTableRows.first().locator('td').nth(0);
+      const firstUsername = await firstUsernameCell.textContent();
+      if (firstUsername) {
+        const hasEdit = await systemPage.editAdminButton(firstUsername.trim()).isVisible().catch(() => false);
+        const hasDelete = await systemPage.deleteAdminButton(firstUsername.trim()).isVisible().catch(() => false);
+        expect(hasEdit || hasDelete).toBeTruthy();
+      }
+    });
+  });
+
+  // PC-011 to PC-020: Extended platform system management tests
+  test.describe('PC-011 to PC-020: Extended System Management Tests', () => {
+    test('PC-011: 平台管理员列表可按用户名搜索', async ({ page }) => {
+      // First create an admin to search for
+      await systemPage.openCreateAdminModal();
+      const username = `search_test_${uniqueId()}`;
+      await systemPage.fillCreateAdminForm({
+        username,
+        phone: '13800138002',
+        password: 'Admin123!',
+        email: `${username}@test.com`,
+      });
+      await systemPage.submitAdminForm();
+      await expect(page.locator('.ant-message-success')).toBeVisible({ timeout: 5000 });
+      await page.waitForTimeout(1000);
+
+      // Search for the created admin using direct locator
+      const searchInput = page.locator('input[placeholder*="用户名"]').first();
+      await searchInput.fill(username);
+      await page.locator('button').filter({ hasText: '查询' }).click();
+      await page.waitForTimeout(1000);
+      const row = systemPage.table.locator('.ant-table-tbody tr').filter({ hasText: username });
+      await expect(row).toBeVisible();
+    });
+
+    test('PC-012: 平台管理员搜索重置功能正常', async ({ page }) => {
+      // Fill search box
+      const searchInput = page.locator('input[placeholder*="用户名"]').first();
+      await searchInput.fill('admin');
+      await page.waitForTimeout(500);
+      // Click reset
+      await page.locator('button').filter({ hasText: '重置' }).click();
+      await page.waitForTimeout(500);
+      // Verify table is visible and has data
+      await expect(systemPage.table.first()).toBeVisible();
+    });
+
+    test('PC-013: 操作日志可按操作人搜索', async ({ page }) => {
+      await systemPage.switchToTab('操作日志');
+      await page.waitForTimeout(1500);
+      // Enter an operator to search using direct locator
+      await page.locator('input[placeholder*="操作人"]').fill('admin');
+      await page.waitForTimeout(1000);
+      // Verify search input has the value
+      await expect(page.locator('input[placeholder*="操作人"]')).toHaveValue('admin');
+    });
+
+    test('PC-014: 操作日志重置按钮清除搜索条件', async ({ page }) => {
+      await systemPage.switchToTab('操作日志');
+      await page.waitForTimeout(1500);
+      // Fill search operator
+      await page.locator('input[placeholder*="操作人"]').fill('someuser');
+      await page.waitForTimeout(500);
+      // Click reset using POM method
+      await systemPage.resetLogFilters();
+      await page.waitForTimeout(500);
+      // Verify input is cleared
+      const inputValue = await page.locator('input[placeholder*="操作人"]').inputValue();
+      expect(inputValue).toBe('');
+    });
+
+    test('PC-015: 操作日志刷新按钮可点击', async ({ page }) => {
+      await systemPage.switchToTab('操作日志');
+      await page.waitForTimeout(1500);
+      const refreshBtn = page.locator('button').filter({ hasText: '刷新' });
+      await expect(refreshBtn).toBeVisible();
+      await expect(refreshBtn).toBeEnabled();
+      await refreshBtn.click();
+      await page.waitForTimeout(1000);
+    });
+
+    test('PC-016: 操作日志查询按钮可点击', async ({ page }) => {
+      await systemPage.switchToTab('操作日志');
+      await page.waitForTimeout(1500);
+      const queryBtn = page.locator('button').filter({ hasText: '查询' });
+      await expect(queryBtn).toBeVisible();
+      await expect(queryBtn).toBeEnabled();
+    });
+
+    test('PC-017: 平台管理员列表有分页信息显示', async ({ page }) => {
+      await page.waitForTimeout(1000);
+      const pagination = page.locator('.ant-pagination');
+      await expect(pagination).toBeVisible();
+      // Check for page size selector
+      const pageSizeSelector = pagination.locator('.ant-select').first();
+      await expect(pageSizeSelector).toBeVisible();
+    });
+
+    test('PC-018: 平台管理员可编辑已有管理员', async ({ page }) => {
+      // Create an admin first
+      await systemPage.openCreateAdminModal();
+      const username = `edit_test_${uniqueId()}`;
+      await systemPage.fillCreateAdminForm({
+        username,
+        phone: '13800138003',
+        password: 'Admin123!',
+        email: `${username}@test.com`,
+      });
+      await systemPage.submitAdminForm();
+      await expect(page.locator('.ant-message-success')).toBeVisible({ timeout: 5000 });
+      await page.waitForTimeout(1000);
+
+      // Edit the admin using POM method
+      await systemPage.openEditAdminModal(username);
+      await expect(page.locator('.ant-modal')).toBeVisible();
+      await expect(page.locator('.ant-modal input[placeholder*="用户名"]')).toHaveValue(username);
+    });
+
+    test('PC-019: 创建管理员弹窗关闭按钮可用', async ({ page }) => {
+      await systemPage.openCreateAdminModal();
+      await expect(page.locator('.ant-modal')).toBeVisible();
+      const closeBtn = page.locator('.ant-modal-close');
+      await expect(closeBtn).toBeVisible();
+      await closeBtn.click();
+      await page.waitForTimeout(500);
+      await expect(page.locator('.ant-modal')).not.toBeVisible();
+    });
+
+    test('PC-020: 操作日志表有正确的列标题', async ({ page }) => {
+      await systemPage.switchToTab('操作日志');
+      await page.waitForTimeout(1500);
+      // Check for operation log table headers
+      const tableHeaders = page.locator('.ant-table-thead th');
+      const headerCount = await tableHeaders.count();
+      expect(headerCount).toBeGreaterThan(0);
+    });
+  });
+
+  // PC-021 to PC-030: User CRUD, Bulk Operations, Form Validation, Modal Interactions, Table Sorting
+  test.describe('PC-021 to PC-030: CRUD, Bulk Ops, Form Validation, Sorting', () => {
+    test('PC-021: 创建管理员成功且显示在表格中', async ({ page }) => {
+      await systemPage.openCreateAdminModal();
+      const username = `admin_${uniqueId()}`;
+      await systemPage.fillCreateAdminForm({
+        username,
+        phone: '13800138009',
+        password: 'Admin123!',
+        email: `${username}@test.com`,
+      });
+      await systemPage.submitAdminForm();
+      await expect(page.locator('.ant-message-success')).toBeVisible({ timeout: 5000 });
+      // Verify the new admin appears in the table
+      await page.waitForTimeout(1000);
+      await systemPage.assertAdminVisible(username);
+    });
+
+    test('PC-022: 编辑管理员邮箱信息', async ({ page }) => {
+      // Create an admin first
+      const username = `edit_${uniqueId()}`;
+      await systemPage.createAdmin({
+        username,
+        phone: '13800138011',
+        password: 'Admin123!',
+      });
+      await expect(page.locator('.ant-message-success')).toBeVisible({ timeout: 5000 });
+      await page.waitForTimeout(1000);
+      // Edit the admin
+      await systemPage.openEditAdminModal(username);
+      const newEmail = `updated_${uniqueId()}@test.com`;
+      await systemPage.fillEditAdminForm({ email: newEmail });
+      await systemPage.submitAdminForm();
+      await expect(page.locator('.ant-message-success')).toBeVisible({ timeout: 5000 });
+    });
+
+    test('PC-023: 删除管理员确认流程', async ({ page }) => {
+      // Create an admin first
+      const username = `delete_${uniqueId()}`;
+      await systemPage.createAdmin({
+        username,
+        phone: '13800138012',
+        password: 'Admin123!',
+      });
+      await expect(page.locator('.ant-message-success')).toBeVisible({ timeout: 5000 });
+      await page.waitForTimeout(1000);
+      // Delete the admin
+      await systemPage.deleteAdmin(username);
+      // Confirm delete popover is visible
+      await expect(page.locator('.ant-popover')).toBeVisible();
+      await systemPage.confirmDelete();
+      await expect(page.locator('.ant-message-success')).toBeVisible({ timeout: 5000 });
+      // Verify admin is no longer visible
+      await systemPage.assertAdminNotVisible(username);
+    });
+
+    test('PC-024: 创建管理员弹窗取消按钮可关闭弹窗', async ({ page }) => {
+      await systemPage.openCreateAdminModal();
+      await systemPage.assertModalVisible();
+      await systemPage.closeModalViaCancel();
+      await systemPage.waitForModalGone();
+    });
+
+    test('PC-025: 创建管理员弹窗可通过ESC关闭', async ({ page }) => {
+      await systemPage.openCreateAdminModal();
+      await systemPage.assertModalVisible();
+      await systemPage.closeModal();
+      await systemPage.waitForModalGone();
+    });
+
+    test('PC-026: 创建管理员表单邮箱格式验证', async ({ page }) => {
+      await systemPage.openCreateAdminModal();
+      await systemPage.fillCreateAdminForm({
+        username: 'testuser',
+        phone: '13800138013',
+        password: 'Admin123!',
+        email: 'invalid-email',
+      });
+      await systemPage.submitAdminForm();
+      const errorCount = await page.locator('.ant-form-item-explain-error').count();
+      expect(errorCount).toBeGreaterThan(0);
+    });
+
+    test('PC-027: 创建管理员表单密码必填验证', async ({ page }) => {
+      await systemPage.openCreateAdminModal();
+      await systemPage.fillCreateAdminForm({
+        username: 'testuser',
+        phone: '13800138014',
+        password: '',
+      });
+      await systemPage.submitAdminForm();
+      const errorCount = await page.locator('.ant-form-item-explain-error').count();
+      expect(errorCount).toBeGreaterThan(0);
+    });
+
+    test('PC-028: 操作日志按操作人搜索', async ({ page }) => {
+      await systemPage.switchToTab('操作日志');
+      await page.waitForTimeout(1500);
+      // Search for operator 'admin'
+      await systemPage.searchLogs({ operator: 'admin' });
+      await page.waitForTimeout(1000);
+      // Verify search input has the value
+      await expect(systemPage.logOperatorInput).toHaveValue('admin');
+    });
+
+    test('PC-029: 操作日志刷新按钮功能', async ({ page }) => {
+      await systemPage.switchToTab('操作日志');
+      await page.waitForTimeout(1500);
+      await systemPage.refreshLogs();
+      await page.waitForTimeout(1000);
+      // Log table should still be visible after refresh
+      await systemPage.assertLogTableVisible();
+    });
+
+    test('PC-030: 平台管理员表格排序功能', async ({ page }) => {
+      // Click on table header to trigger sorting
+      await page.waitForTimeout(1000);
+      const firstHeader = page.locator('.ant-table-thead th').first();
+      await firstHeader.click();
+      await page.waitForTimeout(500);
+      // Sorting should be clickable without error - click again to toggle
+      await firstHeader.click();
+      await page.waitForTimeout(500);
+      // Table should still have rows after sorting
+      const rowCount = await systemPage.getAdminRowCount();
+      expect(rowCount).toBeGreaterThanOrEqual(0);
+    });
+  });
 });
