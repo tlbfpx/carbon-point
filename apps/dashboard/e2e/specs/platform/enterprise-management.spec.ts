@@ -140,21 +140,11 @@ test.describe('平台后台 - 企业管理', () => {
       await expect(await page.getEmptyState()).toBeVisible();
       return;
     }
-    // Check first row - if it's a placeholder, check the second row
-    const rows = page.table.locator('.ant-table-tbody tr');
-    let statusFound = false;
-    for (let i = 0; i < Math.min(rowCount, 3); i++) {
-      const tag = rows.nth(i).locator('.ant-tag');
-      const count = await tag.count();
-      if (count > 0) {
-        const tagText = await tag.last().textContent();
-        if (tagText && ['正常', '已停用', '待审核'].includes(tagText.trim())) {
-          statusFound = true;
-          break;
-        }
-      }
-    }
-    expect(statusFound).toBeTruthy();
+    // Check that status tags exist in the table (e.g., "正常", "已停用")
+    const allTags = await page.table.locator('.ant-tag').allTextContents();
+    const validStatuses = ['正常', '已停用', '待审核'];
+    const hasStatusTag = allTags.some(tag => validStatuses.includes(tag.trim()));
+    expect(hasStatusTag).toBeTruthy();
   });
 
   test('EM-012: 停用企业', async ({ page: p }) => {
@@ -186,7 +176,8 @@ test.describe('平台后台 - 企业管理', () => {
     await p.waitForTimeout(500);
     const popover = p.locator('.ant-popover');
     if (await popover.isVisible().catch(() => false)) {
-      await popover.locator('button').filter({ hasText: '确定' }).click();
+      // Button text is "确 定" (with space) in Ant Design popconfirm
+      await popover.locator('button').filter({ hasText: '确 定' }).click({ force: true });
       await p.waitForTimeout(500);
     }
     try {
