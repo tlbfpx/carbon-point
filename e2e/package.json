@@ -1,0 +1,16 @@
+{
+  "name": "carbon-point-e2e",
+  "version": "1.0.0",
+  "description": "Carbon Point 后台管理系统 Playwright E2E 验收测试",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:chromium": "playwright test --project=chromium",
+    "test:login-only": "playwright test **/*login*.spec.ts",
+    "show-report": "playwright show-report",
+    "install": "playwright install"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.58.0"
+  }
+}

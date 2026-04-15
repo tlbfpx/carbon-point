@@ -1,4 +1,5 @@
 import { type Page, type Locator } from '@playwright/test';
+import { BASE_URL } from '../config';
 
 /**
  * Enterprise Admin Login Page Object
@@ -16,11 +17,11 @@ export class EnterpriseLoginPage {
     this.phoneInput = page.getByPlaceholder('请输入手机号');
     this.passwordInput = page.getByPlaceholder('请输入密码');
     this.rememberCheckbox = page.getByLabel('记住我');
-    this.submitButton = page.getByRole('button', { name: '登录' });
+    this.submitButton = page.locator('button[type="submit"]');
   }
 
   async goto() {
-    await this.page.goto('/dashboard/login');
+    await this.page.goto(`${BASE_URL}/dashboard/login`);
   }
 
   async login(phone: string, password: string) {

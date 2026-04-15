@@ -55,7 +55,7 @@ mybatis-plus:
   mapper-locations: classpath*:/mapper/**/*.xml
 
 jwt:
-  secret: carbon-point-jwt-key-for-dev-20240415-32chars
+  secret: ${JWT_SECRET:carbon-point-dev-jwt-key-min-32-chars-localhost}
   access-token-expiration: 900000
   access-token-expiration-ms: 900000
   refresh-token-expiration: 604800000
