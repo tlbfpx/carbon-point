@@ -31,3 +31,4 @@ apps/dashboard/test-results/
 
 # OS
 Thumbs.db
+.worktrees/
