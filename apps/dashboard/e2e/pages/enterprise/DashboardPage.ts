@@ -9,9 +9,9 @@ export class DashboardPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.statCards = page.locator('.ant-card');
+    this.statCards = page.locator('.ant-statistic');
     this.checkinChart = page.locator('.ant-card').filter({ hasText: '打卡趋势' });
-    this.pointsChart = page.locator('.ant-card').filter({ hasText: '积分趋势' });
+    this.pointsChart = page.locator('.ant-card').filter({ hasText: '积分发放趋势' });
   }
 
   async goto() {
@@ -21,10 +21,10 @@ export class DashboardPage {
 
   async getStatCardValues(): Promise<Record<string, string>> {
     const stats: Record<string, string> = {};
-    const cards = await this.statCards.all();
-    for (const card of cards) {
-      const title = await card.locator('.ant-statistic-title').textContent();
-      const value = await card.locator('.ant-statistic-content-value').textContent();
+    const statElements = await this.statCards.all();
+    for (const stat of statElements) {
+      const title = await stat.locator('.ant-statistic-title').textContent();
+      const value = await stat.locator('.ant-statistic-content-value').textContent();
       if (title && value) {
         stats[title] = value;
       }
