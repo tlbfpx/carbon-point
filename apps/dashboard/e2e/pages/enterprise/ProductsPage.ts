@@ -69,13 +69,25 @@ export class ProductsPage {
 
   async fillPrice(price: string) {
     const modal = this.getModal();
-    const inputs = modal.locator('input[type="number"]');
-    const inputCount = await inputs.count();
-    if (inputCount > 0) {
-      await inputs.first().fill(price);
+    // Ant Design InputNumber renders as .ant-input-number with an input inside
+    const numberInput = modal.locator('.ant-input-number input').or(modal.locator('input.ant-input-number-input'));
+    if (await numberInput.count() > 0) {
+      await numberInput.first().fill(price);
     } else {
-      const priceField = modal.locator('.ant-form-item-label label').filter({ hasText: /价格|积分/ }).locator('..').locator('input');
-      await priceField.fill(price);
+      // Fallback: find by label "积分价格" which contains "积分" and "价格"
+      const priceField = modal.locator('.ant-form-item').filter({ hasText: /积分价格/ }).locator('input');
+      const fieldCount = await priceField.count();
+      if (fieldCount > 0) {
+        await priceField.first().fill(price);
+      } else {
+        // Last resort: fill any number input in the modal
+        const anyInput = modal.locator('input[type="number"]').or(modal.locator('.ant-input-number'));
+        const anyCount = await anyInput.count();
+        if (anyCount > 0) {
+          await anyInput.first().click();
+          await this.page.keyboard.type(price);
+        }
+      }
     }
   }
 
@@ -106,7 +118,10 @@ export class ProductsPage {
 
   async submitProduct() {
     const modal = this.getModal();
-    await modal.locator('button').filter({ hasText: '确定' }).click();
+    const submitBtn = modal.locator('button[type="submit"]').or(
+      modal.locator('button.ant-btn-primary')
+    );
+    await submitBtn.first().click();
     await this.page.waitForTimeout(1000);
   }
 

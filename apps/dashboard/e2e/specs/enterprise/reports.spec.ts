@@ -9,7 +9,8 @@ test.describe('企业后台 - 数据报表 (20 tests)', () => {
   test.beforeEach(async ({ page }) => {
     reportsPage = new ReportsPage(page);
     await loginAsEnterpriseAdmin(page, BASE_URL);
-    await page.click('text=数据报表');
+    await page.locator('text=数据报表').first().click({ force: true });
+    await page.waitForLoadState('networkidle');
     await page.waitForTimeout(2000);
   });
 

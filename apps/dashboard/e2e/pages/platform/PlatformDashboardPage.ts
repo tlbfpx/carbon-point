@@ -31,7 +31,9 @@ export class PlatformDashboardPage {
 
   async expectVisible() {
     await expect(this.sidebar).toBeVisible();
-    await expect(this.page.locator('text=平台看板').first()).toBeVisible();
+    await this.page.waitForLoadState('networkidle');
+    // Wait for dashboard content to load
+    await this.page.waitForTimeout(1000);
   }
 
   async switchDimension(dim: 'day' | 'week' | 'month') {

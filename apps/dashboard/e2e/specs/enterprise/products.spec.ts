@@ -114,7 +114,11 @@ test.describe('企业后台 - 商品管理 (30 tests)', () => {
     }
     await productsPage.clickAddProduct();
     const modal = productsPage.getModal();
-    await expect(modal.locator('button').filter({ hasText: '确定' })).toBeVisible();
+    // The submit button is inside the form with htmlType="submit"
+    const submitBtn = modal.locator('button[type="submit"]').or(
+      modal.locator('button').filter({ hasText: '确定' })
+    );
+    await expect(submitBtn.first()).toBeVisible();
   });
 
   test('PRD-014: Modal可关闭', async ({ page }) => {
@@ -149,14 +153,22 @@ test.describe('企业后台 - 商品管理 (30 tests)', () => {
   });
 
   test('PRD-017: 上下架开关可见', async ({ page }) => {
+    await page.waitForTimeout(2000);
     const rows = await productsPage.tableRows.all();
     if (rows.length > 0) {
-      const toggle = rows[0].locator('.ant-switch');
-      const toggleCount = await toggle.count();
-      expect(toggleCount).toBeGreaterThan(0);
-    } else {
-      expect(true).toBeTruthy();
+      // Check if the row is a real data row or the empty state "暂无数据"
+      const firstRowText = await rows[0].textContent();
+      const isEmptyState = firstRowText?.includes('暂无数据');
+      if (!isEmptyState) {
+        const toggle = rows[0].locator('.ant-switch');
+        const toggleCount = await toggle.count();
+        // Only fail if we have data rows but no toggle - otherwise skip
+        if (toggleCount === 0) {
+          expect(toggleCount).toBeGreaterThan(0);
+        }
+      }
     }
+    expect(true).toBeTruthy();
   });
 
   // === Add Product Functionality ===

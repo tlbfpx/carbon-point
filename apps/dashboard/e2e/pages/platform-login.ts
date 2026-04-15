@@ -1,8 +1,9 @@
 import { type Page, type Locator, expect } from '@playwright/test';
+import { BASE_URL } from '../config';
 
 /**
  * Platform Admin Login Page Object
- * Platform URL: /saas/login
+ * Platform URL: /platform.html
  */
 export class PlatformLoginPage {
   readonly page: Page;
@@ -16,11 +17,11 @@ export class PlatformLoginPage {
     this.usernameInput = page.getByPlaceholder('请输入管理员用户名');
     this.passwordInput = page.getByPlaceholder('请输入密码');
     this.rememberCheckbox = page.getByLabel('记住我');
-    this.submitButton = page.getByRole('button', { name: '登录' });
+    this.submitButton = page.locator('button[type="submit"]');
   }
 
   async goto() {
-    await this.page.goto('/saas/login');
+    await this.page.goto(`${BASE_URL}/platform.html`);
   }
 
   async login(username: string, password: string) {

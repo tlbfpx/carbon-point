@@ -424,6 +424,72 @@ export class SystemManagementPage {
     await this.page.waitForTimeout(500);
   }
 
+  // ==================== Legacy / Backward-Compat Methods (for SM tests) ====================
+
+  async clickCreateAdmin() {
+    await this.openCreateAdminModal();
+  }
+
+  async submitCreateAdmin() {
+    await this.submitAdminForm();
+  }
+
+  async fillCreateAdminFormNoRoles(data: {
+    username: string;
+    phone: string;
+    password: string;
+    email?: string;
+  }) {
+    await this.fillCreateAdminForm({
+      username: data.username,
+      phone: data.phone,
+      password: data.password,
+      email: data.email,
+    });
+  }
+
+  async clickEditAdminByUsername(username: string) {
+    await this.openEditAdminModal(username);
+  }
+
+  async submitEditAdmin() {
+    await this.submitAdminForm();
+  }
+
+  async clickDeleteAdminByUsername(username: string) {
+    await this.deleteAdmin(username);
+  }
+
+  async confirmDeleteAdmin() {
+    await this.confirmDelete();
+  }
+
+  async searchAdminByUsername(username: string) {
+    // Admin search uses the form's inline filter - find input and button
+    await this.page.locator('input[placeholder="搜索用户名"]').fill(username);
+    await this.page.locator('button').filter({ hasText: '查询' }).click();
+    await this.page.waitForTimeout(1000);
+  }
+
+  async resetAdminSearch() {
+    await this.page.locator('button').filter({ hasText: '重置' }).click();
+    await this.page.waitForTimeout(1000);
+  }
+
+  async searchOperator(operator: string) {
+    await this.logOperatorInput.fill(operator);
+    await this.logSearchButton.click();
+    await this.page.waitForTimeout(1000);
+  }
+
+  async clickReset() {
+    await this.resetLogFilters();
+  }
+
+  async clickRefresh() {
+    await this.refreshLogs();
+  }
+
   async waitForModalGone() {
     await this.modal.waitFor({ state: 'hidden', timeout: 5000 });
   }
