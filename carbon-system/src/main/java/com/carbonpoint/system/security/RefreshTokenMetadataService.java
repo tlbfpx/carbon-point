@@ -50,7 +50,7 @@ public class RefreshTokenMetadataService {
             redisTemplate.opsForValue().set(
                     REFRESH_TOKEN_META_PREFIX + jti,
                     json,
-                    Duration.ofMillis(604800000L) // 7 days, matches refresh token TTL
+                    Duration.ofMillis(2592000000L) // 30 days, matches refresh token TTL
             );
             // Index: maintain a set of jtis per user for bulk invalidation (e.g., on password reset)
             redisTemplate.opsForSet().add(USER_REFRESH_TOKEN_INDEX_PREFIX + userId, jti);
@@ -86,7 +86,7 @@ public class RefreshTokenMetadataService {
             try {
                 String json = objectMapper.writeValueAsString(meta);
                 redisTemplate.opsForValue().set(REFRESH_TOKEN_META_PREFIX + jti, json,
-                        Duration.ofMillis(604800000L));
+                        Duration.ofMillis(2592000000L));
             } catch (JsonProcessingException e) {
                 log.error("Failed to update refresh token metadata after use", e);
             }

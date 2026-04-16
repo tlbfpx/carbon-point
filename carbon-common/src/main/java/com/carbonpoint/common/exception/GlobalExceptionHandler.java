@@ -3,6 +3,7 @@ package com.carbonpoint.common.exception;
 import com.carbonpoint.common.result.ErrorCode;
 import com.carbonpoint.common.result.Result;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindException;
@@ -24,10 +25,20 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    private static final String TRACE_ID_MDC_KEY = "traceId";
+
+    private <T> Result<T> withTraceId(Result<T> result) {
+        String traceId = MDC.get(TRACE_ID_MDC_KEY);
+        if (traceId != null) {
+            result.withTraceId(traceId);
+        }
+        return result;
+    }
+
     @ExceptionHandler(BusinessException.class)
     public Result<Void> handleBusinessException(BusinessException e) {
         log.warn("Business exception: code={}, message={}", e.getCode(), e.getMessage(), e);
-        return Result.error(e.getCode(), e.getMessage());
+        return withTraceId(Result.error(e.getCode(), e.getMessage()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -37,7 +48,7 @@ public class GlobalExceptionHandler {
                 .map(FieldError::getDefaultMessage)
                 .collect(Collectors.joining("; "));
         log.warn("Validation exception: {}", message);
-        return Result.error(ErrorCode.PARAM_INVALID, message);
+        return withTraceId(Result.error(ErrorCode.PARAM_INVALID, message));
     }
 
     @ExceptionHandler(BindException.class)
@@ -47,26 +58,26 @@ public class GlobalExceptionHandler {
                 .map(FieldError::getDefaultMessage)
                 .collect(Collectors.joining("; "));
         log.warn("Bind exception: {}", message);
-        return Result.error(ErrorCode.PARAM_INVALID, message);
+        return withTraceId(Result.error(ErrorCode.PARAM_INVALID, message));
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Result<Void> handleTypeMismatch(MethodArgumentTypeMismatchException e) {
         String message = String.format("参数 '%s' 类型错误", e.getName());
-        return Result.error(ErrorCode.PARAM_INVALID, message);
+        return withTraceId(Result.error(ErrorCode.PARAM_INVALID, message));
     }
 
     @ExceptionHandler(NoHandlerFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Result<Void> handleNotFound(NoHandlerFoundException e) {
-        return Result.error(ErrorCode.NOT_FOUND, "接口不存在");
+        return withTraceId(Result.error(ErrorCode.NOT_FOUND, "接口不存在"));
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
     public Result<Void> handleMethodNotSupported(HttpRequestMethodNotSupportedException e) {
-        return Result.error(ErrorCode.PARAM_INVALID, "不支持的请求方法");
+        return withTraceId(Result.error(ErrorCode.PARAM_INVALID, "不支持的请求方法"));
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
@@ -75,20 +86,20 @@ public class GlobalExceptionHandler {
         String msg = e.getMessage();
         if (msg != null && msg.contains("uk_phone")) {
             log.warn("Duplicate phone registration: {}", msg);
-            return Result.error(2002, "该手机号已注册，请直接登录");
+            return withTraceId(Result.error(ErrorCode.USER_PHONE_DUPLICATE, "该手机号已注册，请直接登录"));
         }
         if (msg != null && msg.contains("uk_invite_code")) {
             log.warn("Duplicate invite code: {}", msg);
-            return Result.error(2003, "邀请码已使用或不存在");
+            return withTraceId(Result.error(ErrorCode.INVITE_CODE_USED, "邀请码已使用或不存在"));
         }
         log.warn("Data integrity violation: {}", msg);
-        return Result.error(ErrorCode.PARAM_INVALID, "数据异常，请检查输入");
+        return withTraceId(Result.error(ErrorCode.PARAM_INVALID, "数据异常，请检查输入"));
     }
 
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public Result<Void> handleGenericException(Exception e) {
         log.error("Unhandled exception", e);
-        return Result.error(ErrorCode.SYSTEM_ERROR, "系统内部错误，请稍后重试");
+        return withTraceId(Result.error(ErrorCode.SYSTEM_ERROR, "系统内部错误，请稍后重试"));
     }
 }

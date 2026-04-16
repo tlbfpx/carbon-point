@@ -166,7 +166,7 @@ class TokenRefreshIntegrationTest extends BaseIntegrationTest {
         refreshTokenMetadataService.storeMetadata(jti, user.getId(), user.getTenantId(),
                 deviceFingerprint, clientIp);
         refreshTokenMetadataService.markAsUsed(jti);
-        tokenBlacklist.blacklistRefreshToken(refreshToken, 604800000L);
+        tokenBlacklist.blacklistRefreshToken(refreshToken, 2592000000L);
 
         // Attempt to use the blacklisted token
         String refreshJson = """

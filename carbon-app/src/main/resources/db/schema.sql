@@ -13,7 +13,8 @@ CREATE TABLE tenants (
     id              BIGINT PRIMARY KEY AUTO_INCREMENT,
     name            VARCHAR(100) NOT NULL COMMENT '企业名称',
     logo            VARCHAR(500) COMMENT '企业Logo URL',
-    package_type    VARCHAR(20) NOT NULL DEFAULT 'free' COMMENT '套餐: free/pro/enterprise',
+    package_id      BIGINT COMMENT '绑定的权限套餐ID，关联 permission_packages 表',
+    package_type    VARCHAR(20) NOT NULL DEFAULT 'free' COMMENT '套餐: free/pro/enterprise（废弃，优先使用 package_id）',
     max_users       INT NOT NULL DEFAULT 50 COMMENT '最大用户数',
     status          VARCHAR(20) NOT NULL DEFAULT 'active' COMMENT '状态: active/suspended/expired',
     expires_at      DATETIME COMMENT '套餐到期时间',
@@ -23,7 +24,8 @@ CREATE TABLE tenants (
     deleted         TINYINT(1) NOT NULL DEFAULT 0 COMMENT '软删除标记',
 
     INDEX idx_status (status),
-    INDEX idx_package (package_type)
+    INDEX idx_package (package_type),
+    INDEX idx_tenant_package (package_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='企业租户表';
 
 CREATE TABLE platform_admins (
@@ -538,6 +540,20 @@ CREATE TABLE package_permissions (
     INDEX idx_package_id (package_id),
     INDEX idx_permission_code (permission_code)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='套餐权限关联表';
+
+CREATE TABLE package_change_logs (
+    id              BIGINT PRIMARY KEY AUTO_INCREMENT,
+    tenant_id       BIGINT NOT NULL COMMENT '所属企业',
+    old_package_id  BIGINT COMMENT '变更前套餐ID',
+    new_package_id  BIGINT NOT NULL COMMENT '变更后套餐ID',
+    operator_id     BIGINT COMMENT '操作人ID（平台管理员）',
+    operator_type   VARCHAR(20) NOT NULL COMMENT 'operator_type: platform_admin',
+    reason          VARCHAR(255) COMMENT '变更原因',
+    created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    INDEX idx_tenant (tenant_id),
+    INDEX idx_tenant_created (tenant_id, created_at DESC)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='套餐变更日志表';
 
 -- ============================================================
 -- 初始化数据：权限定义

@@ -5,7 +5,7 @@ import com.carbonpoint.common.result.ErrorCode;
 import com.carbonpoint.common.security.AppPasswordEncoder;
 import com.carbonpoint.common.security.PasswordValidator;
 import com.carbonpoint.common.security.SecurityProperties;
-import com.carbonpoint.common.service.PasswordHistoryService;
+import com.carbonpoint.system.service.PasswordHistoryService;
 import com.carbonpoint.system.entity.User;
 import com.carbonpoint.system.mapper.UserMapper;
 import com.carbonpoint.system.security.RefreshTokenMetadataService;
@@ -279,8 +279,8 @@ class ForgotPasswordServiceTest {
             SecurityProperties secProps = new SecurityProperties();
             secProps.setPassword(props);
             when(passwordValidator.getSecurityProperties()).thenReturn(secProps);
-            when(passwordHistoryService.isRecentlyUsed(eq(USER_ID), eq("ReusedPass1!"), eq(5)))
-                    .thenReturn(true);
+            doThrow(new BusinessException(ErrorCode.AUTH_PASSWORD_HISTORY_REUSE))
+                    .when(passwordHistoryService).checkAndRecord(eq(USER_ID), eq(TENANT_ID), eq("ReusedPass1!"));
 
             BusinessException ex = assertThrows(BusinessException.class,
                     () -> service.resetPassword("token123", "ReusedPass1!"));
@@ -299,8 +299,6 @@ class ForgotPasswordServiceTest {
             SecurityProperties secProps = new SecurityProperties();
             secProps.setPassword(props);
             when(passwordValidator.getSecurityProperties()).thenReturn(secProps);
-            when(passwordHistoryService.isRecentlyUsed(eq(USER_ID), eq("NewPass123!"), eq(5)))
-                    .thenReturn(false);
             when(passwordEncoder.encode("NewPass123!")).thenReturn("{argon2}$hashed");
 
             service.resetPassword("token123", "NewPass123!");
@@ -311,8 +309,8 @@ class ForgotPasswordServiceTest {
             // Verify: password updated
             verify(userMapper).updatePasswordHash(USER_ID, "{argon2}$hashed");
 
-            // Verify: history saved
-            verify(passwordHistoryService).addHistory(USER_ID, "{argon2}$hashed");
+            // Verify: history checked and recorded
+            verify(passwordHistoryService).checkAndRecord(eq(USER_ID), eq(TENANT_ID), eq("NewPass123!"));
 
             // Verify: all refresh tokens invalidated
             verify(refreshTokenMetadataService).invalidateAllForUser(USER_ID);
@@ -330,8 +328,6 @@ class ForgotPasswordServiceTest {
             SecurityProperties secProps = new SecurityProperties();
             secProps.setPassword(props);
             when(passwordValidator.getSecurityProperties()).thenReturn(secProps);
-            when(passwordHistoryService.isRecentlyUsed(eq(USER_ID), anyString(), eq(5)))
-                    .thenReturn(false);
             when(passwordEncoder.encode(anyString())).thenReturn("{argon2}$hashed");
 
             service.resetPassword("token123", "NewPass123!");
