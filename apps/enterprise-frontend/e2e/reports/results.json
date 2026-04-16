@@ -1,0 +1,111 @@
+{
+  "config": {
+    "configFile": "/Users/muxi/workspace/carbon-point/apps/enterprise-frontend/playwright.config.ts",
+    "rootDir": "/Users/muxi/workspace/carbon-point/apps/enterprise-frontend/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": "/Users/muxi/workspace/carbon-point/apps/enterprise-frontend/e2e/global-setup.ts",
+    "globalTeardown": "/Users/muxi/workspace/carbon-point/apps/enterprise-frontend/e2e/global-teardown.ts",
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {},
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/muxi/workspace/carbon-point/apps/enterprise-frontend/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {},
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/Users/muxi/workspace/carbon-point/apps/enterprise-frontend/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "e2e/specs/**/*.spec.ts"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "html",
+        {
+          "outputFolder": "e2e/reports",
+          "open": "never"
+        }
+      ],
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "e2e/reports/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.59.1",
+    "workers": 8,
+    "webServer": {
+      "command": "pnpm --filter @carbon-point/enterprise-frontend dev",
+      "url": "http://localhost:3001",
+      "reuseExistingServer": true,
+      "timeout": 120000
+    }
+  },
+  "suites": [],
+  "errors": [
+    {
+      "message": "Error: Cannot find module '/Users/muxi/workspace/carbon-point/apps/enterprise-frontend/e2e/pages/DashboardPage' imported from /Users/muxi/workspace/carbon-point/apps/enterprise-frontend/e2e/specs/dashboard.spec.ts",
+      "stack": "Error: Cannot find module '/Users/muxi/workspace/carbon-point/apps/enterprise-frontend/e2e/pages/DashboardPage' imported from /Users/muxi/workspace/carbon-point/apps/enterprise-frontend/e2e/specs/dashboard.spec.ts"
+    },
+    {
+      "message": "Error: Cannot find module '/Users/muxi/workspace/carbon-point/apps/enterprise-frontend/e2e/pages/MemberPage' imported from /Users/muxi/workspace/carbon-point/apps/enterprise-frontend/e2e/specs/member.spec.ts",
+      "stack": "Error: Cannot find module '/Users/muxi/workspace/carbon-point/apps/enterprise-frontend/e2e/pages/MemberPage' imported from /Users/muxi/workspace/carbon-point/apps/enterprise-frontend/e2e/specs/member.spec.ts"
+    },
+    {
+      "message": "Error: Cannot find module '/Users/muxi/workspace/carbon-point/apps/enterprise-frontend/e2e/pages/OrdersPage' imported from /Users/muxi/workspace/carbon-point/apps/enterprise-frontend/e2e/specs/orders.spec.ts",
+      "stack": "Error: Cannot find module '/Users/muxi/workspace/carbon-point/apps/enterprise-frontend/e2e/pages/OrdersPage' imported from /Users/muxi/workspace/carbon-point/apps/enterprise-frontend/e2e/specs/orders.spec.ts"
+    },
+    {
+      "message": "Error: Cannot find module '/Users/muxi/workspace/carbon-point/apps/enterprise-frontend/e2e/pages/PointsPage' imported from /Users/muxi/workspace/carbon-point/apps/enterprise-frontend/e2e/specs/points.spec.ts",
+      "stack": "Error: Cannot find module '/Users/muxi/workspace/carbon-point/apps/enterprise-frontend/e2e/pages/PointsPage' imported from /Users/muxi/workspace/carbon-point/apps/enterprise-frontend/e2e/specs/points.spec.ts"
+    },
+    {
+      "message": "Error: Cannot find module '/Users/muxi/workspace/carbon-point/apps/enterprise-frontend/e2e/pages/ProductsPage' imported from /Users/muxi/workspace/carbon-point/apps/enterprise-frontend/e2e/specs/products.spec.ts",
+      "stack": "Error: Cannot find module '/Users/muxi/workspace/carbon-point/apps/enterprise-frontend/e2e/pages/ProductsPage' imported from /Users/muxi/workspace/carbon-point/apps/enterprise-frontend/e2e/specs/products.spec.ts"
+    },
+    {
+      "message": "Error: Cannot find module '/Users/muxi/workspace/carbon-point/apps/enterprise-frontend/e2e/pages/ReportsPage' imported from /Users/muxi/workspace/carbon-point/apps/enterprise-frontend/e2e/specs/reports.spec.ts",
+      "stack": "Error: Cannot find module '/Users/muxi/workspace/carbon-point/apps/enterprise-frontend/e2e/pages/ReportsPage' imported from /Users/muxi/workspace/carbon-point/apps/enterprise-frontend/e2e/specs/reports.spec.ts"
+    },
+    {
+      "message": "Error: Cannot find module '/Users/muxi/workspace/carbon-point/apps/enterprise-frontend/e2e/pages/RolesPage' imported from /Users/muxi/workspace/carbon-point/apps/enterprise-frontend/e2e/specs/roles.spec.ts",
+      "stack": "Error: Cannot find module '/Users/muxi/workspace/carbon-point/apps/enterprise-frontend/e2e/pages/RolesPage' imported from /Users/muxi/workspace/carbon-point/apps/enterprise-frontend/e2e/specs/roles.spec.ts"
+    },
+    {
+      "message": "Error: Cannot find module '/Users/muxi/workspace/carbon-point/apps/enterprise-frontend/e2e/pages/RulesPage' imported from /Users/muxi/workspace/carbon-point/apps/enterprise-frontend/e2e/specs/rules.spec.ts",
+      "stack": "Error: Cannot find module '/Users/muxi/workspace/carbon-point/apps/enterprise-frontend/e2e/pages/RulesPage' imported from /Users/muxi/workspace/carbon-point/apps/enterprise-frontend/e2e/specs/rules.spec.ts"
+    }
+  ],
+  "stats": {
+    "startTime": "2026-04-16T14:44:50.300Z",
+    "duration": 423.50300000000016,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}
