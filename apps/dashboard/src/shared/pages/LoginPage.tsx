@@ -1,14 +1,42 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Form, Input, Button, Card, message, Checkbox } from 'antd';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Form, Input, Button, Card, message, Checkbox, Image } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { login } from '@/shared/api/auth';
 import { useAuthStore } from '@/shared/store/authStore';
+import { useQuery } from '@tanstack/react-query';
+import { getBrandingByTenantId } from '@/shared/api/branding';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { login: setAuth } = useAuthStore();
   const [loading, setLoading] = useState(false);
+
+  // Get tenant ID from query parameters
+  const tenantId = searchParams.get('tenantId') ? Number(searchParams.get('tenantId')) : null;
+
+  // Fetch branding configuration for this tenant
+  const { data: branding } = useQuery({
+    queryKey: ['tenantBranding', tenantId],
+    queryFn: () => getBrandingByTenantId(tenantId!),
+    enabled: !!tenantId, // Only fetch if tenantId exists
+  });
+
+  // Get primary color from branding or use default
+  const primaryColor = branding?.primaryColor || 
+    (branding?.themeType === 'preset' ? 
+      ({
+        'default-blue': '#1890ff',
+        'tech-green': '#52c41a',
+        'vibrant-orange': '#fa8c16',
+        'deep-purple': '#722ed1',
+      }[branding.presetTheme!] || '#1890ff') : 
+      '#1890ff'
+    );
+
+  // Generate gradient background based on primary color
+  const backgroundGradient = `linear-gradient(135deg, ${primaryColor}20 0%, ${primaryColor} 100%)`;
 
   const onFinish = async (values: { phone: string; password: string; remember?: boolean }) => {
     setLoading(true);
@@ -62,7 +90,7 @@ const LoginPage: React.FC = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(135deg, #001529 0%, #003a70 100%)',
+        background: backgroundGradient,
       }}
     >
       <Card
@@ -70,8 +98,19 @@ const LoginPage: React.FC = () => {
         bordered={false}
       >
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div style={{ fontSize: 48, marginBottom: 8 }}>🏢</div>
-          <h1 style={{ fontSize: 24, fontWeight: 'bold', margin: 0 }}>碳积分管理后台</h1>
+          {branding?.logoUrl ? (
+            <Image 
+              src={branding.logoUrl} 
+              alt="企业Logo" 
+              width={64} 
+              height={64} 
+              preview={false} 
+              style={{ marginBottom: 12 }}
+            />
+          ) : (
+            <div style={{ fontSize: 48, marginBottom: 8 }}>🏢</div>
+          )}
+          <h1 style={{ fontSize: 24, fontWeight: 'bold', margin: 0 }}>管理后台</h1>
           <p style={{ color: '#999', marginTop: 8 }}>企业数据管理平台</p>
         </div>
 
@@ -108,16 +147,17 @@ const LoginPage: React.FC = () => {
             <Checkbox>记住我</Checkbox>
           </Form.Item>
 
-          <Form.Item style={{ marginBottom: 0 }}>
-            <Button
-              type="primary"
-              htmlType="submit"
-              block
-              loading={loading}
-            >
-              登录
-            </Button>
-          </Form.Item>
+           <Form.Item style={{ marginBottom: 0 }}>
+              <Button
+                type="primary"
+                htmlType="submit"
+                block
+                loading={loading}
+                style={{ background: primaryColor, borderColor: primaryColor }}
+              >
+                登录
+              </Button>
+            </Form.Item>
         </Form>
       </Card>
     </div>

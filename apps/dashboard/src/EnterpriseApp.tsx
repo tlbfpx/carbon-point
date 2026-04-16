@@ -1,21 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { HashRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
-import { Layout, Menu, Avatar, Dropdown, Button } from 'antd';
+import { Layout, Menu, Avatar, Dropdown, Button, Image } from 'antd';
 import {
-  DashboardOutlined,
-  TeamOutlined,
-  SettingOutlined,
-  ShopOutlined,
-  ShoppingOutlined,
-  TrophyOutlined,
-  BarChartOutlined,
-  SafetyOutlined,
-  BellOutlined,
-  LogoutOutlined,
-  UserOutlined,
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
+    DashboardOutlined,
+    TeamOutlined,
+    SettingOutlined,
+    ShopOutlined,
+    ShoppingOutlined,
+    TrophyOutlined,
+    BarChartOutlined,
+    SafetyOutlined,
+    BellOutlined,
+    LogoutOutlined,
+    UserOutlined,
+    MenuFoldOutlined,
+    MenuUnfoldOutlined,
+    SkinOutlined,
 } from '@ant-design/icons';
+import { useQuery } from '@tanstack/react-query';
+import { getCurrentBranding, TenantBranding } from '@/shared/api/branding';
 import type { MenuProps } from 'antd';
 
 import Dashboard from '@/enterprise/pages/Dashboard';
@@ -26,6 +29,7 @@ import Orders from '@/enterprise/pages/Orders';
 import Points from '@/enterprise/pages/Points';
 import Reports from '@/enterprise/pages/Reports';
 import Roles from '@/enterprise/pages/Roles';
+import Branding from '@/enterprise/pages/Branding';
 import LoginPage from '@/shared/pages/LoginPage';
 
 import { useAuthStore } from '@/shared/store/authStore';
@@ -44,6 +48,7 @@ const ENTERPRISE_PERMISSION_MAP: Record<string, string> = {
   '/enterprise/points': 'enterprise:point:query',
   '/enterprise/reports': 'enterprise:report:view',
   '/enterprise/roles': 'enterprise:role:list',
+  '/enterprise/branding': 'enterprise:branding:manage',
 };
 
 const EnterpriseMenuItems: MenuProps['items'] = [
@@ -55,6 +60,7 @@ const EnterpriseMenuItems: MenuProps['items'] = [
   { key: '/enterprise/points', icon: <TrophyOutlined />, label: '积分运营' },
   { key: '/enterprise/reports', icon: <BarChartOutlined />, label: '数据报表' },
   { key: '/enterprise/roles', icon: <SafetyOutlined />, label: '角色权限' },
+  { key: '/enterprise/branding', icon: <SkinOutlined />, label: '品牌配置' },
 ];
 
 const EnterpriseContent: React.FC = () => {
@@ -62,6 +68,13 @@ const EnterpriseContent: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
+
+    // Fetch enterprise branding configuration
+    const { data: branding } = useQuery<TenantBranding>({
+        queryKey: ['tenantBranding'],
+        queryFn: getCurrentBranding,
+        enabled: isAuthenticated, // Only fetch if authenticated
+    });
 
   useEffect(() => {
     useAuthStore.getState().hydrate();
@@ -126,8 +139,21 @@ const EnterpriseContent: React.FC = () => {
           color: '#fff',
           fontSize: collapsed ? 16 : 18,
           fontWeight: 'bold',
+          gap: 8,
+          padding: '0 8px',
         }}>
-          {collapsed ? '碳' : '碳积分管理后台'}
+          {collapsed ? (
+            <>{branding?.logoUrl ? (
+              <Image src={branding.logoUrl} alt="Logo" width={32} height={32} preview={false} />
+            ) : '管'}</>
+          ) : (
+            <>
+              {branding?.logoUrl && (
+                <Image src={branding.logoUrl} alt="企业Logo" width={32} height={32} preview={false} />
+              )}
+              <span>管理后台</span>
+            </>
+          )}
         </div>
         {/* Always show Menu container, even if not authenticated */}
         <Menu
@@ -180,6 +206,7 @@ const EnterpriseContent: React.FC = () => {
                  <Route path="/enterprise/points" element={<Points />} />
                  <Route path="/enterprise/reports" element={<Reports />} />
                  <Route path="/enterprise/roles" element={<Roles />} />
+                 <Route path="/enterprise/branding" element={<Branding />} />
                  <Route path="*" element={<Navigate to="/enterprise/dashboard" replace />} />
                </>
              )}

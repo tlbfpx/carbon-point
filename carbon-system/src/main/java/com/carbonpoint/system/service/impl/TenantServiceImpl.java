@@ -56,7 +56,9 @@ public class TenantServiceImpl implements TenantService {
                 "enterprise:product:delete", "enterprise:product:toggle", "enterprise:product:stock",
                 "enterprise:order:list", "enterprise:order:fulfill", "enterprise:order:cancel",
                 "enterprise:point:query", "enterprise:point:add", "enterprise:point:deduct", "enterprise:point:export",
-                "enterprise:report:view", "enterprise:report:export"
+                "enterprise:report:view", "enterprise:report:export",
+                "enterprise:branding:manage",
+                "enterprise:role:list", "enterprise:role:create", "enterprise:role:edit", "enterprise:role:delete"
         ));
         presetRolePermissions.put("运营管理员", List.of(
                 "enterprise:dashboard:view",
