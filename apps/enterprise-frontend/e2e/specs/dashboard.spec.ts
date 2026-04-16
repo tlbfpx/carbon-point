@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { BASE_URL } from '../config';
 import { loginAsEnterpriseAdmin } from '../helpers';
-import { DashboardPage } from '../pages/DashboardPage';
+import { DashboardPage } from '../pages/enterprise/DashboardPage';
 
 test.describe('企业后台 - 数据看板', () => {
   let dashboardPage: DashboardPage;

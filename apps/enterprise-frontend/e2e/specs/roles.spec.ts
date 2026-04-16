@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { BASE_URL } from '../config';
 import { loginAsEnterpriseAdmin } from '../helpers';
-import { RolesPage } from '../pages/RolesPage';
+import { RolesPage } from '../pages/enterprise/RolesPage';
 
 test.describe('企业后台 - 角色权限 (20 tests)', () => {
   let rolesPage: RolesPage;

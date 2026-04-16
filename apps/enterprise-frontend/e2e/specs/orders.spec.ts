@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { BASE_URL } from '../config';
 import { loginAsEnterpriseAdmin } from '../helpers';
-import { OrdersPage } from '../pages/OrdersPage';
+import { OrdersPage } from '../pages/enterprise/OrdersPage';
 
 test.describe('企业后台 - 订单管理 (25 tests)', () => {
   let ordersPage: OrdersPage;

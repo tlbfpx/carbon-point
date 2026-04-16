@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { BASE_URL } from '../config';
 import { loginAsEnterpriseAdmin } from '../helpers';
-import { RulesPage } from '../pages/RulesPage';
+import { RulesPage } from '../pages/enterprise/RulesPage';
 
 test.describe('企业后台 - 规则配置', () => {
   let rulesPage: RulesPage;

@@ -1,5 +1,5 @@
 import { type Page, type Locator, expect } from '@playwright/test';
-import { BASE_URL } from '../config';
+import { BASE_URL } from '../../config';
 
 export interface TimeSlotFormData {
   name: string;

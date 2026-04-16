@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { BASE_URL } from '../config';
 import { loginAsEnterpriseAdmin } from '../helpers';
-import { PointsPage } from '../pages/PointsPage';
+import { PointsPage } from '../pages/enterprise/PointsPage';
 
 test.describe('企业后台 - 积分运营 (25 tests)', () => {
   let pointsPage: PointsPage;

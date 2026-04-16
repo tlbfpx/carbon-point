@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { BASE_URL } from '../config';
 import { loginAsEnterpriseAdmin } from '../helpers';
-import { MemberPage } from '../pages/MemberPage';
+import { MemberPage } from '../pages/enterprise/MemberPage';
 
 test.describe('企业后台 - 员工管理 (25 tests)', () => {
   let memberPage: MemberPage;
