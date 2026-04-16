@@ -1,5 +1,6 @@
 package com.carbonpoint.system.security.sliding;
 
+import com.carbonpoint.common.result.ErrorCode;
 import com.carbonpoint.common.result.Result;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -38,7 +39,7 @@ public class SlidingCaptchaController {
                                         @RequestParam(required = false) String track) {
         boolean valid = slidingCaptchaService.verify(captchaId, slideX, track);
         if (!valid) {
-            return Result.error(4001, "验证失败，请重试");
+            return Result.error(ErrorCode.AUTH_CAPTCHA_WRONG, "验证失败，请重试");
         }
         return Result.success(new VerifyResult(true, "验证成功"));
     }

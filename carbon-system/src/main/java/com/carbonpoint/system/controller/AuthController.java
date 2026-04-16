@@ -1,5 +1,6 @@
 package com.carbonpoint.system.controller;
 
+import com.carbonpoint.common.result.ErrorCode;
 import com.carbonpoint.common.result.Result;
 import com.carbonpoint.system.dto.req.*;
 import com.carbonpoint.system.dto.res.AuthRes;
@@ -52,7 +53,7 @@ public class AuthController {
         }
         User user = userMapper.selectById(currentUser.getUserId());
         if (user == null) {
-            return Result.error(404, "用户不存在");
+            return Result.error(ErrorCode.USER_NOT_FOUND);
         }
         return Result.success(AuthRes.UserInfo.builder()
                 .userId(user.getId())

@@ -20,7 +20,8 @@ export default defineConfig(({ command, isSsrBuild }) => {
       },
     },
     server: {
-      port: 3001,
+      port: 3000,
+      strictPort: true,
       host: true,
       proxy: {
         '/api': {

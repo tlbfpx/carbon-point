@@ -1,12 +1,19 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ConfigProvider } from 'antd';
+import { ConfigProvider, message } from 'antd';
 import zhCN from 'antd/locale/zh_CN';
 import dayjs from 'dayjs';
 import 'dayjs/locale/zh-cn';
 import EnterpriseApp from './EnterpriseApp';
 import './index.css';
+
+// 配置 message 全局配置
+message.config({
+  top: 64,
+  duration: 3,
+  maxCount: 3,
+});
 
 dayjs.locale('zh-cn');
 

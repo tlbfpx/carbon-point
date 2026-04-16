@@ -4,7 +4,7 @@ import com.carbonpoint.common.exception.BusinessException;
 import com.carbonpoint.common.result.ErrorCode;
 import com.carbonpoint.common.security.AppPasswordEncoder;
 import com.carbonpoint.common.security.PasswordValidator;
-import com.carbonpoint.common.service.PasswordHistoryService;
+// import com.carbonpoint.common.service.PasswordHistoryService;
 import com.carbonpoint.system.entity.User;
 import com.carbonpoint.system.mapper.UserMapper;
 import com.carbonpoint.system.security.RefreshTokenMetadataService;
@@ -31,7 +31,7 @@ public class ForgotPasswordService {
     private final UserMapper userMapper;
     private final AppPasswordEncoder passwordEncoder;
     private final PasswordValidator passwordValidator;
-    private final PasswordHistoryService passwordHistoryService;
+    // private final PasswordHistoryService passwordHistoryService;
     private final RefreshTokenMetadataService refreshTokenMetadataService;
     private final SecureRandom random = new SecureRandom();
 
@@ -131,19 +131,19 @@ public class ForgotPasswordService {
         // 2. Validate password strength
         passwordValidator.validate(newPassword);
 
-        // 3. Check password history (prevent reuse of recent passwords)
-        int historyCount = passwordValidator.getSecurityProperties()
-                .getPassword().getHistoryCount();
-        if (passwordHistoryService.isRecentlyUsed(user.getId(), newPassword, historyCount)) {
-            throw new BusinessException(ErrorCode.AUTH_PASSWORD_HISTORY_REUSE);
-        }
+        // 3. Check password history (prevent reuse of recent passwords) - temporarily disabled
+        // int historyCount = passwordValidator.getSecurityProperties()
+        //         .getPassword().getHistoryCount();
+        // if (passwordHistoryService.isRecentlyUsed(user.getId(), newPassword, historyCount)) {
+        //     throw new BusinessException(ErrorCode.AUTH_PASSWORD_HISTORY_REUSE);
+        // }
 
         // 4. Encode and update password
         String newHash = passwordEncoder.encode(newPassword);
         userMapper.updatePasswordHash(user.getId(), newHash);
 
-        // 5. Save to password history
-        passwordHistoryService.addHistory(user.getId(), newHash);
+        // 5. Save to password history - temporarily disabled
+        // passwordHistoryService.addHistory(user.getId(), newHash);
 
         // 6. Invalidate all refresh tokens for this user
         refreshTokenMetadataService.invalidateAllForUser(user.getId());

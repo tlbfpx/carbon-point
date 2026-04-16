@@ -53,15 +53,13 @@ public class PlatformAuthenticationFilter extends OncePerRequestFilter {
         // Extract and validate token
         String token = extractToken(request);
         if (token == null) {
-            sendError(response, HttpServletResponse.SC_UNAUTHORIZED, ErrorCode.UNAUTHORIZED.getCode(),
-                    ErrorCode.UNAUTHORIZED.getMessage());
+            sendError(response, HttpServletResponse.SC_UNAUTHORIZED, ErrorCode.UNAUTHORIZED);
             return;
         }
 
         Claims claims = jwtUtil.parseToken(token);
         if (claims == null || !jwtUtil.isPlatformAdminToken(claims)) {
-            sendError(response, HttpServletResponse.SC_UNAUTHORIZED, ErrorCode.TOKEN_INVALID.getCode(),
-                    ErrorCode.TOKEN_INVALID.getMessage());
+            sendError(response, HttpServletResponse.SC_UNAUTHORIZED, ErrorCode.TOKEN_INVALID);
             return;
         }
 
@@ -97,10 +95,10 @@ public class PlatformAuthenticationFilter extends OncePerRequestFilter {
         return null;
     }
 
-    private void sendError(HttpServletResponse response, int status, int code, String message) throws IOException {
+    private void sendError(HttpServletResponse response, int status, ErrorCode errorCode) throws IOException {
         response.setStatus(status);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        Result<Void> result = Result.error(code, message);
+        Result<Void> result = Result.error(errorCode);
         response.getWriter().write(objectMapper.writeValueAsString(result));
     }
 }

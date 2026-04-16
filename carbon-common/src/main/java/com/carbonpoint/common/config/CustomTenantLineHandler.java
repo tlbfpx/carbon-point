@@ -37,8 +37,6 @@ public class CustomTenantLineHandler implements TenantLineHandler {
             "package_permissions",
             "package_change_logs"
     ));
-            "permission_packages",
-            "package_permissions",
 
     @Override
     public Expression getTenantId() {

@@ -1,5 +1,6 @@
 package com.carbonpoint.system.security.captcha;
 
+import com.carbonpoint.common.result.ErrorCode;
 import com.carbonpoint.common.result.Result;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,7 +42,7 @@ public class CaptchaController {
     public Result<Boolean> verify(@RequestParam String uuid, @RequestParam String code) {
         boolean valid = captchaService.verify(uuid, code);
         if (!valid) {
-            return Result.error(4001, "验证码错误或已过期");
+            return Result.error(ErrorCode.AUTH_CAPTCHA_WRONG);
         }
         return Result.success(true, "验证成功");
     }

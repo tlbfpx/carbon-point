@@ -14,17 +14,42 @@ const LoginPage: React.FC = () => {
     setLoading(true);
     try {
       const res: any = await login(values);
-      const code = res.data?.code ?? res.code;
-      const data = res.data?.data || res.data;
-      if (code === 200 || code === 0) {
-        setAuth(data.accessToken, data.refreshToken, data.user);
-        message.success('登录成功');
-        navigate('/');
+      console.log('[Login Debug] Full response:', res);
+      
+      // 尝试多种可能的响应结构
+      const code = res.data?.code ?? res.code ?? res.status;
+      const data = res.data?.data || res.data || res;
+      
+      console.log('[Login Debug] Parsed code:', code, 'Parsed data:', data);
+      
+      if (code === 200 || code === 0 || code === '200' || code === '0' || code === '0000') {
+        // 确保我们有正确的用户数据结构
+        const accessToken = data.accessToken || data.token;
+        const refreshToken = data.refreshToken || data.refresh_token;
+        const user = data.user || data;
+        
+        console.log('[Login Debug] Tokens:', { accessToken: !!accessToken, refreshToken: !!refreshToken });
+        console.log('[Login Debug] User:', user);
+        
+        if (accessToken && user) {
+          setAuth(accessToken, refreshToken, user);
+          message.success('登录成功');
+          // 使用更明确的导航路径
+          setTimeout(() => {
+            navigate('/enterprise/dashboard', { replace: true });
+          }, 100);
+        } else {
+          message.error('登录响应数据格式错误');
+          console.error('[Login Error] Missing accessToken or user data');
+        }
       } else {
-        message.error(res.data?.message || res.data?.msg || res.message || '登录失败');
+        const errorMsg = res.data?.message || res.data?.msg || res.message || data.message || data.msg || '登录失败';
+        message.error(errorMsg);
+        console.error('[Login Error] Login failed with code:', code, 'message:', errorMsg);
       }
-    } catch {
-      message.error('网络错误，请重试');
+    } catch (error: any) {
+      console.error('[Login Error] Network error:', error);
+      message.error(error?.response?.data?.message || error?.message || '网络错误，请重试');
     } finally {
       setLoading(false);
     }
