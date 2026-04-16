@@ -1,8 +1,19 @@
 import { platformApiClient } from './request';
 import type { AdminUser } from '../store/authStore';
 
-export const platformLogin = async (username: string, password: string) => {
-  const res = await platformApiClient.post('/auth/login', { username, password });
+interface LoginResponse {
+  code: number;
+  message?: string;
+  data?: {
+    accessToken: string;
+    refreshToken: string;
+    user: AdminUser;
+    permissions?: string[];
+  };
+}
+
+export const platformLogin = async (username: string, password: string): Promise<LoginResponse> => {
+  const res = await platformApiClient.post<LoginResponse>('/auth/login', { username, password });
   return res.data;
 };
 

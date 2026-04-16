@@ -10,6 +10,7 @@ export interface AdminUser {
   tenantId?: string;
   roles: string[];
   permissions: string[];
+  isPlatformAdmin?: boolean;
 }
 
 interface AuthState {
