@@ -3,7 +3,7 @@ import { BASE_URL } from '../config';
 
 /**
  * Platform Admin Login Page Object
- * Platform URL: /platform.html
+ * Platform URL: /
  */
 export class PlatformLoginPage {
   readonly page: Page;
@@ -21,7 +21,7 @@ export class PlatformLoginPage {
   }
 
   async goto() {
-    await this.page.goto(`${BASE_URL}/platform.html`);
+    await this.page.goto(`${BASE_URL}/`);
   }
 
   async login(username: string, password: string) {

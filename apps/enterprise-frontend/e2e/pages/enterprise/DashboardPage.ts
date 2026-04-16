@@ -15,7 +15,7 @@ export class DashboardPage {
   }
 
   async goto() {
-    await this.page.goto(`${BASE_URL}/ dashboard`);
+    await this.page.goto(`${BASE_URL}/dashboard`);
     await this.page.waitForSelector('.ant-layout', { timeout: 15000 });
   }
 

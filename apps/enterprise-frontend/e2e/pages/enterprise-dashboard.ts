@@ -15,7 +15,7 @@ export class EnterpriseSidebar {
   }
 
   async goto() {
-    await this.page.goto(`${BASE_URL}/#/dashboard`);
+    await this.page.goto(`${BASE_URL}/dashboard`);
   }
 
   async expectMenuItemVisible(label: string, visible: boolean = true) {

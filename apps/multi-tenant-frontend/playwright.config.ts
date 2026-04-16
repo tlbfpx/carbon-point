@@ -3,9 +3,9 @@ import os from 'os';
 import fs from 'fs';
 import path from 'path';
 
-const AUTH_CACHE_FILE = path.join(process.cwd(), 'e2e', '.auth-token.json');
+const AUTH_CACHE_FILE = path.join(process.cwd(), 'e2e', '.platform-auth-token.json');
 
-export function readEnterpriseAuth(): string {
+export function readPlatformAuth(): string {
   try { return fs.readFileSync(AUTH_CACHE_FILE, 'utf8'); } catch { return ''; }
 }
 
@@ -22,7 +22,7 @@ export default defineConfig({
   ],
 
   use: {
-    baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3001',
+    baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
@@ -39,8 +39,8 @@ export default defineConfig({
   webServer: process.env.CI
     ? undefined
     : {
-        command: 'pnpm --filter @carbon-point/enterprise-frontend dev',
-        url: 'http://localhost:3001',
+        command: 'pnpm --filter @carbon-point/multi-tenant-frontend dev',
+        url: 'http://localhost:3000',
         reuseExistingServer: !process.env.CI,
         timeout: 120 * 1000,
       },

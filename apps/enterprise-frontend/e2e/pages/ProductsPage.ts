@@ -30,7 +30,7 @@ export class ProductsPage {
   }
 
   async goto() {
-    await this.page.goto(`${BASE_URL}/#/enterprise/products`);
+    await this.page.goto(`${BASE_URL}/products`);
     await this.page.waitForSelector('.ant-table, .ant-empty', { timeout: 10000 });
   }
 

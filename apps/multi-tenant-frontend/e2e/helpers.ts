@@ -93,29 +93,41 @@ export async function logout(page: Page) {
   }
 }
 
+
 /**
- * Login as enterprise admin.
- * Since the login API has a response format bug in the UI (checks res.code instead of res.data.code),
- * we bypass the UI form and directly call the API to get tokens, then inject into localStorage.
+ * Login as platform admin.
+ * Platform API uses /platform/auth/login (not /api/auth/platform/login).
+ * Bypasses UI form by calling API directly and injecting JWT into localStorage.
+ *
+ * The API admin object needs transformation to match the AdminUser interface:
+ *   API: { id, username, displayName, role, status }
+ *   Frontend expects: { userId, username, roles[], isPlatformAdmin }
  */
-export async function loginAsEnterpriseAdmin(page: Page, baseUrl: string) {
-  // First, get the auth token directly from the API
-  const apiResponse = await page.request.post('http://localhost:8080/api/auth/login', {
+export async function loginAsPlatformAdmin(page: Page, baseUrl: string) {
+  // Platform API is at port 8080, not the frontend port (3001)
+  const apiResponse = await page.request.post(`http://localhost:8080/platform/auth/login`, {
     headers: { 'Content-Type': 'application/json' },
-    data: { phone: '13800138001', password: 'password123' },
+    data: { username: 'admin', password: 'admin123' },
   });
   const apiData = await apiResponse.json();
 
   if (apiData.code === 200 && apiData.data) {
-    const { accessToken, refreshToken, user } = apiData.data;
-    // Navigate to the login page first to set up the app context
-    await page.goto(`${baseUrl}/login`);
+    const { accessToken, refreshToken, admin } = apiData.data;
+    // Transform API admin object to match AdminUser interface
+    const user = {
+      userId: String(admin.id),
+      username: admin.username,
+      roles: [admin.role].filter(Boolean),
+      permissions: [],
+      isPlatformAdmin: true,
+    };
+    await page.goto(`${baseUrl}/`);
     await page.waitForLoadState('domcontentloaded');
-    // Inject auth state into localStorage (matches authStore.ts STORAGE_KEY format)
+    // Inject auth state into localStorage
     await page.evaluate(
       ([at, rt, u]) => {
         localStorage.setItem(
-          'carbon-enterprise-auth',
+          'carbon-platform-auth',
           JSON.stringify({
             state: { accessToken: at, refreshToken: rt, user: u },
             version: 0,
@@ -124,11 +136,10 @@ export async function loginAsEnterpriseAdmin(page: Page, baseUrl: string) {
       },
       [accessToken, refreshToken, user]
     );
+    // Reload page so Zustand hydrates from localStorage before render
+    await page.reload();
+    await page.waitForLoadState('networkidle');
+    // Navigate to platform dashboard (or let redirect handle it)
+    await page.waitForTimeout(2000);
   }
-
-  // Navigate to the enterprise dashboard
-  await page.goto(`${baseUrl}/#/dashboard`);
-  await page.waitForLoadState('networkidle');
-  await page.waitForTimeout(2000);
 }
-

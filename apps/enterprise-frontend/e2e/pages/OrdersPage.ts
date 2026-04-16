@@ -44,7 +44,7 @@ export class OrdersPage {
   }
 
   async goto() {
-    await this.page.goto(`${BASE_URL}/#/enterprise/orders`);
+    await this.page.goto(`${BASE_URL}/orders`);
     await this.page.waitForLoadState('networkidle');
     await this.page.waitForSelector('.ant-table-tbody tr, .ant-empty', { timeout: 15000 });
   }
