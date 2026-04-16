@@ -245,6 +245,7 @@ const EnterpriseManagement: React.FC = () => {
           <div><strong>企业名称：</strong>{editingEnterprise.name}</div>
           <div><strong>联系人：</strong>{editingEnterprise.contactName}</div>
           <div><strong>联系电话：</strong>{editingEnterprise.contactPhone}</div>
+          <div><strong>联系邮箱：</strong>{(editingEnterprise as any).contactEmail || '-'}</div>
           <div><strong>用户数：</strong>{editingEnterprise.userCount}</div>
           <div><strong>创建时间：</strong>{dayjs(editingEnterprise.createTime).format('YYYY-MM-DD')}</div>
           <div>
@@ -381,12 +382,61 @@ const EnterpriseManagement: React.FC = () => {
           >
             <Input placeholder="请输入手机号" />
           </Form.Item>
+          <Form.Item
+            name="contactEmail"
+            label="联系邮箱"
+            rules={[{ type: 'email', message: '请输入正确的邮箱' }]}
+          >
+            <Input placeholder="请输入邮箱（选填）" />
+          </Form.Item>
           <Form.Item name="packageId" label="选择套餐">
             <Select
               placeholder="请选择套餐"
               allowClear
               options={packageOptions}
             />
+          </Form.Item>
+          <Form.Item
+            name="createSuperAdmin"
+            label="同步创建超级管理员"
+            valuePropName="checked"
+          >
+            <Switch />
+          </Form.Item>
+          <Form.Item
+            noStyle
+            shouldUpdate={(prev, curr) => prev.createSuperAdmin !== curr.createSuperAdmin}
+          >
+            {({ getFieldValue }) =>
+              getFieldValue('createSuperAdmin') && (
+                <>
+                  <Form.Item
+                    name="superAdminUsername"
+                    label="超管用户名"
+                    rules={[{ required: true, message: '请输入超管用户名' }]}
+                  >
+                    <Input placeholder="请输入超管用户名" />
+                  </Form.Item>
+                  <Form.Item
+                    name="superAdminPhone"
+                    label="超管手机号"
+                    rules={[
+                      { required: true, message: '请输入超管手机号' },
+                      { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号' },
+                    ]}
+                  >
+                    <Input placeholder="请输入超管手机号" />
+                  </Form.Item>
+                  <Form.Item
+                    name="superAdminPassword"
+                    label="超管密码"
+                    rules={[{ required: true, message: '请输入超管密码' }]}
+                  >
+                    <Input.Password placeholder="请输入超管密码" />
+                  </Form.Item>
+                </>
+              )
+            }
           </Form.Item>
           <Form.Item style={{ marginBottom: 0 }}>
             <Space>
