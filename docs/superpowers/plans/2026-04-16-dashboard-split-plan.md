@@ -1190,6 +1190,10 @@ Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
 - Create: `apps/enterprise-frontend/playwright.config.ts`
 - Create: `apps/enterprise-frontend/e2e/`
 
+**Source test files are in `apps/dashboard/e2e/specs/`:**
+- Platform tests: `apps/dashboard/e2e/specs/platform/*.spec.ts` → multi-tenant-frontend
+- Enterprise tests: `apps/dashboard/e2e/specs/enterprise/*.spec.ts` + `login.spec.ts` → enterprise-frontend
+
 - [ ] **Step 1: Create playwright.config.ts for multi-tenant-frontend** (baseURL: http://localhost:3000, port: 3000)
 
 - [ ] **Step 2: Create playwright.config.ts for enterprise-frontend** (baseURL: http://localhost:3001, port: 3001)
@@ -1197,18 +1201,34 @@ Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
 - [ ] **Step 3: Copy and split test files**
 
 ```bash
-# Copy all dashboard e2e tests to both apps
-cp -r apps/dashboard/e2e/*.spec.ts apps/multi-tenant-frontend/e2e/
-cp -r apps/dashboard/e2e/*.spec.ts apps/enterprise-frontend/e2e/
+# Copy platform tests to multi-tenant-frontend
+mkdir -p apps/multi-tenant-frontend/e2e/specs
+cp -r apps/dashboard/e2e/specs/platform/*.spec.ts apps/multi-tenant-frontend/e2e/specs/
 
-# In multi-tenant-frontend: keep only platform-related tests
-# In enterprise-frontend: keep only enterprise-related tests
-# Delete irrelevant ones
+# Copy enterprise tests to enterprise-frontend
+mkdir -p apps/enterprise-frontend/e2e/specs
+cp -r apps/dashboard/e2e/specs/enterprise/*.spec.ts apps/enterprise-frontend/e2e/specs/
+cp apps/dashboard/e2e/specs/login.spec.ts apps/enterprise-frontend/e2e/specs/login.spec.ts
 
-# Adapt URLs in all remaining tests:
-# Remove /platform/ and /enterprise/ prefixes from page.goto() calls
-sed -i '' 's|/#/platform/|/#/|g' apps/multi-tenant-frontend/e2e/*.spec.ts
-sed -i '' 's|/#/enterprise/|/#/|g' apps/enterprise-frontend/e2e/*.spec.ts
+# Copy shared helpers and config
+cp apps/dashboard/e2e/config.ts apps/multi-tenant-frontend/e2e/
+cp apps/dashboard/e2e/helpers.ts apps/multi-tenant-frontend/e2e/
+cp apps/dashboard/e2e/global-setup.ts apps/multi-tenant-frontend/e2e/
+cp apps/dashboard/e2e/global-teardown.ts apps/multi-tenant-frontend/e2e/
+cp apps/dashboard/e2e/tsconfig.json apps/multi-tenant-frontend/e2e/
+
+cp apps/dashboard/e2e/config.ts apps/enterprise-frontend/e2e/
+cp apps/dashboard/e2e/helpers.ts apps/enterprise-frontend/e2e/
+cp apps/dashboard/e2e/global-setup.ts apps/enterprise-frontend/e2e/
+cp apps/dashboard/e2e/global-teardown.ts apps/enterprise-frontend/e2e/
+cp apps/dashboard/e2e/tsconfig.json apps/enterprise-frontend/e2e/
+
+# Adapt URLs: remove /platform/ and /enterprise/ prefixes from page.goto() calls
+# Platform tests use /platform/* paths — change to / (root)
+find apps/multi-tenant-frontend/e2e -name "*.spec.ts" -exec sed -i '' 's|/#/platform/|/#/|g' {} \;
+
+# Enterprise tests use /enterprise/* paths — change to / (root)
+find apps/enterprise-frontend/e2e -name "*.spec.ts" -exec sed -i '' 's|/#/enterprise/|/#/|g' {} \;
 ```
 
 - [ ] **Step 4: Verify tests discoverable**
