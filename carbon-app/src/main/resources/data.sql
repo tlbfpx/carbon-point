@@ -24,5 +24,5 @@ VALUES (1, 1, 'time_slot', '基础积分规则',
 
 INSERT IGNORE INTO point_rules (id, tenant_id, type, name, config, enabled, sort_order, deleted)
 VALUES (2, 1, 'daily_cap', '每日积分上限',
-    '{"maxDailyPoints": 100}',
+    '{"dailyLimit": 100}',
     TRUE, 5, 0);

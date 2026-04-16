@@ -44,13 +44,14 @@ class NotificationTriggerTest {
             // Given
             Long tenantId = 1L, userId = 10L;
             String phone = "13800138000";
+            String email = "user@example.com";
 
             // When
-            notificationTrigger.onStreakBonus(tenantId, userId, phone, 7, 50);
+            notificationTrigger.onStreakBonus(tenantId, userId, phone, email, 7, 50);
 
             // Then
             verify(notificationService).sendNotification(
-                    eq(tenantId), eq(userId), eq(phone),
+                    eq(tenantId), eq(userId), eq(phone), eq(email),
                     eq("streak_bonus"),
                     argThat(m -> m.get("streak_days").equals(7) && m.get("bonus_points").equals(50)),
                     eq("checkin"),
@@ -66,11 +67,11 @@ class NotificationTriggerTest {
             String phone = "13800138000";
 
             // When
-            notificationTrigger.onStreakBroken(tenantId, userId, phone, 15);
+            notificationTrigger.onStreakBroken(tenantId, userId, phone, null, 15);
 
             // Then
             verify(notificationService).sendNotification(
-                    eq(tenantId), eq(userId), eq(phone),
+                    eq(tenantId), eq(userId), eq(phone), isNull(),
                     eq("streak_broken"),
                     argThat(m -> m.get("streak_days").equals(15)),
                     anyString(),
@@ -89,13 +90,14 @@ class NotificationTriggerTest {
             // Given
             Long tenantId = 1L, userId = 10L;
             String phone = "13800138000";
+            String email = "user@example.com";
 
             // When
-            notificationTrigger.onLevelUp(tenantId, userId, phone, 1, 2, 1.2);
+            notificationTrigger.onLevelUp(tenantId, userId, phone, email, 1, 2, 1.2);
 
             // Then
             verify(notificationService).sendNotification(
-                    eq(tenantId), eq(userId), eq(phone),
+                    eq(tenantId), eq(userId), eq(phone), eq(email),
                     eq("level_up"),
                     argThat(m ->
                             m.get("old_level").equals(1) &&
@@ -112,12 +114,13 @@ class NotificationTriggerTest {
         @DisplayName("等级 5 应返回 钻石")
         void shouldReturnDiamondForLevel5() {
             // When
-            notificationTrigger.onLevelUp(1L, 1L, null, 4, 5, 1.8);
+            notificationTrigger.onLevelUp(1L, 1L, null, null, 4, 5, 1.8);
 
             // Then
             ArgumentCaptor<Map<String, Object>> captor = ArgumentCaptor.forClass(Map.class);
             verify(notificationService).sendNotification(
-                    anyLong(), anyLong(), any(), anyString(),
+                    anyLong(), anyLong(), any(), any(),
+                    anyString(),
                     captor.capture(), any(), any()
             );
             assertEquals("钻石", captor.getValue().get("level_name"));
@@ -137,11 +140,11 @@ class NotificationTriggerTest {
             List<String> phones = List.of("13800000001", "13800000002", "13800000003");
 
             // When
-            notificationTrigger.onTenantSuspended(tenantId, userIds, phones, "违规操作");
+            notificationTrigger.onTenantSuspended(tenantId, userIds, phones, null, "违规操作");
 
             // Then
             verify(notificationService).sendBulkNotifications(
-                    eq(tenantId), eq(userIds), eq(phones),
+                    eq(tenantId), eq(userIds), eq(phones), isNull(),
                     eq("tenant_suspended"),
                     argThat(m -> m.get("reason").equals("违规操作")),
                     eq("tenant"),

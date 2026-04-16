@@ -133,13 +133,51 @@ export async function loginAsEnterpriseAdmin(page: Page, baseUrl: string) {
 }
 
 /**
- * Login as platform admin
+ * Login as platform admin.
+ * Platform API uses /platform/auth/login (not /api/auth/platform/login).
+ * Bypasses UI form by calling API directly and injecting JWT into localStorage.
+ *
+ * The API admin object needs transformation to match the AdminUser interface:
+ *   API: { id, username, displayName, role, status }
+ *   Frontend expects: { userId, username, roles[], isPlatformAdmin }
  */
 export async function loginAsPlatformAdmin(page: Page, baseUrl: string) {
-  await page.goto(`${baseUrl}/platform.html`);
-  await page.waitForLoadState('networkidle');
-  await page.locator('input[placeholder*="用户名"]').fill('admin');
-  await page.locator('input[placeholder*="密码"]').fill('admin123');
-  await page.locator('button[type="submit"]').click();
-  await page.waitForURL(/platform/, { timeout: 15000 });
+  // Platform API is at port 8080, not the frontend port (3001)
+  const apiResponse = await page.request.post(`http://localhost:8080/platform/auth/login`, {
+    headers: { 'Content-Type': 'application/json' },
+    data: { username: 'admin', password: 'admin123' },
+  });
+  const apiData = await apiResponse.json();
+
+  if (apiData.code === 200 && apiData.data) {
+    const { accessToken, refreshToken, admin } = apiData.data;
+    // Transform API admin object to match AdminUser interface
+    const user = {
+      userId: String(admin.id),
+      username: admin.username,
+      roles: [admin.role].filter(Boolean),
+      permissions: [],
+      isPlatformAdmin: true,
+    };
+    await page.goto(`${baseUrl}/platform.html`);
+    await page.waitForLoadState('domcontentloaded');
+    // Inject auth state into localStorage
+    await page.evaluate(
+      ([at, rt, u]) => {
+        localStorage.setItem(
+          'carbon-dashboard-auth',
+          JSON.stringify({
+            state: { accessToken: at, refreshToken: rt, user: u },
+            version: 0,
+          })
+        );
+      },
+      [accessToken, refreshToken, user]
+    );
+    // Reload page so Zustand hydrates from localStorage before render
+    await page.reload();
+    await page.waitForLoadState('networkidle');
+    // Navigate to platform dashboard (or let redirect handle it)
+    await page.waitForTimeout(2000);
+  }
 }

@@ -3,8 +3,7 @@ package com.carbonpoint.app.integration;
 import org.mockito.Mockito;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -20,14 +19,17 @@ import java.time.Duration;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
  * Test configuration providing mock Redis and Redisson beans.
  * Used by integration tests in carbon-app to avoid needing a real Redis instance.
+ * Uses @Configuration (not @TestConfiguration) to ensure it is processed like
+ * a regular @Configuration class, allowing @Primary to take precedence.
  */
-@TestConfiguration
+@Configuration
 public class TestRedisConfig {
 
     private final ConcurrentHashMap<String, String> storage = new ConcurrentHashMap<>();
@@ -59,37 +61,32 @@ public class TestRedisConfig {
 
     @Bean
     @Primary
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public StringRedisTemplate stringRedisTemplate(RedisConnectionFactory connectionFactory) {
-        StringRedisTemplate template = new StringRedisTemplate();
-        template.setConnectionFactory(connectionFactory);
-        template.afterPropertiesSet();
+        // Use a fully mock StringRedisTemplate to avoid spy complexity
+        StringRedisTemplate mockTemplate = Mockito.mock(StringRedisTemplate.class);
+        Mockito.when(mockTemplate.getConnectionFactory()).thenReturn(connectionFactory);
 
-        StringRedisTemplate spy = Mockito.spy(template);
-
+        // Create the in-memory ops object
         InMemoryValueOperations inMemOps = new InMemoryValueOperations(storage);
-        Mockito.doReturn(inMemOps).when(spy).opsForValue();
 
-        Mockito.doAnswer(inv -> storage.remove(inv.getArgument(0)) != null)
-                .when(spy).delete(Mockito.anyString());
-        Mockito.doAnswer(inv -> storage.containsKey(inv.getArgument(0)))
-                .when(spy).hasKey(Mockito.anyString());
-        Mockito.doReturn(true).when(spy).expire(Mockito.anyString(), Mockito.anyLong(), Mockito.any(TimeUnit.class));
-        Mockito.doReturn(true).when(spy).expire(Mockito.anyString(), Mockito.any(Duration.class));
-        Mockito.doAnswer(inv -> storage.containsKey(inv.getArgument(0)) ? 1800L : -1L)
-                .when(spy).getExpire(Mockito.anyString());
-        Mockito.doAnswer(inv -> storage.containsKey(inv.getArgument(0)) ? 1800L : -1L)
-                .when(spy).getExpire(Mockito.anyString(), Mockito.any(TimeUnit.class));
-        Mockito.doAnswer(inv -> {
-            String key = inv.getArgument(0);
-            return storage.putIfAbsent(key, inv.getArgument(1)) == null;
-        }).when(spy).opsForValue().setIfAbsent(Mockito.anyString(), Mockito.anyString());
-        Mockito.doAnswer(inv -> {
-            String key = inv.getArgument(0);
-            storage.put(key, inv.getArgument(1));
-            return true;
-        }).when(spy).opsForValue().set(Mockito.anyString(), Mockito.anyString());
+        // opsForValue() returns the in-memory ops
+        Mockito.when(mockTemplate.opsForValue()).thenReturn(inMemOps);
 
-        return spy;
+        // opsForSet() returns a mock SetOperations (for refresh token user index)
+        org.springframework.data.redis.core.SetOperations<String, String> mockSetOps =
+                Mockito.mock(org.springframework.data.redis.core.SetOperations.class);
+        Mockito.when(mockTemplate.opsForSet()).thenReturn(mockSetOps);
+
+        // Stub delete, hasKey, expire for tearDown cleanup
+        Mockito.when(mockTemplate.delete(Mockito.anyString())).thenAnswer(inv -> storage.remove(inv.getArgument(0)) != null);
+        Mockito.when(mockTemplate.hasKey(Mockito.anyString())).thenAnswer(inv -> storage.containsKey(inv.getArgument(0)));
+        Mockito.when(mockTemplate.expire(Mockito.anyString(), Mockito.anyLong(), Mockito.any(TimeUnit.class))).thenReturn(true);
+        Mockito.when(mockTemplate.expire(Mockito.anyString(), Mockito.any(Duration.class))).thenReturn(true);
+        Mockito.when(mockTemplate.getExpire(Mockito.anyString())).thenAnswer(inv -> storage.containsKey(inv.getArgument(0)) ? 1800L : -1L);
+        Mockito.when(mockTemplate.getExpire(Mockito.anyString(), Mockito.any(TimeUnit.class))).thenAnswer(inv -> storage.containsKey(inv.getArgument(0)) ? 1800L : -1L);
+
+        return mockTemplate;
     }
 
     @Bean

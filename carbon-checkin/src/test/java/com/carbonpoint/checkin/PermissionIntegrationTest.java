@@ -204,7 +204,6 @@ class PermissionIntegrationTest extends BaseIntegrationTest {
         com.carbonpoint.system.entity.UserRole ur = new com.carbonpoint.system.entity.UserRole();
         ur.setUserId(admin.getId());
         ur.setRoleId(adminRole.getId());
-        ur.setTenantId(804L);
         TenantContext.setTenantId(804L);
         userRoleMapper.insert(ur);
 

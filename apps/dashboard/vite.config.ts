@@ -22,6 +22,12 @@ export default defineConfig(({ command, isSsrBuild }) => {
     server: {
       port: 3001,
       host: true,
+      proxy: {
+        '/api': {
+          target: 'http://localhost:8080',
+          changeOrigin: true,
+        },
+      },
     },
     build: {
       outDir: 'dist/dashboard',

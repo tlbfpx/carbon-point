@@ -29,6 +29,10 @@ public class PasswordValidator {
 
     private final SecurityProperties securityProperties;
 
+    public SecurityProperties getSecurityProperties() {
+        return securityProperties;
+    }
+
     private static final Set<String> WEAK_PASSWORDS = Set.of(
             "123456", "12345678", "123456789", "1234567890",
             "password", "password123", "admin123", "admin",

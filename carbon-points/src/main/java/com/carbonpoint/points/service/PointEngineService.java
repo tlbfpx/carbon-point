@@ -6,6 +6,9 @@ import com.carbonpoint.points.LevelConstants;
 import com.carbonpoint.points.dto.PointCalcResult;
 import com.carbonpoint.points.entity.PointRule;
 import com.carbonpoint.points.mapper.CheckInRecordQueryMapper;
+import com.carbonpoint.points.mapper.PointsUserMapper;
+import com.carbonpoint.system.entity.User;
+import com.carbonpoint.system.service.NotificationTrigger;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +29,8 @@ public class PointEngineService {
     private final PointRuleService pointRuleService;
     private final PointAccountService pointAccountService;
     private final CheckInRecordQueryMapper checkInRecordQueryMapper;
+    private final PointsUserMapper pointsUserMapper;
+    private final NotificationTrigger notificationTrigger;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final Random random = new Random();
 
@@ -130,6 +135,13 @@ public class PointEngineService {
                             String.format("连续打卡%s天奖励", requiredDays));
                     log.info("Awarded streak bonus {} points to user {} for {} consecutive days",
                             bonusPoints, userId, consecutiveDays);
+
+                    // Send streak bonus notification
+                    User user = pointsUserMapper.selectById(userId);
+                    if (user != null) {
+                        notificationTrigger.onStreakBonus(tenantId, userId, user.getPhone(), user.getEmail(),
+                                consecutiveDays, bonusPoints);
+                    }
                 }
             } catch (Exception e) {
                 log.warn("Failed to process streak rule {}", rule.getId(), e);

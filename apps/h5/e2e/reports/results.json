@@ -1,0 +1,2212 @@
+{
+  "config": {
+    "configFile": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/playwright.config.ts",
+    "rootDir": "/Users/muxi/workspace/carbon-point/apps/h5/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 8
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 8
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/Users/muxi/workspace/carbon-point/apps/h5/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "specs/h5/**/*.spec.ts"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "html",
+        {
+          "outputFolder": "reports",
+          "open": "never"
+        }
+      ],
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "reports/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.59.1",
+    "workers": 8,
+    "webServer": {
+      "command": "cd /Users/muxi/workspace/carbon-point && pnpm --filter @carbon-point/h5 dev",
+      "url": "http://localhost:3000/h5/",
+      "reuseExistingServer": true,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "specs/h5/checkin.spec.ts",
+      "file": "specs/h5/checkin.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "H5 - 打卡页面",
+          "file": "specs/h5/checkin.spec.ts",
+          "line": 6,
+          "column": 6,
+          "specs": [
+            {
+              "title": "H5-CHECKIN-001: 打卡页正确渲染",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 1963,
+                      "error": {
+                        "message": "ReferenceError: BASE_URL is not defined",
+                        "stack": "ReferenceError: BASE_URL is not defined\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24",
+                        "location": {
+                          "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                          "column": 24,
+                          "line": 8
+                        },
+                        "snippet": "   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                            "column": 24,
+                            "line": 8
+                          },
+                          "message": "ReferenceError: BASE_URL is not defined\n\n   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-15T17:19:27.254Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-001-打卡页正确渲染-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-001-打卡页正确渲染-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-001-打卡页正确渲染-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                        "column": 24,
+                        "line": 8
+                      }
+                    },
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 2225,
+                      "error": {
+                        "message": "ReferenceError: BASE_URL is not defined",
+                        "stack": "ReferenceError: BASE_URL is not defined\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24",
+                        "location": {
+                          "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                          "column": 24,
+                          "line": 8
+                        },
+                        "snippet": "   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                            "column": 24,
+                            "line": 8
+                          },
+                          "message": "ReferenceError: BASE_URL is not defined\n\n   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-04-15T17:19:35.188Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-001-打卡页正确渲染-chromium-retry1/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-001-打卡页正确渲染-chromium-retry1/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-001-打卡页正确渲染-chromium-retry1/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-001-打卡页正确渲染-chromium-retry1/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                        "column": 24,
+                        "line": 8
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "aafde2f5bc41a8711350-d5cbf73152ab200224d6",
+              "file": "specs/h5/checkin.spec.ts",
+              "line": 14,
+              "column": 7
+            },
+            {
+              "title": "H5-CHECKIN-002: TabBar在打卡页可见(5个Tab)",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "failed",
+                      "duration": 1762,
+                      "error": {
+                        "message": "ReferenceError: BASE_URL is not defined",
+                        "stack": "ReferenceError: BASE_URL is not defined\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24",
+                        "location": {
+                          "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                          "column": 24,
+                          "line": 8
+                        },
+                        "snippet": "   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                            "column": 24,
+                            "line": 8
+                          },
+                          "message": "ReferenceError: BASE_URL is not defined\n\n   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-15T17:19:27.355Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-d383d-KIN-002-TabBar在打卡页可见-5个Tab--chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-d383d-KIN-002-TabBar在打卡页可见-5个Tab--chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-d383d-KIN-002-TabBar在打卡页可见-5个Tab--chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                        "column": 24,
+                        "line": 8
+                      }
+                    },
+                    {
+                      "workerIndex": 13,
+                      "parallelIndex": 1,
+                      "status": "failed",
+                      "duration": 2275,
+                      "error": {
+                        "message": "ReferenceError: BASE_URL is not defined",
+                        "stack": "ReferenceError: BASE_URL is not defined\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24",
+                        "location": {
+                          "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                          "column": 24,
+                          "line": 8
+                        },
+                        "snippet": "   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                            "column": 24,
+                            "line": 8
+                          },
+                          "message": "ReferenceError: BASE_URL is not defined\n\n   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-04-15T17:19:35.405Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-d383d-KIN-002-TabBar在打卡页可见-5个Tab--chromium-retry1/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-d383d-KIN-002-TabBar在打卡页可见-5个Tab--chromium-retry1/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-d383d-KIN-002-TabBar在打卡页可见-5个Tab--chromium-retry1/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-d383d-KIN-002-TabBar在打卡页可见-5个Tab--chromium-retry1/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                        "column": 24,
+                        "line": 8
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "aafde2f5bc41a8711350-386857c586be0ea8c2f4",
+              "file": "specs/h5/checkin.spec.ts",
+              "line": 20,
+              "column": 7
+            },
+            {
+              "title": "H5-CHECKIN-003: 今日打卡时段卡片可见",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "failed",
+                      "duration": 1836,
+                      "error": {
+                        "message": "ReferenceError: BASE_URL is not defined",
+                        "stack": "ReferenceError: BASE_URL is not defined\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24",
+                        "location": {
+                          "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                          "column": 24,
+                          "line": 8
+                        },
+                        "snippet": "   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                            "column": 24,
+                            "line": 8
+                          },
+                          "message": "ReferenceError: BASE_URL is not defined\n\n   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-15T17:19:27.274Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-003-今日打卡时段卡片可见-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-003-今日打卡时段卡片可见-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-003-今日打卡时段卡片可见-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                        "column": 24,
+                        "line": 8
+                      }
+                    },
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 2,
+                      "status": "failed",
+                      "duration": 2113,
+                      "error": {
+                        "message": "ReferenceError: BASE_URL is not defined",
+                        "stack": "ReferenceError: BASE_URL is not defined\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24",
+                        "location": {
+                          "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                          "column": 24,
+                          "line": 8
+                        },
+                        "snippet": "   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                            "column": 24,
+                            "line": 8
+                          },
+                          "message": "ReferenceError: BASE_URL is not defined\n\n   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-04-15T17:19:35.323Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-003-今日打卡时段卡片可见-chromium-retry1/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-003-今日打卡时段卡片可见-chromium-retry1/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-003-今日打卡时段卡片可见-chromium-retry1/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-003-今日打卡时段卡片可见-chromium-retry1/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                        "column": 24,
+                        "line": 8
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "aafde2f5bc41a8711350-84d4d25888268287ca10",
+              "file": "specs/h5/checkin.spec.ts",
+              "line": 26,
+              "column": 7
+            },
+            {
+              "title": "H5-CHECKIN-004: 打卡须知卡片可见",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "failed",
+                      "duration": 1996,
+                      "error": {
+                        "message": "ReferenceError: BASE_URL is not defined",
+                        "stack": "ReferenceError: BASE_URL is not defined\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24",
+                        "location": {
+                          "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                          "column": 24,
+                          "line": 8
+                        },
+                        "snippet": "   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                            "column": 24,
+                            "line": 8
+                          },
+                          "message": "ReferenceError: BASE_URL is not defined\n\n   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-15T17:19:27.260Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-004-打卡须知卡片可见-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-004-打卡须知卡片可见-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-004-打卡须知卡片可见-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                        "column": 24,
+                        "line": 8
+                      }
+                    },
+                    {
+                      "workerIndex": 15,
+                      "parallelIndex": 3,
+                      "status": "failed",
+                      "duration": 2141,
+                      "error": {
+                        "message": "ReferenceError: BASE_URL is not defined",
+                        "stack": "ReferenceError: BASE_URL is not defined\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24",
+                        "location": {
+                          "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                          "column": 24,
+                          "line": 8
+                        },
+                        "snippet": "   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                            "column": 24,
+                            "line": 8
+                          },
+                          "message": "ReferenceError: BASE_URL is not defined\n\n   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-04-15T17:19:35.790Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-004-打卡须知卡片可见-chromium-retry1/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-004-打卡须知卡片可见-chromium-retry1/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-004-打卡须知卡片可见-chromium-retry1/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-004-打卡须知卡片可见-chromium-retry1/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                        "column": 24,
+                        "line": 8
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "aafde2f5bc41a8711350-7f0f0183c13738716a7c",
+              "file": "specs/h5/checkin.spec.ts",
+              "line": 31,
+              "column": 7
+            },
+            {
+              "title": "H5-CHECKIN-005: 打卡须知包含4条规则",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "failed",
+                      "duration": 2104,
+                      "error": {
+                        "message": "ReferenceError: BASE_URL is not defined",
+                        "stack": "ReferenceError: BASE_URL is not defined\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24",
+                        "location": {
+                          "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                          "column": 24,
+                          "line": 8
+                        },
+                        "snippet": "   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                            "column": 24,
+                            "line": 8
+                          },
+                          "message": "ReferenceError: BASE_URL is not defined\n\n   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-15T17:19:27.276Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-005-打卡须知包含4条规则-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-005-打卡须知包含4条规则-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-005-打卡须知包含4条规则-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                        "column": 24,
+                        "line": 8
+                      }
+                    },
+                    {
+                      "workerIndex": 12,
+                      "parallelIndex": 4,
+                      "status": "failed",
+                      "duration": 1962,
+                      "error": {
+                        "message": "ReferenceError: BASE_URL is not defined",
+                        "stack": "ReferenceError: BASE_URL is not defined\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24",
+                        "location": {
+                          "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                          "column": 24,
+                          "line": 8
+                        },
+                        "snippet": "   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                            "column": 24,
+                            "line": 8
+                          },
+                          "message": "ReferenceError: BASE_URL is not defined\n\n   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-04-15T17:19:35.397Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-005-打卡须知包含4条规则-chromium-retry1/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-005-打卡须知包含4条规则-chromium-retry1/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-005-打卡须知包含4条规则-chromium-retry1/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-005-打卡须知包含4条规则-chromium-retry1/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                        "column": 24,
+                        "line": 8
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "aafde2f5bc41a8711350-f7a2486299a26d0dafb8",
+              "file": "specs/h5/checkin.spec.ts",
+              "line": 36,
+              "column": 7
+            },
+            {
+              "title": "H5-CHECKIN-006: 时段卡片显示时段名称",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
+                      "status": "failed",
+                      "duration": 2000,
+                      "error": {
+                        "message": "ReferenceError: BASE_URL is not defined",
+                        "stack": "ReferenceError: BASE_URL is not defined\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24",
+                        "location": {
+                          "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                          "column": 24,
+                          "line": 8
+                        },
+                        "snippet": "   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                            "column": 24,
+                            "line": 8
+                          },
+                          "message": "ReferenceError: BASE_URL is not defined\n\n   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-15T17:19:27.326Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-006-时段卡片显示时段名称-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-006-时段卡片显示时段名称-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-006-时段卡片显示时段名称-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                        "column": 24,
+                        "line": 8
+                      }
+                    },
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 5,
+                      "status": "failed",
+                      "duration": 1851,
+                      "error": {
+                        "message": "ReferenceError: BASE_URL is not defined",
+                        "stack": "ReferenceError: BASE_URL is not defined\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24",
+                        "location": {
+                          "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                          "column": 24,
+                          "line": 8
+                        },
+                        "snippet": "   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                            "column": 24,
+                            "line": 8
+                          },
+                          "message": "ReferenceError: BASE_URL is not defined\n\n   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-04-15T17:19:35.321Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-006-时段卡片显示时段名称-chromium-retry1/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-006-时段卡片显示时段名称-chromium-retry1/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-006-时段卡片显示时段名称-chromium-retry1/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-006-时段卡片显示时段名称-chromium-retry1/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                        "column": 24,
+                        "line": 8
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "aafde2f5bc41a8711350-7308ab21bac0d231c6a2",
+              "file": "specs/h5/checkin.spec.ts",
+              "line": 45,
+              "column": 7
+            },
+            {
+              "title": "H5-CHECKIN-007: 时段卡片显示Badge状态",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 6,
+                      "status": "failed",
+                      "duration": 1636,
+                      "error": {
+                        "message": "ReferenceError: BASE_URL is not defined",
+                        "stack": "ReferenceError: BASE_URL is not defined\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24",
+                        "location": {
+                          "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                          "column": 24,
+                          "line": 8
+                        },
+                        "snippet": "   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                            "column": 24,
+                            "line": 8
+                          },
+                          "message": "ReferenceError: BASE_URL is not defined\n\n   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-15T17:19:27.593Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-007-时段卡片显示Badge状态-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-007-时段卡片显示Badge状态-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-007-时段卡片显示Badge状态-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                        "column": 24,
+                        "line": 8
+                      }
+                    },
+                    {
+                      "workerIndex": 14,
+                      "parallelIndex": 6,
+                      "status": "failed",
+                      "duration": 2003,
+                      "error": {
+                        "message": "ReferenceError: BASE_URL is not defined",
+                        "stack": "ReferenceError: BASE_URL is not defined\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24",
+                        "location": {
+                          "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                          "column": 24,
+                          "line": 8
+                        },
+                        "snippet": "   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                            "column": 24,
+                            "line": 8
+                          },
+                          "message": "ReferenceError: BASE_URL is not defined\n\n   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-04-15T17:19:35.469Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-007-时段卡片显示Badge状态-chromium-retry1/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-007-时段卡片显示Badge状态-chromium-retry1/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-007-时段卡片显示Badge状态-chromium-retry1/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-007-时段卡片显示Badge状态-chromium-retry1/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                        "column": 24,
+                        "line": 8
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "aafde2f5bc41a8711350-a1e08985e1ab7bc40426",
+              "file": "specs/h5/checkin.spec.ts",
+              "line": 51,
+              "column": 7
+            },
+            {
+              "title": "H5-CHECKIN-008: 时段卡片显示时段范围时间",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 7,
+                      "status": "failed",
+                      "duration": 1957,
+                      "error": {
+                        "message": "ReferenceError: BASE_URL is not defined",
+                        "stack": "ReferenceError: BASE_URL is not defined\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24",
+                        "location": {
+                          "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                          "column": 24,
+                          "line": 8
+                        },
+                        "snippet": "   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                            "column": 24,
+                            "line": 8
+                          },
+                          "message": "ReferenceError: BASE_URL is not defined\n\n   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-15T17:19:27.265Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-008-时段卡片显示时段范围时间-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-008-时段卡片显示时段范围时间-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-008-时段卡片显示时段范围时间-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                        "column": 24,
+                        "line": 8
+                      }
+                    },
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 7,
+                      "status": "failed",
+                      "duration": 2521,
+                      "error": {
+                        "message": "ReferenceError: BASE_URL is not defined",
+                        "stack": "ReferenceError: BASE_URL is not defined\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24",
+                        "location": {
+                          "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                          "column": 24,
+                          "line": 8
+                        },
+                        "snippet": "   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                            "column": 24,
+                            "line": 8
+                          },
+                          "message": "ReferenceError: BASE_URL is not defined\n\n   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-04-15T17:19:34.806Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-008-时段卡片显示时段范围时间-chromium-retry1/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-008-时段卡片显示时段范围时间-chromium-retry1/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-008-时段卡片显示时段范围时间-chromium-retry1/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-008-时段卡片显示时段范围时间-chromium-retry1/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                        "column": 24,
+                        "line": 8
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "aafde2f5bc41a8711350-a1616e8f703f64388046",
+              "file": "specs/h5/checkin.spec.ts",
+              "line": 58,
+              "column": 7
+            },
+            {
+              "title": "H5-CHECKIN-009: 可打卡时段有打卡按钮",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 16,
+                      "parallelIndex": 7,
+                      "status": "failed",
+                      "duration": 799,
+                      "error": {
+                        "message": "ReferenceError: BASE_URL is not defined",
+                        "stack": "ReferenceError: BASE_URL is not defined\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24",
+                        "location": {
+                          "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                          "column": 24,
+                          "line": 8
+                        },
+                        "snippet": "   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                            "column": 24,
+                            "line": 8
+                          },
+                          "message": "ReferenceError: BASE_URL is not defined\n\n   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-15T17:19:43.792Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-009-可打卡时段有打卡按钮-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-009-可打卡时段有打卡按钮-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-009-可打卡时段有打卡按钮-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                        "column": 24,
+                        "line": 8
+                      }
+                    },
+                    {
+                      "workerIndex": 24,
+                      "parallelIndex": 7,
+                      "status": "failed",
+                      "duration": 1803,
+                      "error": {
+                        "message": "ReferenceError: BASE_URL is not defined",
+                        "stack": "ReferenceError: BASE_URL is not defined\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24",
+                        "location": {
+                          "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                          "column": 24,
+                          "line": 8
+                        },
+                        "snippet": "   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                            "column": 24,
+                            "line": 8
+                          },
+                          "message": "ReferenceError: BASE_URL is not defined\n\n   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-04-15T17:19:53.915Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-009-可打卡时段有打卡按钮-chromium-retry1/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-009-可打卡时段有打卡按钮-chromium-retry1/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-009-可打卡时段有打卡按钮-chromium-retry1/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-009-可打卡时段有打卡按钮-chromium-retry1/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                        "column": 24,
+                        "line": 8
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "aafde2f5bc41a8711350-02eecf32be1804618b52",
+              "file": "specs/h5/checkin.spec.ts",
+              "line": 63,
+              "column": 7
+            },
+            {
+              "title": "H5-CHECKIN-010: 点击打卡按钮执行打卡",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 17,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 845,
+                      "error": {
+                        "message": "ReferenceError: BASE_URL is not defined",
+                        "stack": "ReferenceError: BASE_URL is not defined\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24",
+                        "location": {
+                          "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                          "column": 24,
+                          "line": 8
+                        },
+                        "snippet": "   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                            "column": 24,
+                            "line": 8
+                          },
+                          "message": "ReferenceError: BASE_URL is not defined\n\n   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-15T17:19:45.238Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-010-点击打卡按钮执行打卡-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-010-点击打卡按钮执行打卡-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-010-点击打卡按钮执行打卡-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                        "column": 24,
+                        "line": 8
+                      }
+                    },
+                    {
+                      "workerIndex": 27,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 1232,
+                      "error": {
+                        "message": "ReferenceError: BASE_URL is not defined",
+                        "stack": "ReferenceError: BASE_URL is not defined\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24",
+                        "location": {
+                          "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                          "column": 24,
+                          "line": 8
+                        },
+                        "snippet": "   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                            "column": 24,
+                            "line": 8
+                          },
+                          "message": "ReferenceError: BASE_URL is not defined\n\n   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-04-15T17:19:54.269Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-010-点击打卡按钮执行打卡-chromium-retry1/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-010-点击打卡按钮执行打卡-chromium-retry1/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-010-点击打卡按钮执行打卡-chromium-retry1/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-010-点击打卡按钮执行打卡-chromium-retry1/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                        "column": 24,
+                        "line": 8
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "aafde2f5bc41a8711350-995ed0d68d2d5df8b757",
+              "file": "specs/h5/checkin.spec.ts",
+              "line": 73,
+              "column": 7
+            },
+            {
+              "title": "H5-CHECKIN-011: 打卡成功后显示成功界面",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 18,
+                      "parallelIndex": 2,
+                      "status": "failed",
+                      "duration": 1060,
+                      "error": {
+                        "message": "ReferenceError: BASE_URL is not defined",
+                        "stack": "ReferenceError: BASE_URL is not defined\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24",
+                        "location": {
+                          "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                          "column": 24,
+                          "line": 8
+                        },
+                        "snippet": "   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                            "column": 24,
+                            "line": 8
+                          },
+                          "message": "ReferenceError: BASE_URL is not defined\n\n   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-15T17:19:44.830Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-011-打卡成功后显示成功界面-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-011-打卡成功后显示成功界面-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-011-打卡成功后显示成功界面-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                        "column": 24,
+                        "line": 8
+                      }
+                    },
+                    {
+                      "workerIndex": 25,
+                      "parallelIndex": 2,
+                      "status": "failed",
+                      "duration": 1635,
+                      "error": {
+                        "message": "ReferenceError: BASE_URL is not defined",
+                        "stack": "ReferenceError: BASE_URL is not defined\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24",
+                        "location": {
+                          "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                          "column": 24,
+                          "line": 8
+                        },
+                        "snippet": "   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                            "column": 24,
+                            "line": 8
+                          },
+                          "message": "ReferenceError: BASE_URL is not defined\n\n   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-04-15T17:19:54.095Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-011-打卡成功后显示成功界面-chromium-retry1/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-011-打卡成功后显示成功界面-chromium-retry1/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-011-打卡成功后显示成功界面-chromium-retry1/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-011-打卡成功后显示成功界面-chromium-retry1/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                        "column": 24,
+                        "line": 8
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "aafde2f5bc41a8711350-4e1e2193c3e72db85b9d",
+              "file": "specs/h5/checkin.spec.ts",
+              "line": 93,
+              "column": 7
+            },
+            {
+              "title": "H5-CHECKIN-012: 打卡成功显示积分奖励",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 19,
+                      "parallelIndex": 3,
+                      "status": "failed",
+                      "duration": 1567,
+                      "error": {
+                        "message": "ReferenceError: BASE_URL is not defined",
+                        "stack": "ReferenceError: BASE_URL is not defined\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24",
+                        "location": {
+                          "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                          "column": 24,
+                          "line": 8
+                        },
+                        "snippet": "   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                            "column": 24,
+                            "line": 8
+                          },
+                          "message": "ReferenceError: BASE_URL is not defined\n\n   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-15T17:19:46.831Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-012-打卡成功显示积分奖励-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-012-打卡成功显示积分奖励-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-012-打卡成功显示积分奖励-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                        "column": 24,
+                        "line": 8
+                      }
+                    },
+                    {
+                      "workerIndex": 30,
+                      "parallelIndex": 3,
+                      "status": "failed",
+                      "duration": 751,
+                      "error": {
+                        "message": "ReferenceError: BASE_URL is not defined",
+                        "stack": "ReferenceError: BASE_URL is not defined\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24",
+                        "location": {
+                          "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                          "column": 24,
+                          "line": 8
+                        },
+                        "snippet": "   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                            "column": 24,
+                            "line": 8
+                          },
+                          "message": "ReferenceError: BASE_URL is not defined\n\n   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-04-15T17:19:57.287Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-012-打卡成功显示积分奖励-chromium-retry1/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-012-打卡成功显示积分奖励-chromium-retry1/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-012-打卡成功显示积分奖励-chromium-retry1/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-012-打卡成功显示积分奖励-chromium-retry1/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                        "column": 24,
+                        "line": 8
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "aafde2f5bc41a8711350-b6348846109efd0e1efd",
+              "file": "specs/h5/checkin.spec.ts",
+              "line": 112,
+              "column": 7
+            },
+            {
+              "title": "H5-CHECKIN-013: 打卡成功后显示倒计时",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 20,
+                      "parallelIndex": 5,
+                      "status": "failed",
+                      "duration": 1460,
+                      "error": {
+                        "message": "ReferenceError: BASE_URL is not defined",
+                        "stack": "ReferenceError: BASE_URL is not defined\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24",
+                        "location": {
+                          "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                          "column": 24,
+                          "line": 8
+                        },
+                        "snippet": "   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                            "column": 24,
+                            "line": 8
+                          },
+                          "message": "ReferenceError: BASE_URL is not defined\n\n   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-15T17:19:46.719Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-013-打卡成功后显示倒计时-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-013-打卡成功后显示倒计时-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-013-打卡成功后显示倒计时-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                        "column": 24,
+                        "line": 8
+                      }
+                    },
+                    {
+                      "workerIndex": 28,
+                      "parallelIndex": 5,
+                      "status": "failed",
+                      "duration": 1284,
+                      "error": {
+                        "message": "ReferenceError: BASE_URL is not defined",
+                        "stack": "ReferenceError: BASE_URL is not defined\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24",
+                        "location": {
+                          "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                          "column": 24,
+                          "line": 8
+                        },
+                        "snippet": "   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                            "column": 24,
+                            "line": 8
+                          },
+                          "message": "ReferenceError: BASE_URL is not defined\n\n   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-04-15T17:19:54.264Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-013-打卡成功后显示倒计时-chromium-retry1/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-013-打卡成功后显示倒计时-chromium-retry1/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-013-打卡成功后显示倒计时-chromium-retry1/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-013-打卡成功后显示倒计时-chromium-retry1/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                        "column": 24,
+                        "line": 8
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "aafde2f5bc41a8711350-6bfbd7e5a6d557064d49",
+              "file": "specs/h5/checkin.spec.ts",
+              "line": 130,
+              "column": 7
+            },
+            {
+              "title": "H5-CHECKIN-014: 点击立即返回跳转首页",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 21,
+                      "parallelIndex": 1,
+                      "status": "failed",
+                      "duration": 1591,
+                      "error": {
+                        "message": "ReferenceError: BASE_URL is not defined",
+                        "stack": "ReferenceError: BASE_URL is not defined\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24",
+                        "location": {
+                          "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                          "column": 24,
+                          "line": 8
+                        },
+                        "snippet": "   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                            "column": 24,
+                            "line": 8
+                          },
+                          "message": "ReferenceError: BASE_URL is not defined\n\n   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-15T17:19:46.642Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-014-点击立即返回跳转首页-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-014-点击立即返回跳转首页-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-014-点击立即返回跳转首页-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                        "column": 24,
+                        "line": 8
+                      }
+                    },
+                    {
+                      "workerIndex": 26,
+                      "parallelIndex": 1,
+                      "status": "failed",
+                      "duration": 1731,
+                      "error": {
+                        "message": "ReferenceError: BASE_URL is not defined",
+                        "stack": "ReferenceError: BASE_URL is not defined\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24",
+                        "location": {
+                          "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                          "column": 24,
+                          "line": 8
+                        },
+                        "snippet": "   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                            "column": 24,
+                            "line": 8
+                          },
+                          "message": "ReferenceError: BASE_URL is not defined\n\n   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-04-15T17:19:54.033Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-014-点击立即返回跳转首页-chromium-retry1/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-014-点击立即返回跳转首页-chromium-retry1/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-014-点击立即返回跳转首页-chromium-retry1/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-014-点击立即返回跳转首页-chromium-retry1/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                        "column": 24,
+                        "line": 8
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "aafde2f5bc41a8711350-c9f767079304e6499345",
+              "file": "specs/h5/checkin.spec.ts",
+              "line": 149,
+              "column": 7
+            },
+            {
+              "title": "H5-CHECKIN-015: TabBar点击首页返回首页",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 23,
+                      "parallelIndex": 6,
+                      "status": "failed",
+                      "duration": 1609,
+                      "error": {
+                        "message": "ReferenceError: BASE_URL is not defined",
+                        "stack": "ReferenceError: BASE_URL is not defined\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24",
+                        "location": {
+                          "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                          "column": 24,
+                          "line": 8
+                        },
+                        "snippet": "   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                            "column": 24,
+                            "line": 8
+                          },
+                          "message": "ReferenceError: BASE_URL is not defined\n\n   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-15T17:19:46.797Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-015-TabBar点击首页返回首页-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-015-TabBar点击首页返回首页-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-015-TabBar点击首页返回首页-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                        "column": 24,
+                        "line": 8
+                      }
+                    },
+                    {
+                      "workerIndex": 31,
+                      "parallelIndex": 6,
+                      "status": "failed",
+                      "duration": 509,
+                      "error": {
+                        "message": "ReferenceError: BASE_URL is not defined",
+                        "stack": "ReferenceError: BASE_URL is not defined\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24",
+                        "location": {
+                          "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                          "column": 24,
+                          "line": 8
+                        },
+                        "snippet": "   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                            "column": 24,
+                            "line": 8
+                          },
+                          "message": "ReferenceError: BASE_URL is not defined\n\n   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-04-15T17:19:59.769Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-015-TabBar点击首页返回首页-chromium-retry1/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-015-TabBar点击首页返回首页-chromium-retry1/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-015-TabBar点击首页返回首页-chromium-retry1/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-015-TabBar点击首页返回首页-chromium-retry1/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                        "column": 24,
+                        "line": 8
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "aafde2f5bc41a8711350-9bf50468e412dba1c5f4",
+              "file": "specs/h5/checkin.spec.ts",
+              "line": 170,
+              "column": 7
+            },
+            {
+              "title": "H5-CHECKIN-016: 无JS崩溃",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 22,
+                      "parallelIndex": 4,
+                      "status": "failed",
+                      "duration": 1636,
+                      "error": {
+                        "message": "ReferenceError: BASE_URL is not defined",
+                        "stack": "ReferenceError: BASE_URL is not defined\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24",
+                        "location": {
+                          "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                          "column": 24,
+                          "line": 8
+                        },
+                        "snippet": "   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                            "column": 24,
+                            "line": 8
+                          },
+                          "message": "ReferenceError: BASE_URL is not defined\n\n   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-15T17:19:46.690Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-016-无JS崩溃-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-016-无JS崩溃-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-016-无JS崩溃-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                        "column": 24,
+                        "line": 8
+                      }
+                    },
+                    {
+                      "workerIndex": 29,
+                      "parallelIndex": 4,
+                      "status": "failed",
+                      "duration": 821,
+                      "error": {
+                        "message": "ReferenceError: BASE_URL is not defined",
+                        "stack": "ReferenceError: BASE_URL is not defined\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24",
+                        "location": {
+                          "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                          "column": 24,
+                          "line": 8
+                        },
+                        "snippet": "   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                            "column": 24,
+                            "line": 8
+                          },
+                          "message": "ReferenceError: BASE_URL is not defined\n\n   6 | test.describe('H5 - 打卡页面', () => {\n   7 |   test.beforeEach(async ({ page }) => {\n>  8 |     await page.goto(`${BASE_URL}/`);\n     |                        ^\n   9 |     await page.waitForLoadState('domcontentloaded');\n  10 |     await page.evaluate(() => localStorage.removeItem('carbon-auth'));\n  11 |     await loginAndNavigate(page, '/checkin');\n    at /Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts:8:24"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-04-15T17:19:57.287Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-016-无JS崩溃-chromium-retry1/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-016-无JS崩溃-chromium-retry1/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-016-无JS崩溃-chromium-retry1/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/test-results/specs-h5-checkin-H5---打卡页面-H5-CHECKIN-016-无JS崩溃-chromium-retry1/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/muxi/workspace/carbon-point/apps/h5/e2e/specs/h5/checkin.spec.ts",
+                        "column": 24,
+                        "line": 8
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "aafde2f5bc41a8711350-081a92f8cc69e0434630",
+              "file": "specs/h5/checkin.spec.ts",
+              "line": 178,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-04-15T17:19:24.687Z",
+    "duration": 36250.284999999996,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 16,
+    "flaky": 0
+  }
+}

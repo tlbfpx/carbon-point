@@ -55,7 +55,7 @@ public class NotificationScheduler {
             for (var r : records) {
                 String expireDateStr = r.expireTime().format(DATE_FMT);
                 notificationTrigger.onPointExpiring(
-                        r.tenantId(), r.userId(), r.phone(),
+                        r.tenantId(), r.userId(), r.phone(), null,
                         r.expiringPoints(), expireDateStr
                 );
                 count++;
@@ -83,7 +83,7 @@ public class NotificationScheduler {
             int count = 0;
             for (var r : records) {
                 notificationTrigger.onPointExpired(
-                        r.tenantId(), r.userId(), r.phone(),
+                        r.tenantId(), r.userId(), r.phone(), null,
                         r.expiredPoints()
                 );
                 count++;
@@ -116,7 +116,7 @@ public class NotificationScheduler {
             for (var r : records) {
                 String expireDateStr = r.expiresAt().format(DATE_FMT);
                 notificationTrigger.onCouponExpiring(
-                        r.tenantId(), r.userId(), r.phone(),
+                        r.tenantId(), r.userId(), r.phone(), null,
                         r.orderId(), r.productName(), expireDateStr
                 );
                 count++;
@@ -145,7 +145,7 @@ public class NotificationScheduler {
             int count = 0;
             for (var r : records) {
                 notificationTrigger.onStreakBroken(
-                        r.tenantId(), r.userId(), r.phone(),
+                        r.tenantId(), r.userId(), r.phone(), null,
                         r.previousStreakDays()
                 );
                 count++;
@@ -174,7 +174,7 @@ public class NotificationScheduler {
             int count = 0;
             for (var r : records) {
                 notificationTrigger.onOrderExpired(
-                        r.tenantId(), r.userId(), r.phone(),
+                        r.tenantId(), r.userId(), r.phone(), null,
                         r.orderId(), r.frozenPoints()
                 );
                 count++;

@@ -5,7 +5,6 @@ import com.carbonpoint.common.exception.BusinessException;
 import com.carbonpoint.common.result.ErrorCode;
 import com.carbonpoint.common.result.Result;
 import com.carbonpoint.common.security.JwtUserPrincipal;
-import com.carbonpoint.common.tenant.TenantContext;
 import com.carbonpoint.mall.dto.ExchangeDTO;
 import com.carbonpoint.mall.entity.ExchangeOrder;
 import com.carbonpoint.mall.service.ExchangeService;
@@ -43,7 +42,7 @@ public class ExchangeController {
             @PathVariable Long id) {
         ExchangeOrder order = exchangeService.getOrderById(id);
         if (!order.getUserId().equals(principal.getUserId())
-                && !order.getTenantId().equals(TenantContext.getTenantId())) {
+                && !order.getTenantId().equals(principal.getTenantId())) {
             throw new BusinessException(ErrorCode.FORBIDDEN);
         }
         return Result.success(order);
@@ -98,11 +97,11 @@ public class ExchangeController {
 
     @GetMapping("/admin/orders")
     public Result<Page<ExchangeOrder>> getTenantOrders(
+            @AuthenticationPrincipal JwtUserPrincipal principal,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(required = false) String status) {
-        Long tenantId = TenantContext.getTenantId();
-        return Result.success(exchangeService.getOrdersByTenant(tenantId, page, size, status));
+        return Result.success(exchangeService.getOrdersByTenant(principal.getTenantId(), page, size, status));
     }
 
     /**

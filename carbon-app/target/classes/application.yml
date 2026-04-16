@@ -35,10 +35,26 @@ spring:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: Asia/Shanghai
 
+  mail:
+    host: smtp.example.com
+    port: 587
+    username: ${MAIL_USERNAME:noreply@carbon-point.com}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+
   sql:
     init:
       mode: always
-      schema-locations: classpath:db/schema.sql,classpath:db/platform-schema.sql,classpath:db/migration/V1__schema_optimization.sql,classpath:db/migration/V2__roles_extended_fields.sql,classpath:db/migration/V3__add_version_columns.sql
+      schema-locations: classpath:db/schema.sql,classpath:db/platform-schema.sql,classpath:db/migration/V1__schema_optimization.sql,classpath:db/migration/V2__roles_extended_fields.sql,classpath:db/migration/V3__add_version_columns.sql,classpath:db/migration/V4__add_package_permissions.sql,classpath:db/migration/V5__init_package_data.sql,classpath:db/migration/V6__add_email_tables.sql,classpath:db/migration/V7__add_tenant_id_to_user_roles.sql,classpath:db/migration/V8__add_email_to_users.sql,classpath:db/migration/V9__drop_user_roles_tenant_id.sql,classpath:db/migration/V10__fix_products_max_per_user_default.sql
       data-locations: classpath:data.sql
       continue-on-error: true
 

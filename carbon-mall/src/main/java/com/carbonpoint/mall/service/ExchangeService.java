@@ -13,6 +13,7 @@ import com.carbonpoint.mall.util.CouponGenerator;
 import com.carbonpoint.points.service.PointAccountService;
 import com.carbonpoint.points.mapper.PointsUserMapper;
 import com.carbonpoint.system.entity.User;
+import com.carbonpoint.system.service.NotificationTrigger;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -45,6 +46,7 @@ public class ExchangeService {
     private final PointAccountService pointAccountService;
     private final PointsUserMapper userMapper;
     private final CouponGenerator couponGenerator;
+    private final NotificationTrigger notificationTrigger;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Transactional
@@ -126,6 +128,10 @@ public class ExchangeService {
         if (product.getStock() != -1) {
             deductStockWithRetry(product, 3);
         }
+
+        // step 11: send order fulfilled notification
+        notificationTrigger.onOrderFulfilled(order.getTenantId(), userId, user.getPhone(), user.getEmail(),
+                order.getId(), order.getProductName());
 
         log.info("exchange: userId={}, productId={}, orderId={}, points={}", userId, productId, order.getId(), product.getPointsPrice());
         return order;
@@ -380,6 +386,13 @@ public class ExchangeService {
             order.setOrderStatus("expired");
             order.setUpdatedAt(LocalDateTime.now());
             exchangeOrderMapper.updateById(order);
+
+            // 发送订单过期通知
+            User user = userMapper.selectById(order.getUserId());
+            if (user != null) {
+                notificationTrigger.onOrderExpired(order.getTenantId(), user.getId(), user.getPhone(), user.getEmail(),
+                        order.getId(), order.getPointsSpent());
+            }
 
             log.info("expirePendingOrders: orderId={} (timeout)", order.getId());
         }

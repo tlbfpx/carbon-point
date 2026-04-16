@@ -2,6 +2,7 @@ package com.carbonpoint.system.controller;
 
 import com.carbonpoint.common.result.Result;
 import com.carbonpoint.common.security.PlatformAdminContext;
+import com.carbonpoint.system.security.PlatformPermissionService;
 import lombok.Data;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,6 +16,12 @@ import java.util.List;
 @RestController
 @RequestMapping("/platform/permissions")
 public class PlatformPermissionController {
+
+    private final PlatformPermissionService permissionService;
+
+    public PlatformPermissionController(PlatformPermissionService permissionService) {
+        this.permissionService = permissionService;
+    }
 
     @Data
     public static class PermissionInfo {
@@ -39,23 +46,7 @@ public class PlatformPermissionController {
         if (admin == null) {
             return Result.error(401, "Unauthorized");
         }
-        List<String> permissions;
-        switch (admin.getRole()) {
-            case "super_admin" -> permissions = List.of(
-                "platform:dashboard:view",
-                "platform:enterprise:list",
-                "platform:system:view",
-                "platform:config:view"
-            );
-            case "admin" -> permissions = List.of(
-                "platform:dashboard:view",
-                "platform:enterprise:list",
-                "platform:system:view"
-            );
-            default -> permissions = List.of(
-                "platform:dashboard:view"
-            );
-        }
+        List<String> permissions = permissionService.getCurrentAdminPermissions();
         return Result.success(permissions);
     }
 

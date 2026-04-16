@@ -2,10 +2,17 @@ package com.carbonpoint.system.security.forgot;
 
 import com.carbonpoint.common.exception.BusinessException;
 import com.carbonpoint.common.result.ErrorCode;
+import com.carbonpoint.common.security.AppPasswordEncoder;
+import com.carbonpoint.common.security.PasswordValidator;
+import com.carbonpoint.common.service.PasswordHistoryService;
+import com.carbonpoint.system.entity.User;
+import com.carbonpoint.system.mapper.UserMapper;
+import com.carbonpoint.system.security.RefreshTokenMetadataService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.util.UUID;
@@ -21,6 +28,11 @@ import java.util.concurrent.TimeUnit;
 public class ForgotPasswordService {
 
     private final StringRedisTemplate redisTemplate;
+    private final UserMapper userMapper;
+    private final AppPasswordEncoder passwordEncoder;
+    private final PasswordValidator passwordValidator;
+    private final PasswordHistoryService passwordHistoryService;
+    private final RefreshTokenMetadataService refreshTokenMetadataService;
     private final SecureRandom random = new SecureRandom();
 
     private static final String RESET_CODE_KEY_PREFIX = "reset:code:";
@@ -71,7 +83,7 @@ public class ForgotPasswordService {
         String storedCode = redisTemplate.opsForValue().get(key);
 
         if (storedCode == null || !storedCode.equals(code)) {
-            throw new BusinessException(3001, "验证码错误或已过期");
+            throw new BusinessException(ErrorCode.AUTH_CREDENTIALS_INVALID);
         }
 
         // Delete the code after successful validation
@@ -94,6 +106,7 @@ public class ForgotPasswordService {
      * @param resetToken  the reset token from validateCode
      * @param newPassword the new password
      */
+    @Transactional
     public void resetPassword(String resetToken, String newPassword) {
         if (resetToken == null || newPassword == null) {
             throw new BusinessException(ErrorCode.PARAM_INVALID, "参数不完整");
@@ -103,21 +116,39 @@ public class ForgotPasswordService {
         String phoneOrEmail = redisTemplate.opsForValue().get(tokenKey);
 
         if (phoneOrEmail == null) {
-            throw new BusinessException(3001, "重置链接已过期，请重新申请");
+            throw new BusinessException(ErrorCode.AUTH_CREDENTIALS_INVALID, "重置链接已过期，请重新申请");
         }
 
         // Delete the token immediately (one-time use)
         redisTemplate.delete(tokenKey);
 
-        // In production:
         // 1. Find user by phoneOrEmail
-        // 2. Validate password strength
-        // 3. Check password history
-        // 4. Update password
-        // 5. Save password history
-        // 6. Invalidate all sessions
+        User user = userMapper.selectByPhone(phoneOrEmail);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND, "用户不存在");
+        }
 
-        log.info("Password reset completed for: {}", phoneOrEmail);
+        // 2. Validate password strength
+        passwordValidator.validate(newPassword);
+
+        // 3. Check password history (prevent reuse of recent passwords)
+        int historyCount = passwordValidator.getSecurityProperties()
+                .getPassword().getHistoryCount();
+        if (passwordHistoryService.isRecentlyUsed(user.getId(), newPassword, historyCount)) {
+            throw new BusinessException(ErrorCode.AUTH_PASSWORD_HISTORY_REUSE);
+        }
+
+        // 4. Encode and update password
+        String newHash = passwordEncoder.encode(newPassword);
+        userMapper.updatePasswordHash(user.getId(), newHash);
+
+        // 5. Save to password history
+        passwordHistoryService.addHistory(user.getId(), newHash);
+
+        // 6. Invalidate all refresh tokens for this user
+        refreshTokenMetadataService.invalidateAllForUser(user.getId());
+
+        log.info("Password reset completed for userId={}", user.getId());
     }
 
     private String generateCode() {

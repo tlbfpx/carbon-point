@@ -263,7 +263,7 @@ CREATE TABLE products (
     type                VARCHAR(20) NOT NULL COMMENT '类型: coupon/recharge/privilege',
     points_price        INT NOT NULL COMMENT '兑换所需积分',
     stock               INT COMMENT '库存（null=无限）',
-    max_per_user         INT DEFAULT 1 COMMENT '每人限兑数量',
+    max_per_user         INT DEFAULT NULL COMMENT '每人限兑数量（NULL=不限）',
     validity_days       INT NOT NULL DEFAULT 30 COMMENT '有效期天数',
     fulfillment_config  JSON COMMENT '发放配置（不同type结构不同）',
     status              VARCHAR(20) NOT NULL DEFAULT 'inactive' COMMENT '状态: inactive/active/sold_out',

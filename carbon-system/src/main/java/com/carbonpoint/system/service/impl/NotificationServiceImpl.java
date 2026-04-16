@@ -9,6 +9,7 @@ import com.carbonpoint.system.entity.NotificationTemplate;
 import com.carbonpoint.system.entity.UserNotificationPreference;
 import com.carbonpoint.system.mapper.NotificationMapper;
 import com.carbonpoint.system.mapper.UserNotificationPreferenceMapper;
+import com.carbonpoint.system.service.EmailService;
 import com.carbonpoint.system.service.NotificationService;
 import com.carbonpoint.system.service.NotificationTemplateService;
 import com.carbonpoint.system.service.SmsService;
@@ -31,6 +32,7 @@ public class NotificationServiceImpl implements NotificationService {
     private final UserNotificationPreferenceMapper preferenceMapper;
     private final NotificationTemplateService templateService;
     private final SmsService smsService;
+    private final EmailService emailService;
 
     /**
      * 必要通知类型（不可关闭）。
@@ -104,7 +106,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     @Transactional
-    public void sendNotification(Long tenantId, Long userId, String phone, String type,
+    public void sendNotification(Long tenantId, Long userId, String phone, String email, String type,
                                  Map<String, Object> variables,
                                  String referenceType, String referenceId) {
         // 1. 检查用户偏好（必要通知跳过检查）
@@ -138,11 +140,14 @@ public class NotificationServiceImpl implements NotificationService {
 
         // 4. 尝试发送短信（频率限制 + 失败降级）
         sendSmsWithFallback(userId, phone, type, variables);
+
+        // 5. 尝试发送邮件（频率限制 + 失败降级）
+        sendEmailWithFallback(userId, email, type, variables);
     }
 
     @Override
     @Transactional
-    public void sendBulkNotifications(Long tenantId, List<Long> userIds, List<String> phones,
+    public void sendBulkNotifications(Long tenantId, List<Long> userIds, List<String> phones, List<String> emails,
                                       String type, Map<String, Object> variables,
                                       String referenceType, String referenceId) {
         if (userIds == null || userIds.isEmpty()) {
@@ -151,7 +156,8 @@ public class NotificationServiceImpl implements NotificationService {
         for (int i = 0; i < userIds.size(); i++) {
             Long userId = userIds.get(i);
             String phone = (phones != null && i < phones.size()) ? phones.get(i) : null;
-            sendNotification(tenantId, userId, phone, type, variables, referenceType, referenceId);
+            String email = (emails != null && i < emails.size()) ? emails.get(i) : null;
+            sendNotification(tenantId, userId, phone, email, type, variables, referenceType, referenceId);
         }
     }
 
@@ -261,6 +267,24 @@ public class NotificationServiceImpl implements NotificationService {
         boolean sent = smsService.sendSms(userId, phone, type, content);
         if (!sent) {
             log.info("短信发送失败或已达频率限制（站内信已发送）: userId={}, type={}", userId, type);
+        }
+    }
+
+    private void sendEmailWithFallback(Long userId, String email, String type, Map<String, Object> variables) {
+        if (email == null || email.isBlank()) {
+            return;
+        }
+
+        NotificationTemplateService.RenderedTemplate rendered = templateService.renderTemplate(type, "email", variables);
+        if (rendered == null) {
+            return;
+        }
+
+        String subject = rendered.title();
+        String content = rendered.content();
+        boolean sent = emailService.sendEmail(userId, email, type, subject, content);
+        if (!sent) {
+            log.info("邮件发送失败或已达频率限制（站内信已发送）: userId={}, type={}", userId, type);
         }
     }
 

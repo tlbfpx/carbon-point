@@ -26,6 +26,7 @@ public class PermissionController {
 
     @GetMapping("/my")
     public Result<List<String>> getMyPermissions() {
+        currentUser.initFromSecurityContext();
         return Result.success(permissionQueryService.getMyPermissions(currentUser.getUserId()));
     }
 }

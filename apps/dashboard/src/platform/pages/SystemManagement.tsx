@@ -165,7 +165,14 @@ const SystemManagement: React.FC = () => {
     roles: string[];
   }) => {
     if (adminModalMode === 'create') {
-      createAdminMutation.mutate(values as { username: string; phone: string; password: string; email?: string; roles: string[] });
+      createAdminMutation.mutate({
+        username: values.username,
+        phone: values.phone,
+        password: values.password!,
+        email: values.email,
+        // Backend expects single role, UI sends array; take first selected
+        role: Array.isArray(values.roles) ? values.roles[0] : values.roles,
+      });
     } else if (editingAdmin) {
       const { password, ...rest } = values;
       updateAdminMutation.mutate({

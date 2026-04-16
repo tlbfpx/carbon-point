@@ -14,12 +14,14 @@ const LoginPage: React.FC = () => {
     setLoading(true);
     try {
       const res: any = await login(values);
-      if (res.code === 200 || res.code === 0) {
-        setAuth(res.data.accessToken, res.data.refreshToken, res.data.user);
+      const code = res.data?.code ?? res.code;
+      const data = res.data?.data || res.data;
+      if (code === 200 || code === 0) {
+        setAuth(data.accessToken, data.refreshToken, data.user);
         message.success('登录成功');
         navigate('/');
       } else {
-        message.error(res.message || '登录失败');
+        message.error(res.data?.message || res.data?.msg || res.message || '登录失败');
       }
     } catch {
       message.error('网络错误，请重试');

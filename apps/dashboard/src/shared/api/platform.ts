@@ -120,7 +120,7 @@ export const createPlatformAdmin = async (data: {
   phone: string;
   password: string;
   email?: string;
-  roles: string[];
+  role: string;
 }) => {
   const res = await platformApiClient.post('/admins', data);
   return res.data;

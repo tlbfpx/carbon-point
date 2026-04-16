@@ -1,5 +1,6 @@
 import React from 'react';
-import { Card, Badge, Empty } from 'antd-mobile';
+import { Card, Badge, Empty, TabBar } from 'antd-mobile';
+import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getNotifications } from '@/api/notification';
 import { useAuthStore } from '@/store/authStore';
@@ -13,6 +14,7 @@ interface NotificationItem {
 }
 
 const NotificationPage: React.FC = () => {
+  const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
 
   const { data: notificationsData } = useQuery({
@@ -58,6 +60,20 @@ const NotificationPage: React.FC = () => {
           ))
         )}
       </div>
+
+      <TabBar activeKey="notifications" onChange={(key) => {
+        if (key === 'home') navigate('/');
+        else if (key === 'checkin') navigate('/checkin');
+        else if (key === 'mall') navigate('/mall');
+        else if (key === 'coupons') navigate('/my-coupons');
+        else if (key === 'profile') navigate('/profile');
+      }}>
+        <TabBar.Item key="home" title="首页" />
+        <TabBar.Item key="checkin" title="打卡" />
+        <TabBar.Item key="mall" title="商城" />
+        <TabBar.Item key="coupons" title="卡券" />
+        <TabBar.Item key="profile" title="我的" />
+      </TabBar>
     </div>
   );
 };

@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
@@ -34,8 +35,15 @@ export default defineConfig({
         entryFileNames: 'assets/[name].[hash].js',
       },
     },
-    target: 'es2015',
+    target: 'chrome80',
     cssCodeSplit: true,
     minify: 'esbuild',
+  },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: './src/test/setup.ts',
+    css: true,
+    exclude: ['e2e/**', 'node_modules/**'],
   },
 });

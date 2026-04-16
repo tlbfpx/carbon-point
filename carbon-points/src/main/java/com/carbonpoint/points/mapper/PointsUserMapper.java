@@ -21,7 +21,7 @@ public interface PointsUserMapper {
      * Get user by ID. Skips tenant line interceptor since the ID uniquely identifies the user.
      */
     @InterceptorIgnore(tenantLine = "1")
-    @Select("SELECT id, tenant_id, nickname, level, total_points, available_points, " +
+    @Select("SELECT id, tenant_id, phone, email, nickname, level, total_points, available_points, " +
             "frozen_points, consecutive_days, last_checkin_date, version " +
             "FROM users WHERE id = #{userId}")
     User selectById(@Param("userId") Long userId);

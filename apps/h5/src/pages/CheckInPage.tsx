@@ -1,14 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Button, Toast, DotLoading, Badge } from 'antd-mobile';
+import { Card, Button, Toast, DotLoading, Badge, TabBar } from 'antd-mobile';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { doCheckIn, getTimeSlots, TimeSlotResponse } from '@/api/checkin';
+import { isInWeChat, configureWeChat, getWeChatLocation } from '@/utils/wechat';
+import { getWeChatConfig, verifyLocation } from '@/api/wechat';
 
 const CheckInPage: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [checkInSuccess, setCheckInSuccess] = useState(false);
   const [earnedPoints, setEarnedPoints] = useState(0);
+  const [countdown, setCountdown] = useState(3);
+
+  // Auto-return after successful check-in
+  useEffect(() => {
+    if (!checkInSuccess) return;
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          navigate('/');
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [checkInSuccess, navigate]);
 
   const { data: timeSlotsData, isLoading: slotsLoading } = useQuery({
     queryKey: ['timeSlots'],
@@ -34,7 +53,31 @@ const CheckInPage: React.FC = () => {
     },
   });
 
-  const handleCheckIn = (ruleId: number) => {
+  const handleCheckIn = async (ruleId: number) => {
+    // Location verification for WeChat browser
+    if (isInWeChat()) {
+      try {
+        Toast.show('正在验证位置...');
+        const configRes = await getWeChatConfig(window.location.href.split('#')[0]);
+        await configureWeChat(configRes.data);
+        const location = await getWeChatLocation();
+        const verifyRes = await verifyLocation({
+          latitude: location.latitude,
+          longitude: location.longitude,
+          ruleId,
+        });
+
+        if (!verifyRes.data.allowed) {
+          Toast.show(verifyRes.data.message || '位置验证失败，请在指定范围内打卡');
+          return;
+        }
+      } catch (err) {
+        // Location verification failed - still allow check-in (graceful degradation)
+        const msg = err instanceof Error ? err.message : '位置获取失败';
+        Toast.show(`位置验证跳过: ${msg}`);
+      }
+    }
+
     checkInMutation.mutate({ ruleId });
   };
 
@@ -95,7 +138,10 @@ const CheckInPage: React.FC = () => {
         <p style={{ fontSize: 32, color: '#1890ff', fontWeight: 'bold', margin: '16px 0' }}>
           +{earnedPoints} 积分
         </p>
-        <Button onClick={() => navigate('/')}>返回首页</Button>
+        <p style={{ color: '#999', fontSize: 14, marginBottom: 16 }}>
+          {countdown} 秒后自动返回首页
+        </p>
+        <Button onClick={() => navigate('/')}>立即返回</Button>
       </div>
     );
   }
@@ -156,6 +202,28 @@ const CheckInPage: React.FC = () => {
           <li>连续打卡可获得额外奖励</li>
         </ul>
       </Card>
+
+      <div style={{ textAlign: 'center', marginTop: 12 }}>
+        <span
+          style={{ color: '#1677ff', fontSize: 14, cursor: 'pointer' }}
+          onClick={() => navigate('/checkin/history')}
+        >
+          查看打卡历史 →
+        </span>
+      </div>
+
+      <TabBar activeKey="checkin" onChange={(key) => {
+        if (key === 'home') navigate('/');
+        else if (key === 'mall') navigate('/mall');
+        else if (key === 'coupons') navigate('/my-coupons');
+        else if (key === 'profile') navigate('/profile');
+      }}>
+        <TabBar.Item key="home" title="首页" />
+        <TabBar.Item key="checkin" title="打卡" />
+        <TabBar.Item key="mall" title="商城" />
+        <TabBar.Item key="coupons" title="卡券" />
+        <TabBar.Item key="profile" title="我的" />
+      </TabBar>
     </div>
   );
 };

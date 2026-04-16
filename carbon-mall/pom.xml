@@ -23,6 +23,10 @@
         </dependency>
         <dependency>
             <groupId>com.carbonpoint</groupId>
+            <artifactId>carbon-system</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.carbonpoint</groupId>
             <artifactId>carbon-points</artifactId>
         </dependency>
         <dependency>

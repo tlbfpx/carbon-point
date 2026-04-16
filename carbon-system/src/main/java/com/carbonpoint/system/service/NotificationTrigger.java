@@ -36,14 +36,14 @@ public class NotificationTrigger {
     /**
      * 打卡成功触发连续打卡奖励通知。
      */
-    public void onStreakBonus(Long tenantId, Long userId, String phone,
+    public void onStreakBonus(Long tenantId, Long userId, String phone, String email,
                               int streakDays, int bonusPoints) {
         Map<String, Object> vars = Map.of(
                 "streak_days", streakDays,
                 "bonus_points", bonusPoints
         );
         notificationService.sendNotification(
-                tenantId, userId, phone,
+                tenantId, userId, phone, email,
                 "streak_bonus", vars,
                 "checkin", String.valueOf(userId)
         );
@@ -52,12 +52,12 @@ public class NotificationTrigger {
     /**
      * 连续打卡中断提醒。
      */
-    public void onStreakBroken(Long tenantId, Long userId, String phone, int previousStreakDays) {
+    public void onStreakBroken(Long tenantId, Long userId, String phone, String email, int previousStreakDays) {
         Map<String, Object> vars = Map.of(
                 "streak_days", previousStreakDays
         );
         notificationService.sendNotification(
-                tenantId, userId, phone,
+                tenantId, userId, phone, email,
                 "streak_broken", vars,
                 "checkin", String.valueOf(userId)
         );
@@ -72,7 +72,7 @@ public class NotificationTrigger {
      * @param newLevel  新等级
      * @param coefficient 新等级对应的积分系数
      */
-    public void onLevelUp(Long tenantId, Long userId, String phone,
+    public void onLevelUp(Long tenantId, Long userId, String phone, String email,
                           int oldLevel, int newLevel, double coefficient) {
         Map<String, Object> vars = Map.of(
                 "old_level", oldLevel,
@@ -81,7 +81,7 @@ public class NotificationTrigger {
                 "coefficient", String.format("%.1f", coefficient)
         );
         notificationService.sendNotification(
-                tenantId, userId, phone,
+                tenantId, userId, phone, email,
                 "level_up", vars,
                 "user", String.valueOf(userId)
         );
@@ -94,7 +94,7 @@ public class NotificationTrigger {
      * @param newLevel     新等级
      * @param coefficient  新等级对应的积分系数
      */
-    public void onLevelDown(Long tenantId, Long userId, String phone,
+    public void onLevelDown(Long tenantId, Long userId, String phone, String email,
                             int oldLevel, int newLevel, double coefficient) {
         Map<String, Object> vars = Map.of(
                 "old_level", oldLevel,
@@ -103,7 +103,7 @@ public class NotificationTrigger {
                 "coefficient", String.format("%.1f", coefficient)
         );
         notificationService.sendNotification(
-                tenantId, userId, phone,
+                tenantId, userId, phone, email,
                 "level_down", vars,
                 "user", String.valueOf(userId)
         );
@@ -114,14 +114,14 @@ public class NotificationTrigger {
     /**
      * 用户获得新徽章。
      */
-    public void onBadgeEarned(Long tenantId, Long userId, String phone,
+    public void onBadgeEarned(Long tenantId, Long userId, String phone, String email,
                                String badgeId, String badgeName, String rarity) {
         Map<String, Object> vars = Map.of(
                 "badge_name", badgeName,
                 "rarity", rarity
         );
         notificationService.sendNotification(
-                tenantId, userId, phone,
+                tenantId, userId, phone, email,
                 "badge_earned", vars,
                 "badge", badgeId
         );
@@ -132,14 +132,14 @@ public class NotificationTrigger {
     /**
      * 积分即将过期预警。
      */
-    public void onPointExpiring(Long tenantId, Long userId, String phone,
+    public void onPointExpiring(Long tenantId, Long userId, String phone, String email,
                                  int expiringPoints, String expireDate) {
         Map<String, Object> vars = Map.of(
                 "points", expiringPoints,
                 "expire_date", expireDate
         );
         notificationService.sendNotification(
-                tenantId, userId, phone,
+                tenantId, userId, phone, email,
                 "point_expiring", vars,
                 "points", String.valueOf(userId)
         );
@@ -148,12 +148,12 @@ public class NotificationTrigger {
     /**
      * 积分已过期。
      */
-    public void onPointExpired(Long tenantId, Long userId, String phone, int expiredPoints) {
+    public void onPointExpired(Long tenantId, Long userId, String phone, String email, int expiredPoints) {
         Map<String, Object> vars = Map.of(
                 "points", expiredPoints
         );
         notificationService.sendNotification(
-                tenantId, userId, phone,
+                tenantId, userId, phone, email,
                 "point_expired", vars,
                 "points", String.valueOf(userId)
         );
@@ -162,14 +162,14 @@ public class NotificationTrigger {
     /**
      * 管理员手动发放积分。
      */
-    public void onPointManualAdd(Long tenantId, Long userId, String phone,
+    public void onPointManualAdd(Long tenantId, Long userId, String phone, String email,
                                   int amount, Long adminId) {
         Map<String, Object> vars = Map.of(
                 "points", amount,
                 "admin_id", adminId
         );
         notificationService.sendNotification(
-                tenantId, userId, phone,
+                tenantId, userId, phone, email,
                 "point_manual_add", vars,
                 "points", String.valueOf(userId)
         );
@@ -178,7 +178,7 @@ public class NotificationTrigger {
     /**
      * 管理员手动扣减积分。
      */
-    public void onPointManualDeduct(Long tenantId, Long userId, String phone,
+    public void onPointManualDeduct(Long tenantId, Long userId, String phone, String email,
                                     int amount, Long adminId, String reason) {
         Map<String, Object> vars = Map.of(
                 "points", amount,
@@ -186,7 +186,7 @@ public class NotificationTrigger {
                 "reason", reason != null ? reason : ""
         );
         notificationService.sendNotification(
-                tenantId, userId, phone,
+                tenantId, userId, phone, email,
                 "point_manual_deduct", vars,
                 "points", String.valueOf(userId)
         );
@@ -197,14 +197,14 @@ public class NotificationTrigger {
     /**
      * 兑换订单履约完成。
      */
-    public void onOrderFulfilled(Long tenantId, Long userId, String phone,
+    public void onOrderFulfilled(Long tenantId, Long userId, String phone, String email,
                                   Long orderId, String productName) {
         Map<String, Object> vars = Map.of(
                 "order_id", orderId,
                 "product_name", productName
         );
         notificationService.sendNotification(
-                tenantId, userId, phone,
+                tenantId, userId, phone, email,
                 "order_fulfilled", vars,
                 "order", String.valueOf(orderId)
         );
@@ -213,14 +213,14 @@ public class NotificationTrigger {
     /**
      * 兑换订单超时取消。
      */
-    public void onOrderExpired(Long tenantId, Long userId, String phone,
+    public void onOrderExpired(Long tenantId, Long userId, String phone, String email,
                                 Long orderId, int frozenPoints) {
         Map<String, Object> vars = Map.of(
                 "order_id", orderId,
                 "frozen_points", frozenPoints
         );
         notificationService.sendNotification(
-                tenantId, userId, phone,
+                tenantId, userId, phone, email,
                 "order_expired", vars,
                 "order", String.valueOf(orderId)
         );
@@ -229,7 +229,7 @@ public class NotificationTrigger {
     /**
      * 卡券即将过期（7天前）。
      */
-    public void onCouponExpiring(Long tenantId, Long userId, String phone,
+    public void onCouponExpiring(Long tenantId, Long userId, String phone, String email,
                                   Long orderId, String productName, String expireDate) {
         Map<String, Object> vars = Map.of(
                 "order_id", orderId,
@@ -237,7 +237,7 @@ public class NotificationTrigger {
                 "expire_date", expireDate
         );
         notificationService.sendNotification(
-                tenantId, userId, phone,
+                tenantId, userId, phone, email,
                 "coupon_expiring", vars,
                 "order", String.valueOf(orderId)
         );
@@ -249,12 +249,12 @@ public class NotificationTrigger {
      * 企业被停用，通知所有用户。
      */
     public void onTenantSuspended(Long tenantId, java.util.List<Long> userIds,
-                                   java.util.List<String> phones, String reason) {
+                                   java.util.List<String> phones, java.util.List<String> emails, String reason) {
         Map<String, Object> vars = Map.of(
                 "reason", reason != null ? reason : "违反平台规定"
         );
         notificationService.sendBulkNotifications(
-                tenantId, userIds, phones,
+                tenantId, userIds, phones, emails,
                 "tenant_suspended", vars,
                 "tenant", String.valueOf(tenantId)
         );
@@ -263,12 +263,12 @@ public class NotificationTrigger {
     /**
      * 用户被停用。
      */
-    public void onUserDisabled(Long tenantId, Long userId, String phone, String reason) {
+    public void onUserDisabled(Long tenantId, Long userId, String phone, String email, String reason) {
         Map<String, Object> vars = Map.of(
                 "reason", reason != null ? reason : "违反平台规定"
         );
         notificationService.sendNotification(
-                tenantId, userId, phone,
+                tenantId, userId, phone, email,
                 "user_disabled", vars,
                 "user", String.valueOf(userId)
         );
@@ -279,14 +279,14 @@ public class NotificationTrigger {
     /**
      * 企业邀请链接即将过期。
      */
-    public void onInviteExpiring(Long tenantId, Long userId, String phone,
+    public void onInviteExpiring(Long tenantId, Long userId, String phone, String email,
                                   String inviteCode, String expireDate) {
         Map<String, Object> vars = Map.of(
                 "invite_code", inviteCode,
                 "expire_date", expireDate
         );
         notificationService.sendNotification(
-                tenantId, userId, phone,
+                tenantId, userId, phone, email,
                 "invite_expiring", vars,
                 "invitation", inviteCode
         );

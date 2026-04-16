@@ -13,7 +13,7 @@ import java.util.List;
  * 作为通知系统的对外入口，提供：
  * <ul>
  *   <li>站内消息 CRUD</li>
- *   <li>通知触发（站内信 + 短信）</li>
+ *   <li>通知触发（站内信 + 短信 + 邮件）</li>
  *   <li>模板渲染</li>
  *   <li>用户偏好管理</li>
  * </ul>
@@ -45,24 +45,25 @@ public interface NotificationService {
     // ========== 通知触发 ==========
 
     /**
-     * 发送通知（支持站内信 + 短信）。
+     * 发送通知（支持站内信 + 短信 + 邮件）。
      *
      * @param tenantId 租户ID
      * @param userId   用户ID
-     * @param phone    手机号（短信用）
+     * @param phone    手机号（短信用，可为 null）
+     * @param email    邮箱地址（邮件用，可为 null）
      * @param type     通知类型
      * @param variables 模板变量
      * @param referenceType 关联业务类型
      * @param referenceId  关联业务ID
      */
-    void sendNotification(Long tenantId, Long userId, String phone, String type,
+    void sendNotification(Long tenantId, Long userId, String phone, String email, String type,
                           java.util.Map<String, Object> variables,
                           String referenceType, String referenceId);
 
     /**
      * 批量发送通知（如企业停用通知发给所有用户）。
      */
-    void sendBulkNotifications(Long tenantId, List<Long> userIds, List<String> phones,
+    void sendBulkNotifications(Long tenantId, List<Long> userIds, List<String> phones, List<String> emails,
                                String type, java.util.Map<String, Object> variables,
                                String referenceType, String referenceId);
 

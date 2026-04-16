@@ -81,6 +81,7 @@ CREATE TABLE IF NOT EXISTS point_transactions (
     remark VARCHAR(200),
     expire_time DATETIME,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    version BIGINT DEFAULT 0,
     deleted INT NOT NULL DEFAULT 0
 );
 
@@ -106,7 +107,7 @@ CREATE TABLE IF NOT EXISTS products (
     type VARCHAR(20) NOT NULL,
     points_price INT NOT NULL,
     stock INT,
-    max_per_user INT DEFAULT 1,
+    max_per_user INT DEFAULT NULL,
     validity_days INT NOT NULL DEFAULT 30,
     fulfillment_config TEXT,
     status VARCHAR(20) NOT NULL DEFAULT 'inactive',

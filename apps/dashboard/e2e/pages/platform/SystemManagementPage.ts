@@ -94,9 +94,11 @@ export class SystemManagementPage {
     this.createTimeCell = (username: string) =>
       this.adminTableRows.filter({ hasText: username }).locator('td').nth(6);
     this.editAdminButton = (username: string) =>
-      this.adminTableRows.filter({ hasText: username }).locator('button').filter({ hasText: '编辑' });
+      // Edit button is icon-only (EditOutlined), find by icon-only button in the row
+      this.adminTableRows.filter({ hasText: username }).locator('.ant-btn-icon-only').first();
     this.deleteAdminButton = (username: string) =>
-      this.adminTableRows.filter({ hasText: username }).locator('button').filter({ hasText: '删除' });
+      // Delete button is icon-only (DeleteOutlined), has ant-btn-dangerous class
+      this.adminTableRows.filter({ hasText: username }).locator('.ant-btn-dangerous');
 
     // Admin modal form fields
     this.modalUsernameInput = page.locator('.ant-modal input[placeholder="请输入用户名"]');
@@ -184,13 +186,35 @@ export class SystemManagementPage {
     }
   }
 
+  private readonly roleCodeToLabel: Record<string, string> = {
+    super_admin: '超级管理员',
+    admin: '运营管理员',
+    viewer: '只读管理员',
+  };
+
   async selectRoles(roles: string[]) {
     await this.modalRoleSelect.click();
     await this.page.waitForTimeout(500);
     for (const role of roles) {
-      await this.modalRoleOption(role).click({ timeout: 3000 });
+      const label = this.roleCodeToLabel[role] ?? role;
+      await this.modalRoleOption(label).click({ timeout: 3000 });
       await this.page.waitForTimeout(300);
     }
+    // Close dropdown by clicking elsewhere
+    await this.modalUsernameInput.click();
+    await this.page.waitForTimeout(300);
+  }
+
+  /**
+   * Select a single role (for create, where backend expects single role).
+   * Accepts either a role code ('admin') or a display label ('运营管理员').
+   */
+  async selectRole(role: string) {
+    await this.modalRoleSelect.click();
+    await this.page.waitForTimeout(500);
+    const label = this.roleCodeToLabel[role] ?? role;
+    await this.modalRoleOption(label).click({ timeout: 3000 });
+    await this.page.waitForTimeout(300);
     // Close dropdown by clicking elsewhere
     await this.modalUsernameInput.click();
     await this.page.waitForTimeout(300);
@@ -415,13 +439,15 @@ export class SystemManagementPage {
   // ==================== Modal Helpers ====================
 
   async closeModal() {
-    await this.page.keyboard.press('Escape');
-    await this.page.waitForTimeout(500);
+    // Click the modal's close (X) button — Escape doesn't work on controlled Ant Design modals
+    await this.page.locator('.ant-modal-close').click();
+    await this.page.waitForTimeout(1000);
   }
 
   async closeModalViaCancel() {
-    await this.modalCancelButton.click();
-    await this.page.waitForTimeout(500);
+    // Click the modal's close (X) button — more reliable than keyboard Escape for antd modals
+    await this.page.locator('.ant-modal-close').click();
+    await this.page.waitForTimeout(1000);
   }
 
   // ==================== Legacy / Backward-Compat Methods (for SM tests) ====================
@@ -491,7 +517,8 @@ export class SystemManagementPage {
   }
 
   async waitForModalGone() {
-    await this.modal.waitFor({ state: 'hidden', timeout: 5000 });
+    // Use waitFor with state 'hidden' for antd modals (antd adds hidden attribute when closed)
+    await this.page.locator('.ant-modal').waitFor({ state: 'hidden', timeout: 10000 });
   }
 
   async waitForPopconfirmGone() {

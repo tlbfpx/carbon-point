@@ -109,6 +109,13 @@ public class UserServiceImpl implements UserService {
                     continue;
                 }
 
+                // Validate Chinese mobile phone format: 11 digits starting with 1
+                if (!phone.matches("^1\\d{10}$")) {
+                    failDetails.add(Map.of("row", String.valueOf(i + 1), "phone", phone,
+                            "reason", "手机号格式错误，应为11位数字且以1开头"));
+                    continue;
+                }
+
                 // Check user limit before each insert
                 if (currentCount + successCount >= tenant.getMaxUsers()) {
                     failDetails.add(Map.of("row", String.valueOf(i + 1), "phone", phone,

@@ -105,7 +105,7 @@ CREATE TABLE IF NOT EXISTS products (
     type VARCHAR(20) NOT NULL,
     points_price INT NOT NULL,
     stock INT,
-    max_per_user INT DEFAULT 1,
+    max_per_user INT DEFAULT NULL,
     validity_days INT NOT NULL DEFAULT 30,
     fulfillment_config TEXT,
     status VARCHAR(20) NOT NULL DEFAULT 'inactive',

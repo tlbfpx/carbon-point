@@ -71,7 +71,7 @@ public class LevelService {
 
             // Fire one notification per intermediate level crossed
             for (int lvl = currentLevel + 1; lvl <= newLevel; lvl++) {
-                notificationTrigger.onLevelUp(tenantId, userId, phone, lvl - 1, lvl,
+                notificationTrigger.onLevelUp(tenantId, userId, phone, null, lvl - 1, lvl,
                         LevelConstants.getCoefficient(lvl));
             }
         }
@@ -133,7 +133,7 @@ public class LevelService {
             log.info("User {} demoted from Lv.{} to Lv.{} (mode={}, hadCheckin={})",
                     userId, currentLevel, newLevel, levelMode, hadCheckinLastMonth);
 
-            notificationTrigger.onLevelDown(tenantId, userId, phone,
+            notificationTrigger.onLevelDown(tenantId, userId, phone, user.getEmail(),
                     currentLevel, newLevel, LevelConstants.getCoefficient(newLevel));
 
             return newLevel;

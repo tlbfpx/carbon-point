@@ -39,7 +39,15 @@ const MallPage: React.FC = () => {
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#f5f5f5' }}>
       <div style={{ background: '#fff', padding: '8px 16px', borderBottom: '1px solid #eee' }}>
-        <SearchBar placeholder="搜索商品" value={searchQuery} onChange={(val) => setSearchQuery(val)} />
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+          <SearchBar placeholder="搜索商品" value={searchQuery} onChange={(val) => setSearchQuery(val)} style={{ flex: 1 }} />
+          <span
+            style={{ color: '#1677ff', fontSize: 14, marginLeft: 8, whiteSpace: 'nowrap', cursor: 'pointer' }}
+            onClick={() => navigate('/orders')}
+          >
+            我的订单
+          </span>
+        </div>
       </div>
 
       <div style={{ flex: 1, overflow: 'auto', padding: 16 }}>

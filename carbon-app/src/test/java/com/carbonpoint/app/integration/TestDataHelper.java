@@ -194,10 +194,11 @@ public class TestDataHelper {
             // Always use insert - MyBatis-Plus respects explicit IDs for inserts
             timeSlotRuleMapper.insert(rule);
             // Also create the corresponding PointRule that the CheckInService looks up
+            java.time.format.DateTimeFormatter TF = java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss");
             String config = String.format(
                     "{\"startTime\":\"%s\",\"endTime\":\"%s\",\"minPoints\":10,\"maxPoints\":20}",
-                    rule.getStartTime().withSecond(0).withNano(0),
-                    rule.getEndTime().withSecond(59).withNano(999999999)
+                    rule.getStartTime().withSecond(0).withNano(0).format(TF),
+                    rule.getEndTime().withSecond(59).withNano(0).format(TF)
             );
             PointRule pr = new PointRule();
             pr.setId(rule.getId());
@@ -293,7 +294,7 @@ public class TestDataHelper {
             product.setType(type);
             product.setPointsPrice(pointsPrice);
             product.setStock(stock);
-            product.setMaxPerUser(1);
+            product.setMaxPerUser(null); // null = unlimited per-user exchanges
             product.setValidityDays(30);
             product.setFulfillmentConfig("{\"codeLength\":12}");
             product.setStatus("active");
@@ -375,6 +376,11 @@ public class TestDataHelper {
             rule.setConfig(config);
             rule.setEnabled(true);
             rule.setSortOrder(0);
+        }
+
+        public PointRuleBuilder id(Long id) {
+            rule.setId(id);
+            return this;
         }
 
         public PointRuleBuilder sortOrder(int sortOrder) {

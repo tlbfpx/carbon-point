@@ -3,10 +3,12 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import { ConfigProvider } from 'antd-mobile';
 import HomePage from '@/pages/HomePage';
 import CheckInPage from '@/pages/CheckInPage';
+import CheckInHistoryPage from '@/pages/CheckInHistoryPage';
 import PointsPage from '@/pages/PointsPage';
 import MallPage from '@/pages/MallPage';
 import ProductDetailPage from '@/pages/ProductDetailPage';
 import MyCouponsPage from '@/pages/MyCouponsPage';
+import OrderHistoryPage from '@/pages/OrderHistoryPage';
 import ProfilePage from '@/pages/ProfilePage';
 import LoginPage from '@/pages/LoginPage';
 import RegisterPage from '@/pages/RegisterPage';
@@ -61,6 +63,14 @@ const App: React.FC = () => {
             }
           />
           <Route
+            path="/checkin/history"
+            element={
+              <ProtectedRoute>
+                <CheckInHistoryPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/points"
             element={
               <ProtectedRoute>
@@ -81,6 +91,14 @@ const App: React.FC = () => {
             element={
               <ProtectedRoute>
                 <ProductDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/orders"
+            element={
+              <ProtectedRoute>
+                <OrderHistoryPage />
               </ProtectedRoute>
             }
           />

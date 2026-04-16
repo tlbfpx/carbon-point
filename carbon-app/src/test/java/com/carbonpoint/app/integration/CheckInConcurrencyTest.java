@@ -61,7 +61,7 @@ class CheckInConcurrencyTest extends BaseIntegrationTest {
                 501L, "并发测试时段",
                 LocalTime.of(0, 0),
                 LocalTime.of(23, 59)
-        ).id(1L).save();
+        ).id(6501L).save();
 
         String token = generateToken(user.getId(), 501L, List.of("user"));
 
@@ -146,7 +146,7 @@ class CheckInConcurrencyTest extends BaseIntegrationTest {
                 601L, "多用户时段",
                 LocalTime.of(0, 0),
                 LocalTime.of(23, 59)
-        ).id(2L).save();
+        ).id(6601L).save();
 
         List<String> tokens = new ArrayList<>();
         int numUsers = 10;

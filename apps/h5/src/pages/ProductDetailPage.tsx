@@ -11,7 +11,6 @@ const ProductDetailPage: React.FC = () => {
   const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
 
-  const [showConfirm, setShowConfirm] = useState(false);
   const [rechargeAccount, setRechargeAccount] = useState('');
 
   const { data, isLoading } = useQuery({
@@ -29,7 +28,6 @@ const ProductDetailPage: React.FC = () => {
         Toast.show('兑换成功');
         queryClient.invalidateQueries({ queryKey: ['pointsAccount'] });
         queryClient.invalidateQueries({ queryKey: ['myCoupons'] });
-        setShowConfirm(false);
         navigate('/my-coupons');
       } else {
         Toast.show(res.message || '兑换失败');
@@ -39,6 +37,7 @@ const ProductDetailPage: React.FC = () => {
   });
 
   const handleExchange = () => {
+    if (!product) return;
     if (!user?.tenantId || !user?.userId) {
       Toast.show('用户信息缺失');
       return;
@@ -72,15 +71,26 @@ const ProductDetailPage: React.FC = () => {
       });
       return;
     }
-    setShowConfirm(true);
-  };
-
-  const confirmExchange = () => {
-    exchangeMutation.mutate({
-      tenantId: user!.tenantId,
-      userId: user!.userId,
-      productId: id!,
-      extraInfo: {},
+    // Coupon / privilege - use Dialog.show for confirmation
+    Dialog.show({
+      title: '确认兑换',
+      content: `确认使用 ${product.pointsPrice} 积分兑换 "${product.name}" 吗？`,
+      closeOnAction: true,
+      actions: [
+        { key: 'cancel', text: '取消' },
+        {
+          key: 'confirm',
+          text: '确认',
+          onClick: () => {
+            exchangeMutation.mutate({
+              tenantId: user!.tenantId,
+              userId: user!.userId,
+              productId: id!,
+              extraInfo: {},
+            });
+          },
+        },
+      ],
     });
   };
 
@@ -159,17 +169,6 @@ const ProductDetailPage: React.FC = () => {
           {product.stock === 0 ? '库存不足' : `立即兑换 (${product.pointsPrice}积分)`}
         </Button>
       </div>
-
-      <Dialog
-        visible={showConfirm}
-        title="确认兑换"
-        content={`确认使用 ${product.pointsPrice} 积分兑换 "${product.name}" 吗？`}
-        closeOnAction
-        actions={[
-          { key: 'cancel', text: '取消', onClick: () => setShowConfirm(false) },
-          { key: 'confirm', text: '确认', onClick: confirmExchange },
-        ]}
-      />
     </div>
   );
 };

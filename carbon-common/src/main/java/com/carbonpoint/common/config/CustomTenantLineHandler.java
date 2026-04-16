@@ -32,7 +32,10 @@ public class CustomTenantLineHandler implements TenantLineHandler {
             "user_roles",
             "login_security_logs",
             "password_history",
-            "user_notification_preferences"
+            "user_notification_preferences",
+            "permission_packages",
+            "package_permissions",
+            "package_change_logs"
     ));
 
     @Override

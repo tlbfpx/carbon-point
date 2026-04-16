@@ -48,6 +48,9 @@ class NotificationServiceTest {
     @Mock
     private SmsService smsService;
 
+    @Mock
+    private EmailService emailService;
+
     @InjectMocks
     private NotificationServiceImpl notificationService;
 
@@ -75,7 +78,7 @@ class NotificationServiceTest {
 
             // When
             notificationService.sendNotification(
-                    tenantId, userId, phone, type,
+                    tenantId, userId, phone, null, type,
                     Map.of(), "user", "1"
             );
 
@@ -108,7 +111,7 @@ class NotificationServiceTest {
 
             // When
             notificationService.sendNotification(
-                    tenantId, userId, null, type,
+                    tenantId, userId, null, null, type,
                     Map.of(), "checkin", "1"
             );
 
@@ -133,7 +136,7 @@ class NotificationServiceTest {
 
             // When
             notificationService.sendNotification(
-                    tenantId, userId, null, type,
+                    tenantId, userId, null, null, type,
                     Map.of(), "points", "1"
             );
 
