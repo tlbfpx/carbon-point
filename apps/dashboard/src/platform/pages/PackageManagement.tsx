@@ -9,13 +9,9 @@ import {
   Tag,
   message,
   Popconfirm,
-  Typography,
-  Tooltip,
   Collapse,
   Checkbox,
-  InputNumber,
   Card,
-  Switch,
 } from 'antd';
 import { PlusOutlined, DeleteOutlined, EditOutlined, SettingOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -32,7 +28,6 @@ import {
   Product,
 } from '@/shared/api/platform';
 
-const { Text } = Typography;
 const { Panel } = Collapse;
 
 const PackageManagement: React.FC = () => {

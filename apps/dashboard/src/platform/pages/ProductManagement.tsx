@@ -12,7 +12,6 @@ import {
   Tag,
   InputNumber,
   Switch,
-  Tabs,
   Card,
   Checkbox,
 } from 'antd';
@@ -21,7 +20,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import {
   getProducts,
-  getProduct,
   createProduct,
   updateProduct,
   deleteProduct,
