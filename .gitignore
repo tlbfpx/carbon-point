@@ -33,6 +33,16 @@ apps/dashboard/test-results/
 Thumbs.db
 .worktrees/
 
+# Cache directories
+.pytest_cache/
+.ruff_cache/
+
+# Test results
+test-results/
+
+# Backup files
+*.bak
+
 # AI agent tools
 .opencode/
 .swarm/

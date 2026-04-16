@@ -69,14 +69,23 @@ const EnterpriseContent: React.FC = () => {
 
   useEffect(() => {
     routeLogger.info(`[路由切换] 导航到 ${location.pathname}`);
-  }, [location.pathname]);
+    // Debug log for menu display issue
+    console.log('[EnterpriseApp Debug]', {
+      isAuthenticated,
+      permissionsLoading,
+      permissions,
+      pathname: location.pathname,
+    });
+  }, [location.pathname, isAuthenticated, permissions, permissionsLoading]);
 
   const menuItems = EnterpriseMenuItems
     .filter(item => {
       if (permissionsLoading) return true;
       const key = String((item as any).key);
       const perm = ENTERPRISE_PERMISSION_MAP[key];
-      return !perm || permissions.includes(perm);
+      const hasPermission = !perm || permissions.includes(perm);
+      console.log(`[Menu Filter] key=${key}, perm=${perm}, hasPermission=${hasPermission}`);
+      return hasPermission;
     })
     .map(item => {
       const i = item as any;
@@ -85,6 +94,8 @@ const EnterpriseContent: React.FC = () => {
         onClick: () => { if (i?.key) navigate(String(i.key)); },
       };
     });
+
+  console.log('[EnterpriseApp Debug] Final menuItems:', menuItems);
 
   const userMenuItems: MenuProps['items'] = [
     { key: 'profile', icon: <UserOutlined />, label: '个人信息' },
@@ -118,14 +129,19 @@ const EnterpriseContent: React.FC = () => {
         }}>
           {collapsed ? '碳' : '碳积分管理后台'}
         </div>
-        {isAuthenticated && (
-          <Menu
-            theme="dark"
-            mode="inline"
-            selectedKeys={[location.pathname]}
-            items={menuItems as any}
-            style={{ borderRight: 0 }}
-          />
+        {/* Always show Menu container, even if not authenticated */}
+        <Menu
+          theme="dark"
+          mode="inline"
+          selectedKeys={[location.pathname]}
+          items={isAuthenticated ? (menuItems as any) : []}
+          style={{ borderRight: 0 }}
+        />
+        {/* Show login prompt if not authenticated */}
+        {!isAuthenticated && (
+          <div style={{ padding: 16, color: '#fff', textAlign: 'center', fontSize: 12 }}>
+            请先登录以访问菜单
+          </div>
         )}
       </Sider>
       <Layout>
