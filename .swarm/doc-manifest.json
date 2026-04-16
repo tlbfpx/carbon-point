@@ -1,587 +1,405 @@
 {
   "schema_version": 1,
-  "scanned_at": "2026-04-16T01:09:11.976Z",
+  "scanned_at": "2026-04-15T08:24:44.146Z",
   "files": [
-    {
-      "path": ".pytest_cache/README.md",
-      "title": "pytest cache directory #",
-      "summary": "This directory contains data from the pytest's cache plugin, which provides the `--lf` and `--ff` options, as well as the `cache` fixture. **Do not** commit this to version control. See [the docs](...",
-      "lines": 9,
-      "mtime": 1776051976962.9526
-    },
-    {
-      "path": ".worktrees/full_code_review/AGENTS.md",
-      "title": "PROJECT KNOWLEDGE BASE",
-      "summary": "**Generated:** 2026-04-08 **Stage:** Specification (no source code yet) Carbon Point — 多租户 SaaS 碳积分打卡平台。通过爬楼梯打卡送积分机制激励企业员工运动，积分可兑换虚拟商品。使用 OpenSpec 规范驱动开发。 ``` carbon-point/ ├── openspec/ │   ├── co...",
-      "lines": 155,
-      "mtime": 1776263180017.334
-    },
-    {
-      "path": ".worktrees/full_code_review/apps/dashboard/e2e/README.md",
-      "title": "Carbon Point E2E Tests",
-      "summary": "This directory contains Playwright-based E2E tests for the Carbon Point dashboard application. | File | Description | User Type | |------|-------------|-----------| | `package-management.spec.ts` |...",
-      "lines": 166,
-      "mtime": 1776263180039.2148
-    },
-    {
-      "path": ".worktrees/full_code_review/CLAUDE.md",
-      "title": "CLAUDE.md",
-      "summary": "This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository. Carbon Point (碳积分打卡平台) — a multi-tenant SaaS platform that incentivizes corporate employees to...",
-      "lines": 115,
-      "mtime": 1776263180026.454
-    },
-    {
-      "path": ".worktrees/full_code_review/e2e/README.md",
-      "title": "Carbon Point E2E 验收测试",
-      "summary": "基于 Playwright 的后台管理系统自动化验收测试，覆盖从登录到所有菜单导航。 ``` e2e/ ├── package.json ├── playwright.config.ts    # Playwright 配置 ├── README.md             # 本文档 ├── tests/ │   ├── platform-admin-login.spec.ts  # 平...",
-      "lines": 109,
-      "mtime": 1776263183752.0469
-    },
     {
       "path": "AGENTS.md",
       "title": "PROJECT KNOWLEDGE BASE",
       "summary": "**Generated:** 2026-04-08 **Stage:** Specification (no source code yet) Carbon Point — 多租户 SaaS 碳积分打卡平台。通过爬楼梯打卡送积分机制激励企业员工运动，积分可兑换虚拟商品。使用 OpenSpec 规范驱动开发。 ``` carbon-point/ ├── openspec/ │   ├── co...",
       "lines": 155,
-      "mtime": 1776175071811.3877
-    },
-    {
-      "path": "apps/dashboard/.pytest_cache/README.md",
-      "title": "pytest cache directory #",
-      "summary": "This directory contains data from the pytest's cache plugin, which provides the `--lf` and `--ff` options, as well as the `cache` fixture. **Do not** commit this to version control. See [the docs](...",
-      "lines": 9,
-      "mtime": 1776056627585.2683
+      "mtime": 1776220913609.6458
     },
     {
       "path": "apps/dashboard/e2e/README.md",
       "title": "Carbon Point E2E Tests",
       "summary": "This directory contains Playwright-based E2E tests for the Carbon Point dashboard application. | File | Description | User Type | |------|-------------|-----------| | `package-management.spec.ts` |...",
       "lines": 166,
-      "mtime": 1776002070049.0098
-    },
-    {
-      "path": "apps/h5/e2e/README.md",
-      "title": "Carbon Point H5 E2E Tests",
-      "summary": "Playwright E2E tests for the H5 mobile app. | Spec File | Description | Test Count | |-----------|-------------|------------| | `specs/h5/login.spec.ts` | Login page rendering, form validation, aut...",
-      "lines": 61,
-      "mtime": 1776272210077.6482
+      "mtime": 1776220913614.2144
     },
     {
       "path": "CLAUDE.md",
       "title": "CLAUDE.md",
       "summary": "This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository. Carbon Point (碳积分打卡平台) — a multi-tenant SaaS platform that incentivizes corporate employees to...",
       "lines": 115,
-      "mtime": 1775882704530.1152
-    },
-    {
-      "path": "docs/.DS_Store",
-      "title": ".DS_Store",
-      "summary": "\u0000\u0000\u0000\u0001Bud1\u0000\u0000\u0018\u0000\u0000\u0000\b\u0000\u0000\u0000\u0018\u0000\u0000\u0000\u0010\u000b\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\b\u0000\u0000\u0000\b\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0002\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u000e\u0000\u0000\u0000\u0001\u0000\u0000\u0010\u0000\u0000p\u0000t\u0000a\u0000n\u0000c\u0000e\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000...",
-      "lines": 2,
-      "mtime": 1776256536426.8547
-    },
-    {
-      "path": "docs/acceptance-test-report-part2.md",
-      "title": "acceptance-test-report-part2.md",
-      "summary": "| 测试项 | 测试目标 | 状态 | |--------|---------|------| | 查看员工列表 | 验证展示正确字段、搜索、分页 | ⚠️ 未编码 | | 生成邀请链接 | 验证生成唯一链接、可设置有效期 | ⚠️ 未编码 | | 批量导入 Excel | 验证解析正确、返回成功/失败统计 | ⚠️ 未编码 | | 编辑员工信息 | 验证修改昵称、手机号生效 | ⚠️ 未编码 |",
-      "lines": 167,
-      "mtime": 1776261848194.0535
-    },
-    {
-      "path": "docs/acceptance-test-report.md",
-      "title": "后台管理系统验收测试报告",
-      "summary": "**测试团队**: 8人测试小组 **测试日期**: 2026-04-14 **测试范围**: 企业管理后台 + 平台运营后台 功能规格验收 **测试方法**: Playwright 自动化验收测试 + 人工评审 --- 1. [测试概述](#1-测试概述) 2. [测试环境](#2-测试环境) 3. [测试范围](#3-测试范围) 4. [测试结果汇总](#4-测试结果汇总) 5. [功能...",
-      "lines": 170,
-      "mtime": 1776261848194.5745
+      "mtime": 1776220913610.1836
     },
     {
       "path": "docs/architecture/architecture-optimization.md",
       "title": "碳积分打卡平台架构分析与优化建议",
       "summary": "> 分析日期：2026-04-13 > 项目阶段：规格定义（无源代码） > 分析人：oracle 1. **阶段匹配合理**：MVP 阶段选择共享数据库+字段级隔离，符合初期几百家企业的规模预期，运维成本最低 2. **模块化清晰**：后端按业务领域拆分模块，前端按应用类型拆分+共享包，职责分明 3. **扩展性设计到位**：积分引擎采用 JSON 配置+规则链，支持灵活扩展规则类型；单体架...",
       "lines": 103,
-      "mtime": 1776175071978.8933
+      "mtime": 1776220914761.4924
     },
     {
       "path": "docs/architecture/backend-code-review.md",
       "title": "backend-code-review.md",
       "summary": "--- 阅读了 BadgeService、LeaderboardService、DepartmentService 的核心代码: - 徽章定义、用户徽章关系设计正确 ✅ - 排行榜快照使用 Redis 缓存，小时级更新 ✅ - 部门层级关系设计合理 ✅ **发现问题:** - 排行榜缓存更新需要保证一致性，建议使用延时双删策略 --- 代码精简，仅提供看板数据查询接口，符合设计规范。建议添加...",
       "lines": 126,
-      "mtime": 1776175071979.4243
-    },
-    {
-      "path": "docs/design/.DS_Store",
-      "title": ".DS_Store",
-      "summary": "\u0000\u0000\u0000\u0001Bud1\u0000\u0000\u0018\u0000\u0000\u0000\b\u0000\u0000\u0000\u0018\u0000\u0000\u0000\u0010\u000b\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\b\u0000\u0000\u0000\b\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0002\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0011\u0000\u0000\u0000\u0001\u0000\u0000\u0010\u0000\u0000d\u0000-\u0000u\u0000n\u0000i\u0000f\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000...",
-      "lines": 1,
-      "mtime": 1776256355496.618
+      "mtime": 1776220914762.6604
     },
     {
       "path": "docs/design/build-unified.js",
       "title": "build-unified.js",
       "summary": "/** * Build script: Extract page CONTENT (no shell) from each designer file, * inject into a unified shell. No iframes, no double nav. */ const fs = require('fs'); const path = require('path'); con...",
       "lines": 1016,
-      "mtime": 1775917165969.9026
+      "mtime": 1776220914764.1047
     },
     {
       "path": "docs/design/build-v2.js",
       "title": "build-v2.js",
       "summary": "/** * Build script v2: Create a clean unified SaaS platform HTML * * Strategy: Instead of extracting CSS (which causes conflicts), * we include the unified CSS first (base components), then add * p...",
       "lines": 968,
-      "mtime": 1775913973870.6108
+      "mtime": 1776220914765.4954
     },
     {
       "path": "docs/design/designer-1-enterprise-core.html",
       "title": "designer-1-enterprise-core.html",
       "summary": "<!DOCTYPE html> <html lang=\"zh-CN\"> <head> <meta charset=\"UTF-8\"> <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"> <title>碳积分平台 - 企业管理后台</title> <style> *{margin:0;padding:0;b...",
       "lines": 391,
-      "mtime": 1775906166599.016
+      "mtime": 1776220914768.0928
     },
     {
       "path": "docs/design/designer-10-product-deep.html",
       "title": "designer-10-product-deep.html",
       "summary": "<!DOCTYPE html> <html lang=\"zh-CN\"> <head> <meta charset=\"UTF-8\"> <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"> <title>碳积分打卡平台 - 商品管理</title> <style> /* ===== Reset & Base ...",
       "lines": 1279,
-      "mtime": 1775903590769.618
+      "mtime": 1776220914769.9224
     },
     {
       "path": "docs/design/designer-11-order-deep.html",
       "title": "designer-11-order-deep.html",
       "summary": "<!DOCTYPE html> <html lang=\"zh-CN\"> <head> <meta charset=\"UTF-8\"> <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"> <title>碳积分打卡平台 - 订单管理</title> <style> *{margin:0;padding:0;b...",
       "lines": 783,
-      "mtime": 1775906292671.0337
+      "mtime": 1776220914771.2861
     },
     {
       "path": "docs/design/designer-12-h5-login-home-checkin.html",
       "title": "designer-12-h5-login-home-checkin.html",
       "summary": "<!DOCTYPE html> <html lang=\"zh-CN\"> <head> <meta charset=\"UTF-8\"> <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no\"> <title>碳积分打卡 - H5原型</ti...",
       "lines": 2406,
-      "mtime": 1775903546418.0732
+      "mtime": 1776220914772.6838
     },
     {
       "path": "docs/design/designer-13-h5-points-mall-coupons.html",
       "title": "designer-13-h5-points-mall-coupons.html",
       "summary": "<!DOCTYPE html> <html lang=\"zh-CN\"> <head> <meta charset=\"UTF-8\"> <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no\"> <title>碳积分打卡平台 - H5积分商城...",
       "lines": 1000,
-      "mtime": 1775903504920.4375
+      "mtime": 1776220914773.925
     },
     {
       "path": "docs/design/designer-14-h5-profile-badges-msg.html",
       "title": "designer-14-h5-profile-badges-msg.html",
       "summary": "<!DOCTYPE html> <html lang=\"zh-CN\"> <head> <meta charset=\"UTF-8\"> <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no\"> <title>碳积分打卡平台 - H5 个人中...",
       "lines": 1853,
-      "mtime": 1775903450975.9175
+      "mtime": 1776220914775.347
     },
     {
       "path": "docs/design/designer-15-platform-admin-full.html",
       "title": "designer-15-platform-admin-full.html",
       "summary": "<!DOCTYPE html> <html lang=\"zh-CN\"> <head> <meta charset=\"UTF-8\"> <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"> <title>碳积分平台 - 平台管理后台</title> <style> /* ===== RESET & BASE ...",
       "lines": 2087,
-      "mtime": 1775905640000.7178
+      "mtime": 1776220914777.5127
     },
     {
       "path": "docs/design/designer-2-enterprise-operations.html",
       "title": "designer-2-enterprise-operations.html",
       "summary": "<!DOCTYPE html> <html lang=\"zh-CN\"> <head> <meta charset=\"UTF-8\"> <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"> <title>碳积分平台 - 企业管理后台</title> <style> /* ===== RESET & BASE ...",
       "lines": 2005,
-      "mtime": 1775895999468.1953
+      "mtime": 1776220914779.9724
     },
     {
       "path": "docs/design/designer-3-platform-admin.html",
       "title": "designer-3-platform-admin.html",
       "summary": "<!DOCTYPE html> <html lang=\"zh-CN\"> <head> <meta charset=\"UTF-8\"> <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"> <title>碳积分平台 · 平台管理</title> <style> /* ========== RESET & BA...",
       "lines": 1648,
-      "mtime": 1775907671352.3186
+      "mtime": 1776220914782.0376
     },
     {
       "path": "docs/design/designer-5-login-auth.html",
       "title": "designer-5-login-auth.html",
       "summary": "<!DOCTYPE html> <html lang=\"zh-CN\"> <head> <meta charset=\"UTF-8\"> <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"> <title>碳积分平台 - 登录与认证页面</title> <style> /* ===== RESET & BASE...",
       "lines": 1418,
-      "mtime": 1775903542330.4502
+      "mtime": 1776220914784.1506
     },
     {
       "path": "docs/design/designer-6-employee-deep.html",
       "title": "designer-6-employee-deep.html",
       "summary": "<!DOCTYPE html> <html lang=\"zh-CN\"> <head> <meta charset=\"UTF-8\"> <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"> <title>碳积分平台 - 员工管理</title> <style> /* ===== RESET & BASE ==...",
       "lines": 1782,
-      "mtime": 1775905567240.177
+      "mtime": 1776220914786.21
     },
     {
       "path": "docs/design/designer-7-department-team.html",
       "title": "designer-7-department-team.html",
       "summary": "<!DOCTYPE html> <html lang=\"zh-CN\"> <head> <meta charset=\"UTF-8\"> <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"> <title>碳积分平台 - 部门管理 & 团队排行榜</title> <style> /* ===== RESET &...",
       "lines": 1167,
-      "mtime": 1775907870308.2898
+      "mtime": 1776220914787.6445
     },
     {
       "path": "docs/design/designer-8-rbac-deep.html",
       "title": "designer-8-rbac-deep.html",
       "summary": "<!DOCTYPE html> <html lang=\"zh-CN\"> <head> <meta charset=\"UTF-8\"> <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"> <title>碳积分平台 - RBAC 角色权限管理</title> <style> /* ===== RESET & ...",
       "lines": 1365,
-      "mtime": 1775904808204.0146
+      "mtime": 1776220914788.9014
     },
     {
       "path": "docs/design/designer-9-rule-engine-visual.html",
       "title": "designer-9-rule-engine-visual.html",
       "summary": "<!DOCTYPE html> <html lang=\"zh-CN\"> <head> <meta charset=\"UTF-8\"> <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"> <title>碳积分平台 - 积分规则引擎配置</title> <style> /* ===== RESET & BAS...",
       "lines": 1621,
-      "mtime": 1775904975480.0693
+      "mtime": 1776220914791.6033
     },
     {
       "path": "docs/design/unified-saas-platform.html",
       "title": "unified-saas-platform.html",
       "summary": "<!DOCTYPE html> <html lang=\"zh-CN\"> <head> <meta charset=\"UTF-8\"> <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"> <title>碳积分打卡平台 - SaaS 管理后台</title> <style> /* ==============...",
       "lines": 9371,
-      "mtime": 1775917459760.9226
-    },
-    {
-      "path": "docs/optimization-suggestions.md",
-      "title": "后台管理系统优化建议",
-      "summary": "**测试团队**: 8人测试小组 **日期**: 2026-04-14 --- 1. [架构设计优化](#1-架构设计优化) 2. [安全性优化](#2-安全性优化) 3. [用户体验优化](#3-用户体验优化) 4. [性能优化](#4-性能优化) 5. [测试策略优化](#5-测试策略优化) 6. [开发流程优化](#6-开发流程优化) --- **当前设计**: 企业套餐变更时，需要计...",
-      "lines": 268,
-      "mtime": 1776261848195.0776
+      "mtime": 1776220914797.2324
     },
     {
       "path": "docs/project/DEPLOY.md",
       "title": "Carbon Point 生产部署指南",
       "summary": "> 版本: 1.0.0 | 更新日期: 2026-04-12 - [环境要求](#环境要求) - [数据库迁移](#数据库迁移) - [环境变量配置](#环境变量配置) - [启动顺序](#启动顺序) - [健康检查](#健康检查) - [回滚步骤](#回滚步骤) --- | 组件 | 版本要求 | 最小配置 | 推荐配置 | |------|----------|----------|--...",
       "lines": 358,
-      "mtime": 1776175071980.1016
+      "mtime": 1776220914798.6858
     },
     {
       "path": "docs/project/e2e_report.md",
       "title": "e2e_report.md",
       "summary": "**测试时间**: 2026-04-12 **测试环境**: localhost (H5: http://localhost:8081/h5/, App: http://localhost:9090, Dashboard: http://localhost:8081/dashboard/) --- | 功能 | 步骤 | 预期 | 实际 | 结果 | |------|------|-----...",
       "lines": 130,
-      "mtime": 1776175071981.4246
+      "mtime": 1776220914800.6482
     },
     {
       "path": "docs/project/findings.md",
       "title": "Findings & Decisions",
       "summary": "- 多租户 SaaS 平台，支持企业注册、开通、停用的全生命周期管理 - 用户端 H5 应用（嵌入微信小程序 WebView 和 APP WebView）：打卡、积分查看、商城兑换 - 企业管理后台：员工管理、积分规则引擎配置、虚拟商品管理、订单管理、积分运营、角色权限管理 - 平台运营后台：企业管理、全平台数据看板、系统管理 - 打卡积分采用时段随机机制 - 积分规则引擎：时段规则、连续打...",
       "lines": 187,
-      "mtime": 1776175071982.1013
+      "mtime": 1776220914801.659
     },
     {
       "path": "docs/project/progress.md",
       "title": "Progress Log",
       "summary": "- **Status:** completed - **Started:** 2026-04-11 - Actions taken: - 读取 openspec/changes/carbon-point-platform/proposal.md — 了解项目背景和目标 - 读取 openspec/changes/carbon-point-platform/tasks.md — 梳理 15 个...",
       "lines": 1556,
-      "mtime": 1776175071983.3062
+      "mtime": 1776220914804.0093
     },
     {
       "path": "docs/project/RELEASE.md",
       "title": "Carbon Point v1.0.0 Release Notes",
       "summary": "> 发布日期: 2026-04-12 | 状态: GA (正式版) --- Carbon Point v1.0.0 是平台的第一个正式版本，提供了完整的多租户 SaaS 爬楼梯打卡积分激励系统。 **版本号**: `1.0.0-SNAPSHOT` → `1.0.0` **构建版本**: `2026-04-12` **最低依赖**: Java 21, MySQL 8.0, Redis 7.0 ---",
       "lines": 247,
-      "mtime": 1776175071980.741
+      "mtime": 1776220914799.6475
     },
     {
       "path": "docs/project/task_plan.md",
       "title": "Task Plan: Carbon Point 全栈平台开发",
       "summary": "完成 Carbon Point 多租户 SaaS 碳积分打卡平台的全量开发，包括： - 后端：Spring Boot 3.x + Java 21 Maven 多模块（carbon-common / carbon-system / carbon-checkin / carbon-points / carbon-mall / carbon-report / carbon-app） - 前端：Re...",
       "lines": 184,
-      "mtime": 1776175071984.0645
-    },
-    {
-      "path": "docs/review/.DS_Store",
-      "title": ".DS_Store",
-      "summary": "\u0000\u0000\u0000\u0001Bud1\u0000\u0000\u0010\u0000\u0000\u0000\b\u0000\u0000\u0000\u0010\u0000\u0000\u0000\u0000%\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001\u0000\u0000\u0000\u0003\u0000d\u0000d\u0000ldsclbool\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0002\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001\u0000\u0000\u0000\u0001\u0000\u0000\u0010\u0000clbool\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000...",
-      "lines": 1,
-      "mtime": 1776065058584.7854
+      "mtime": 1776220914805.122
     },
     {
       "path": "docs/review/2026-04-11-platform-review.md",
       "title": "Carbon Point 平台规格四维审查报告",
       "summary": "**审查日期:** 2026-04-11 **审查范围:** openspec/ 全部 12 模块规格 + design.md + 4 份改进文档 + 荣誉体系 MVP + 实施计划 **审查团队:** 产品专家 / 架构师 / 安全与风控 / DBA --- **审查人:** 产品专家 **审查维度:** 功能完整性、用户体验逻辑、商业闭环 | 业务链路 | 状态 | 缺口 | |----...",
       "lines": 685,
-      "mtime": 1775882081014.785
+      "mtime": 1776220914809.6028
     },
     {
       "path": "docs/review/ddl/add-dashboard-test-data-v2.sql",
       "title": "add-dashboard-test-data-v2.sql",
       "summary": "-- ============================================================ -- 为企业C (tenant_id=3) 插入基础测试数据 -- 让 dashboard 能正常显示 -- ============================================================ -- 1. 插入几个虚拟商品 IN...",
       "lines": 64,
-      "mtime": 1776175071984.6594
+      "mtime": 1776220914811.3062
     },
     {
       "path": "docs/review/ddl/add-dashboard-test-data-v3.sql",
       "title": "add-dashboard-test-data-v3.sql",
       "summary": "-- ============================================================ -- 为企业C (tenant_id=3) 插入基础测试数据 -- 让 dashboard 能正常显示 -- ============================================================ -- 1. 插入几个虚拟商品 IN...",
       "lines": 64,
-      "mtime": 1776175071985.2578
+      "mtime": 1776220914812.3567
     },
     {
       "path": "docs/review/ddl/add-dashboard-test-data-v4.sql",
       "title": "add-dashboard-test-data-v4.sql",
       "summary": "-- ============================================================ -- 只插入缺失的数据（products 已经存在） -- ============================================================ -- 2. 插入几条打卡记录（用于趋势统计） INSERT IGNORE INTO ...",
       "lines": 49,
-      "mtime": 1776175071985.795
+      "mtime": 1776220914813.2324
     },
     {
       "path": "docs/review/ddl/add-dashboard-test-data-v5.sql",
       "title": "add-dashboard-test-data-v5.sql",
       "summary": "-- ============================================================ -- 只插入缺失的数据（products 已经存在） -- ============================================================ -- 2. 插入几条打卡记录（用于趋势统计） INSERT IGNORE INTO ...",
       "lines": 50,
-      "mtime": 1776175071986.248
+      "mtime": 1776220914814.0747
     },
     {
       "path": "docs/review/ddl/add-dashboard-test-data.sql",
       "title": "add-dashboard-test-data.sql",
       "summary": "-- ============================================================ -- 为企业C (tenant_id=3) 插入基础测试数据 -- 让 dashboard 能正常显示 -- ============================================================ -- 1. 插入几个虚拟商品 IN...",
       "lines": 71,
-      "mtime": 1776175071986.7793
+      "mtime": 1776220914815.0813
     },
     {
       "path": "docs/review/ddl/carbon-point-schema.sql",
       "title": "carbon-point-schema.sql",
       "summary": "-- ============================================================ -- Carbon Point 平台完整数据库 Schema -- 生成日期: 2026-04-11 -- 说明: 基于 12 模块 spec + 4 份改进文档 + 荣誉体系 MVP 综合整理 -- 引擎: InnoDB / 字符集: utf8mb4 / 排序: ...",
       "lines": 505,
-      "mtime": 1776277328779.5461
+      "mtime": 1776220914816.2605
     },
     {
       "path": "docs/review/ddl/fix-test-passwords-v2.sql",
       "title": "fix-test-passwords-v2.sql",
       "summary": "-- ============================================================ -- 更新测试账号密码为 123456 (正确 Argon2id 哈希) -- 使用 Python argon2 重新生成，参数匹配 Java 端： --   memory=65536, iterations=3, parallelism=4 -- ========...",
       "lines": 22,
-      "mtime": 1776175071987.3137
+      "mtime": 1776220914817.1763
     },
     {
       "path": "docs/review/ddl/fix-test-passwords-v3.sql",
       "title": "fix-test-passwords-v3.sql",
       "summary": "-- ============================================================ -- 修复：Java Argon2PasswordEncoder 需要 {argon2} 前缀 -- 正确格式: {argon2}$argon2id$v=19$m=65536,t=3,p=4$... -- ==============================...",
       "lines": 21,
-      "mtime": 1776175071987.7957
+      "mtime": 1776220914818.069
     },
     {
       "path": "docs/review/ddl/fix-test-passwords.sql",
       "title": "fix-test-passwords.sql",
       "summary": "-- ============================================================ -- 更新测试账号密码为 123456 (正确 Argon2id 哈希) -- 测试账号： -- 企业C: 13800030001 / 13800030002 -- 企业D: 13800040001 / 13800040002 -- ================...",
       "lines": 27,
-      "mtime": 1776175071988.3945
+      "mtime": 1776220914818.8982
     },
     {
       "path": "docs/review/ddl/honor-system-migration.sql",
       "title": "honor-system-migration.sql",
       "summary": "-- ============================================================ -- Honor System Migration -- 添加徽章排行榜相关表和索引 -- ============================================================ -- 确保 user_badges 表有 uk_us...",
       "lines": 8,
-      "mtime": 1776048691847.6348
+      "mtime": 1776220914819.5867
     },
     {
       "path": "docs/review/ddl/index-migration.sql",
       "title": "index-migration.sql",
       "summary": "-- ============================================================ -- Index Migration Script -- Purpose: Add missing indexes for query performance optimization -- Created: 2026-04-14 -- ==============...",
       "lines": 94,
-      "mtime": 1776172375302.6294
+      "mtime": 1776220914820.5408
     },
     {
       "path": "docs/review/ddl/performance-optimization-migration.sql",
       "title": "performance-optimization-migration.sql",
       "summary": "-- ============================================================ -- 性能优化迁移脚本 -- 日期: 2026-04-14 -- 说明: HikariCP连接池调优 + 打卡记录查询优化索引 -- ============================================================ -- 1....",
       "lines": 24,
-      "mtime": 1776175071988.9312
+      "mtime": 1776220914821.4832
     },
     {
       "path": "docs/review/ddl/permission-package-schema.sql",
       "title": "permission-package-schema.sql",
       "summary": "-- ============================================================ -- Carbon Point 企业角色权限套餐扩展 Schema -- 对应: docs/superpowers/specs/2026-04-12-enterprise-role-permission-design.md -- 日期: 2026-04-12 -- ...",
       "lines": 135,
-      "mtime": 1776001204476.7522
+      "mtime": 1776220914822.319
     },
     {
       "path": "docs/review/ddl/permission-package-seed.sql",
       "title": "permission-package-seed.sql",
       "summary": "-- ============================================================ -- Carbon Point 权限套餐种子数据 -- 对应: docs/superpowers/specs/2026-04-12-enterprise-role-permission-design.md §3.2 -- 日期: 2026-04-12 -- 说明: ...",
       "lines": 69,
-      "mtime": 1776001310507.4849
+      "mtime": 1776220914823.133
     },
     {
       "path": "docs/review/ddl/test-data-two-enterprises-full-permissions-v2.sql",
       "title": "test-data-two-enterprises-full-permissions-v2.sql",
       "summary": "-- ============================================================ -- Carbon Point 测试数据：两个企业全量权限 -- 企业C (ID=3)，企业D (ID=4) -- 每个企业一个超级管理员角色 + 全量权限 + 一个超管用户 -- 跳过主键冲突，使用新ID -- ==========================...",
       "lines": 230,
-      "mtime": 1776175071989.5764
+      "mtime": 1776220914823.9456
     },
     {
       "path": "docs/review/ddl/test-data-two-enterprises-full-permissions.sql",
       "title": "test-data-two-enterprises-full-permissions.sql",
       "summary": "-- ============================================================ -- Carbon Point 测试数据：两个企业全量权限 -- 企业A (ID=1)，企业B (ID=2) -- 每个企业一个超级管理员角色 + 全量权限 + 一个超管用户 -- ==========================================...",
       "lines": 233,
-      "mtime": 1776175071989.9705
+      "mtime": 1776220914824.7793
     },
     {
       "path": "docs/review/ddl/user_badges-tenant-id-migration.sql",
       "title": "user_badges-tenant-id-migration.sql",
       "summary": "-- ============================================================ -- user_badges Multi-Tenant Migration -- Adds tenant_id column and backfills from users table -- ====================================...",
       "lines": 19,
-      "mtime": 1776172379325.4797
+      "mtime": 1776220914825.5046
     },
     {
       "path": "docs/superpowers/plans/2026-04-08-carbon-point-full.md",
       "title": "Carbon Point Full Implementation Plan",
       "summary": "> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [...",
       "lines": 472,
-      "mtime": 1776048469015.9358
+      "mtime": 1776220914826.7888
     },
     {
       "path": "docs/superpowers/plans/2026-04-10-carbon-point-platform-full-implementation.md",
       "title": "Carbon Point Platform Full Implementation Plan",
       "summary": "> **For agentic workers:** REQUIRED: Use superpowers:subagent-driven-development (if subagents available) or superpowers:executing-plans to implement this plan. Steps use checkbox (`- [ ]`) syntax ...",
       "lines": 1179,
-      "mtime": 1776048481956.639
-    },
-    {
-      "path": "docs/superpowers/plans/2026-04-14-acceptance-test-plan.md",
-      "title": "碳积分平台自动化验收测试实施计划",
-      "summary": "> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [...",
-      "lines": 1535,
-      "mtime": 1776261848196.3225
+      "mtime": 1776220914828.9673
     },
     {
       "path": "docs/superpowers/plans/2026-04-14-dashboard-architecture-redesign.md",
       "title": "碳积分管理后台架构重构实施计划",
       "summary": "> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [...",
       "lines": 750,
-      "mtime": 1776175071990.3838
+      "mtime": 1776220914830.1318
     },
     {
       "path": "docs/superpowers/plans/2026-04-14-package-permission-rbac-implementation.md",
       "title": "Permission Package RBAC Implementation Plan",
       "summary": "> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [...",
       "lines": 645,
-      "mtime": 1776175071990.832
-    },
-    {
-      "path": "docs/superpowers/plans/2026-04-15-carbon-point-e2e-100-percent-coverage.md",
-      "title": "Carbon Point E2E Test Optimization - 100% Coverage Plan",
-      "summary": "> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [...",
-      "lines": 641,
-      "mtime": 1776261848197.161
+      "mtime": 1776220914831.525
     },
     {
       "path": "docs/superpowers/specs/2026-04-10-carbon-point-business-improvement.md",
       "title": "Carbon Point 商业化改进方案",
       "summary": "> **文档版本:** v1.0 > **创建日期:** 2026-04-10 > **作者:** Carbon Point 产品团队 > **状态:** 正式版 --- | 优先级 | 问题编号 | 问题描述 | 影响 | |--------|----------|----------|------| | P0 | BIZ-001 | 变现模式未定义 | 无法实现营收，平台无法商业化 | ...",
       "lines": 921,
-      "mtime": 1775834258050.8027
+      "mtime": 1776220914833.8828
     },
     {
       "path": "docs/superpowers/specs/2026-04-10-carbon-point-product-improvement.md",
       "title": "Carbon Point 产品改进设计文档",
       "summary": "| 项目 | 内容 | |------|------| | 文档版本 | v1.0 | | 创建日期 | 2026-04-10 | | 文档类型 | 产品改进规格说明书 | | 关联系统 | Carbon Point 碳积分平台 | --- 当前 Carbon Point 平台存在多项 P0/P1 级别的产品需求缺口，这些缺口直接影响平台的合规性、用户体验和企业级部署能力。本文档针对以下8项...",
       "lines": 1136,
-      "mtime": 1775882340913.5334
+      "mtime": 1776220914835.411
     },
     {
       "path": "docs/superpowers/specs/2026-04-10-carbon-point-technical-improvement.md",
       "title": "Carbon Point 平台技术改进规格说明书",
       "summary": "**版本**: v1.0 **日期**: 2026-04-10 **状态**: 草稿 **作者**: 平台技术架构团队 --- 当前设计中，`@InterceptorIgnore` 注解允许平台管理员绕过租户隔离机制，存在跨租户数据泄露风险。平台管理员可以访问任意租户的数据，缺乏足够的访问控制。 ```java // 平台访问拒绝异常 public class PlatformAccessD...",
       "lines": 2407,
-      "mtime": 1775833226114.2324
+      "mtime": 1776220914837.182
     },
     {
       "path": "docs/superpowers/specs/2026-04-10-carbon-point-ux-improvement.md",
       "title": "Carbon Point UI/UX 交互设计规范 v1.0",
       "summary": "**版本日期**: 2026-04-10 **文档状态**: 设计规范定稿 **适用范围**: H5应用 / Dashboard / Platform 管理后台 --- 1. [错误状态系统 (Error State System)](#1-错误状态系统) 2. [空状态系统 (Empty State System)](#2-空状态系统) 3. [加载状态系统 (Loading State ...",
       "lines": 1155,
-      "mtime": 1775832093926.632
+      "mtime": 1776220914838.352
     },
     {
       "path": "docs/superpowers/specs/2026-04-12-enterprise-role-permission-design.md",
       "title": "企业角色权限设计方案",
       "summary": "- 当前系统允许企业随意创建角色，权限完全自管理 - 平台层没有对企业的权限边界进行控制 - 企业超管权限来源于企业自己，无法被平台约束 1. **平台定义套餐边界**：平台管理员创建权限套餐，每个企业被分配一个套餐 2. **企业超管权限来自套餐**：企业超管角色的权限由平台通过套餐授予，不可超出套餐范围 3. **运营/自定义角色由超管分配**：企业超管在套餐权限范围内，为运营和自定义角...",
       "lines": 359,
-      "mtime": 1776000509218.6719
-    },
-    {
-      "path": "docs/superpowers/specs/2026-04-14-acceptance-test-design.md",
-      "title": "碳积分平台自动化验收测试方案",
-      "summary": "**日期**: 2026-04-14 **状态**: 已批准 --- 对碳积分打卡平台的 **企业管理后台** 和 **平台管理后台** 进行完整的自动化验收测试，确保： - 所有菜单、按钮、组件正常运行 - 所有报表数据正确 - 测试数据覆盖全部功能模块 --- | 模块 | 路径 | 主要功能 | |------|------|---------| | Dashboard | `/saa...",
-      "lines": 337,
-      "mtime": 1776261848197.8335
+      "mtime": 1776220914839.4915
     },
     {
       "path": "docs/superpowers/specs/2026-04-14-dashboard-architecture-redesign.md",
       "title": "碳积分管理后台架构重构设计方案",
       "summary": "**日期**: 2026-04-14 **状态**: 已批准 当前 `apps/dashboard` 是一个混合了平台管理后台和企业管理后台的 React 应用，通过 `isPlatformApp` 属性区分两个系统。这种架构导致： - 路由配置复杂，需要条件判断 - 权限系统混淆（企业权限 vs 平台权限） - 代码耦合，维护困难 - `/platform/admin` → 平台管理后台（...",
       "lines": 113,
-      "mtime": 1776175071991.1897
+      "mtime": 1776220914840.5696
     },
     {
       "path": "docs/superpowers/specs/2026-04-14-package-permission-rbac-design.md",
       "title": "权限套餐 RBAC 实现设计",
       "summary": "> **状态**: 已讨论确认 > **日期**: 2026-04-14 > **讨论次数**: 7 轮全部完成 本设计文档详细规定权限套餐（Permission Package）RBAC 体系的实现方案，包括数据库表结构、后端服务逻辑、API 设计、缓存策略、前端渲染规则。 Carbon Point 是多租户 SaaS 碳积分打卡平台，需要实现以下业务规则： - 企业注册后默认账号为超级管...",
       "lines": 730,
-      "mtime": 1776175071991.6006
-    },
-    {
-      "path": "docs/superpowers/specs/2026-04-15-assessment-report.md",
-      "title": "Carbon Point 现状评估报告",
-      "summary": "**评估日期:** 2026-04-15 (最终更新: 2026-04-16) **评估人:** 首席架构师 (Chief Architect) **协同评估:** 产品专家、前端专家A/B、服务端专家A/B、测试专家A/B **评估范围:** openspec 规范执行、代码完整性、测试覆盖 --- | 领域 | 完成度 | 说明 | |------|--------|------| | ...",
-      "lines": 707,
-      "mtime": 1776272173770.1123
-    },
-    {
-      "path": "docs/superpowers/specs/2026-04-15-carbon-point-full-acceptance-plan.md",
-      "title": "Carbon Point 全面验收与补全计划",
-      "summary": "**项目**: Carbon Point 碳积分打卡平台 **阶段**: 全面验收 + 补全未完成任务 + 架构评审 **测试策略**: 功能测试为主 **当前状态**: - OpenSpec 规范已建立 - 源代码已部分实现 (8个后端模块 + React前端) - 任务进度: ~46/164 完成 (~28%) **目标**: 1. 全面检查 openspec 规范执行情况 2. 补全未...",
-      "lines": 237,
-      "mtime": 1776263059393.983
-    },
-    {
-      "path": "docs/superpowers/specs/2026-04-15-priority-analysis.md",
-      "title": "Carbon Point P0-P3 优先级排序报告",
-      "summary": "**评估日期:** 2026-04-15 **基于:** 现状评估报告 (`2026-04-15-assessment-report.md`) **产出方:** 首席架构师 --- | 优先级 | 状态 | 说明 | |--------|------|------| | P0 | 🔴 阻断 | 数据库Schema、核心测试验证、API契约对齐 | | P1 | 🟠 紧急 | 签到/积分/...",
-      "lines": 391,
-      "mtime": 1776271933080.8962
-    },
-    {
-      "path": "docs/superpowers/specs/2026-04-15-test-team-structure.md",
-      "title": "碳积分平台验收测试团队 - 组织与分工方案",
-      "summary": "**日期**: 2026-04-15 **版本**: v1.0 **测试模式**: 自动化为主 + 人工复核 --- ``` ┌─────────────────────────────────────────────────────────┐ │                      测试团队 (10人)                       │ ├───────────────...",
-      "lines": 360,
-      "mtime": 1776261848198.4163
-    },
-    {
-      "path": "docs/superpowers/specs/2026-04-16-e2e-test-plan.md",
-      "title": "Carbon Point E2E 测试计划",
-      "summary": "**文档日期**: 2026-04-16 **状态**: 进行中 **测试类型**: Playwright E2E (端到端) --- 对 Carbon Point 碳积分打卡平台进行全面的端到端自动化测试，覆盖： - **Dashboard E2E**: 企业管理后台 + 平台管理后台 - **H5 E2E**: 用户端移动端（微信/APP WebView） - **Phase 5 验收*...",
-      "lines": 246,
-      "mtime": 1776283751203.3682
-    },
-    {
-      "path": "docs/superpowers/specs/2026-04-16-h5-e2e-acceptance-criteria.md",
-      "title": "H5 E2E 测试验收标准",
-      "summary": "**文档日期**: 2026-04-16 **角色**: 产品专家（需求/验收标准定义） **目标**: 为 H5 Playwright E2E 测试套件提供验收标准清单 --- | 页面 | 功能点 | 测试用例数 | 优先级 | |------|--------|-----------|--------| | 登录/注册 | 登录、注册、邀请码 | 8 | P0 | | 首页 | 打卡状...",
-      "lines": 367,
-      "mtime": 1776272072210.3462
-    },
-    {
-      "path": "docs/superpowers/specs/2026-04-16-phase4-prework.md",
-      "title": "Phase 4 架构评审前置工作",
-      "summary": "**评估日期:** 2026-04-16 **评估人:** 首席架构师 **状态:** Phase 4 前置预审（非正式评审） --- 路径: `carbon-points/service/PointEngineService.calculate()` | 步骤 | 代码位置 | 验证 | |------|----------|------| | 1. 时段匹配 | `calculateBa...",
-      "lines": 413,
-      "mtime": 1776272457710.0789
-    },
-    {
-      "path": "docs/superpowers/specs/2026-04-16-phase4-review.md",
-      "title": "Phase 4 架构评审报告",
-      "summary": "**评审日期:** 2026-04-16 **评审人:** 首席架构师 (Chief Architect) **评审范围:** Phase 4 正式架构评审 **前置工作:** `2026-04-16-phase4-prework.md` --- | 评审项 | 结论 | 严重度 | |--------|------|--------| | 1. 多租户隔离完整性 | ✅ 通过，有修复项 |...",
-      "lines": 475,
-      "mtime": 1776275220745.8928
-    },
-    {
-      "path": "docs/superpowers/specs/2026-04-16-phase5-acceptance-report.md",
-      "title": "Carbon Point Phase 5 最终验收报告",
-      "summary": "**报告日期:** 2026-04-16 **报告人:** 首席架构师 **验收阶段:** Phase 5 最终验收签收 --- | 验收项 | 结论 | 实际值 | 目标值 | |--------|------|--------|--------| | P0 缺陷数 | ✅ 通过 | 0 | 0 | | P1 缺陷数 | ✅ 通过 | 0 | < 5 | | E2E 测试通过率 | ⚠️ ...",
-      "lines": 331,
-      "mtime": 1776279289817.5261
-    },
-    {
-      "path": "e2e/README.md",
-      "title": "Carbon Point E2E 验收测试",
-      "summary": "基于 Playwright 的后台管理系统自动化验收测试，覆盖从登录到所有菜单导航。 ``` e2e/ ├── package.json ├── playwright.config.ts    # Playwright 配置 ├── README.md             # 本文档 ├── tests/ │   ├── platform-admin-login.spec.ts  # 平...",
-      "lines": 109,
-      "mtime": 1776261848199.0754
+      "mtime": 1776220914841.702
     }
   ]
 }

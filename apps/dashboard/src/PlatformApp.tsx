@@ -40,7 +40,6 @@ const PLATFORM_PERMISSION_MAP: Record<string, string> = {
   '/platform/enterprises': 'platform:enterprise:list',
   '/platform/system': 'platform:system:view',
   '/platform/config': 'platform:config:view',
-  '/platform/packages': 'platform:package:view',
 };
 
 const PLATFORM_MENU_ROLES: Record<string, PlatformRole[]> = {
@@ -48,7 +47,6 @@ const PLATFORM_MENU_ROLES: Record<string, PlatformRole[]> = {
   '/platform/enterprises': [PLATFORM_ROLES.SUPER_ADMIN, PLATFORM_ROLES.ADMIN, PLATFORM_ROLES.VIEWER],
   '/platform/system': [PLATFORM_ROLES.SUPER_ADMIN],
   '/platform/config': [PLATFORM_ROLES.SUPER_ADMIN, PLATFORM_ROLES.ADMIN, PLATFORM_ROLES.VIEWER],
-  '/platform/packages': [PLATFORM_ROLES.SUPER_ADMIN, PLATFORM_ROLES.ADMIN],
 };
 
 const PlatformMenuItems: MenuProps['items'] = [
@@ -56,7 +54,7 @@ const PlatformMenuItems: MenuProps['items'] = [
   { key: '/platform/enterprises', icon: <TeamOutlined />, label: '企业管理' },
   { key: '/platform/system', icon: <SafetyOutlined />, label: '系统管理' },
   { key: '/platform/config', icon: <SettingOutlined />, label: '平台配置' },
-  { key: '/platform/packages', icon: <SettingOutlined />, label: '套餐管理' },
+  { key: '/platform/packages', icon: <SafetyOutlined />, label: '套餐管理' },
 ];
 
 const PlatformContent: React.FC = () => {
@@ -168,7 +166,7 @@ const PlatformContent: React.FC = () => {
                  <Route path="/platform/enterprises" element={<EnterpriseManagement />} />
                  <Route path="/platform/system" element={<SystemManagement />} />
                  <Route path="/platform/config" element={<PlatformConfig />} />
-                 <Route path="/platform/packages" element={<PackageManagement />} />
+                  <Route path="/platform/packages" element={<PackageManagement />} />
                  <Route path="*" element={<Navigate to="/platform/dashboard" replace />} />
                </>
              )}

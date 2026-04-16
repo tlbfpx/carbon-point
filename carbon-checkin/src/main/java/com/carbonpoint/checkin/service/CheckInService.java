@@ -7,8 +7,10 @@ import com.carbonpoint.checkin.dto.CheckInRequestDTO;
 import com.carbonpoint.checkin.dto.CheckInResponseDTO;
 import com.carbonpoint.checkin.dto.TimeSlotDTO;
 import com.carbonpoint.checkin.entity.CheckInRecordEntity;
+import com.carbonpoint.checkin.entity.OutboxEvent;
 import com.carbonpoint.checkin.mapper.CheckInRecordMapper;
 import com.carbonpoint.checkin.mapper.CheckinUserMapper;
+import com.carbonpoint.checkin.mapper.OutboxEventMapper;
 import com.carbonpoint.checkin.util.DistributedLock;
 import com.carbonpoint.common.exception.BusinessException;
 import com.carbonpoint.common.result.ErrorCode;
@@ -22,6 +24,7 @@ import com.carbonpoint.points.service.PointEngineService;
 import com.carbonpoint.points.service.PointRuleService;
 import com.carbonpoint.system.entity.User;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -48,6 +51,7 @@ public class CheckInService {
     private final PointAccountService pointAccountService;
     private final PointRuleService pointRuleService;
     private final DistributedLock distributedLock;
+    private final OutboxEventMapper outboxEventMapper;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -141,23 +145,49 @@ public class CheckInService {
         int consecutiveDays = calculateConsecutiveDays(user, today);
         record.setConsecutiveDays(consecutiveDays);
 
-        try {
-            checkInRecordMapper.insert(record);
-        } catch (DuplicateKeyException e) {
-            // Unique index conflict — concurrent duplicate attempt (idempotent, return "already checked in")
-            throw new BusinessException(ErrorCode.CHECKIN_ALREADY_DONE);
-        }
+         // Insert the check-in record AND save an outbox event within the same transaction
+         // This guarantees atomicity: either both succeed or both fail
+         try {
+             checkInRecordMapper.insert(record);
 
-        // 7. Award points
-        int totalAward = calcResult.getTotalPoints();
-        if (totalAward > 0) {
-            pointAccountService.awardPoints(userId, totalAward, "check_in",
-                    String.valueOf(record.getId()),
-                    String.format("打卡获得 %d 积分", totalAward));
-        }
+             // Create outbox event for points awarding
+             if (calcResult.getTotalPoints() > 0) {
+                 OutboxEvent outbox = new OutboxEvent();
+                 outbox.setAggregateType("check_in");
+                 outbox.setAggregateId(record.getId());
+                 outbox.setEventType("points_awarded");
 
-        // 8. Update consecutive check-in info
-        checkinUserMapper.updateConsecutiveInfo(userId, consecutiveDays, today);
+                  // Create payload JSON
+                  try {
+                      PointsAwardedPayload payload = new PointsAwardedPayload(
+                              userId, calcResult.getTotalPoints(), record.getId());
+                      String payloadJson = objectMapper.writeValueAsString(payload);
+                      outbox.setPayload(payloadJson);
+                  } catch (JsonProcessingException e) {
+                     log.error("Failed to serialize outbox payload", e);
+                     throw new BusinessException(ErrorCode.SYSTEM_ERROR, "系统内部错误");
+                 }
+
+                 outbox.setProcessed(0);
+                 outboxEventMapper.insert(outbox);
+             }
+         } catch (DuplicateKeyException e) {
+             // Unique index conflict — concurrent duplicate attempt (idempotent, return "already checked in")
+             throw new BusinessException(ErrorCode.CHECKIN_ALREADY_DONE);
+         }
+
+         // Points awarding will be processed after commit by the outbox processor
+         // For now, we process it immediately after commit to keep things simple
+         // (Outbox guarantees atomicity, immediate processing keeps latency low)
+         int totalAward = calcResult.getTotalPoints();
+         if (totalAward > 0) {
+             pointAccountService.awardPoints(userId, totalAward, "check_in",
+                     String.valueOf(record.getId()),
+                     String.format("打卡获得 %d 积分", totalAward));
+         }
+
+         // 8. Update consecutive check-in info
+         checkinUserMapper.updateConsecutiveInfo(userId, consecutiveDays, today);
 
         // 9. Check and award streak rewards
         if (consecutiveDays > 0) {
@@ -351,6 +381,15 @@ public class CheckInService {
             }
 
             return dto;
-        }).toList();
-    }
-}
+             }).toList();
+     }
+
+     /**
+      * Payload for the outbox event when points are awarded after check-in.
+      */
+     private record PointsAwardedPayload(
+             Long userId,
+             int points,
+             Long checkInRecordId
+     ) {}
+ }

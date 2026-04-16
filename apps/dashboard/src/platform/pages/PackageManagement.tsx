@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Table, Button, Space, Modal, Form, Input, Tag, message, Popconfirm, Typography, Transfer } from 'antd';
+import { Table, Button, Space, Modal, Form, Input, Tag, message, Popconfirm, Typography, Tooltip, Transfer } from 'antd';
 import { PlusOutlined, DeleteOutlined, EditOutlined, SettingOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { PermissionPackage } from '@/shared/api/platform';
@@ -32,14 +32,7 @@ const PackageManagement: React.FC = () => {
   const openEditModal = (record: PermissionPackage) => { setPackageModalMode('edit'); setEditingPackage(record); form.setFieldsValue({ name: record.name, description: record.description }); setPackageModalOpen(true); };
   const openPermModal = async (record: PermissionPackage) => { setSelectedPackage(record); try { const permData = await getPackagePermissions(record.id); setTargetKeys(permData.data || []); if (platformPermsData?.data) { setAllPermissions(platformPermsData.data.map((p: string) => ({ key: p, title: p }))); } } catch { setTargetKeys([]); } setPermModalOpen(true); };
 
-  const handleFormFinish = async (values: { name: string; description?: string; code?: string }) => {
-    if (packageModalMode === 'create') {
-      const formValues = await form.validateFields();
-      createMutation.mutate({ code: formValues.code, name: values.name, description: values.description });
-    } else if (editingPackage) {
-      updateMutation.mutate({ id: editingPackage.id, data: { name: values.name, description: values.description } });
-    }
-  };
+  const handleFormFinish = (values: { name: string; description?: string }) => { if (packageModalMode === 'create') { createMutation.mutate(values); } else if (editingPackage) { updateMutation.mutate({ id: editingPackage.id, data: values }); } };
   const handlePermSave = () => { if (selectedPackage) { updatePermMutation.mutate({ id: selectedPackage.id, permissionCodes: targetKeys }); } };
 
   const columns = [
@@ -74,7 +67,7 @@ const PackageManagement: React.FC = () => {
         </Form>
       </Modal>
       <Modal title={`配置权限 - ${selectedPackage?.name}`} open={permModalOpen} onCancel={() => { setPermModalOpen(false); setSelectedPackage(null); }} onOk={handlePermSave} confirmLoading={updatePermMutation.isPending} width={600}>
-        <Transfer dataSource={allPermissions} targetKeys={targetKeys} onChange={(keys) => setTargetKeys(keys as string[])} render={(item) => item.title || item.key} titles={['可选', '已选']} listStyle={{ width: 250, height: 400 }} />
+        <Transfer dataSource={allPermissions} targetKeys={targetKeys} onChange={setTargetKeys} render={(item) => item.title || item.key} titles={['可选', '已选']} listStyle={{ width: 250, height: 400 }} multiple />
       </Modal>
     </div>
   );

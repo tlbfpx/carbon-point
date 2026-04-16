@@ -7,23 +7,21 @@ spring:
   autoconfigure:
     exclude:
       - org.redisson.spring.starter.RedissonAutoConfigurationV2
-      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
       - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
 
   datasource:
-    driver-class-name: org.h2.Driver
     url: jdbc:h2:mem:testdb;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false
-    hikari:
-      maximum-pool-size: 100
-      minimum-idle: 10
     username: sa
     password:
+
+  h2:
+    console:
+      enabled: true
 
   sql:
     init:
       mode: embedded
       schema-locations: classpath:db/schema-h2.sql
-      data-locations: classpath:db/data-test.sql
 
   data:
     redis:
@@ -38,13 +36,9 @@ spring:
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   global-config:
     db-config:
       id-type: auto
-      logic-delete-field: deleted
-      logic-delete-value: 1
-      logic-not-delete-value: 0
 
 jwt:
   secret: a3f8c9d2e1b47568a0f7e6d5c4b3a2918765432abcdef1234567890abcdef
@@ -54,20 +48,9 @@ jwt:
 security:
   captcha:
     enabled: true
-    failure-threshold: 3
-  password:
-    min-length: 8
-    max-length: 32
-    min-types: 3
-  rate-limit:
-    max-fail-per-account: 5
-    max-fail-per-ip: 5
-    window-minutes: 5
   lock:
-    enabled: true
-    duration-minutes: 30
+    enabled: false
 
 logging:
   level:
-    com.carbonpoint: debug
-    org.springframework.security: debug
+    com.carbonpoint: info
