@@ -11,6 +11,8 @@ import {
   UserOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
+  AppstoreOutlined,
+  ShopOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 
@@ -19,6 +21,12 @@ import EnterpriseManagement from '@/platform/pages/EnterpriseManagement';
 import SystemManagement from '@/platform/pages/SystemManagement';
 import PlatformConfig from '@/platform/pages/PlatformConfig';
 import PackageManagement from '@/platform/pages/PackageManagement';
+import ProductManagement from '@/platform/pages/ProductManagement';
+import FeatureLibrary from '@/platform/pages/FeatureLibrary';
+import SystemUsers from '@/platform/pages/SystemUsers';
+import SystemRoles from '@/platform/pages/SystemRoles';
+import OperationLogs from '@/platform/pages/OperationLogs';
+import DictManagement from '@/platform/pages/DictManagement';
 import PlatformLoginPage from '@/shared/pages/PlatformLoginPage';
 
 import { useAuthStore } from '@/shared/store/authStore';
@@ -52,9 +60,27 @@ const PLATFORM_MENU_ROLES: Record<string, PlatformRole[]> = {
 const PlatformMenuItems: MenuProps['items'] = [
   { key: '/platform/dashboard', icon: <DashboardOutlined />, label: '平台看板' },
   { key: '/platform/enterprises', icon: <TeamOutlined />, label: '企业管理' },
-  { key: '/platform/system', icon: <SafetyOutlined />, label: '系统管理' },
-  { key: '/platform/config', icon: <SettingOutlined />, label: '平台配置' },
-  { key: '/platform/packages', icon: <SafetyOutlined />, label: '套餐管理' },
+  {
+    key: '/platform/system',
+    icon: <SafetyOutlined />,
+    label: '系统管理',
+    children: [
+      { key: '/platform/system/users', label: '用户管理' },
+      { key: '/platform/system/roles', label: '角色管理' },
+      { key: '/platform/system/logs', label: '操作日志' },
+      { key: '/platform/system/dict', label: '字典管理' },
+    ],
+  },
+  {
+    key: '/platform/features',
+    icon: <AppstoreOutlined />,
+    label: '功能配置',
+    children: [
+      { key: '/platform/features/products', label: '产品管理' },
+      { key: '/platform/features/features', label: '功能点库' },
+    ],
+  },
+  { key: '/platform/packages', icon: <ShopOutlined />, label: '套餐管理' },
 ];
 
 const PlatformContent: React.FC = () => {
@@ -165,8 +191,14 @@ const PlatformContent: React.FC = () => {
                  <Route path="/platform/dashboard" element={<PlatformDashboard />} />
                  <Route path="/platform/enterprises" element={<EnterpriseManagement />} />
                  <Route path="/platform/system" element={<SystemManagement />} />
+                 <Route path="/platform/system/users" element={<SystemUsers />} />
+                 <Route path="/platform/system/roles" element={<SystemRoles />} />
+                 <Route path="/platform/system/logs" element={<OperationLogs />} />
+                 <Route path="/platform/system/dict" element={<DictManagement />} />
                  <Route path="/platform/config" element={<PlatformConfig />} />
-                  <Route path="/platform/packages" element={<PackageManagement />} />
+                 <Route path="/platform/features/products" element={<ProductManagement />} />
+                 <Route path="/platform/features/features" element={<FeatureLibrary />} />
+                 <Route path="/platform/packages" element={<PackageManagement />} />
                  <Route path="*" element={<Navigate to="/platform/dashboard" replace />} />
                </>
              )}
