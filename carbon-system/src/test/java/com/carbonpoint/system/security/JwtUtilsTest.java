@@ -18,7 +18,7 @@ class JwtUtilsTest {
     // 32+ chars for HMAC-SHA key
     private static final String TEST_SECRET = "test-jwt-secret-key-must-be-at-least-32-chars-long";
     private static final long ACCESS_TOKEN_TTL_MS = 900000L; // 15 minutes
-    private static final long REFRESH_TOKEN_TTL_MS = 604800000L; // 7 days
+    private static final long REFRESH_TOKEN_TTL_MS = 2592000000L; // 30 days
 
     @BeforeEach
     void setUp() {

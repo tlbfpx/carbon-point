@@ -126,7 +126,7 @@ public class PlatformAuthServiceImpl implements PlatformAuthService {
         redisTemplate.opsForValue().set(
                 REFRESH_TOKEN_BLACKLIST_PREFIX + hashToken(refreshToken),
                 "1",
-                Duration.ofMillis(604800000L)
+                Duration.ofMillis(2592000000L)
         );
 
         String newAccessToken = jwtUtil.generateAccessToken(admin.getId(), admin.getUsername(), admin.getRole());
@@ -161,7 +161,7 @@ public class PlatformAuthServiceImpl implements PlatformAuthService {
         meta.put("issuedAt", String.valueOf(Instant.now().toEpochMilli()));
         meta.put("used", "false");
         redisTemplate.opsForHash().putAll(REFRESH_TOKEN_META_PREFIX + jti, meta);
-        redisTemplate.expire(REFRESH_TOKEN_META_PREFIX + jti, Duration.ofMillis(604800000L));
+        redisTemplate.expire(REFRESH_TOKEN_META_PREFIX + jti, Duration.ofMillis(2592000000L));
     }
 
     private Map<Object, Object> getRefreshTokenMetadata(String jti) {
@@ -224,7 +224,7 @@ public class PlatformAuthServiceImpl implements PlatformAuthService {
                     redisTemplate.opsForValue().set(
                             REFRESH_TOKEN_BLACKLIST_PREFIX + "jti:" + jti,
                             "1",
-                            Duration.ofMillis(604800000L)
+                            Duration.ofMillis(2592000000L)
                     );
                 }
                 invalidated++;

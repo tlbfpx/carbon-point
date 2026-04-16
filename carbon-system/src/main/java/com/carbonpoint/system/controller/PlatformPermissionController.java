@@ -1,5 +1,6 @@
 package com.carbonpoint.system.controller;
 
+import com.carbonpoint.common.result.ErrorCode;
 import com.carbonpoint.common.result.Result;
 import com.carbonpoint.common.security.PlatformAdminContext;
 import com.carbonpoint.system.security.PlatformPermissionService;
@@ -44,7 +45,7 @@ public class PlatformPermissionController {
     public Result<List<String>> getMyPermissions() {
         var admin = PlatformAdminContext.get();
         if (admin == null) {
-            return Result.error(401, "Unauthorized");
+            return Result.error(ErrorCode.UNAUTHORIZED.getCode(), "Unauthorized");
         }
         List<String> permissions = permissionService.getCurrentAdminPermissions();
         return Result.success(permissions);
@@ -58,7 +59,7 @@ public class PlatformPermissionController {
     public Result<List<PermissionInfo>> getAllPermissions() {
         var admin = PlatformAdminContext.get();
         if (admin == null) {
-            return Result.error(401, "Unauthorized");
+            return Result.error(ErrorCode.UNAUTHORIZED.getCode(), "Unauthorized");
         }
         List<PermissionInfo> allPermissions = List.of(
             new PermissionInfo("platform:dashboard:view", "查看平台看板", "平台看板访问权限"),
