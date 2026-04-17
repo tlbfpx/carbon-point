@@ -53,7 +53,22 @@ const PlatformDashboard: React.FC = () => {
     queryFn: () => getPlatformTrend(dimension, 30),
   });
 
-  const stats: PlatformStats = statsData?.data || {
+  const extractArray = <T,>(data: unknown): T[] => {
+    if (Array.isArray(data)) return data as T[];
+    if (data && typeof data === 'object' && 'data' in data) {
+      return (data as { data: T[] }).data;
+    }
+    return [];
+  };
+
+  const extractObject = <T,>(data: unknown): T => {
+    if (data && typeof data === 'object' && 'data' in data) {
+      return (data as { data: T }).data;
+    }
+    return data as T;
+  };
+
+  const stats: PlatformStats = extractObject<PlatformStats>(statsData) || {
     totalEnterprises: 0,
     activeEnterprises: 0,
     totalUsers: 0,
@@ -61,8 +76,8 @@ const PlatformDashboard: React.FC = () => {
     totalExchanges: 0,
   };
 
-  const ranking: EnterpriseRankingItem[] = rankingData?.data || [];
-  const trend: PlatformTrend[] = trendData?.data || [];
+  const ranking: EnterpriseRankingItem[] = extractArray<EnterpriseRankingItem>(rankingData);
+  const trend: PlatformTrend[] = extractArray<PlatformTrend>(trendData);
 
   const handleExport = () => {
     const startDate = dayjs().subtract(30, 'day').format('YYYY-MM-DD');
@@ -253,11 +268,27 @@ const PlatformDashboard: React.FC = () => {
       <Row gutter={16} style={{ marginBottom: 24 }}>
         <Col span={12}>
           <Card title="积分发放与消耗趋势" loading={trendLoading}>
-            <ResponsiveContainer width="100%" height={280}>
-              <AreaChart data={trend}>
+            <ResponsiveContainer width="100%" height={280} minWidth={300}>
+              <AreaChart data={trend} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorGranted" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#52c41a" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#73d13d" stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id="colorConsumed" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#ff4d4f" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#ff7875" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 11 }} />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: 11 }}
+                  angle={-45}
+                  textAnchor="end"
+                  height={60}
+                />
+                <YAxis tick={{ fontSize: 11 }} min={0} />
                 <Tooltip
                   formatter={(value: number) => value.toLocaleString()}
                   labelFormatter={(label) => `日期: ${label}`}
@@ -266,18 +297,20 @@ const PlatformDashboard: React.FC = () => {
                 <Area
                   type="monotone"
                   dataKey="pointsGranted"
-                  stackId="1"
                   stroke="#52c41a"
-                  fill="#b7eb8f"
+                  fill="url(#colorGranted)"
                   name="发放积分"
+                  strokeWidth={2}
+                  activeDot={{ r: 6 }}
                 />
                 <Area
                   type="monotone"
                   dataKey="pointsConsumed"
-                  stackId="2"
                   stroke="#ff4d4f"
-                  fill="#ffccc7"
+                  fill="url(#colorConsumed)"
                   name="消耗积分"
+                  strokeWidth={2}
+                  activeDot={{ r: 6 }}
                 />
               </AreaChart>
             </ResponsiveContainer>
@@ -285,12 +318,18 @@ const PlatformDashboard: React.FC = () => {
         </Col>
         <Col span={12}>
           <Card title="用户与兑换量趋势" loading={trendLoading}>
-            <ResponsiveContainer width="100%" height={280}>
-              <LineChart data={trend}>
+            <ResponsiveContainer width="100%" height={280} minWidth={300}>
+              <LineChart data={trend} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-                <YAxis yAxisId="left" tick={{ fontSize: 11 }} />
-                <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: 11 }}
+                  angle={-45}
+                  textAnchor="end"
+                  height={60}
+                />
+                <YAxis yAxisId="left" tick={{ fontSize: 11 }} min={0} />
+                <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} min={0} />
                 <Tooltip
                   formatter={(value: number) => value.toLocaleString()}
                   labelFormatter={(label) => `日期: ${label}`}
@@ -302,7 +341,7 @@ const PlatformDashboard: React.FC = () => {
                   dataKey="users"
                   stroke="#1890ff"
                   strokeWidth={2}
-                  dot={false}
+                  activeDot={{ r: 6 }}
                   name="新增用户"
                 />
                 <Line
@@ -311,7 +350,7 @@ const PlatformDashboard: React.FC = () => {
                   dataKey="exchanges"
                   stroke="#eb2f96"
                   strokeWidth={2}
-                  dot={false}
+                  activeDot={{ r: 6 }}
                   name="兑换次数"
                 />
               </LineChart>
@@ -324,22 +363,50 @@ const PlatformDashboard: React.FC = () => {
       <Row gutter={16} style={{ marginBottom: 24 }}>
         <Col span={24}>
           <Card title="企业积分排行 TOP 10" loading={!rankingData}>
-            <ResponsiveContainer width="100%" height={260}>
+            <ResponsiveContainer width="100%" height={300} minWidth={300}>
               <BarChart
                 data={ranking.slice(0, 10)}
                 layout="vertical"
-                margin={{ left: 100 }}
+                margin={{ top: 10, right: 30, left: 120, bottom: 0 }}
               >
+                <defs>
+                  <linearGradient id="barPoints" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor="#722ed1" stopOpacity={1} />
+                    <stop offset="100%" stopColor="#b37feb" stopOpacity={0.8} />
+                  </linearGradient>
+                  <linearGradient id="barCheckins" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor="#1890ff" stopOpacity={1} />
+                    <stop offset="100%" stopColor="#69c0ff" stopOpacity={0.8} />
+                  </linearGradient>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis type="number" tick={{ fontSize: 11 }} />
-                <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={90} />
+                <XAxis type="number" tick={{ fontSize: 11 }} min={0} />
+                <YAxis
+                  type="category"
+                  dataKey="name"
+                  tick={{ fontSize: 11 }}
+                  width={120}
+                  tickFormatter={(value) => value.length > 8 ? `${value.slice(0, 8)}...` : value}
+                />
                 <Tooltip
                   formatter={(value: number) => value.toLocaleString()}
                   labelFormatter={(label) => `企业: ${label}`}
                 />
                 <Legend />
-                <Bar dataKey="totalPoints" fill="#722ed1" name="总积分" radius={[0, 4, 4, 0]} />
-                <Bar dataKey="totalCheckIns" fill="#1890ff" name="打卡次数" radius={[0, 4, 4, 0]} />
+                <Bar
+                  dataKey="totalPoints"
+                  fill="url(#barPoints)"
+                  name="总积分"
+                  radius={[0, 4, 4, 0]}
+                  minPointSize={2}
+                />
+                <Bar
+                  dataKey="totalCheckIns"
+                  fill="url(#barCheckins)"
+                  name="打卡次数"
+                  radius={[0, 4, 4, 0]}
+                  minPointSize={2}
+                />
               </BarChart>
             </ResponsiveContainer>
           </Card>

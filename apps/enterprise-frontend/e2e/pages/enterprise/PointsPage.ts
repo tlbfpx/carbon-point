@@ -31,7 +31,7 @@ export class PointsPage {
   }
 
   async goto() {
-    await this.page.goto(`${BASE_URL}/ points`);
+    await this.page.goto(`${BASE_URL}/points`);
     await this.page.waitForLoadState('networkidle');
     await this.page.waitForTimeout(3000);
   }

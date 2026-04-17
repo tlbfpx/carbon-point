@@ -47,6 +47,14 @@ const SystemRoles: React.FC = () => {
     enabled: permModalOpen,
   });
 
+  const extractArray = <T,>(data: unknown): T[] => {
+    if (Array.isArray(data)) return data as T[];
+    if (data && typeof data === 'object' && 'data' in data) {
+      return (data as { data: T[] }).data;
+    }
+    return [];
+  };
+
   const createMutation = useMutation({
     mutationFn: createPlatformRole,
     onSuccess: (res: { code: number; message?: string }) => {
@@ -185,7 +193,7 @@ const SystemRoles: React.FC = () => {
     },
   ];
 
-  const roles = rolesData?.data || rolesData?.data?.records || [];
+  const roles = extractArray<PlatformRole>(rolesData);
   const permissionTree = permissionsData?.data || [];
 
   return (

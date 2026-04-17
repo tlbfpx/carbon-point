@@ -29,7 +29,7 @@ export class ReportsPage {
   }
 
   async goto() {
-    await this.page.goto(`${BASE_URL}/ reports`);
+    await this.page.goto(`${BASE_URL}/reports`);
     await this.page.waitForSelector('.ant-layout', { timeout: 15000 });
   }
 

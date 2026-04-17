@@ -5,6 +5,7 @@ import com.carbonpoint.system.mapper.EmailSendLogMapper;
 import com.carbonpoint.system.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -25,7 +26,9 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class MockEmailServiceImpl implements EmailService {
 
-    private final JavaMailSender mailSender;
+    @Autowired(required = false)
+    private JavaMailSender mailSender;
+
     private final EmailSendLogMapper emailSendLogMapper;
 
     @Value("${spring.mail.username:noreply@carbon-point.com}")

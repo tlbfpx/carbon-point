@@ -22,26 +22,34 @@ const { RangePicker } = DatePicker;
 const OperationLogs: React.FC = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const [form] = Form.useForm();
+  const [searchParams, setSearchParams] = useState<{
+    operatorId?: string;
+    actionType?: string;
+    startDate?: string;
+    endDate?: string;
+  }>({});
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [selectedLog, setSelectedLog] = useState<OperationLog | null>(null);
+  const [form] = Form.useForm();
 
   const handleSearch = (values: any) => {
     setPage(1);
-    refetch();
+    setSearchParams({
+      operatorId: values.operatorId,
+      actionType: values.actionType,
+      startDate: values.dateRange?.[0]?.format('YYYY-MM-DD'),
+      endDate: values.dateRange?.[1]?.format('YYYY-MM-DD'),
+    });
   };
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['operation-logs', page, pageSize, form.getFieldsValue()],
+    queryKey: ['operation-logs', page, pageSize, searchParams],
     queryFn: () => {
-      const values = form.getFieldsValue();
       const params: any = { page, size: pageSize };
-      if (values.operatorId) params.operatorId = values.operatorId;
-      if (values.actionType) params.actionType = values.actionType;
-      if (values.dateRange) {
-        params.startDate = values.dateRange[0].format('YYYY-MM-DD');
-        params.endDate = values.dateRange[1].format('YYYY-MM-DD');
-      }
+      if (searchParams.operatorId) params.operatorId = searchParams.operatorId;
+      if (searchParams.actionType) params.actionType = searchParams.actionType;
+      if (searchParams.startDate) params.startDate = searchParams.startDate;
+      if (searchParams.endDate) params.endDate = searchParams.endDate;
       return getOperationLogs(params);
     },
   });
@@ -103,7 +111,7 @@ const OperationLogs: React.FC = () => {
               <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
                 查询
               </Button>
-              <Button onClick={() => { form.resetFields(); setPage(1); refetch(); }}>
+              <Button onClick={() => { form.resetFields(); setPage(1); setSearchParams({}); }}>
                 重置
               </Button>
             </Space>
@@ -133,10 +141,10 @@ const OperationLogs: React.FC = () => {
         width={800}
       >
         {selectedLog && (
-          <Descriptions bordered column={1} size="small">
-            <Descriptions.Item label="操作人">{selectedLog.operatorName}</Descriptions.Item>
-            <Descriptions.Item label="操作类型">{selectedLog.actionType}</Descriptions.Item>
-            <Descriptions.Item label="操作描述">{selectedLog.description}</Descriptions.Item>
+<Descriptions bordered column={1} size="small">
+            <Descriptions.Item label="操作人">{selectedLog.adminName}</Descriptions.Item>
+            <Descriptions.Item label="操作类型">{selectedLog.operationType || '-'}</Descriptions.Item>
+            <Descriptions.Item label="操作对象">{selectedLog.operationObject || '-'}</Descriptions.Item>
             <Descriptions.Item label="请求方法">{selectedLog.requestMethod || '-'}</Descriptions.Item>
             <Descriptions.Item label="请求URL">{selectedLog.requestUrl || '-'}</Descriptions.Item>
             <Descriptions.Item label="请求参数">
@@ -152,7 +160,7 @@ const OperationLogs: React.FC = () => {
             <Descriptions.Item label="IP地址">{selectedLog.ipAddress || '-'}</Descriptions.Item>
             <Descriptions.Item label="User Agent">{selectedLog.userAgent || '-'}</Descriptions.Item>
             <Descriptions.Item label="执行时间">{selectedLog.executionTime ? `${selectedLog.executionTime}ms` : '-'}</Descriptions.Item>
-            <Descriptions.Item label="操作时间">{dayjs(selectedLog.createTime).format('YYYY-MM-DD HH:mm:ss')}</Descriptions.Item>
+            <Descriptions.Item label="操作时间">{dayjs(selectedLog.createdAt).format('YYYY-MM-DD HH:mm:ss')}</Descriptions.Item>
           </Descriptions>
         )}
       </Modal>

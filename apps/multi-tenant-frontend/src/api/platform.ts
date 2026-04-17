@@ -155,8 +155,8 @@ export const updatePlatformAdmin = async (
 export const getOperationLogs = async (params: {
   page: number;
   size: number;
-  operatorId?: string;
-  actionType?: string;
+  adminId?: string;
+  operationType?: string;
   startDate?: string;
   endDate?: string;
 }) => {
@@ -446,10 +446,11 @@ export const updatePackageProductFeatures = async (
 // System Management APIs
 export interface OperationLog {
   id: string;
-  operatorId: string;
-  operatorName: string;
-  actionType: string;
-  description: string;
+  adminId: string;
+  adminName: string;
+  adminRole?: string;
+  operationType: string;
+  operationObject?: string;
   requestMethod?: string;
   requestUrl?: string;
   requestParams?: string;
@@ -457,7 +458,7 @@ export interface OperationLog {
   ipAddress?: string;
   userAgent?: string;
   executionTime?: number;
-  createTime: string;
+  createdAt: string;
 }
 
 export interface DictItem {

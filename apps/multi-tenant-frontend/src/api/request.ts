@@ -2,7 +2,7 @@ import axios, { AxiosError } from 'axios';
 import { useAuthStore } from '../store/authStore';
 import { apiLogger } from '../utils/logger';
 
-const PLATFORM_BASE_URL = import.meta.env.VITE_PLATFORM_API_BASE_URL || 'http://localhost:8080/platform';
+const PLATFORM_BASE_URL = import.meta.env.VITE_PLATFORM_API_BASE_URL || 'http://localhost:8080';
 
 export const platformApiClient = axios.create({
   baseURL: PLATFORM_BASE_URL,

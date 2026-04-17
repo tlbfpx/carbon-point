@@ -474,14 +474,28 @@ public class ReportService {
         List<Map<String, Object>> trend = new ArrayList<>();
         for (int i = days - 1; i >= 0; i--) {
             LocalDate date = today.minusDays(i);
+            LocalDateTime dayStart = date.atStartOfDay();
+            LocalDateTime dayEnd = date.atTime(LocalTime.MAX);
+
             Long count = checkInRecordMapper.selectCount(
                 new LambdaQueryWrapper<CheckInRecordEntity>()
                     .eq(CheckInRecordEntity::getTenantId, tenantId)
                     .eq(CheckInRecordEntity::getCheckinDate, date)
             );
+
+            List<PointTransactionEntity> dayTxs = pointTransactionMapper.selectList(
+                new LambdaQueryWrapper<PointTransactionEntity>()
+                    .eq(PointTransactionEntity::getTenantId, tenantId)
+                    .ge(PointTransactionEntity::getCreatedAt, dayStart)
+                    .le(PointTransactionEntity::getCreatedAt, dayEnd)
+                    .in(PointTransactionEntity::getType, Arrays.asList("check_in", "streak_bonus"))
+            );
+            int totalPoints = dayTxs.stream().filter(tx -> tx.getAmount() != null && tx.getAmount() > 0).mapToInt(tx -> (int) tx.getAmount()).sum();
+
             Map<String, Object> point = new HashMap<>();
             point.put("date", date.toString());
             point.put("count", count != null ? count.intValue() : 0);
+            point.put("totalPoints", totalPoints);
             trend.add(point);
         }
         return trend;

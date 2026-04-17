@@ -11,8 +11,6 @@ import {
   message,
   Popconfirm,
   Tabs,
-  DatePicker,
-  Card,
   Typography,
   Tooltip,
 } from 'antd';
@@ -20,22 +18,17 @@ import {
   PlusOutlined,
   DeleteOutlined,
   EditOutlined,
-  ReloadOutlined,
-  SearchOutlined,
 } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
-import type { Dayjs } from 'dayjs';
 import {
   getPlatformAdmins,
   createPlatformAdmin,
   updatePlatformAdmin,
   deletePlatformAdmin,
-  getOperationLogs,
   PlatformAdmin,
 } from '@/api/platform';
 
-const { RangePicker } = DatePicker;
 const { Text } = Typography;
 
 const SystemManagement: React.FC = () => {
@@ -52,35 +45,10 @@ const SystemManagement: React.FC = () => {
   const [adminPage, setAdminPage] = useState(1);
   const [adminPageSize, setAdminPageSize] = useState(10);
 
-  // Log filter state
-  const [logFilterForm] = Form.useForm();
-  const [logPage, setLogPage] = useState(1);
-  const [logFilters, setLogFilters] = useState<{
-    operatorKeyword?: string;
-    actionType?: string;
-    startDate?: string;
-    endDate?: string;
-  }>({});
-
   // ---- Admin queries ----
   const { data: adminsData, isLoading: adminsLoading } = useQuery({
     queryKey: ['platform-admins'],
     queryFn: getPlatformAdmins,
-  });
-
-  // ---- Log queries ----
-  const { data: logsData, isLoading: logsLoading, refetch: refetchLogs } = useQuery({
-    queryKey: ['operation-logs', logPage, logFilters],
-    queryFn: () =>
-      getOperationLogs({
-        page: logPage,
-        size: 10,
-        operatorId: logFilters.operatorKeyword,
-        actionType: logFilters.actionType,
-        startDate: logFilters.startDate,
-        endDate: logFilters.endDate,
-      }),
-    enabled: activeTab === 'logs',
   });
 
   // ---- Admin mutations ----
@@ -182,26 +150,6 @@ const SystemManagement: React.FC = () => {
     }
   };
 
-  const handleLogSearch = (values: {
-    operatorKeyword?: string;
-    actionType?: string;
-    dateRange?: [Dayjs, Dayjs];
-  }) => {
-    setLogPage(1);
-    setLogFilters({
-      operatorKeyword: values.operatorKeyword,
-      actionType: values.actionType,
-      startDate: values.dateRange?.[0]?.format('YYYY-MM-DD') || undefined,
-      endDate: values.dateRange?.[1]?.format('YYYY-MM-DD') || undefined,
-    });
-  };
-
-  const handleLogReset = () => {
-    logFilterForm.resetFields();
-    setLogPage(1);
-    setLogFilters({});
-  };
-
   // ---- Columns ----
   const roleColorMap: Record<string, string> = {
     super_admin: 'red',
@@ -285,53 +233,6 @@ const SystemManagement: React.FC = () => {
     },
   ];
 
-  const actionTypeOptions = [
-    { value: 'LOGIN', label: '登录' },
-    { value: 'CREATE', label: '创建' },
-    { value: 'UPDATE', label: '更新' },
-    { value: 'DELETE', label: '删除' },
-    { value: 'ENABLE', label: '启用' },
-    { value: 'DISABLE', label: '禁用' },
-  ];
-
-  const logColumns = [
-    {
-      title: '操作人',
-      dataIndex: 'operatorName',
-      render: (v?: string) => v || '-',
-    },
-    {
-      title: '操作类型',
-      dataIndex: 'action',
-      render: (v: string) => {
-        const colorMap: Record<string, string> = {
-          LOGIN: 'cyan',
-          CREATE: 'green',
-          UPDATE: 'blue',
-          DELETE: 'red',
-          ENABLE: 'green',
-          DISABLE: 'orange',
-        };
-        return <Tag color={colorMap[v] || 'default'}>{v || '-'}</Tag>;
-      },
-    },
-    { title: '操作内容', dataIndex: 'description', ellipsis: true },
-    {
-      title: 'IP地址',
-      dataIndex: 'ip',
-      render: (ip?: string) => (
-        <Text type="secondary" style={{ fontFamily: 'monospace', fontSize: 12 }}>
-          {ip || '-'}
-        </Text>
-      ),
-    },
-    {
-      title: '时间',
-      dataIndex: 'createTime',
-      render: (t: string) => dayjs(t).format('YYYY-MM-DD HH:mm:ss'),
-    },
-  ];
-
   // Compute admin list with pagination
   const adminRecords = adminsData?.data?.records || adminsData?.data || [];
   const paginatedAdmins = adminRecords.slice(
@@ -345,27 +246,24 @@ const SystemManagement: React.FC = () => {
 
       <Tabs
         activeKey={activeTab}
-        onChange={(key) => {
-          setActiveTab(key);
-          if (key === 'logs') {
-            refetchLogs();
-          }
-        }}
+        onChange={setActiveTab}
         items={[
           {
             key: 'admins',
             label: '平台管理员',
             children: (
               <div>
-                <Space style={{ marginBottom: 16 }}>
-                  <Button
-                    type="primary"
-                    icon={<PlusOutlined />}
-                    onClick={openCreateModal}
-                  >
-                    创建管理员
-                  </Button>
-                </Space>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+                  <Space>
+                    <Button
+                      type="primary"
+                      icon={<PlusOutlined />}
+                      onClick={openCreateModal}
+                    >
+                      创建管理员
+                    </Button>
+                  </Space>
+                </div>
 
                 <Table
                   columns={adminColumns}
@@ -382,71 +280,6 @@ const SystemManagement: React.FC = () => {
                     onChange: (p, ps) => {
                       setAdminPage(p);
                       setAdminPageSize(ps);
-                    },
-                  }}
-                />
-              </div>
-            ),
-          },
-          {
-            key: 'logs',
-            label: '操作日志',
-            children: (
-              <div>
-                {/* Filter Card */}
-                <Card size="small" style={{ marginBottom: 16 }}>
-                  <Form
-                    form={logFilterForm}
-                    layout="inline"
-                    onFinish={handleLogSearch}
-                  >
-                    <Form.Item name="operatorKeyword" label="操作人">
-                      <Input
-                        placeholder="搜索操作人"
-                        allowClear
-                        style={{ width: 160 }}
-                        prefix={<SearchOutlined />}
-                      />
-                    </Form.Item>
-                    <Form.Item name="actionType" label="操作类型">
-                      <Select
-                        placeholder="请选择"
-                        allowClear
-                        style={{ width: 140 }}
-                        options={actionTypeOptions}
-                      />
-                    </Form.Item>
-                    <Form.Item name="dateRange" label="时间范围">
-                      <RangePicker />
-                    </Form.Item>
-                    <Form.Item>
-                      <Space>
-                        <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
-                          查询
-                        </Button>
-                        <Button onClick={handleLogReset}>重置</Button>
-                        <Button icon={<ReloadOutlined />} onClick={() => refetchLogs()}>
-                          刷新
-                        </Button>
-                      </Space>
-                    </Form.Item>
-                  </Form>
-                </Card>
-
-                <Table
-                  columns={logColumns}
-                  dataSource={logsData?.data?.records || logsData?.data || []}
-                  rowKey="id"
-                  loading={logsLoading}
-                  pagination={{
-                    current: logPage,
-                    pageSize: 10,
-                    total: logsData?.data?.total || logsData?.data?.records?.length || 0,
-                    showSizeChanger: true,
-                    showQuickJumper: true,
-                    showTotal: (total) => `共 ${total} 条`,
-                    onChange: (p) => {
-                      setLogPage(p);
                     },
                   }}
                 />
@@ -530,7 +363,9 @@ const SystemManagement: React.FC = () => {
               >
                 {adminModalMode === 'create' ? '确认创建' : '保存修改'}
               </Button>
-              <Button onClick={() => setAdminModalOpen(false)}>取消</Button>
+              <Button onClick={() => { setAdminModalOpen(false); setEditingAdmin(null); form.resetFields(); }}>
+                取消
+              </Button>
             </Space>
           </Form.Item>
         </Form>

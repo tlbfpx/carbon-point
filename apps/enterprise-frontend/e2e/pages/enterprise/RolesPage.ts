@@ -17,7 +17,7 @@ export class RolesPage {
   }
 
   async goto() {
-    await this.page.goto(`${BASE_URL}/ roles`);
+    await this.page.goto(`${BASE_URL}/roles`);
     await this.page.waitForSelector('.ant-table-tbody tr', { timeout: 10000 });
   }
 

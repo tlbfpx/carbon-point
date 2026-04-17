@@ -59,6 +59,14 @@ const EnterpriseManagement: React.FC = () => {
     enabled: !!editingEnterprise?.id,
   });
 
+  const extractArray = <T,>(data: unknown): T[] => {
+    if (Array.isArray(data)) return data as T[];
+    if (data && typeof data === 'object' && 'data' in data) {
+      return (data as { data: T[] }).data;
+    }
+    return [];
+  };
+
   const createMutation = useMutation({
     mutationFn: createEnterprise,
     onSuccess: (res: { code: number; message?: string }) => {
@@ -285,7 +293,7 @@ const EnterpriseManagement: React.FC = () => {
 };
 
    const renderDetailUsers = () => {
-     const users = usersData?.data || usersData?.data?.records || [];
+     const users = extractArray<EnterpriseUser>(usersData);
 
      return (
        <div>

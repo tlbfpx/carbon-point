@@ -1,7 +1,7 @@
 import React from 'react';
 import { List, Card, DotLoading, Empty } from 'antd-mobile';
 import { useQuery } from '@tanstack/react-query';
-import { getLeaderboard } from '@/api/leaderboard';
+import { getLeaderboard, type LeaderboardEntry } from '@/api/leaderboard';
 import { useAuthStore } from '@/store/authStore';
 
 const LeaderboardPage: React.FC = () => {
@@ -37,7 +37,7 @@ const LeaderboardPage: React.FC = () => {
 
       <Card>
         <List>
-          {entries.map((entry) => (
+          {entries.map((entry: LeaderboardEntry) => (
             <List.Item
               key={entry.rank}
               extra={

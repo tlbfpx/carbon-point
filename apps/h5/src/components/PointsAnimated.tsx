@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Animated } from 'react-native-web';
 
 interface PointsAnimatedProps {
   targetValue: number;
@@ -20,22 +19,29 @@ const PointsAnimated: React.FC<PointsAnimatedProps> = ({
   className,
   style,
 }) => {
-  const [animation] = useState(() => new Animated.Value(0));
   const [displayValue, setDisplayValue] = useState(0);
 
   useEffect(() => {
-    animation.addListener(({ value }) => {
-      setDisplayValue(Math.floor(value));
-    });
+    const startTime = Date.now();
+    const startValue = displayValue;
 
-    Animated.timing(animation, {
-      toValue: targetValue,
-      duration,
-      useNativeDriver: false,
-    }).start();
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
 
-    return () => animation.removeAllListeners();
-  }, [animation, targetValue, duration]);
+      // Easing function for smooth animation
+      const easeOut = 1 - Math.pow(1 - progress, 3);
+      const currentValue = Math.floor(startValue + (targetValue - startValue) * easeOut);
+
+      setDisplayValue(currentValue);
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      }
+    };
+
+    animate();
+  }, [targetValue, duration]);
 
   return (
     <span className={className} style={style}>

@@ -53,6 +53,14 @@ const ProductManagement: React.FC = () => {
     enabled: featureModalOpen,
   });
 
+  const extractArray = <T,>(data: unknown): T[] => {
+    if (Array.isArray(data)) return data as T[];
+    if (data && typeof data === 'object' && 'data' in data) {
+      return (data as { data: T[] }).data;
+    }
+    return [];
+  };
+
   const createMutation = useMutation({
     mutationFn: createProduct,
     onSuccess: (res: { code: number; message?: string }) => {
@@ -155,7 +163,7 @@ const ProductManagement: React.FC = () => {
 
   const handleFeatureSave = () => {
     if (!selectedProduct) return;
-    const allFeatures = featuresData?.data || featuresData?.data?.records || [];
+    const allFeatures = extractArray<Feature>(featuresData);
     const features = allFeatures
       .filter((f: Feature) => selectedFeatures[f.id]?.enabled)
       .map((f: Feature) => ({
@@ -215,7 +223,7 @@ const ProductManagement: React.FC = () => {
 
   const products = productsData?.data?.records || productsData?.data || [];
   const total = productsData?.data?.total || products.length;
-  const allFeatures = featuresData?.data || featuresData?.data?.records || [];
+  const allFeatures = extractArray<Feature>(featuresData);
 
   return (
     <div>

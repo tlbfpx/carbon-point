@@ -13,9 +13,11 @@ import {
   Tooltip,
   Typography,
   Spin,
+  Card,
+  Divider,
 } from 'antd';
 import type { TreeDataNode } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
+import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, UserOutlined, LockOutlined, AppstoreOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   getRoles,
@@ -28,22 +30,50 @@ import {
   Role,
   Permission,
 } from '@/api/roles';
+import { useBranding } from '@/components/BrandingProvider';
 
-const ROLE_TYPE_CONFIG: Record<Role['role_type'], { label: string; color: string }> = {
-  super_admin: { label: '超管', color: 'blue' },
-  operator: { label: '运营', color: 'green' },
-  custom: { label: '自定义', color: 'orange' },
+const ROLE_TYPE_CONFIG: Record<Role['role_type'], { label: string; bg: string; text: string; icon: React.ReactNode }> = {
+  super_admin: {
+    label: '超管',
+    bg: '#e6f7ff',
+    text: '#1890ff',
+    icon: <LockOutlined />,
+  },
+  operator: {
+    label: '运营',
+    bg: '#f6ffed',
+    text: '#52c41a',
+    icon: <AppstoreOutlined />,
+  },
+  custom: {
+    label: '自定义',
+    bg: '#fff7e6',
+    text: '#fa8c16',
+    icon: <UserOutlined />,
+  },
 };
 
 type ModalMode = 'view' | 'edit' | 'create';
 
 const Roles: React.FC = () => {
+  const { primaryColor } = useBranding();
   const queryClient = useQueryClient();
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<ModalMode>('create');
   const [editingRole, setEditingRole] = useState<Role | null>(null);
   const [selectedPerms, setSelectedPerms] = useState<string[]>([]);
   const [form] = Form.useForm();
+
+  // Digital garden color palette
+  const colors = {
+    primary: primaryColor,
+    warmBorder: '#d4d0c8',
+    bgSoft: '#faf8f5',
+    textMuted: '#8a857f',
+    textHeading: '#2c2825',
+    sectionBg: '#f5f3f0',
+    treeLine: '#d4d0c8',
+  };
 
   const { data: rolesData, isLoading: rolesLoading } = useQuery({
     queryKey: ['roles'],
@@ -154,6 +184,7 @@ const Roles: React.FC = () => {
   const availablePermCodes: string[] = availablePermsData?.data || [];
   const isReadOnly = modalMode === 'view';
 
+  // Build permission tree with sections
   const buildTree = (perms: Permission[]): TreeDataNode[] => {
     return perms.map((p) => {
       const hasChildren = Boolean(p.children && p.children.length > 0);
@@ -163,10 +194,10 @@ const Roles: React.FC = () => {
       const title =
         !isAvailable && !hasChildren ? (
           <Tooltip title="平台未授权">
-            <span style={{ color: '#bbb' }}>{p.label}</span>
+            <span style={{ color: '#bbb', fontFamily: 'Noto Sans SC, sans-serif' }}>{p.label}</span>
           </Tooltip>
         ) : (
-          p.label
+          <span style={{ fontFamily: 'Noto Sans SC, sans-serif', color: colors.textHeading }}>{p.label}</span>
         );
 
       return {
@@ -186,6 +217,32 @@ const Roles: React.FC = () => {
     return '新增自定义角色';
   };
 
+  // Group permissions by module for better organization
+  const groupPermissionsByModule = (tree: TreeDataNode[]) => {
+    return tree.map((node) => ({
+      ...node,
+      title: (
+        <div
+          key={node.key}
+          style={{
+            fontFamily: 'Outfit, sans-serif',
+            fontSize: 14,
+            fontWeight: 600,
+            color: colors.textHeading,
+            padding: '8px 12px',
+            background: colors.sectionBg,
+            borderRadius: 8,
+            display: 'inline-block',
+          }}
+        >
+          {node.title as React.ReactNode}
+        </div>
+      ),
+    }));
+  };
+
+  const groupedPermTree = groupPermissionsByModule(permTree);
+
   const columns = [
     {
       title: '角色名称',
@@ -193,25 +250,91 @@ const Roles: React.FC = () => {
       render: (name: string, record: Role) =>
         record.role_type === 'super_admin' ? (
           <Tooltip title="平台配置，不可编辑">
-            <Typography.Text>{name}</Typography.Text>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{
+                fontFamily: 'Outfit, sans-serif',
+                fontSize: 15,
+                fontWeight: 600,
+                color: colors.textHeading,
+              }}>
+                {name}
+              </span>
+              <LockOutlined style={{ color: colors.textMuted, fontSize: 12 }} />
+            </div>
           </Tooltip>
         ) : (
-          name
+          <span style={{
+            fontFamily: 'Outfit, sans-serif',
+            fontSize: 15,
+            fontWeight: 600,
+            color: colors.textHeading,
+          }}>
+            {name}
+          </span>
         ),
     },
     {
       title: '角色类型',
       dataIndex: 'role_type',
       render: (type: Role['role_type']) => {
-        const cfg = ROLE_TYPE_CONFIG[type] ?? { label: type, color: 'default' };
-        return <Tag color={cfg.color}>{cfg.label}</Tag>;
+        const cfg = ROLE_TYPE_CONFIG[type] ?? { label: type, bg: '#f5f5f5', text: '#8c8c8c', icon: null };
+        return (
+          <Tag
+            style={{
+              margin: 0,
+              borderRadius: 20,
+              padding: '4px 12px',
+              fontFamily: 'Noto Sans SC, sans-serif',
+              fontSize: 13,
+              backgroundColor: cfg.bg,
+              color: cfg.text,
+              border: 'none',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 4,
+            }}
+          >
+            {cfg.icon}
+            {cfg.label}
+          </Tag>
+        );
       },
     },
-    { title: '角色标识', dataIndex: 'code' },
-    { title: '说明', dataIndex: 'description' },
+    {
+      title: '角色标识',
+      dataIndex: 'code',
+      render: (code: string) => (
+        <span style={{ fontFamily: 'Noto Sans SC, sans-serif', color: colors.textMuted }}>{code}</span>
+      ),
+    },
+    {
+      title: '说明',
+      dataIndex: 'description',
+      render: (desc: string) => (
+        <span style={{ fontFamily: 'Noto Sans SC, sans-serif', color: colors.textHeading }}>{desc || '-'}</span>
+      ),
+    },
     {
       title: '权限数量',
-      render: (_: unknown, record: Role) => record.permissions?.length ?? 0,
+      render: (_: unknown, record: Role) => (
+        <div
+          style={{
+            width: 32,
+            height: 32,
+            borderRadius: 16,
+            background: colors.sectionBg,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontFamily: 'Outfit, sans-serif',
+            fontSize: 13,
+            fontWeight: 600,
+            color: colors.primary,
+          }}
+        >
+          {record.permissions?.length ?? 0}
+        </div>
+      ),
     },
     {
       title: '操作',
@@ -219,19 +342,52 @@ const Roles: React.FC = () => {
         if (record.role_type === 'super_admin') {
           return (
             <Tooltip title="平台配置，不可编辑">
-              <Button type="link" size="small" icon={<EyeOutlined />} onClick={() => openView(record)}>
+              <Button
+                type="text"
+                size="small"
+                icon={<EyeOutlined />}
+                onClick={() => openView(record)}
+                style={{
+                  borderRadius: 16,
+                  fontFamily: 'Noto Sans SC, sans-serif',
+                }}
+              >
                 查看权限
               </Button>
             </Tooltip>
           );
         }
         return (
-          <Space>
-            <Button type="link" size="small" icon={<EditOutlined />} onClick={() => openEdit(record)}>
-              编辑权限
+          <Space size={8}>
+            <Button
+              type="text"
+              size="small"
+              icon={<EditOutlined />}
+              onClick={() => openEdit(record)}
+              style={{
+                borderRadius: 16,
+                fontFamily: 'Noto Sans SC, sans-serif',
+                color: colors.primary,
+              }}
+            >
+              编辑
             </Button>
-            <Popconfirm title="确认删除该角色？" onConfirm={() => deleteMutation.mutate(record.id)}>
-              <Button type="link" size="small" danger icon={<DeleteOutlined />}>
+            <Popconfirm
+              title="确认删除该角色？"
+              onConfirm={() => deleteMutation.mutate(record.id)}
+              okButtonProps={{ style: { borderRadius: 20 } }}
+              cancelButtonProps={{ style: { borderRadius: 20 } }}
+            >
+              <Button
+                type="text"
+                size="small"
+                danger
+                icon={<DeleteOutlined />}
+                style={{
+                  borderRadius: 16,
+                  fontFamily: 'Noto Sans SC, sans-serif',
+                }}
+              >
                 删除
               </Button>
             </Popconfirm>
@@ -245,107 +401,334 @@ const Roles: React.FC = () => {
     if (rolePermsLoading && modalMode !== 'create') {
       return <Spin style={{ display: 'block', margin: '24px auto' }} />;
     }
-    if (permTree.length === 0) {
-      return <p style={{ color: '#999' }}>加载中...</p>;
+    if (groupedPermTree.length === 0) {
+      return <p style={{ color: colors.textMuted, fontFamily: 'Noto Sans SC, sans-serif' }}>加载中...</p>;
     }
     return (
-      <Tree
-        checkable
-        checkedKeys={selectedPerms}
-        onCheck={isReadOnly ? undefined : handlePermChange}
-        treeData={permTree}
-        defaultExpandAll
-      />
+      <div style={{ maxHeight: 400, overflowY: 'auto', paddingRight: 8 }}>
+        <Tree
+          checkable
+          checkedKeys={selectedPerms}
+          onCheck={isReadOnly ? undefined : handlePermChange}
+          treeData={groupedPermTree}
+          defaultExpandAll
+          style={{
+            fontFamily: 'Noto Sans SC, sans-serif',
+          }}
+        />
+      </div>
     );
   };
 
   return (
-    <div>
-      <h2 style={{ marginBottom: 24 }}>角色权限</h2>
+    <div style={{ padding: '0 0 24px 0', fontFamily: 'Noto Sans SC, sans-serif' }}>
+      {/* Page Header */}
+      <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div>
+          <h1 style={{
+            fontFamily: 'Outfit, sans-serif',
+            fontSize: 28,
+            fontWeight: 700,
+            color: colors.textHeading,
+            margin: 0,
+          }}>
+            角色管理
+          </h1>
+          <p style={{ color: colors.textMuted, marginTop: 8, fontSize: 14 }}>
+            管理系统角色及权限配置
+          </p>
+        </div>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={openCreate}
+          style={{
+            borderRadius: 20,
+            height: 44,
+            paddingLeft: 24,
+            paddingRight: 24,
+            fontFamily: 'Noto Sans SC, sans-serif',
+            fontWeight: 500,
+          }}
+        >
+          添加角色
+        </Button>
+      </div>
 
-      <Button
-        type="primary"
-        icon={<PlusOutlined />}
-        style={{ marginBottom: 16 }}
-        onClick={openCreate}
+      {/* Table Card */}
+      <Card
+        style={{
+          borderRadius: 16,
+          border: `1px solid ${colors.warmBorder}`,
+          boxShadow: '0 2px 16px rgba(0, 0, 0, 0.04)',
+        }}
+        styles={{ body: { padding: 0 } }}
       >
-        新增自定义角色
-      </Button>
+        <Table
+          columns={columns}
+          dataSource={rolesData?.data || []}
+          rowKey="id"
+          loading={rolesLoading}
+          pagination={false}
+          style={{
+            fontFamily: 'Noto Sans SC, sans-serif',
+          }}
+          rowClassName={() => 'digital-garden-row'}
+        />
+        <style>{`
+          .digital-garden-row:hover {
+            background: ${colors.bgSoft} !important;
+            border-radius: 8px;
+          }
+          .digital-garden-row {
+            transition: all 0.2s ease;
+          }
+          .digital-garden-row td {
+            border-bottom: 1px solid ${colors.warmBorder}40;
+          }
+        `}</style>
+      </Card>
 
-      <Table
-        columns={columns}
-        dataSource={rolesData?.data || []}
-        rowKey="id"
-        loading={rolesLoading}
-        pagination={false}
-      />
-
+      {/* Modal */}
       <Modal
-        title={getModalTitle()}
+        title={
+          <span style={{
+            fontFamily: 'Outfit, sans-serif',
+            fontSize: 20,
+            fontWeight: 600,
+            color: colors.textHeading,
+          }}>
+            {getModalTitle()}
+          </span>
+        }
         open={modalOpen}
         onCancel={closeModal}
         footer={null}
-        width={620}
+        width={640}
         destroyOnClose
+        closeIcon={<span style={{ color: colors.textMuted }}>✕</span>}
+        styles={{
+          content: {
+            borderRadius: 24,
+            border: `1px solid ${colors.warmBorder}`,
+          },
+        }}
       >
         {modalMode === 'create' && (
-          <Form form={form} layout="vertical" onFinish={handleCreateSubmit}>
+          <Form form={form} layout="vertical" onFinish={handleCreateSubmit} style={{ marginTop: 24 }}>
             <Form.Item
               name="name"
-              label="角色名称"
+              label={
+                <span style={{
+                  fontFamily: 'Outfit, sans-serif',
+                  fontSize: 14,
+                  fontWeight: 600,
+                  color: colors.textHeading,
+                }}>
+                  角色名称
+                </span>
+              }
               rules={[{ required: true, message: '请输入角色名称' }]}
             >
-              <Input placeholder="如：数据分析专员" />
+              <Input
+                placeholder="如：数据分析专员"
+                size="large"
+                style={{
+                  borderRadius: 12,
+                  fontFamily: 'Noto Sans SC, sans-serif',
+                }}
+                styles={{
+                  input: {
+                    borderRadius: 12,
+                    border: `1px solid ${colors.warmBorder}`,
+                  },
+                }}
+              />
             </Form.Item>
-            <Form.Item name="description" label="说明">
-              <Input.TextArea rows={2} placeholder="请输入角色说明" />
+            <Form.Item
+              name="description"
+              label={
+                <span style={{
+                  fontFamily: 'Outfit, sans-serif',
+                  fontSize: 14,
+                  fontWeight: 600,
+                  color: colors.textHeading,
+                }}>
+                  说明
+                </span>
+              }
+            >
+              <Input.TextArea
+                rows={2}
+                placeholder="请输入角色说明"
+                style={{
+                  borderRadius: 12,
+                  fontFamily: 'Noto Sans SC, sans-serif',
+                }}
+                styles={{
+                  textarea: {
+                    borderRadius: 12,
+                    border: `1px solid ${colors.warmBorder}`,
+                  },
+                }}
+              />
             </Form.Item>
-            <Form.Item label="权限配置">
-              <p style={{ color: '#888', marginBottom: 8, fontSize: 12 }}>
+            <Form.Item
+              label={
+                <span style={{
+                  fontFamily: 'Outfit, sans-serif',
+                  fontSize: 14,
+                  fontWeight: 600,
+                  color: colors.textHeading,
+                }}>
+                  权限配置
+                </span>
+              }
+            >
+              <p style={{ color: colors.textMuted, marginBottom: 12, fontSize: 13, fontFamily: 'Noto Sans SC, sans-serif' }}>
                 仅可选择平台套餐授权范围内的权限（灰色项为平台未授权）。
               </p>
-              {renderPermTree()}
+              <div
+                style={{
+                  padding: 16,
+                  background: colors.sectionBg,
+                  borderRadius: 12,
+                  border: `1px solid ${colors.warmBorder}`,
+                }}
+              >
+                {renderPermTree()}
+              </div>
             </Form.Item>
-            <Form.Item style={{ marginBottom: 0 }}>
-              <Space>
-                <Button type="primary" htmlType="submit" loading={createMutation.isPending}>
+            <Form.Item style={{ marginBottom: 0, marginTop: 32 }}>
+              <Space size={12}>
+                <Button
+                  type="primary"
+                  size="large"
+                  htmlType="submit"
+                  loading={createMutation.isPending}
+                  style={{
+                    borderRadius: 20,
+                    height: 44,
+                    paddingLeft: 32,
+                    paddingRight: 32,
+                    fontFamily: 'Noto Sans SC, sans-serif',
+                    fontWeight: 500,
+                  }}
+                >
                   确定
                 </Button>
-                <Button onClick={closeModal}>取消</Button>
+                <Button
+                  size="large"
+                  onClick={closeModal}
+                  style={{
+                    borderRadius: 20,
+                    height: 44,
+                    paddingLeft: 32,
+                    paddingRight: 32,
+                    fontFamily: 'Noto Sans SC, sans-serif',
+                  }}
+                >
+                  取消
+                </Button>
               </Space>
             </Form.Item>
           </Form>
         )}
 
         {modalMode === 'edit' && (
-          <div>
-            <p style={{ color: '#888', marginBottom: 12, fontSize: 12 }}>
-              仅可选择平台套餐授权范围内的权限（灰色项为平台未授权）。
-            </p>
-            {renderPermTree()}
-            <div style={{ marginTop: 16 }}>
-              <Space>
+          <div style={{ marginTop: 24 }}>
+            <div style={{
+              padding: '12px 16px',
+              background: colors.sectionBg,
+              borderRadius: 8,
+              marginBottom: 16,
+            }}>
+              <p style={{ color: colors.textMuted, margin: 0, fontSize: 13, fontFamily: 'Noto Sans SC, sans-serif' }}>
+                仅可选择平台套餐授权范围内的权限（灰色项为平台未授权）。
+              </p>
+            </div>
+            <div
+              style={{
+                padding: 16,
+                background: colors.sectionBg,
+                borderRadius: 12,
+                border: `1px solid ${colors.warmBorder}`,
+              }}
+            >
+              {renderPermTree()}
+            </div>
+            <div style={{ marginTop: 24 }}>
+              <Space size={12}>
                 <Button
                   type="primary"
+                  size="large"
                   loading={updatePermsMutation.isPending}
                   onClick={handleSavePermissions}
+                  style={{
+                    borderRadius: 20,
+                    height: 44,
+                    paddingLeft: 32,
+                    paddingRight: 32,
+                    fontFamily: 'Noto Sans SC, sans-serif',
+                    fontWeight: 500,
+                  }}
                 >
                   保存权限
                 </Button>
-                <Button onClick={closeModal}>取消</Button>
+                <Button
+                  size="large"
+                  onClick={closeModal}
+                  style={{
+                    borderRadius: 20,
+                    height: 44,
+                    paddingLeft: 32,
+                    paddingRight: 32,
+                    fontFamily: 'Noto Sans SC, sans-serif',
+                  }}
+                >
+                  取消
+                </Button>
               </Space>
             </div>
           </div>
         )}
 
         {modalMode === 'view' && (
-          <div>
-            <p style={{ color: '#888', marginBottom: 12, fontSize: 12 }}>
-              超管权限由平台套餐定义，不可修改。
-            </p>
-            {renderPermTree()}
-            <div style={{ marginTop: 16 }}>
-              <Button onClick={closeModal}>关闭</Button>
+          <div style={{ marginTop: 24 }}>
+            <div style={{
+              padding: '12px 16px',
+              background: colors.sectionBg,
+              borderRadius: 8,
+              marginBottom: 16,
+            }}>
+              <p style={{ color: colors.textMuted, margin: 0, fontSize: 13, fontFamily: 'Noto Sans SC, sans-serif' }}>
+                超管权限由平台套餐定义，不可修改。
+              </p>
+            </div>
+            <div
+              style={{
+                padding: 16,
+                background: colors.sectionBg,
+                borderRadius: 12,
+                border: `1px solid ${colors.warmBorder}`,
+              }}
+            >
+              {renderPermTree()}
+            </div>
+            <div style={{ marginTop: 24 }}>
+              <Button
+                size="large"
+                onClick={closeModal}
+                style={{
+                  borderRadius: 20,
+                  height: 44,
+                  paddingLeft: 32,
+                  paddingRight: 32,
+                  fontFamily: 'Noto Sans SC, sans-serif',
+                }}
+              >
+                关闭
+              </Button>
             </div>
           </div>
         )}

@@ -21,6 +21,13 @@ import {
   deletePlatformAdmin,
   PlatformAdmin,
 } from '@/api/platform';
+import { extractArray } from '@/utils';
+
+const ROLE_OPTIONS = [
+  { value: 'super_admin', label: '超级管理员' },
+  { value: 'admin', label: '管理员' },
+  { value: 'viewer', label: '查看者' },
+] as const;
 
 const SystemUsers: React.FC = () => {
   const queryClient = useQueryClient();
@@ -28,10 +35,17 @@ const SystemUsers: React.FC = () => {
   const [editingUser, setEditingUser] = useState<PlatformAdmin | null>(null);
   const [form] = Form.useForm();
 
-  const { data: usersData, isLoading } = useQuery({
+  const { data: usersData, isLoading, isError } = useQuery({
     queryKey: ['platform-admins'],
     queryFn: getPlatformAdmins,
+    retry: false,
+    refetchOnWindowFocus: false,
+    throwOnError: false,
   });
+
+  React.useEffect(() => {
+    if (isError) message.error('加载用户列表失败');
+  }, [isError]);
 
   const createMutation = useMutation({
     mutationFn: createPlatformAdmin,
@@ -87,7 +101,7 @@ const SystemUsers: React.FC = () => {
       username: record.username,
       phone: record.phone,
       email: record.email,
-      roles: record.roles,
+      role: record.roles?.[0] ?? null,
       status: record.status,
     });
     setModalOpen(true);
@@ -138,7 +152,7 @@ const SystemUsers: React.FC = () => {
           <Button type="link" size="small" icon={<LockOutlined />}>
             重置密码
           </Button>
-          {record.roles?.includes('super_admin') !== true && (
+          {!record.roles?.includes(ROLE_OPTIONS[0].value) && (
             <Popconfirm title="确认删除？" onConfirm={() => deleteMutation.mutate(record.userId)} okText="确认" cancelText="取消">
               <Button type="link" size="small" danger icon={<DeleteOutlined />}>
                 删除
@@ -150,7 +164,7 @@ const SystemUsers: React.FC = () => {
     },
   ];
 
-  const users = usersData?.data || usersData?.data?.records || [];
+  const users = extractArray<PlatformAdmin>(usersData);
 
   return (
     <div>
@@ -236,9 +250,9 @@ const SystemUsers: React.FC = () => {
             rules={[{ required: !editingUser, message: '请选择角色' }]}
           >
             <Select placeholder="请选择角色">
-              <Select.Option value="super_admin">超级管理员</Select.Option>
-              <Select.Option value="admin">管理员</Select.Option>
-              <Select.Option value="viewer">查看者</Select.Option>
+              {ROLE_OPTIONS.map((opt) => (
+                <Select.Option key={opt.value} value={opt.value}>{opt.label}</Select.Option>
+              ))}
             </Select>
           </Form.Item>
           {editingUser && (
@@ -248,8 +262,8 @@ const SystemUsers: React.FC = () => {
               rules={[{ required: true, message: '请选择状态' }]}
             >
               <Select placeholder="请选择状态">
-                <Select.Option value={1}>正常</Select.Option>
-                <Select.Option value={0}>停用</Select.Option>
+                <Select.Option value="1">正常</Select.Option>
+                <Select.Option value="0">停用</Select.Option>
               </Select>
             </Form.Item>
           )}

@@ -44,43 +44,57 @@ const PLATFORM_ROLES = {
 type PlatformRole = typeof PLATFORM_ROLES[keyof typeof PLATFORM_ROLES];
 
 const PLATFORM_PERMISSION_MAP: Record<string, string> = {
-  '/dashboard': 'platform:dashboard:view',
-  '/enterprises': 'platform:enterprise:list',
-  '/system': 'platform:system:view',
-  '/config': 'platform:config:view',
+  '/platform/dashboard': 'platform:dashboard:view',
+  '/platform/enterprises': 'platform:enterprise:list',
+  '/platform/system': 'platform:system:view',
+  '/platform/system/users': 'platform:system:user:list',
+  '/platform/system/roles': 'platform:system:role:list',
+  '/platform/system/logs': 'platform:system:log:query',
+  '/platform/system/dict': 'platform:system:dict:view',
+  '/platform/features/products': 'platform:product:list',
+  '/platform/features/features': 'platform:feature:list',
+  '/platform/packages': 'platform:package:list',
+  '/platform/config': 'platform:config:view',
 };
 
 const PLATFORM_MENU_ROLES: Record<string, PlatformRole[]> = {
-  '/dashboard': [PLATFORM_ROLES.SUPER_ADMIN, PLATFORM_ROLES.ADMIN, PLATFORM_ROLES.VIEWER],
-  '/enterprises': [PLATFORM_ROLES.SUPER_ADMIN, PLATFORM_ROLES.ADMIN, PLATFORM_ROLES.VIEWER],
-  '/system': [PLATFORM_ROLES.SUPER_ADMIN],
-  '/config': [PLATFORM_ROLES.SUPER_ADMIN, PLATFORM_ROLES.ADMIN, PLATFORM_ROLES.VIEWER],
+  '/platform/dashboard': [PLATFORM_ROLES.SUPER_ADMIN, PLATFORM_ROLES.ADMIN, PLATFORM_ROLES.VIEWER],
+  '/platform/enterprises': [PLATFORM_ROLES.SUPER_ADMIN, PLATFORM_ROLES.ADMIN, PLATFORM_ROLES.VIEWER],
+  '/platform/system': [PLATFORM_ROLES.SUPER_ADMIN],
+  '/platform/system/users': [PLATFORM_ROLES.SUPER_ADMIN],
+  '/platform/system/roles': [PLATFORM_ROLES.SUPER_ADMIN],
+  '/platform/system/logs': [PLATFORM_ROLES.SUPER_ADMIN],
+  '/platform/system/dict': [PLATFORM_ROLES.SUPER_ADMIN],
+  '/platform/features/products': [PLATFORM_ROLES.SUPER_ADMIN, PLATFORM_ROLES.ADMIN],
+  '/platform/features/features': [PLATFORM_ROLES.SUPER_ADMIN, PLATFORM_ROLES.ADMIN],
+  '/platform/packages': [PLATFORM_ROLES.SUPER_ADMIN, PLATFORM_ROLES.ADMIN, PLATFORM_ROLES.VIEWER],
+  '/platform/config': [PLATFORM_ROLES.SUPER_ADMIN, PLATFORM_ROLES.ADMIN, PLATFORM_ROLES.VIEWER],
 };
 
 const PlatformMenuItems: MenuProps['items'] = [
-  { key: '/dashboard', icon: <DashboardOutlined />, label: '平台看板' },
-  { key: '/enterprises', icon: <TeamOutlined />, label: '企业管理' },
+  { key: '/platform/dashboard', icon: <DashboardOutlined />, label: '平台看板' },
+  { key: '/platform/enterprises', icon: <TeamOutlined />, label: '企业管理' },
   {
-    key: '/system',
+    key: '/platform/system',
     icon: <SafetyOutlined />,
     label: '系统管理',
     children: [
-      { key: '/system/users', label: '用户管理' },
-      { key: '/system/roles', label: '角色管理' },
-      { key: '/system/logs', label: '操作日志' },
-      { key: '/system/dict', label: '字典管理' },
+      { key: '/platform/system/users', label: '用户管理' },
+      { key: '/platform/system/roles', label: '角色管理' },
+      { key: '/platform/system/logs', label: '操作日志' },
+      { key: '/platform/system/dict', label: '字典管理' },
     ],
   },
   {
-    key: '/features',
+    key: '/platform/features',
     icon: <AppstoreOutlined />,
     label: '功能配置',
     children: [
-      { key: '/features/products', label: '产品管理' },
-      { key: '/features/features', label: '功能点库' },
+      { key: '/platform/features/products', label: '产品管理' },
+      { key: '/platform/features/features', label: '功能点库' },
     ],
   },
-  { key: '/packages', icon: <ShopOutlined />, label: '套餐管理' },
+  { key: '/platform/packages', icon: <ShopOutlined />, label: '套餐管理' },
 ];
 
 const PlatformContent: React.FC = () => {
@@ -88,6 +102,7 @@ const PlatformContent: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
+  const [openKeys, setOpenKeys] = useState<string[]>(['/platform/system', '/platform/features']);
 
   useEffect(() => {
     useAuthStore.getState().hydrate();
@@ -109,13 +124,6 @@ const PlatformContent: React.FC = () => {
       if (!hasRole) return false;
       const perm = PLATFORM_PERMISSION_MAP[key];
       return !perm || permissions.includes(perm);
-    })
-    .map(item => {
-      const i = item as any;
-      return {
-        ...item,
-        onClick: () => { if (i?.key) navigate(String(i.key)); },
-      };
     });
 
   const userMenuItems: MenuProps['items'] = [
@@ -155,7 +163,10 @@ const PlatformContent: React.FC = () => {
             theme="dark"
             mode="inline"
             selectedKeys={[location.pathname]}
+            openKeys={openKeys}
+            onOpenChange={setOpenKeys}
             items={menuItems as any}
+            onClick={({ key }) => navigate(key)}
             style={{ borderRight: 0 }}
           />
         )}
@@ -180,29 +191,29 @@ const PlatformContent: React.FC = () => {
         </Header>
         <Content style={{ margin: 16, padding: 24, background: '#fff', minHeight: 280 }}>
            <Routes>
-             {!isAuthenticated ? (
-               <>
-                 <Route path="/login" element={<PlatformLoginPage />} />
-                 <Route path="*" element={<Navigate to="/login" replace />} />
-               </>
-             ) : (
-               <>
-                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                 <Route path="/dashboard" element={<PlatformDashboard />} />
-                 <Route path="/enterprises" element={<EnterpriseManagement />} />
-                 <Route path="/system" element={<SystemManagement />} />
-                 <Route path="/system/users" element={<SystemUsers />} />
-                 <Route path="/system/roles" element={<SystemRoles />} />
-                 <Route path="/system/logs" element={<OperationLogs />} />
-                 <Route path="/system/dict" element={<DictManagement />} />
-                 <Route path="/config" element={<PlatformConfig />} />
-                 <Route path="/features/products" element={<ProductManagement />} />
-                 <Route path="/features/features" element={<FeatureLibrary />} />
-                 <Route path="/packages" element={<PackageManagement />} />
-                 <Route path="*" element={<Navigate to="/dashboard" replace />} />
-               </>
-             )}
-           </Routes>
+              {!isAuthenticated ? (
+                <>
+                  <Route path="/login" element={<PlatformLoginPage />} />
+                  <Route path="*" element={<Navigate to="/login" replace />} />
+                </>
+              ) : (
+                <>
+                  <Route path="/" element={<Navigate to="/platform/dashboard" replace />} />
+                  <Route path="/platform/dashboard" element={<PlatformDashboard />} />
+                  <Route path="/platform/enterprises" element={<EnterpriseManagement />} />
+                  <Route path="/platform/system" element={<SystemManagement />} />
+                  <Route path="/platform/system/users" element={<SystemUsers />} />
+                  <Route path="/platform/system/roles" element={<SystemRoles />} />
+                  <Route path="/platform/system/logs" element={<OperationLogs />} />
+                  <Route path="/platform/system/dict" element={<DictManagement />} />
+                  <Route path="/platform/config" element={<PlatformConfig />} />
+                  <Route path="/platform/features/products" element={<ProductManagement />} />
+                  <Route path="/platform/features/features" element={<FeatureLibrary />} />
+                  <Route path="/platform/packages" element={<PackageManagement />} />
+                  <Route path="*" element={<Navigate to="/platform/dashboard" replace />} />
+                </>
+              )}
+            </Routes>
         </Content>
       </Layout>
     </Layout>

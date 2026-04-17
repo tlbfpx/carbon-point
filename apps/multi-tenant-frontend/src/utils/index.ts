@@ -144,3 +144,19 @@ export const randomString = (length: number): string => {
 export const deepClone = <T>(obj: T): T => {
   return JSON.parse(JSON.stringify(obj));
 };
+
+/**
+ * Extract array from API response: handles raw array, { data: [...] }, or { data: { records: [...] } } (pagination).
+ * Returns an empty array if data is not an array or not properly structured.
+ */
+export const extractArray = <T>(data: unknown): T[] => {
+  if (Array.isArray(data)) return data as T[];
+  if (data && typeof data === 'object' && 'data' in data) {
+    const inner = (data as { data: unknown }).data;
+    if (Array.isArray(inner)) return inner as T[];
+    if (inner && typeof inner === 'object' && 'records' in inner) {
+      return (inner as { records: T[] }).records;
+    }
+  }
+  return [];
+};

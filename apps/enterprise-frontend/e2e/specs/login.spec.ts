@@ -1,6 +1,5 @@
 import { test, expect } from '@playwright/test';
-
-const BASE = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3001';
+import { BASE_URL } from '../config';
 
 const TEST_ACCOUNTS = {
   enterpriseAdmin: {
@@ -11,7 +10,7 @@ const TEST_ACCOUNTS = {
 
 test.describe('企业登录测试', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto(`${BASE}/login`);
+    await page.goto(`${BASE_URL}/login`);
     await page.waitForLoadState('networkidle');
   });
 

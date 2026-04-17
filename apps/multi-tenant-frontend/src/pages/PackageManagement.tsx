@@ -14,12 +14,14 @@ import {
   Card,
   Switch,
   Typography,
+  InputNumber,
+  Tooltip,
 } from 'antd';
 import { PlusOutlined, DeleteOutlined, EditOutlined, SettingOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 const { Text } = Typography;
-import type { PermissionPackage } from '@/api/platform';
+import type { PermissionPackage, Product, Feature, ProductFeature } from '@/api/platform';
 import {
   getPackages,
   createPackage,
@@ -29,7 +31,7 @@ import {
   updatePackageProducts,
   getProducts,
   getProductFeatures,
-  Product,
+  updatePackageProductFeatures,
 } from '@/api/platform';
 
 const { Panel } = Collapse;
@@ -46,8 +48,9 @@ const PackageManagement: React.FC = () => {
   const [selectedPackage, setSelectedPackage] = useState<any>(null);
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [packageProductFeatures, setPackageProductFeatures] = useState<{
-    [productId: string]: { [featureId: string]: { enabled: boolean; configValue?: string } };
+    [productId: string]: { [featureId: string]: ProductFeature };
   }>({});
+  const [productFeaturesLoading, setProductFeaturesLoading] = useState(false);
 
   const { data: packagesData, isLoading } = useQuery({
     queryKey: ['packages', page, pageSize],
@@ -103,8 +106,8 @@ const PackageManagement: React.FC = () => {
   });
 
   const updateProductsMutation = useMutation({
-    mutationFn: ({ packageId, productIds }: { packageId: string; productIds: string[] }) =>
-      updatePackageProducts(packageId, productIds.map((productId, index) => ({ productId, sortOrder: index }))),
+    mutationFn: ({ packageId, products }: { packageId: string; products: { productId: string; sortOrder?: number }[] }) =>
+      updatePackageProducts(packageId, products),
     onSuccess: (res: { code: number; message?: string }) => {
       if (res.code === 200 || res.code === 0) {
         message.success('套餐产品更新成功');
@@ -112,6 +115,19 @@ const PackageManagement: React.FC = () => {
         queryClient.invalidateQueries({ queryKey: ['packages'] });
       } else {
         message.error(res.message || '更新失败');
+      }
+    },
+  });
+
+  const updateProductFeaturesMutation = useMutation({
+    mutationFn: ({ packageId, productId, features }: { packageId: string; productId: string; features: { featureId: string; configValue?: string; isEnabled: boolean }[] }) =>
+      updatePackageProductFeatures(packageId, productId, features),
+    onSuccess: (res: { code: number; message?: string }) => {
+      if (res.code === 200 || res.code === 0) {
+        message.success('功能点配置保存成功');
+        queryClient.invalidateQueries({ queryKey: ['packages'] });
+      } else {
+        message.error(res.message || '保存失败');
       }
     },
   });
@@ -132,24 +148,22 @@ const PackageManagement: React.FC = () => {
 
   const openProductModal = async (record: any) => {
     setSelectedPackage(record);
+    setProductFeaturesLoading(true);
     try {
       const detail = await getPackageDetail(record.id);
       const packageProducts = detail.data?.products || [];
       setSelectedProducts(packageProducts.map((p: any) => p.productId));
 
       // Load features for each product
-      const featureMap: any = {};
+      const featureMap: { [productId: string]: { [featureId: string]: ProductFeature } } = {};
       for (const pkgProduct of packageProducts) {
         if (pkgProduct.productId) {
           try {
             const featuresData = await getProductFeatures(pkgProduct.productId);
-            const productFeatures = featuresData.data || [];
+            const productFeatures: ProductFeature[] = featuresData.data || [];
             featureMap[pkgProduct.productId] = {};
-            productFeatures.forEach((pf: any) => {
-              featureMap[pkgProduct.productId][pf.featureId] = {
-                enabled: pf.isEnabled,
-                configValue: pf.configValue,
-              };
+            productFeatures.forEach((pf: ProductFeature) => {
+              featureMap[pkgProduct.productId][pf.featureId] = pf;
             });
           } catch {
             // Ignore if features can't be loaded
@@ -160,6 +174,8 @@ const PackageManagement: React.FC = () => {
     } catch {
       setSelectedProducts([]);
       setPackageProductFeatures({});
+    } finally {
+      setProductFeaturesLoading(false);
     }
     setProductModalOpen(true);
   };
@@ -176,7 +192,7 @@ const PackageManagement: React.FC = () => {
     if (selectedPackage) {
       updateProductsMutation.mutate({
         packageId: selectedPackage.id,
-        productIds: selectedProducts,
+        products: selectedProducts.map((productId, index) => ({ productId, sortOrder: index })),
       });
     }
   };
@@ -267,7 +283,7 @@ const PackageManagement: React.FC = () => {
         open={productModalOpen}
         onCancel={() => { setProductModalOpen(false); setSelectedPackage(null); }}
         onOk={handleProductSave}
-        confirmLoading={updateProductsMutation.isPending}
+        confirmLoading={updateProductsMutation.isPending || productFeaturesLoading}
         width={800}
       >
         <div style={{ marginBottom: 16 }}>
@@ -315,10 +331,160 @@ const PackageManagement: React.FC = () => {
                       <p style={{ color: '#666', fontSize: 13, marginBottom: 12 }}>
                         提示：不修改则使用产品默认配置，修改后标记为"自定义"
                       </p>
-                      {/* Feature configuration would go here */}
-                      <div style={{ color: '#999', fontSize: 12 }}>
-                        功能点配置功能开发中...
-                      </div>
+                      {(() => {
+                        const features = packageProductFeatures[product.id] || {};
+                        const featureList = Object.values(features) as ProductFeature[];
+                        if (featureList.length === 0) {
+                          return <Text type="secondary">暂无可用功能点</Text>;
+                        }
+                        return (
+                          <div>
+                            {featureList.map((pf) => (
+                              <div
+                                key={pf.featureId}
+                                style={{
+                                  padding: '8px 12px',
+                                  marginBottom: 8,
+                                  background: '#fafafa',
+                                  borderRadius: 6,
+                                  border: '1px solid #f0f0f0',
+                                }}
+                              >
+                                <Space align="start" style={{ width: '100%' }}>
+                                  <Checkbox
+                                    checked={pf.isEnabled}
+                                    onChange={(e) => {
+                                      setPackageProductFeatures((prev) => ({
+                                        ...prev,
+                                        [product.id]: {
+                                          ...prev[product.id],
+                                          [pf.featureId]: {
+                                            ...pf,
+                                            isEnabled: e.target.checked,
+                                          },
+                                        },
+                                      }));
+                                    }}
+                                  />
+                                  <div style={{ flex: 1 }}>
+                                    <Space>
+                                      <Text strong>{pf.feature?.name || pf.featureId}</Text>
+                                      <Tag color={pf.feature?.type === 'permission' ? 'blue' : 'green'}>
+                                        {pf.feature?.type === 'permission' ? '权限' : '配置'}
+                                      </Tag>
+                                      {pf.isRequired && <Tag color="orange">必需</Tag>}
+                                      {pf.configValue !== undefined && pf.configValue !== pf.feature?.defaultValue && (
+                                        <Tag color="purple">自定义</Tag>
+                                      )}
+                                    </Space>
+                                    {pf.feature?.description && (
+                                      <div style={{ color: '#999', fontSize: 12, marginTop: 2 }}>
+                                        {pf.feature.description}
+                                      </div>
+                                    )}
+                                  </div>
+                                  {pf.feature?.type === 'config' && pf.isEnabled && (
+                                    <div style={{ minWidth: 200 }}>
+                                      {pf.feature.valueType === 'boolean' ? (
+                                        <Switch
+                                          checked={pf.configValue === 'true' || pf.configValue === '1'}
+                                          onChange={(checked) => {
+                                            setPackageProductFeatures((prev) => ({
+                                              ...prev,
+                                              [product.id]: {
+                                                ...prev[product.id],
+                                                [pf.featureId]: {
+                                                  ...pf,
+                                                  configValue: String(checked),
+                                                },
+                                              },
+                                            }));
+                                          }}
+                                          checkedChildren="开"
+                                          unCheckedChildren="关"
+                                        />
+                                      ) : pf.feature.valueType === 'number' ? (
+                                        <InputNumber
+                                          style={{ width: '100%' }}
+                                          value={pf.configValue ? Number(pf.configValue) : undefined}
+                                          placeholder={pf.feature.defaultValue || '请输入数值'}
+                                          onChange={(val) => {
+                                            setPackageProductFeatures((prev) => ({
+                                              ...prev,
+                                              [product.id]: {
+                                                ...prev[product.id],
+                                                [pf.featureId]: {
+                                                  ...pf,
+                                                  configValue: val !== null ? String(val) : undefined,
+                                                },
+                                              },
+                                            }));
+                                          }}
+                                        />
+                                      ) : pf.feature.valueType === 'json' ? (
+                                        <Input.TextArea
+                                          rows={2}
+                                          value={pf.configValue || ''}
+                                          placeholder={pf.feature.defaultValue || '{"key": "value"}'}
+                                          onChange={(e) => {
+                                            setPackageProductFeatures((prev) => ({
+                                              ...prev,
+                                              [product.id]: {
+                                                ...prev[product.id],
+                                                [pf.featureId]: {
+                                                  ...pf,
+                                                  configValue: e.target.value,
+                                                },
+                                              },
+                                            }));
+                                          }}
+                                        />
+                                      ) : (
+                                        <Input
+                                          value={pf.configValue || ''}
+                                          placeholder={pf.feature.defaultValue || '请输入配置值'}
+                                          onChange={(e) => {
+                                            setPackageProductFeatures((prev) => ({
+                                              ...prev,
+                                              [product.id]: {
+                                                ...prev[product.id],
+                                                [pf.featureId]: {
+                                                  ...pf,
+                                                  configValue: e.target.value,
+                                                },
+                                              },
+                                            }));
+                                          }}
+                                        />
+                                      )}
+                                    </div>
+                                  )}
+                                </Space>
+                              </div>
+                            ))}
+                            <Button
+                              type="primary"
+                              size="small"
+                              style={{ marginTop: 8 }}
+                              onClick={() => {
+                                const features = Object.values(packageProductFeatures[product.id] || {}).map((pf: ProductFeature) => ({
+                                  featureId: pf.featureId,
+                                  configValue: pf.configValue,
+                                  isEnabled: pf.isEnabled,
+                                }));
+                                updateProductFeaturesMutation.mutate({
+                                  packageId: selectedPackage?.id,
+                                  productId: product.id,
+                                  features,
+                                });
+                              }}
+                              loading={updateProductFeaturesMutation.isPending}
+                            >
+                              保存该产品功能点
+                            </Button>
+                          </div>
+                        );
+                      })()}
                     </div>
                   </Panel>
                 ))}

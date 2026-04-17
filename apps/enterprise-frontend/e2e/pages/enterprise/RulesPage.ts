@@ -90,7 +90,7 @@ export class RulesPage {
   // ==================== Navigation ====================
 
   async goto() {
-    await this.page.goto(`${BASE_URL}/ rules`);
+    await this.page.goto(`${BASE_URL}/rules`);
     // Wait for the default TimeSlot tab to be active and table to load
     await this.page.waitForSelector('.ant-tabs-tab-active', { timeout: 15000 });
     // Wait for the time slot table to appear (default tab)

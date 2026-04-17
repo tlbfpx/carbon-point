@@ -58,6 +58,13 @@ spring:
       max-file-size: 10MB
       max-request-size: 20MB
 
+  http:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force-request: true
+      force-response: true
+
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true

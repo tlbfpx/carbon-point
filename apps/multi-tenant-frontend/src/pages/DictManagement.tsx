@@ -35,6 +35,14 @@ const DictManagement: React.FC = () => {
     queryFn: () => getDictItems({ dictType: dictTypeFilter, size: 100 }),
   });
 
+  const extractArray = <T,>(data: unknown): T[] => {
+    if (Array.isArray(data)) return data as T[];
+    if (data && typeof data === 'object' && 'data' in data) {
+      return (data as { data: T[] }).data;
+    }
+    return [];
+  };
+
   const createMutation = useMutation({
     mutationFn: createDictItem,
     onSuccess: (res: { code: number; message?: string }) => {
@@ -136,7 +144,7 @@ const DictManagement: React.FC = () => {
     },
   ];
 
-  const items = dictData?.data || dictData?.data?.records || [];
+  const items = extractArray<DictItem>(dictData);
 
   // Extract unique dict types for filter
   const dictTypes = Array.from(new Set(items.map((item: DictItem) => item.dictType))) as string[];
