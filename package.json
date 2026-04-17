@@ -4,7 +4,9 @@
   "private": true,
   "scripts": {
     "dev:h5": "pnpm --filter @carbon-point/h5 dev",
-    "dev:dashboard": "pnpm --filter @carbon-point/dashboard dev",
+    "dev:enterprise": "pnpm --filter @carbon-point/enterprise-frontend dev",
+    "dev:platform": "pnpm --filter @carbon-point/multi-tenant-frontend dev",
+    "dev:dashboard": "pnpm --filter @carbon-point/multi-tenant-frontend dev",
     "build": "pnpm -r build",
     "lint": "pnpm -r lint",
     "type-check": "pnpm -r type-check"

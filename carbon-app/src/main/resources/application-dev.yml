@@ -46,6 +46,13 @@ spring:
     serialization:
       write-dates-as-timestamps: false
 
+  http:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force-request: true
+      force-response: true
+
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true

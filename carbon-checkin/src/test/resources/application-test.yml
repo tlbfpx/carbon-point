@@ -33,6 +33,13 @@ spring:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: Asia/Shanghai
 
+  http:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force-request: true
+      force-response: true
+
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true

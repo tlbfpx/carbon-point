@@ -1,0 +1,11 @@
+{
+  "codex": {
+    "pane": "platform-team:1.2"
+  },
+  "gemini": {
+    "pane": "platform-team:1.3"
+  },
+  "muxier": {
+    "pane": "platform-team:1.4"
+  }
+}

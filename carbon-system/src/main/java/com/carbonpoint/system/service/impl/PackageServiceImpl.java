@@ -4,8 +4,13 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.carbonpoint.common.exception.BusinessException;
 import com.carbonpoint.common.result.ErrorCode;
 import com.carbonpoint.system.dto.req.PackageCreateReq;
+import com.carbonpoint.system.dto.req.PackageProductFeatureUpdateReq;
+import com.carbonpoint.system.dto.req.PackageProductUpdateReq;
 import com.carbonpoint.system.dto.req.PackageUpdateReq;
 import com.carbonpoint.system.dto.req.TenantPackageChangeReq;
+import com.carbonpoint.system.dto.res.PackageDetailRes;
+import com.carbonpoint.system.dto.res.PackageFeatureRes;
+import com.carbonpoint.system.dto.res.PackageProductRes;
 import com.carbonpoint.system.dto.res.PackageRes;
 import com.carbonpoint.system.dto.res.TenantPackageRes;
 import com.carbonpoint.system.entity.*;
@@ -28,6 +33,10 @@ import java.util.stream.Collectors;
 public class PackageServiceImpl implements PackageService {
 
     private final PermissionPackageMapper packageMapper;
+    private final PackageProductMapper packageProductMapper;
+    private final PackageProductFeatureMapper packageProductFeatureMapper;
+    private final ProductMapper productMapper;
+    private final ProductFeatureMapper productFeatureMapper;
     private final PackagePermissionMapper packagePermissionMapper;
     private final PackageChangeLogMapper changeLogMapper;
     private final TenantMapper tenantMapper;
@@ -36,6 +45,7 @@ public class PackageServiceImpl implements PackageService {
     private final UserRoleMapper userRoleMapper;
     private final PermissionService permissionService;
     private final ApplicationEventPublisher eventPublisher;
+    private final FeatureMapper featureMapper;
 
     @Override
     public List<PackageRes> list() {
@@ -404,5 +414,227 @@ public class PackageServiceImpl implements PackageService {
                 .updatedAt(pkg.getUpdatedAt())
                 .permissionCodes(codes)
                 .build();
+    }
+
+    // ── Package-Product management ───────────────────────────────────────────────
+
+    @Override
+    public PackageDetailRes getPackageDetail(Long id) {
+        PermissionPackage pkg = packageMapper.selectById(id);
+        if (pkg == null) {
+            throw new BusinessException(ErrorCode.PACKAGE_NOT_FOUND);
+        }
+
+        // Fetch associated products
+        List<PackageProductEntity> packageProducts = packageProductMapper.selectByPackageId(id);
+        List<PackageProductRes> productResList = new ArrayList<>();
+
+        for (PackageProductEntity pp : packageProducts) {
+            ProductEntity product = productMapper.selectById(pp.getProductId());
+            if (product == null) {
+                continue;
+            }
+
+            // Fetch features for this product in the package
+            List<PackageProductFeatureEntity> ppfList = packageProductFeatureMapper
+                    .selectByPackageIdAndProductId(id, pp.getProductId());
+            List<PackageFeatureRes> featureResList = buildFeatureResList(pp.getProductId(), ppfList);
+
+            productResList.add(PackageProductRes.builder()
+                    .productId(product.getId())
+                    .productCode(product.getCode())
+                    .productName(product.getName())
+                    .productCategory(product.getCategory())
+                    .productStatus(product.getStatus())
+                    .sortOrder(pp.getSortOrder())
+                    .features(featureResList)
+                    .createTime(pp.getCreateTime())
+                    .build());
+        }
+
+        return PackageDetailRes.builder()
+                .id(pkg.getId())
+                .code(pkg.getCode())
+                .name(pkg.getName())
+                .description(pkg.getDescription())
+                .status(pkg.getStatus())
+                .maxUsers(pkg.getMaxUsers())
+                .createdAt(pkg.getCreatedAt())
+                .updatedAt(pkg.getUpdatedAt())
+                .products(productResList)
+                .tenantCount(packageMapper.countTenantsByPackageId(id))
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public void updatePackageProducts(Long packageId, PackageProductUpdateReq req) {
+        PermissionPackage pkg = packageMapper.selectById(packageId);
+        if (pkg == null) {
+            throw new BusinessException(ErrorCode.PACKAGE_NOT_FOUND);
+        }
+
+        if (req.getProducts() == null || req.getProducts().isEmpty()) {
+            // Remove all associations
+            packageProductFeatureMapper.deleteByPackageId(packageId);
+            packageProductMapper.deleteByPackageId(packageId);
+            log.info("All products removed from package: packageId={}", packageId);
+            return;
+        }
+
+        // 1. Remove existing features for this package (they will be re-inserted)
+        packageProductFeatureMapper.deleteByPackageId(packageId);
+
+        // 2. Remove existing product associations (they will be re-inserted)
+        packageProductMapper.deleteByPackageId(packageId);
+
+        // 3. Re-insert product associations and features
+        List<PackageProductEntity> packageProducts = new ArrayList<>();
+        for (PackageProductUpdateReq.ProductItem item : req.getProducts()) {
+            PackageProductEntity pp = new PackageProductEntity();
+            pp.setPackageId(packageId);
+            pp.setProductId(item.getProductId());
+            pp.setSortOrder(item.getSortOrder() != null ? item.getSortOrder() : 0);
+            packageProducts.add(pp);
+
+            // Insert features if provided
+            if (item.getFeatures() != null && !item.getFeatures().isEmpty()) {
+                List<PackageProductFeatureEntity> features = new ArrayList<>();
+                for (PackageProductUpdateReq.FeatureItem fi : item.getFeatures()) {
+                    PackageProductFeatureEntity ppf = new PackageProductFeatureEntity();
+                    ppf.setPackageId(packageId);
+                    ppf.setProductId(item.getProductId());
+                    ppf.setFeatureId(fi.getFeatureId());
+                    ppf.setConfigValue(fi.getConfigValue());
+                    ppf.setIsEnabled(fi.getIsEnabled() != null ? fi.getIsEnabled() : true);
+                    // Determine if customized: compare with product default
+                    ppf.setIsCustomized(determineIfCustomized(item.getProductId(), fi.getFeatureId(), fi.getConfigValue()));
+                    features.add(ppf);
+                }
+                packageProductFeatureMapper.batchInsert(features);
+            }
+        }
+
+        // Batch insert package-product associations
+        for (PackageProductEntity pp : packageProducts) {
+            packageProductMapper.insert(pp);
+        }
+
+        log.info("Package products updated: packageId={}, productCount={}", packageId, packageProducts.size());
+    }
+
+    @Override
+    public List<PackageFeatureRes> getPackageProductFeatures(Long packageId, Long productId) {
+        PermissionPackage pkg = packageMapper.selectById(packageId);
+        if (pkg == null) {
+            throw new BusinessException(ErrorCode.PACKAGE_NOT_FOUND);
+        }
+
+        List<PackageProductFeatureEntity> ppfList = packageProductFeatureMapper
+                .selectByPackageIdAndProductId(packageId, productId);
+        return buildFeatureResList(productId, ppfList);
+    }
+
+    @Override
+    @Transactional
+    public void updatePackageProductFeatures(Long packageId, Long productId, PackageProductFeatureUpdateReq req) {
+        PermissionPackage pkg = packageMapper.selectById(packageId);
+        if (pkg == null) {
+            throw new BusinessException(ErrorCode.PACKAGE_NOT_FOUND);
+        }
+
+        // Remove existing features for this package-product
+        packageProductFeatureMapper.deleteByPackageIdAndProductId(packageId, productId);
+
+        // Ensure package-product association exists
+        PackageProductEntity existingPp = packageProductMapper.selectByPackageIdAndProductId(packageId, productId);
+        if (existingPp == null) {
+            PackageProductEntity pp = new PackageProductEntity();
+            pp.setPackageId(packageId);
+            pp.setProductId(productId);
+            pp.setSortOrder(0);
+            packageProductMapper.insert(pp);
+        }
+
+        // Insert new features
+        if (req.getFeatures() != null && !req.getFeatures().isEmpty()) {
+            List<PackageProductFeatureEntity> features = new ArrayList<>();
+            for (PackageProductFeatureUpdateReq.FeatureItem fi : req.getFeatures()) {
+                PackageProductFeatureEntity ppf = new PackageProductFeatureEntity();
+                ppf.setPackageId(packageId);
+                ppf.setProductId(productId);
+                ppf.setFeatureId(fi.getFeatureId());
+                ppf.setConfigValue(fi.getConfigValue());
+                ppf.setIsEnabled(fi.getIsEnabled() != null ? fi.getIsEnabled() : true);
+                ppf.setIsCustomized(determineIfCustomized(productId, fi.getFeatureId(), fi.getConfigValue()));
+                features.add(ppf);
+            }
+            packageProductFeatureMapper.batchInsert(features);
+        }
+
+        log.info("Package product features updated: packageId={}, productId={}, featureCount={}",
+                packageId, productId, req.getFeatures() != null ? req.getFeatures().size() : 0);
+    }
+
+    /**
+     * Build feature response list by enriching with product defaults and system defaults.
+     */
+    private List<PackageFeatureRes> buildFeatureResList(Long productId, List<PackageProductFeatureEntity> ppfList) {
+        if (ppfList.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // Batch fetch product features to get defaults
+        List<ProductFeatureEntity> productFeatures = productFeatureMapper.selectByProductId(String.valueOf(productId));
+        Map<String, ProductFeatureEntity> productFeatureMap = productFeatures.stream()
+                .collect(Collectors.toMap(ProductFeatureEntity::getFeatureId, pf -> pf));
+
+        // Batch fetch features to get system defaults
+        List<String> featureIds = ppfList.stream()
+                .map(PackageProductFeatureEntity::getFeatureId)
+                .collect(Collectors.toList());
+        List<FeatureEntity> systemFeatures = featureIds.isEmpty() ? Collections.emptyList()
+                : featureIds.stream()
+                        .map(id -> {
+                            LambdaQueryWrapper<FeatureEntity> w = new LambdaQueryWrapper<>();
+                            w.eq(FeatureEntity::getId, id);
+                            return featureMapper.selectOne(w);
+                        })
+                        .filter(Objects::nonNull)
+                        .toList();
+        Map<String, FeatureEntity> featureMap = systemFeatures.stream()
+                .collect(Collectors.toMap(FeatureEntity::getId, f -> f));
+
+        return ppfList.stream()
+                .map(ppf -> {
+                    ProductFeatureEntity pf = productFeatureMap.get(ppf.getFeatureId());
+                    FeatureEntity sf = featureMap.get(ppf.getFeatureId());
+                    return PackageFeatureRes.builder()
+                            .featureId(ppf.getFeatureId())
+                            .featureCode(sf != null ? sf.getCode() : null)
+                            .featureName(sf != null ? sf.getName() : null)
+                            .featureType(sf != null ? sf.getType() : null)
+                            .valueType(sf != null ? sf.getValueType() : null)
+                            .configValue(ppf.getConfigValue())
+                            .isEnabled(ppf.getIsEnabled())
+                            .isCustomized(ppf.getIsCustomized())
+                            .productDefaultValue(pf != null ? pf.getConfigValue() : null)
+                            .systemDefaultValue(sf != null ? sf.getDefaultValue() : null)
+                            .createTime(ppf.getCreateTime())
+                            .updateTime(ppf.getUpdateTime())
+                            .build();
+                })
+                .toList();
+    }
+
+    /**
+     * Determine if the config value has been customized (differs from product default).
+     */
+    private Boolean determineIfCustomized(Long productId, String featureId, String configValue) {
+        ProductFeatureEntity pf = productFeatureMapper.selectByProductIdAndFeatureId(String.valueOf(productId), featureId);
+        if (pf == null || pf.getConfigValue() == null) {
+            return false;
+        }
+        return !pf.getConfigValue().equals(configValue);
     }
 }

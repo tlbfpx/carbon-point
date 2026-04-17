@@ -3,7 +3,11 @@ package com.carbonpoint.system.controller;
 import com.carbonpoint.common.result.Result;
 import com.carbonpoint.system.dto.req.PackageCreateReq;
 import com.carbonpoint.system.dto.req.PackagePermissionsUpdateReq;
+import com.carbonpoint.system.dto.req.PackageProductFeatureUpdateReq;
+import com.carbonpoint.system.dto.req.PackageProductUpdateReq;
 import com.carbonpoint.system.dto.req.PackageUpdateReq;
+import com.carbonpoint.system.dto.res.PackageDetailRes;
+import com.carbonpoint.system.dto.res.PackageFeatureRes;
 import com.carbonpoint.system.dto.res.PackageRes;
 import com.carbonpoint.system.security.PlatformAdminOnly;
 import com.carbonpoint.system.service.PackageService;
@@ -68,5 +72,57 @@ public class PackageController {
     @PlatformAdminOnly
     public Result<List<String>> getPermissions(@PathVariable Long id) {
         return Result.success(packageService.getPermissionsByPackageId(id));
+    }
+
+    // ── Package-Product management ───────────────────────────────────────────────
+
+    /**
+     * GET /platform/packages/{id}/detail
+     * Returns package detail including associated products and their feature configurations.
+     */
+    @GetMapping("/{id}/detail")
+    @PlatformAdminOnly
+    public Result<PackageDetailRes> getPackageDetail(@PathVariable Long id) {
+        return Result.success(packageService.getPackageDetail(id));
+    }
+
+    /**
+     * PUT /platform/packages/{id}/products
+     * Updates the product associations and feature configurations for a package.
+     * Full replacement: existing associations not in the request will be removed.
+     */
+    @PutMapping("/{id}/products")
+    @PlatformAdminOnly
+    public Result<Void> updatePackageProducts(
+            @PathVariable Long id,
+            @RequestBody PackageProductUpdateReq req) {
+        packageService.updatePackageProducts(id, req);
+        return Result.success();
+    }
+
+    /**
+     * GET /platform/packages/{id}/products/{productId}/features
+     * Returns feature configurations for a specific product within a package.
+     */
+    @GetMapping("/{id}/products/{productId}/features")
+    @PlatformAdminOnly
+    public Result<List<PackageFeatureRes>> getPackageProductFeatures(
+            @PathVariable Long id,
+            @PathVariable Long productId) {
+        return Result.success(packageService.getPackageProductFeatures(id, productId));
+    }
+
+    /**
+     * PUT /platform/packages/{id}/products/{productId}/features
+     * Updates feature configurations for a specific product within a package.
+     */
+    @PutMapping("/{id}/products/{productId}/features")
+    @PlatformAdminOnly
+    public Result<Void> updatePackageProductFeatures(
+            @PathVariable Long id,
+            @PathVariable Long productId,
+            @RequestBody PackageProductFeatureUpdateReq req) {
+        packageService.updatePackageProductFeatures(id, productId, req);
+        return Result.success();
     }
 }
