@@ -12,8 +12,6 @@ import {
 } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import {
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -22,8 +20,8 @@ import {
   BarChart,
   Bar,
   Legend,
-  Area,
   AreaChart,
+  Area,
 } from 'recharts';
 import dayjs from 'dayjs';
 import type { Dayjs } from 'dayjs';

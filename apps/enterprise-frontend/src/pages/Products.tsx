@@ -121,7 +121,7 @@ const Products: React.FC = () => {
   const columns = [
     {
       title: '商品图片',
-      dataIndex: 'imageUrl',
+      dataIndex: 'image',
       render: (url?: string) =>
         url ? (
           <div
@@ -192,7 +192,7 @@ const Products: React.FC = () => {
     },
     {
       title: '积分价格',
-      dataIndex: 'pointsCost',
+      dataIndex: 'pointsPrice',
       render: (v: number) => (
         <span
           style={{
@@ -442,7 +442,7 @@ const Products: React.FC = () => {
                   variant="outlined"
                 />
               </Form.Item>
-              <Form.Item name="pointsCost" label="积分价格" rules={[{ required: true }]}>
+              <Form.Item name="pointsPrice" label="积分价格" rules={[{ required: true }]}>
                 <InputNumber
                   min={1}
                   style={{
@@ -464,7 +464,7 @@ const Products: React.FC = () => {
               </Form.Item>
             </Space>
             <Space size={12}>
-              <Form.Item name="limitPerUser" label="每人限兑">
+              <Form.Item name="maxPerUser" label="每人限兑">
                 <InputNumber
                   min={0}
                   placeholder="0表示不限"
@@ -486,7 +486,7 @@ const Products: React.FC = () => {
                 />
               </Form.Item>
             </Space>
-            <Form.Item name="imageUrl" label="图片URL">
+            <Form.Item name="image" label="图片URL">
               <Input
                 placeholder="请输入图片URL"
                 style={{

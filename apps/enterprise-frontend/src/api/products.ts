@@ -67,6 +67,6 @@ export const toggleProductStatus = async (id: string, _status: 'active' | 'inact
 };
 
 export const updateStock = async (id: string, stock: number) => {
-  const res = await apiClient.put(`/products/${id}/stock`, { delta: stock });
+  const res = await apiClient.put(`/products/${id}/stock`, null, { params: { delta: stock } });
   return res.data;
 };

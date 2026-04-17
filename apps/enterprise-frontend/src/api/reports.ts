@@ -27,33 +27,33 @@ export interface DashboardStats {
 }
 
 export const getDashboardStats = async (_tenantId: string) => {
-  const res = await apiClient.get('/reports/report/dashboard/stats');
+  const res = await apiClient.get('/reports/dashboard/stats');
   return res.data;
 };
 
 export const getCheckInTrend = async (_tenantId: string, days = 7) => {
-  const res = await apiClient.get('/reports/report/dashboard/checkin-trend', {
+  const res = await apiClient.get('/reports/dashboard/checkin-trend', {
     params: { days },
   });
   return res.data;
 };
 
 export const getPointsTrend = async (_tenantId: string, days = 7) => {
-  const res = await apiClient.get('/reports/report/dashboard/points-trend', {
+  const res = await apiClient.get('/reports/dashboard/points-trend', {
     params: { days },
   });
   return res.data;
 };
 
 export const getHotProducts = async (_tenantId: string, limit = 5) => {
-  const res = await apiClient.get('/reports/report/dashboard/hot-products', {
+  const res = await apiClient.get('/reports/dashboard/hot-products', {
     params: { limit },
   });
   return res.data;
 };
 
 export const exportReport = async (_tenantId: string, type: string, startDate: string, endDate: string) => {
-  const res = await apiClient.get('/report/export', {
+  const res = await apiClient.get('/reports/export', {
     params: { type, startDate, endDate },
     responseType: 'blob',
   });

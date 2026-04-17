@@ -144,7 +144,7 @@ const Orders: React.FC = () => {
     },
     {
       title: '积分',
-      dataIndex: 'pointsCost',
+      dataIndex: 'pointsPrice',
       render: (v: number) => (
         <span
           style={{
