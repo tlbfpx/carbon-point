@@ -2,7 +2,8 @@ import React from 'react';
 import { Card, List, ProgressBar, DotLoading, TabBar } from 'antd-mobile';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { getPointsAccount, getPointsHistory, getLeaderboardHistory, getLeaderboardContext, PointsHistoryItem, LeaderboardEntry } from '@/api/points';
+import { getPointsAccount, getPointsHistory, getLeaderboardHistory, getLeaderboardContext, PointsHistoryItem } from '@/api/points';
+import type { LeaderboardEntry } from '@/api/points';
 import { useAuthStore } from '@/store/authStore';
 
 const levelConfig = [
@@ -185,6 +186,7 @@ const PointsPage: React.FC = () => {
             </>
           )}
         </Card>
+      </div>
 
       <TabBar activeKey="points" onChange={(key) => {
         if (key === 'home') navigate('/');
@@ -199,7 +201,6 @@ const PointsPage: React.FC = () => {
         <TabBar.Item key="coupons" title="卡券" />
         <TabBar.Item key="profile" title="我的" />
       </TabBar>
-      </div>
     </div>
   );
 };

@@ -21,7 +21,7 @@ export interface PointsHistoryItem {
 
 export interface LeaderboardEntry {
   rank: number;
-  userId: number;
+  userId: string;
   nickname: string;
   avatar?: string;
   points: number;

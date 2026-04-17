@@ -126,20 +126,88 @@ const CheckInPage: React.FC = () => {
     return (
       <div style={{
         minHeight: '100vh',
-        background: '#f5f5f5',
+        background: 'linear-gradient(135deg, #f0f9ff 0%, #e6f7ff 100%)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
         padding: 16,
       }}>
-        <div style={{ fontSize: 64, marginBottom: 16 }}>✅</div>
-        <h2 style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 8 }}>打卡成功！</h2>
-        <p style={{ fontSize: 32, color: '#1890ff', fontWeight: 'bold', margin: '16px 0' }}>
-          +{earnedPoints} 积分
-        </p>
+        <style>{`
+          @keyframes float-up {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-80px) scale(1.5); }
+          }
+          @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(24, 144, 255, 0.3); }
+            50% { box-shadow: 0 0 40px rgba(24, 144, 255, 0.6); }
+          }
+          @keyframes pop-in {
+            0% { transform: scale(0.5); opacity: 0; }
+            70% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+          }
+          .points-anim { animation: float-up 1.5s ease-out forwards; }
+          .points-badge { animation: pulse-glow 2s ease-in-out infinite, pop-in 0.5s ease-out forwards; }
+        `}</style>
+
+        <div className="points-badge" style={{
+          width: 120,
+          height: 120,
+          borderRadius: '50%',
+          background: 'linear-gradient(135deg, #52c41a 0%, #73d13d 100%)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginBottom: 24,
+        }}>
+          <div style={{ fontSize: 32, color: '#fff' }}>✓</div>
+          <div style={{ fontSize: 12, color: '#fff', fontWeight: 'bold' }}>打卡成功</div>
+        </div>
+
+        <h2 style={{ fontSize: 22, fontWeight: 'bold', marginBottom: 16, color: '#333' }}>恭喜完成打卡！</h2>
+
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: 200,
+          height: 200,
+          position: 'relative',
+        }}>
+          {[...Array(5)].map((_, i) => (
+            <div
+              key={i}
+              className="points-anim"
+              style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                fontSize: 20,
+                fontWeight: 'bold',
+                color: i % 2 === 0 ? '#1890ff' : '#52c41a',
+                opacity: 0,
+                animationDelay: `${i * 0.15}s`,
+                animationFillMode: 'forwards',
+              }}
+            >
+              +{Math.max(1, Math.floor(earnedPoints / 5))}
+            </div>
+          ))}
+          <div style={{
+            fontSize: 48,
+            fontWeight: 'bold',
+            color: '#1890ff',
+          }}>
+            +{earnedPoints}
+          </div>
+          <div style={{ fontSize: 14, color: '#999', marginTop: 4 }}>积分</div>
+        </div>
+
         <p style={{ color: '#999', fontSize: 14, marginBottom: 16 }}>
-          {countdown} 秒后自动返回首页
+          {countdown > 0 ? `${countdown} 秒后自动返回首页` : '正在返回...'}
         </p>
         <Button onClick={() => navigate('/')}>立即返回</Button>
       </div>

@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, SearchBar, TabBar, List, Button, Badge } from 'antd-mobile';
+import { Card, SearchBar, TabBar, List, Button, Badge, Tabs, Empty, DotLoading } from 'antd-mobile';
 import { useQuery } from '@tanstack/react-query';
 import { getProducts } from '@/api/mall';
 import { useAuthStore } from '@/store/authStore';
@@ -11,18 +11,25 @@ interface Product {
   description: string;
   pointsPrice: number;
   stock: number | null;
+  type: 'coupon' | 'recharge' | 'privilege';
 }
+
+const typeTabMap: Record<string, string | undefined> = {
+  '0': undefined, // all
+  '1': 'coupon',
+  '2': 'recharge',
+  '3': 'privilege',
+};
 
 const MallPage: React.FC = () => {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
-  const [activeTab] = useState(0);
+  const [activeTab, setActiveTab] = useState('0');
   const [searchQuery, setSearchQuery] = useState('');
-  const tabs = ['全部', '优惠券', '直充', '权益'];
 
-  const { data: productsData } = useQuery({
+  const { data: productsData, isLoading } = useQuery({
     queryKey: ['products', activeTab],
-    queryFn: () => getProducts(user?.tenantId || '', tabs[activeTab] === '全部' ? undefined : tabs[activeTab]),
+    queryFn: () => getProducts(user?.tenantId || '', typeTabMap[activeTab]),
     enabled: !!user?.tenantId,
   });
 
@@ -36,9 +43,18 @@ const MallPage: React.FC = () => {
     );
   }, [products, searchQuery]);
 
+  const getTypeIcon = (type: Product['type']) => {
+    switch (type) {
+      case 'coupon': return '🎫';
+      case 'recharge': return '📱';
+      case 'privilege': return '⭐';
+      default: return '🎁';
+    }
+  };
+
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#f5f5f5' }}>
-      <div style={{ background: '#fff', padding: '8px 16px', borderBottom: '1px solid #eee' }}>
+      <div style={{ background: '#fff', padding: '8px 16px', borderBottom: '1px solid #eee', flexShrink: 0 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
           <SearchBar placeholder="搜索商品" value={searchQuery} onChange={(val) => setSearchQuery(val)} style={{ flex: 1 }} />
           <span
@@ -48,38 +64,51 @@ const MallPage: React.FC = () => {
             我的订单
           </span>
         </div>
+        <Tabs activeKey={activeTab} onChange={(key) => setActiveTab(key)} style={{ background: '#fff' }}>
+          <Tabs.Tab title="全部" key="0" />
+          <Tabs.Tab title="优惠券" key="1" />
+          <Tabs.Tab title="直充" key="2" />
+          <Tabs.Tab title="权益" key="3" />
+        </Tabs>
       </div>
 
       <div style={{ flex: 1, overflow: 'auto', padding: 16 }}>
-        <List>
-          {filteredProducts.map((product) => (
+        {isLoading ? (
+          <div style={{ display: 'flex', justifyContent: 'center', padding: 40 }}>
+            <DotLoading />
+          </div>
+        ) : filteredProducts.length === 0 ? (
+          <Empty description="暂无商品" />
+        ) : (
+          filteredProducts.map((product) => (
             <Card
               key={product.id}
               style={{ marginBottom: 12 }}
               onClick={() => navigate(`/mall/${product.id}`)}
             >
-              <div style={{ padding: 12 }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div>
-                    <p style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 4 }}>{product.name}</p>
-                    <p style={{ color: '#666', fontSize: 12, marginBottom: 8 }}>{product.description}</p>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <span style={{ color: '#ff4d4f', fontSize: 18, fontWeight: 'bold' }}>
-                        {product.pointsPrice} 积分
-                      </span>
-                      {product.stock === 0 && (
-                        <Badge content="售罄" style={{ marginLeft: 8, background: '#999' }} />
-                      )}
-                    </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ fontSize: 40, flexShrink: 0 }}>{getTypeIcon(product.type)}</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <p style={{ fontSize: 15, fontWeight: 'bold', margin: 0 }}>{product.name}</p>
+                    {product.stock === 0 && (
+                      <Badge content="售罄" style={{ background: '#999', fontSize: 10 }} />
+                    )}
                   </div>
-                  <Button size="small" disabled={product.stock === 0}>
-                    兑换
-                  </Button>
+                  <p style={{ color: '#666', fontSize: 12, margin: '4px 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{product.description}</p>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <span style={{ color: '#ff4d4f', fontSize: 16, fontWeight: 'bold' }}>
+                      {product.pointsPrice} 积分
+                    </span>
+                  </div>
                 </div>
+                <Button size="small" disabled={product.stock === 0}>
+                  兑换
+                </Button>
               </div>
             </Card>
-          ))}
-        </List>
+          ))
+        )}
       </div>
 
       <TabBar activeKey="mall" onChange={(key) => {

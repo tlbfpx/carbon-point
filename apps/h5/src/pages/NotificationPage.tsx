@@ -61,9 +61,8 @@ const NotificationPage: React.FC = () => {
         )}
       </div>
 
-      <TabBar activeKey="notifications" onChange={(key) => {
-        if (key === 'home') navigate('/');
-        else if (key === 'checkin') navigate('/checkin');
+      <TabBar activeKey="home" onChange={(key) => {
+        if (key === 'checkin') navigate('/checkin');
         else if (key === 'mall') navigate('/mall');
         else if (key === 'coupons') navigate('/my-coupons');
         else if (key === 'profile') navigate('/profile');

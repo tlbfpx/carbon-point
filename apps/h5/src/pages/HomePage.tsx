@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card, Button, DotLoading, TabBar, List } from 'antd-mobile';
 import { useQuery } from '@tanstack/react-query';
 import { getTodayCheckInStatus } from '@/api/checkin';
-import { getLeaderboardHistory, getLeaderboardContext } from '@/api/points';
+import { getLeaderboardHistory, getLeaderboardContext, type LeaderboardEntry } from '@/api/points';
 import { useAuthStore } from '@/store/authStore';
 
 const greeting = () => {
@@ -128,7 +128,7 @@ const HomePage: React.FC = () => {
               </div>
             )}
             <List>
-              {leaderboardList.slice(0, 5).map((entry: { rank: number; userId: number; nickname: string; points: number; isCurrentUser: boolean }) => (
+              {leaderboardList.slice(0, 5).map((entry: LeaderboardEntry) => (
                 <List.Item
                   key={entry.userId}
                   extra={<span style={{ color: '#fa8c16', fontWeight: 'bold' }}>{entry.points} 分</span>}
