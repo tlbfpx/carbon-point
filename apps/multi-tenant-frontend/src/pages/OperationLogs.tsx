@@ -11,13 +11,25 @@ import {
   Tag,
   Descriptions,
   Modal,
+  message,
+  Tooltip,
 } from 'antd';
-import { SearchOutlined, EyeOutlined } from '@ant-design/icons';
+import { SearchOutlined, EyeOutlined, ReloadOutlined, ExportOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { getOperationLogs, OperationLog } from '@/api/platform';
 
 const { RangePicker } = DatePicker;
+
+const ACTION_TYPE_MAP: Record<string, { label: string; color: string }> = {
+  CREATE: { label: '创建', color: 'green' },
+  UPDATE: { label: '更新', color: 'blue' },
+  DELETE: { label: '删除', color: 'red' },
+  LOGIN: { label: '登录', color: 'cyan' },
+  LOGOUT: { label: '登出', color: 'default' },
+  EXPORT: { label: '导出', color: 'purple' },
+  IMPORT: { label: '导入', color: 'orange' },
+};
 
 const OperationLogs: React.FC = () => {
   const [page, setPage] = useState(1);
@@ -46,12 +58,15 @@ const OperationLogs: React.FC = () => {
     queryKey: ['operation-logs', page, pageSize, searchParams],
     queryFn: () => {
       const params: any = { page, size: pageSize };
-      if (searchParams.operatorId) params.operatorId = searchParams.operatorId;
-      if (searchParams.actionType) params.actionType = searchParams.actionType;
+      if (searchParams.operatorId) params.adminId = searchParams.operatorId;
+      if (searchParams.actionType) params.operationType = searchParams.actionType;
       if (searchParams.startDate) params.startDate = searchParams.startDate;
       if (searchParams.endDate) params.endDate = searchParams.endDate;
       return getOperationLogs(params);
     },
+    retry: false,
+    refetchOnWindowFocus: false,
+    throwOnError: false,
   });
 
   const openDetail = (record: OperationLog) => {
@@ -59,13 +74,27 @@ const OperationLogs: React.FC = () => {
     setDetailModalOpen(true);
   };
 
+  const handleExport = () => {
+    message.info('导出功能开发中');
+  };
+
   const columns = [
-    { title: '操作人', dataIndex: 'operatorName', width: 120 },
-    { title: '操作类型', dataIndex: 'actionType', width: 150, render: (type: string) => <Tag color="blue">{type}</Tag> },
-    { title: '操作描述', dataIndex: 'description', ellipsis: true },
+    { title: '操作人', dataIndex: 'adminName', width: 120, render: (name: string) => name || '-' },
+    {
+      title: '操作类型',
+      dataIndex: 'operationType',
+      width: 100,
+      render: (type: string) => {
+        const config = ACTION_TYPE_MAP[type] || { label: type, color: 'default' };
+        return <Tag color={config.color}>{config.label}</Tag>;
+      },
+    },
+    { title: '操作对象', dataIndex: 'operationObject', width: 140, ellipsis: true },
+    { title: '请求方法', dataIndex: 'requestMethod', width: 80, render: (m: string) => m ? <Tag>{m}</Tag> : '-' },
+    { title: '请求URL', dataIndex: 'requestUrl', ellipsis: true, render: (url: string) => url ? <Tooltip title={url}>{url}</Tooltip> : '-' },
     { title: 'IP地址', dataIndex: 'ipAddress', width: 140 },
-    { title: '执行时间', dataIndex: 'executionTime', width: 100, render: (t: number) => t ? `${t}ms` : '-' },
-    { title: '操作时间', dataIndex: 'createTime', width: 180, render: (t: string) => dayjs(t).format('YYYY-MM-DD HH:mm:ss') },
+    { title: '执行时间', dataIndex: 'executionTime', width: 90, render: (t: number) => t ? `${t}ms` : '-' },
+    { title: '操作时间', dataIndex: 'createdAt', width: 170, render: (t: string) => t ? dayjs(t).format('YYYY-MM-DD HH:mm:ss') : '-' },
     {
       title: '操作',
       width: 80,
@@ -96,11 +125,9 @@ const OperationLogs: React.FC = () => {
           </Form.Item>
           <Form.Item name="actionType" label="操作类型">
             <Select placeholder="操作类型" style={{ width: 150 }} allowClear>
-              <Select.Option value="create">创建</Select.Option>
-              <Select.Option value="update">更新</Select.Option>
-              <Select.Option value="delete">删除</Select.Option>
-              <Select.Option value="login">登录</Select.Option>
-              <Select.Option value="logout">登出</Select.Option>
+              {Object.entries(ACTION_TYPE_MAP).map(([value, { label }]) => (
+                <Select.Option key={value} value={value}>{label}</Select.Option>
+              ))}
             </Select>
           </Form.Item>
           <Form.Item name="dateRange" label="时间范围">
@@ -111,13 +138,31 @@ const OperationLogs: React.FC = () => {
               <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
                 查询
               </Button>
-              <Button onClick={() => { form.resetFields(); setPage(1); setSearchParams({}); }}>
+              <Button
+                onClick={() => {
+                  form.resetFields();
+                  setPage(1);
+                  setSearchParams({});
+                }}
+              >
                 重置
               </Button>
             </Space>
           </Form.Item>
         </Form>
       </Card>
+
+      <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span style={{ color: '#666' }}>共 {total} 条记录</span>
+        <Space>
+          <Button icon={<ReloadOutlined />} onClick={() => refetch()}>
+            刷新
+          </Button>
+          <Button icon={<ExportOutlined />} onClick={handleExport}>
+            导出
+          </Button>
+        </Space>
+      </div>
 
       <Table
         columns={columns}
@@ -129,6 +174,8 @@ const OperationLogs: React.FC = () => {
           pageSize,
           total,
           showSizeChanger: true,
+          showQuickJumper: true,
+          showTotal: (t) => `共 ${t} 条`,
           onChange: (p, ps) => { setPage(p); setPageSize(ps || 10); },
         }}
       />
@@ -141,26 +188,48 @@ const OperationLogs: React.FC = () => {
         width={800}
       >
         {selectedLog && (
-<Descriptions bordered column={1} size="small">
-            <Descriptions.Item label="操作人">{selectedLog.adminName}</Descriptions.Item>
-            <Descriptions.Item label="操作类型">{selectedLog.operationType || '-'}</Descriptions.Item>
+          <Descriptions bordered column={1} size="small">
+            <Descriptions.Item label="操作人">{selectedLog.adminName || '-'}</Descriptions.Item>
+            <Descriptions.Item label="操作类型">
+              {selectedLog.operationType ? (
+                <Tag color={ACTION_TYPE_MAP[selectedLog.operationType]?.color || 'default'}>
+                  {ACTION_TYPE_MAP[selectedLog.operationType]?.label || selectedLog.operationType}
+                </Tag>
+              ) : '-'}
+            </Descriptions.Item>
             <Descriptions.Item label="操作对象">{selectedLog.operationObject || '-'}</Descriptions.Item>
             <Descriptions.Item label="请求方法">{selectedLog.requestMethod || '-'}</Descriptions.Item>
             <Descriptions.Item label="请求URL">{selectedLog.requestUrl || '-'}</Descriptions.Item>
             <Descriptions.Item label="请求参数">
-              <pre style={{ margin: 0, whiteSpace: 'pre-wrap', maxHeight: 200, overflow: 'auto' }}>
-                {selectedLog.requestParams || '-'}
-              </pre>
+              {selectedLog.requestParams ? (
+                <pre style={{ margin: 0, whiteSpace: 'pre-wrap', maxHeight: 200, overflow: 'auto', fontSize: 12 }}>
+                  {(() => {
+                    try {
+                      return JSON.stringify(JSON.parse(selectedLog.requestParams), null, 2);
+                    } catch {
+                      return selectedLog.requestParams;
+                    }
+                  })()}
+                </pre>
+              ) : '-'}
             </Descriptions.Item>
             <Descriptions.Item label="响应结果">
-              <pre style={{ margin: 0, whiteSpace: 'pre-wrap', maxHeight: 200, overflow: 'auto' }}>
-                {selectedLog.responseResult || '-'}
-              </pre>
+              {selectedLog.responseResult ? (
+                <pre style={{ margin: 0, whiteSpace: 'pre-wrap', maxHeight: 200, overflow: 'auto', fontSize: 12 }}>
+                  {(() => {
+                    try {
+                      return JSON.stringify(JSON.parse(selectedLog.responseResult), null, 2);
+                    } catch {
+                      return selectedLog.responseResult;
+                    }
+                  })()}
+                </pre>
+              ) : '-'}
             </Descriptions.Item>
             <Descriptions.Item label="IP地址">{selectedLog.ipAddress || '-'}</Descriptions.Item>
             <Descriptions.Item label="User Agent">{selectedLog.userAgent || '-'}</Descriptions.Item>
             <Descriptions.Item label="执行时间">{selectedLog.executionTime ? `${selectedLog.executionTime}ms` : '-'}</Descriptions.Item>
-            <Descriptions.Item label="操作时间">{dayjs(selectedLog.createdAt).format('YYYY-MM-DD HH:mm:ss')}</Descriptions.Item>
+            <Descriptions.Item label="操作时间">{selectedLog.createdAt ? dayjs(selectedLog.createdAt).format('YYYY-MM-DD HH:mm:ss') : '-'}</Descriptions.Item>
           </Descriptions>
         )}
       </Modal>

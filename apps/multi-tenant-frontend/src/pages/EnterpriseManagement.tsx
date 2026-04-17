@@ -12,9 +12,18 @@ import {
   Select,
   Alert,
   Tabs,
-  Switch,
+  Statistic,
+  Row,
+  Col,
+  Card,
 } from 'antd';
-import { PlusOutlined, EditOutlined, CrownOutlined } from '@ant-design/icons';
+import {
+  PlusOutlined,
+  EditOutlined,
+  CrownOutlined,
+  ReloadOutlined,
+  ExclamationCircleOutlined,
+} from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import {
@@ -25,6 +34,7 @@ import {
   updateTenantPackage,
   getEnterpriseUsers,
   assignSuperAdmin,
+  getPlatformStats,
   Enterprise,
   EnterpriseUser,
 } from '@/api/platform';
@@ -42,7 +52,7 @@ const EnterpriseManagement: React.FC = () => {
   const [detailActiveTab, setDetailActiveTab] = useState('info');
   const [form] = Form.useForm();
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, refetch } = useQuery({
     queryKey: ['enterprises', page, keyword, statusFilter],
     queryFn: () => getEnterprises({ page, size: 10, keyword, status: statusFilter }),
   });
@@ -52,10 +62,16 @@ const EnterpriseManagement: React.FC = () => {
     queryFn: () => getPackages({ size: 100 }),
   });
 
-  // Move useQuery to component top-level to comply with React Hooks rules
+  const { data: statsData } = useQuery({
+    queryKey: ['platform-stats'],
+    queryFn: getPlatformStats,
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
+
   const { data: usersData, isLoading: usersLoading } = useQuery({
     queryKey: ['enterprise-users', editingEnterprise?.id],
-    queryFn: () => getEnterpriseUsers(editingEnterprise?.id!),
+    queryFn: () => getEnterpriseUsers(editingEnterprise!.id),
     enabled: !!editingEnterprise?.id,
   });
 
@@ -75,17 +91,30 @@ const EnterpriseManagement: React.FC = () => {
         setModalOpen(false);
         form.resetFields();
         queryClient.invalidateQueries({ queryKey: ['enterprises'] });
+        queryClient.invalidateQueries({ queryKey: ['platform-stats'] });
       } else {
         message.error(res.message || '创建失败');
       }
     },
+    onError: (err: any) => {
+      message.error(err?.response?.data?.message || '创建失败');
+    },
   });
 
   const toggleMutation = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: 'active' | 'inactive' }) => toggleEnterpriseStatus(id, status),
-    onSuccess: () => {
-      message.success('状态更新成功');
-      queryClient.invalidateQueries({ queryKey: ['enterprises'] });
+    mutationFn: ({ id, status }: { id: string; status: 'active' | 'inactive' }) =>
+      toggleEnterpriseStatus(id, status),
+    onSuccess: (res: { code: number; message?: string }) => {
+      if (res.code === 200 || res.code === 0) {
+        message.success('状态更新成功');
+        queryClient.invalidateQueries({ queryKey: ['enterprises'] });
+        queryClient.invalidateQueries({ queryKey: ['platform-stats'] });
+      } else {
+        message.error(res.message || '状态更新失败');
+      }
+    },
+    onError: (err: any) => {
+      message.error(err?.response?.data?.message || '状态更新失败');
     },
   });
 
@@ -96,11 +125,13 @@ const EnterpriseManagement: React.FC = () => {
       if (res.code === 200 || res.code === 0) {
         message.success('套餐更换成功');
         setPackageChangeConfirmOpen(false);
-        setDetailModalOpen(false);
         queryClient.invalidateQueries({ queryKey: ['enterprises'] });
       } else {
         message.error(res.message || '套餐更换失败');
       }
+    },
+    onError: (err: any) => {
+      message.error(err?.response?.data?.message || '套餐更换失败');
     },
   });
 
@@ -114,6 +145,9 @@ const EnterpriseManagement: React.FC = () => {
       } else {
         message.error(res.message || '分配失败');
       }
+    },
+    onError: (err: any) => {
+      message.error(err?.response?.data?.message || '分配失败');
     },
   });
 
@@ -131,10 +165,7 @@ const EnterpriseManagement: React.FC = () => {
 
   const handlePackageConfirm = () => {
     if (editingEnterprise && selectedPackageId) {
-      updatePackageMutation.mutate({
-        tenantId: editingEnterprise.id,
-        packageId: selectedPackageId,
-      });
+      updatePackageMutation.mutate({ tenantId: editingEnterprise.id, packageId: selectedPackageId });
     }
   };
 
@@ -145,42 +176,66 @@ const EnterpriseManagement: React.FC = () => {
     setDetailActiveTab('info');
   };
 
+  const stats = statsData?.data;
+  const packageOptions = (packagesData?.data?.records || packagesData?.data || [])
+    .filter((p: { status: number }) => p.status === 1)
+    .map((p: { id: string; name: string }) => ({ value: p.id, label: p.name }));
+
   const columns = [
-    { title: '企业名称', dataIndex: 'name' },
-    { title: '联系人', dataIndex: 'contactName' },
-    { title: '联系电话', dataIndex: 'contactPhone' },
+    {
+      title: '企业名称',
+      dataIndex: 'name',
+      render: (name: string, record: Enterprise) => (
+        <div>
+          <div style={{ fontWeight: 500 }}>{name}</div>
+          {record.expireTime && (
+            <div style={{ fontSize: 12, color: dayjs(record.expireTime).isBefore(dayjs()) ? '#ff4d4f' : '#999' }}>
+              {dayjs(record.expireTime).isBefore(dayjs()) ? '已到期' : `到期: ${dayjs(record.expireTime).format('YYYY-MM-DD')}`}
+            </div>
+          )}
+        </div>
+      ),
+    },
+    { title: '联系人', dataIndex: 'contactName', width: 100 },
+    { title: '联系电话', dataIndex: 'contactPhone', width: 140 },
     {
       title: '套餐',
       dataIndex: 'packageName',
+      width: 120,
       render: (v: string) => (
         <Tag color={v ? 'blue' : 'default'}>{v || '未绑定'}</Tag>
       ),
     },
-    { title: '用户数', dataIndex: 'userCount' },
+    { title: '用户数', dataIndex: 'userCount', width: 80, render: (n: number) => n ?? '-' },
     {
       title: '状态',
       dataIndex: 'status',
+      width: 80,
       render: (status: string) => (
         <Tag color={status === 'active' ? 'green' : 'red'}>
           {status === 'active' ? '正常' : '停用'}
         </Tag>
       ),
     },
-    { title: '创建时间', dataIndex: 'createTime', render: (t: string) => dayjs(t).format('YYYY-MM-DD') },
+    {
+      title: '创建时间',
+      dataIndex: 'createTime',
+      width: 110,
+      render: (t: string) => t ? dayjs(t).format('YYYY-MM-DD') : '-',
+    },
     {
       title: '操作',
+      width: 160,
       render: (_: unknown, record: Enterprise) => (
-        <Space>
+        <Space size="small">
           <Button type="link" size="small" icon={<EditOutlined />} onClick={() => openDetail(record)}>
             详情
           </Button>
           <Popconfirm
             title={`确认${record.status === 'active' ? '停用' : '开通'}该企业？`}
+            icon={<ExclamationCircleOutlined style={{ color: '#faad14' }} />}
             onConfirm={() =>
-              toggleMutation.mutate({
-                id: record.id,
-                status: record.status === 'active' ? 'inactive' : 'active',
-              })
+              toggleMutation.mutate({ id: record.id, status: record.status === 'active' ? 'inactive' : 'active' })
             }
           >
             <Button type="link" size="small">
@@ -192,19 +247,15 @@ const EnterpriseManagement: React.FC = () => {
     },
   ];
 
-  const packageOptions = (packagesData?.data?.records || packagesData?.data || [])
-    .filter((p: { status: number }) => p.status === 1)
-    .map((p: { id: string; name: string }) => ({ value: p.id, label: p.name }));
-
   const userColumns = [
-    { title: '姓名', dataIndex: 'username' },
-    { title: '手机号', dataIndex: 'phone' },
+    { title: '姓名', dataIndex: 'username', width: 120 },
+    { title: '手机号', dataIndex: 'phone', width: 140, render: (p: string) => p || '-' },
     {
       title: '角色',
       dataIndex: 'roleNames',
       render: (roleNames: string[], record: EnterpriseUser) => (
         <Space wrap>
-          {roleNames.map((name) => (
+          {roleNames?.map((name) => (
             <Tag key={name} color={record.isSuperAdmin ? 'gold' : 'blue'}>{name}</Tag>
           ))}
         </Space>
@@ -213,6 +264,7 @@ const EnterpriseManagement: React.FC = () => {
     {
       title: '状态',
       dataIndex: 'status',
+      width: 80,
       render: (status: string) => (
         <Tag color={status === 'active' ? 'green' : 'red'}>
           {status === 'active' ? '正常' : '停用'}
@@ -221,110 +273,154 @@ const EnterpriseManagement: React.FC = () => {
     },
     {
       title: '操作',
-      render: (_: unknown, record: EnterpriseUser) => (
+      render: (_: unknown, record: EnterpriseUser) =>
         record.isSuperAdmin ? (
           <Tag icon={<CrownOutlined />} color="gold">当前超管</Tag>
         ) : (
           <Popconfirm
             title={`确认将「${record.username}」设为企业超级管理员？`}
+            description="分配后原超级管理员将失去超管权限"
             onConfirm={() => {
               if (!editingEnterprise) return;
-              assignSuperAdminMutation.mutate({
-                tenantId: editingEnterprise.id,
-                userId: record.userId,
-              });
+              assignSuperAdminMutation.mutate({ tenantId: editingEnterprise.id, userId: record.userId });
             }}
+            okText="确认"
+            cancelText="取消"
           >
             <Button type="link" size="small" icon={<CrownOutlined />}>
               设为超管
             </Button>
           </Popconfirm>
-        )
-      ),
+        ),
     },
   ];
 
   const renderDetailInfo = () => {
     if (!editingEnterprise) return null;
     return (
-    <div>
-      <div style={{ marginBottom: 16 }}>
-        <h4>基本信息</h4>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 16px' }}>
-          <div><strong>企业名称：</strong>{editingEnterprise.name}</div>
-          <div><strong>联系人：</strong>{editingEnterprise.contactName}</div>
-          <div><strong>联系电话：</strong>{editingEnterprise.contactPhone}</div>
-          <div><strong>联系邮箱：</strong>{(editingEnterprise as any).contactEmail || '-'}</div>
-          <div><strong>用户数：</strong>{editingEnterprise.userCount}</div>
-          <div><strong>创建时间：</strong>{dayjs(editingEnterprise.createTime).format('YYYY-MM-DD')}</div>
-          <div>
-            <strong>状态：</strong>
-            <Tag color={editingEnterprise.status === 'active' ? 'green' : 'red'}>
-              {editingEnterprise.status === 'active' ? '正常' : '停用'}
-            </Tag>
+      <div>
+        <Row gutter={16} style={{ marginBottom: 24 }}>
+          <Col span={6}>
+            <Statistic title="用户数" value={editingEnterprise.userCount || 0} />
+          </Col>
+          <Col span={6}>
+            <Statistic title="状态" value={editingEnterprise.status === 'active' ? '正常' : '停用'} />
+          </Col>
+          <Col span={12}>
+            <Statistic title="创建时间" value={editingEnterprise.createTime ? dayjs(editingEnterprise.createTime).format('YYYY-MM-DD') : '-'} />
+          </Col>
+        </Row>
+
+        <div style={{ marginBottom: 24 }}>
+          <h4 style={{ marginBottom: 12 }}>基本信息</h4>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px 24px' }}>
+            <div><strong>企业名称：</strong>{editingEnterprise.name}</div>
+            <div><strong>联系人：</strong>{editingEnterprise.contactName}</div>
+            <div><strong>联系电话：</strong>{editingEnterprise.contactPhone}</div>
+            <div><strong>联系邮箱：</strong>{(editingEnterprise as any).contactEmail || '-'}</div>
           </div>
         </div>
+
+        <div style={{ marginBottom: 16 }}>
+          <h4 style={{ marginBottom: 12 }}>套餐管理</h4>
+          <Form layout="vertical">
+            <Form.Item label="当前套餐" style={{ marginBottom: 8 }}>
+              <Select
+                value={selectedPackageId}
+                onChange={handlePackageChange}
+                placeholder="请选择套餐"
+                options={packageOptions}
+                style={{ width: '100%' }}
+              />
+            </Form.Item>
+          </Form>
+        </div>
+
+        <Alert
+          type="info"
+          showIcon
+          icon={<ExclamationCircleOutlined />}
+          message="套餐更换说明"
+          description="套餐更换后，运营角色超出新套餐的权限将被自动清理。"
+          style={{ marginBottom: 0 }}
+        />
       </div>
+    );
+  };
 
-      <div style={{ marginBottom: 16 }}>
-        <h4>套餐管理</h4>
-        <Form layout="vertical">
-          <Form.Item label="当前套餐">
-            <Select
-              value={selectedPackageId}
-              onChange={handlePackageChange}
-              placeholder="请选择套餐"
-              options={packageOptions}
-              style={{ width: '100%' }}
-            />
-          </Form.Item>
-        </Form>
+  const renderDetailUsers = () => {
+    const users = extractArray<EnterpriseUser>(usersData);
+    return (
+      <div>
+        <Alert
+          type="info"
+          showIcon
+          icon={<CrownOutlined />}
+          message="企业超级管理员说明"
+          description="超级管理员拥有企业最高权限。每个企业必须至少保留一名超级管理员。"
+          style={{ marginBottom: 16 }}
+        />
+        <Table
+          columns={userColumns}
+          dataSource={users}
+          rowKey="userId"
+          loading={usersLoading}
+          pagination={false}
+          size="small"
+        />
       </div>
+    );
+  };
 
-      <Alert
-        type="info"
-        showIcon
-        message="套餐更换说明"
-        description="套餐更换后，运营角色超出新套餐的权限将被自动清理，确认更换？"
-        style={{ marginBottom: 16 }}
-      />
-    </div>
-  );
-};
-
-   const renderDetailUsers = () => {
-     const users = extractArray<EnterpriseUser>(usersData);
-
-     return (
-       <div>
-         <Alert
-           type="info"
-           showIcon
-           message="企业超级管理员说明"
-           description="超级管理员拥有企业最高权限，可管理企业内的所有功能。每个企业必须至少保留一名超级管理员。"
-           style={{ marginBottom: 16 }}
-         />
-         <Table
-           columns={userColumns}
-           dataSource={users}
-           rowKey="userId"
-           loading={usersLoading}
-           pagination={false}
-           size="small"
-         />
-       </div>
-     );
-   };
+  const total = data?.data?.total || 0;
+  const records = data?.data?.records || [];
 
   return (
     <div>
-      <h2 style={{ marginBottom: 24 }}>企业管理</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <h2 style={{ margin: 0 }}>企业管理</h2>
+        <Space>
+          <Button icon={<ReloadOutlined />} onClick={() => { refetch(); queryClient.invalidateQueries({ queryKey: ['platform-stats'] }); }}>
+            刷新
+          </Button>
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalOpen(true)}>
+            开通企业
+          </Button>
+        </Space>
+      </div>
 
-      <Space style={{ marginBottom: 16 }}>
+      {/* Stats summary */}
+      {stats && (
+        <Row gutter={16} style={{ marginBottom: 16 }}>
+          <Col span={6}>
+            <Card size="small">
+              <Statistic title="企业总数" value={stats.totalEnterprises || 0} />
+            </Card>
+          </Col>
+          <Col span={6}>
+            <Card size="small">
+              <Statistic title="活跃企业" value={stats.activeEnterprises || 0} valueStyle={{ color: '#52c41a' }} />
+            </Card>
+          </Col>
+          <Col span={6}>
+            <Card size="small">
+              <Statistic title="用户总数" value={stats.totalUsers || 0} />
+            </Card>
+          </Col>
+          <Col span={6}>
+            <Card size="small">
+              <Statistic title="兑换总数" value={stats.totalExchanges || 0} />
+            </Card>
+          </Col>
+        </Row>
+      )}
+
+      <Space style={{ marginBottom: 12 }}>
         <Input.Search
           placeholder="搜索企业名称"
           allowClear
           onSearch={(val) => { setKeyword(val); setPage(1); }}
+          onChange={(e) => { if (!e.target.value) { setKeyword(''); setPage(1); } }}
           style={{ width: 240 }}
         />
         <Select
@@ -338,21 +434,20 @@ const EnterpriseManagement: React.FC = () => {
             { value: 'inactive', label: '停用' },
           ]}
         />
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalOpen(true)}>
-          开通企业
-        </Button>
       </Space>
 
       <Table
         columns={columns}
-        dataSource={data?.data?.records || []}
+        dataSource={records}
         rowKey="id"
         loading={isLoading}
         pagination={{
           current: page,
           pageSize: 10,
-          total: data?.data?.total || 0,
-          onChange: (p) => setPage(p),
+          total,
+          showSizeChanger: true,
+          showTotal: (t) => `共 ${t} 条`,
+          onChange: (p, ps) => { setPage(p); if (ps) { /* pageSize changed */ } },
         }}
       />
 
@@ -360,8 +455,10 @@ const EnterpriseManagement: React.FC = () => {
       <Modal
         title="开通企业"
         open={modalOpen}
-        onCancel={() => setModalOpen(false)}
+        onCancel={() => { setModalOpen(false); form.resetFields(); }}
         footer={null}
+        width={520}
+        destroyOnClose
       >
         <Form
           form={form}
@@ -369,10 +466,7 @@ const EnterpriseManagement: React.FC = () => {
           onFinish={(values) => {
             const allPackages = (packagesData?.data?.records || packagesData?.data || []);
             const selectedPkg = allPackages.find((p: { id: string }) => p.id === values.packageId);
-            createMutation.mutate({
-              ...values,
-              packageName: selectedPkg?.name,
-            });
+            createMutation.mutate({ ...values, packageName: selectedPkg?.name });
           }}
         >
           <Form.Item name="name" label="企业名称" rules={[{ required: true, message: '请输入企业名称' }]}>
@@ -389,35 +483,29 @@ const EnterpriseManagement: React.FC = () => {
               { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号' },
             ]}
           >
-            <Input placeholder="请输入手机号" />
+            <Input placeholder="请输入手机号" maxLength={11} />
           </Form.Item>
-          <Form.Item
-            name="contactEmail"
-            label="联系邮箱"
-            rules={[{ type: 'email', message: '请输入正确的邮箱' }]}
-          >
+          <Form.Item name="contactEmail" label="联系邮箱" rules={[{ type: 'email', message: '请输入正确的邮箱' }]}>
             <Input placeholder="请输入邮箱（选填）" />
           </Form.Item>
           <Form.Item name="packageId" label="选择套餐">
-            <Select
-              placeholder="请选择套餐"
-              allowClear
-              options={packageOptions}
-            />
+            <Select placeholder="请选择套餐" allowClear options={packageOptions} />
           </Form.Item>
-          <Form.Item
-            name="createSuperAdmin"
-            label="同步创建超级管理员"
-            valuePropName="checked"
-          >
-            <Switch />
+          <Form.Item name="createSuperAdmin" label="同步创建超级管理员" valuePropName="checked">
+            <Select
+              placeholder="是否同步创建超管"
+              options={[
+                { value: true, label: '是，同步创建超管' },
+                { value: false, label: '否，稍后手动创建' },
+              ]}
+            />
           </Form.Item>
           <Form.Item
             noStyle
             shouldUpdate={(prev, curr) => prev.createSuperAdmin !== curr.createSuperAdmin}
           >
             {({ getFieldValue }) =>
-              getFieldValue('createSuperAdmin') && (
+              getFieldValue('createSuperAdmin') === true && (
                 <>
                   <Form.Item
                     name="superAdminUsername"
@@ -434,12 +522,12 @@ const EnterpriseManagement: React.FC = () => {
                       { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号' },
                     ]}
                   >
-                    <Input placeholder="请输入超管手机号" />
+                    <Input placeholder="请输入超管手机号" maxLength={11} />
                   </Form.Item>
                   <Form.Item
                     name="superAdminPassword"
                     label="超管密码"
-                    rules={[{ required: true, message: '请输入超管密码' }]}
+                    rules={[{ required: true, message: '请输入超管密码' }, { min: 6, message: '密码至少6位' }]}
                   >
                     <Input.Password placeholder="请输入超管密码" />
                   </Form.Item>
@@ -452,7 +540,7 @@ const EnterpriseManagement: React.FC = () => {
               <Button type="primary" htmlType="submit" loading={createMutation.isPending}>
                 确认开通
               </Button>
-              <Button onClick={() => setModalOpen(false)}>取消</Button>
+              <Button onClick={() => { setModalOpen(false); form.resetFields(); }}>取消</Button>
             </Space>
           </Form.Item>
         </Form>
@@ -460,11 +548,12 @@ const EnterpriseManagement: React.FC = () => {
 
       {/* Enterprise Detail Modal */}
       <Modal
-        title="企业详情"
+        title={`企业详情 - ${editingEnterprise?.name}`}
         open={detailModalOpen}
         onCancel={handleCloseDetail}
         footer={null}
-        width={640}
+        width={680}
+        destroyOnClose
       >
         {editingEnterprise && (
           <Tabs
@@ -494,6 +583,7 @@ const EnterpriseManagement: React.FC = () => {
         <Alert
           type="warning"
           showIcon
+          icon={<ExclamationCircleOutlined />}
           message="套餐更换后，运营角色超出新套餐的权限将被自动清理，确认更换？"
         />
         <div style={{ marginTop: 16 }}>

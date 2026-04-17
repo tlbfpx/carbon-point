@@ -16,11 +16,21 @@ import {
   Typography,
   InputNumber,
   Tooltip,
+  Empty,
+  Descriptions,
 } from 'antd';
-import { PlusOutlined, DeleteOutlined, EditOutlined, SettingOutlined } from '@ant-design/icons';
+import {
+  PlusOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  SettingOutlined,
+  ReloadOutlined,
+  CheckCircleOutlined,
+  ExclamationCircleOutlined,
+} from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-
-const { Text } = Typography;
+import dayjs from 'dayjs';
+import { Text } = Typography;
 import type { PermissionPackage, Product, Feature, ProductFeature } from '@/api/platform';
 import {
   getPackages,
@@ -32,7 +42,9 @@ import {
   getProducts,
   getProductFeatures,
   updatePackageProductFeatures,
+  getPackagePermissions,
 } from '@/api/platform';
+import { extractArray } from '@/utils';
 
 const { Panel } = Collapse;
 
@@ -47,14 +59,15 @@ const PackageManagement: React.FC = () => {
   const [productModalOpen, setProductModalOpen] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState<any>(null);
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
-  const [packageProductFeatures, setPackageProductFeatures] = useState<{
-    [productId: string]: { [featureId: string]: ProductFeature };
-  }>({});
+  const [packageProductFeatures, setPackageProductFeatures] = useState<Record<string, Record<string, ProductFeature>>>({});
   const [productFeaturesLoading, setProductFeaturesLoading] = useState(false);
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
 
-  const { data: packagesData, isLoading } = useQuery({
+  const { data: packagesData, isLoading, refetch } = useQuery({
     queryKey: ['packages', page, pageSize],
     queryFn: () => getPackages({ page, size: pageSize }),
+    retry: false,
+    refetchOnWindowFocus: false,
   });
 
   const { data: productsData } = useQuery({
@@ -75,10 +88,13 @@ const PackageManagement: React.FC = () => {
         message.error(res.message || '创建失败');
       }
     },
+    onError: (err: any) => {
+      message.error(err?.response?.data?.message || '创建失败');
+    },
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: { name: string; description?: string } }) =>
+    mutationFn: ({ id, data }: { id: string; data: { name: string; description?: string; status?: number } }) =>
       updatePackage(id, data),
     onSuccess: (res: { code: number; message?: string }) => {
       if (res.code === 200 || res.code === 0) {
@@ -91,6 +107,9 @@ const PackageManagement: React.FC = () => {
         message.error(res.message || '更新失败');
       }
     },
+    onError: (err: any) => {
+      message.error(err?.response?.data?.message || '更新失败');
+    },
   });
 
   const deleteMutation = useMutation({
@@ -102,6 +121,9 @@ const PackageManagement: React.FC = () => {
       } else {
         message.error(res.message || '删除失败');
       }
+    },
+    onError: (err: any) => {
+      message.error(err?.response?.data?.message || '删除失败');
     },
   });
 
@@ -117,10 +139,15 @@ const PackageManagement: React.FC = () => {
         message.error(res.message || '更新失败');
       }
     },
+    onError: (err: any) => {
+      message.error(err?.response?.data?.message || '更新失败');
+    },
   });
 
   const updateProductFeaturesMutation = useMutation({
-    mutationFn: ({ packageId, productId, features }: { packageId: string; productId: string; features: { featureId: string; configValue?: string; isEnabled: boolean }[] }) =>
+    mutationFn: ({
+      packageId, productId, features,
+    }: { packageId: string; productId: string; features: { featureId: string; configValue?: string; isEnabled: boolean }[] }) =>
       updatePackageProductFeatures(packageId, productId, features),
     onSuccess: (res: { code: number; message?: string }) => {
       if (res.code === 200 || res.code === 0) {
@@ -129,6 +156,9 @@ const PackageManagement: React.FC = () => {
       } else {
         message.error(res.message || '保存失败');
       }
+    },
+    onError: (err: any) => {
+      message.error(err?.response?.data?.message || '保存失败');
     },
   });
 
@@ -146,6 +176,11 @@ const PackageManagement: React.FC = () => {
     setPackageModalOpen(true);
   };
 
+  const openDetailModal = async (record: PermissionPackage) => {
+    setSelectedPackage(record);
+    setDetailModalOpen(true);
+  };
+
   const openProductModal = async (record: any) => {
     setSelectedPackage(record);
     setProductFeaturesLoading(true);
@@ -154,8 +189,7 @@ const PackageManagement: React.FC = () => {
       const packageProducts = detail.data?.products || [];
       setSelectedProducts(packageProducts.map((p: any) => p.productId));
 
-      // Load features for each product
-      const featureMap: { [productId: string]: { [featureId: string]: ProductFeature } } = {};
+      const featureMap: Record<string, Record<string, ProductFeature>> = {};
       for (const pkgProduct of packageProducts) {
         if (pkgProduct.productId) {
           try {
@@ -166,7 +200,7 @@ const PackageManagement: React.FC = () => {
               featureMap[pkgProduct.productId][pf.featureId] = pf;
             });
           } catch {
-            // Ignore if features can't be loaded
+            // ignore
           }
         }
       }
@@ -197,39 +231,91 @@ const PackageManagement: React.FC = () => {
     }
   };
 
-  const columns = [
-    { title: '套餐编码', dataIndex: 'code', render: (v: string) => <Text code>{v}</Text> },
-    { title: '套餐名称', dataIndex: 'name' },
-    { title: '描述', dataIndex: 'description', ellipsis: true },
-    { title: '状态', dataIndex: 'status', render: (s: number) => <Tag color={s === 1 ? 'green' : 'default'}>{s === 1 ? '启用' : '禁用'}</Tag> },
-    { title: '权限数', dataIndex: 'permissionCount' },
-    { title: '使用企业', dataIndex: 'tenantCount' },
-    { title: '操作', width: 200, render: (_: unknown, record: PermissionPackage) => (
-      <Space size="small">
-        <Button type="link" size="small" icon={<EditOutlined />} onClick={() => openEditModal(record)} />
-        <Button type="link" size="small" icon={<SettingOutlined />} onClick={() => openProductModal(record)}>
-          配置产品
-        </Button>
-        {record.code !== 'free' && (
-          <Popconfirm title="确认删除？" onConfirm={() => deleteMutation.mutate(record.id)} okText="确认" cancelText="取消">
-            <Button type="link" size="small" danger icon={<DeleteOutlined />} />
-          </Popconfirm>
-        )}
-      </Space>
-    )},
-  ];
+  const handleToggleStatus = (record: PermissionPackage) => {
+    updateMutation.mutate({
+      id: record.id,
+      data: { name: record.name, description: record.description, status: record.status === 1 ? 0 : 1 },
+    });
+  };
 
   const records = packagesData?.data?.records || packagesData?.data || [];
   const total = packagesData?.data?.total || records.length;
   const allProducts = productsData?.data?.records || productsData?.data || [];
 
+  const columns = [
+    { title: '套餐编码', dataIndex: 'code', width: 120, render: (v: string) => <Text code copyable>{v}</Text> },
+    { title: '套餐名称', dataIndex: 'name' },
+    { title: '描述', dataIndex: 'description', ellipsis: true, render: (d: string) => d || '-' },
+    {
+      title: '状态',
+      dataIndex: 'status',
+      width: 80,
+      render: (s: number) => <Tag color={s === 1 ? 'green' : 'default'}>{s === 1 ? '启用' : '禁用'}</Tag>,
+    },
+    {
+      title: '权限数',
+      dataIndex: 'permissionCount',
+      width: 80,
+      render: (n: number) => <Tooltip title={`包含 ${n} 个功能点`}>{n ?? 0}</Tooltip>,
+    },
+    {
+      title: '使用企业',
+      dataIndex: 'tenantCount',
+      width: 90,
+      render: (n: number) => n ?? 0,
+    },
+    {
+      title: '创建时间',
+      dataIndex: 'createdAt',
+      width: 110,
+      render: (t: string) => t ? dayjs(t).format('YYYY-MM-DD') : '-',
+    },
+    {
+      title: '操作',
+      width: 260,
+      render: (_: unknown, record: PermissionPackage) => (
+        <Space size="small">
+          <Button type="link" size="small" icon={<EditOutlined />} onClick={() => openEditModal(record)}>
+            编辑
+          </Button>
+          <Button type="link" size="small" icon={<SettingOutlined />} onClick={() => openProductModal(record)}>
+            配置产品
+          </Button>
+          <Popconfirm
+            title={record.status === 1 ? '确认禁用该套餐？' : '确认启用该套餐？'}
+            onConfirm={() => handleToggleStatus(record)}
+            okText="确认"
+            cancelText="取消"
+          >
+            <Button type="link" size="small">
+              {record.status === 1 ? '禁用' : '启用'}
+            </Button>
+          </Popconfirm>
+          {record.code !== 'free' && record.tenantCount === 0 && (
+            <Popconfirm
+              title="确认删除该套餐？"
+              description="删除后不可恢复"
+              onConfirm={() => deleteMutation.mutate(record.id)}
+              okText="确认"
+              cancelText="取消"
+              okButtonProps={{ danger: true }}
+            >
+              <Button type="link" size="small" danger icon={<DeleteOutlined />} />
+            </Popconfirm>
+          )}
+        </Space>
+      ),
+    },
+  ];
+
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-        <h2>套餐管理</h2>
-        <Button type="primary" icon={<PlusOutlined />} onClick={openCreateModal}>
-          创建套餐
-        </Button>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16, alignItems: 'center' }}>
+        <h2 style={{ margin: 0 }}>套餐管理</h2>
+        <Space>
+          <Button icon={<ReloadOutlined />} onClick={() => refetch()}>刷新</Button>
+          <Button type="primary" icon={<PlusOutlined />} onClick={openCreateModal}>创建套餐</Button>
+        </Space>
       </div>
 
       <Table
@@ -237,21 +323,25 @@ const PackageManagement: React.FC = () => {
         dataSource={records}
         rowKey="id"
         loading={isLoading}
+        locale={{ emptyText: <Empty description="暂无套餐数据" image={Empty.PRESENTED_IMAGE_SIMPLE} /> }}
         pagination={{
           current: page,
           pageSize,
           total,
           showSizeChanger: true,
+          showTotal: (t) => `共 ${t} 条`,
           onChange: (p, ps) => { setPage(p); setPageSize(ps || 10); },
         }}
       />
 
+      {/* Create/Edit Package Modal */}
       <Modal
         title={packageModalMode === 'create' ? '创建套餐' : '编辑套餐'}
         open={packageModalOpen}
         onCancel={() => { setPackageModalOpen(false); setEditingPackage(null); form.resetFields(); }}
         footer={null}
         width={480}
+        destroyOnClose
       >
         <Form form={form} layout="vertical" onFinish={handleFormFinish}>
           {packageModalMode === 'create' && (
@@ -270,53 +360,54 @@ const PackageManagement: React.FC = () => {
               <Button type="primary" htmlType="submit" loading={createMutation.isPending || updateMutation.isPending}>
                 {packageModalMode === 'create' ? '确认创建' : '保存修改'}
               </Button>
-              <Button onClick={() => { setPackageModalOpen(false); setEditingPackage(null); form.resetFields(); }}>
-                取消
-              </Button>
+              <Button onClick={() => { setPackageModalOpen(false); setEditingPackage(null); form.resetFields(); }}>取消</Button>
             </Space>
           </Form.Item>
         </Form>
       </Modal>
 
+      {/* Product Configuration Modal */}
       <Modal
         title={`配置产品 - ${selectedPackage?.name}`}
         open={productModalOpen}
-        onCancel={() => { setProductModalOpen(false); setSelectedPackage(null); }}
+        onCancel={() => { setProductModalOpen(false); setSelectedPackage(null); setSelectedProducts([]); setPackageProductFeatures({}); }}
         onOk={handleProductSave}
         confirmLoading={updateProductsMutation.isPending || productFeaturesLoading}
         width={800}
       >
         <div style={{ marginBottom: 16 }}>
           <Card size="small" type="inner" title="选择产品">
-            {allProducts.map((product: Product) => (
-              <div key={product.id} style={{ padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
-                <Space style={{ width: '100%', justifyContent: 'space-between' }}>
-                  <Checkbox
-                    checked={selectedProducts.includes(product.id)}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setSelectedProducts([...selectedProducts, product.id]);
-                      } else {
-                        setSelectedProducts(selectedProducts.filter(id => id !== product.id));
-                        const newFeatures = { ...packageProductFeatures };
-                        delete newFeatures[product.id];
-                        setPackageProductFeatures(newFeatures);
-                      }
-                    }}
-                  >
-                    <strong>{product.name}</strong>
-                    <Tag color={product.category === 'stairs_climbing' ? 'blue' : 'green'}>
-                      {product.category === 'stairs_climbing' ? '爬楼积分' : '走路积分'}
-                    </Tag>
-                  </Checkbox>
-                </Space>
-                {product.description && (
-                  <div style={{ marginLeft: 24, marginTop: 4, color: '#666', fontSize: 13 }}>
-                    {product.description}
-                  </div>
-                )}
-              </div>
-            ))}
+            {allProducts.length === 0 ? (
+              <Empty description="暂无可用产品" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+            ) : (
+              allProducts.map((product: Product) => (
+                <div key={product.id} style={{ padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
+                  <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+                    <Checkbox
+                      checked={selectedProducts.includes(product.id)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedProducts([...selectedProducts, product.id]);
+                        } else {
+                          setSelectedProducts(selectedProducts.filter((id) => id !== product.id));
+                          const newFeatures = { ...packageProductFeatures };
+                          delete newFeatures[product.id];
+                          setPackageProductFeatures(newFeatures);
+                        }
+                      }}
+                    >
+                      <strong>{product.name}</strong>
+                      <Tag color={product.category === 'stairs_climbing' ? 'blue' : 'green'} style={{ marginLeft: 4 }}>
+                        {product.category === 'stairs_climbing' ? '爬楼积分' : '走路积分'}
+                      </Tag>
+                    </Checkbox>
+                  </Space>
+                  {product.description && (
+                    <div style={{ marginLeft: 24, marginTop: 4, color: '#666', fontSize: 13 }}>{product.description}</div>
+                  )}
+                </div>
+              ))
+            )}
           </Card>
         </div>
 
@@ -358,10 +449,7 @@ const PackageManagement: React.FC = () => {
                                         ...prev,
                                         [product.id]: {
                                           ...prev[product.id],
-                                          [pf.featureId]: {
-                                            ...pf,
-                                            isEnabled: e.target.checked,
-                                          },
+                                          [pf.featureId]: { ...pf, isEnabled: e.target.checked },
                                         },
                                       }));
                                     }}
@@ -378,9 +466,7 @@ const PackageManagement: React.FC = () => {
                                       )}
                                     </Space>
                                     {pf.feature?.description && (
-                                      <div style={{ color: '#999', fontSize: 12, marginTop: 2 }}>
-                                        {pf.feature.description}
-                                      </div>
+                                      <div style={{ color: '#999', fontSize: 12, marginTop: 2 }}>{pf.feature.description}</div>
                                     )}
                                   </div>
                                   {pf.feature?.type === 'config' && pf.isEnabled && (
@@ -393,10 +479,7 @@ const PackageManagement: React.FC = () => {
                                               ...prev,
                                               [product.id]: {
                                                 ...prev[product.id],
-                                                [pf.featureId]: {
-                                                  ...pf,
-                                                  configValue: String(checked),
-                                                },
+                                                [pf.featureId]: { ...pf, configValue: String(checked) },
                                               },
                                             }));
                                           }}
@@ -413,10 +496,7 @@ const PackageManagement: React.FC = () => {
                                               ...prev,
                                               [product.id]: {
                                                 ...prev[product.id],
-                                                [pf.featureId]: {
-                                                  ...pf,
-                                                  configValue: val !== null ? String(val) : undefined,
-                                                },
+                                                [pf.featureId]: { ...pf, configValue: val !== null ? String(val) : undefined },
                                               },
                                             }));
                                           }}
@@ -431,10 +511,7 @@ const PackageManagement: React.FC = () => {
                                               ...prev,
                                               [product.id]: {
                                                 ...prev[product.id],
-                                                [pf.featureId]: {
-                                                  ...pf,
-                                                  configValue: e.target.value,
-                                                },
+                                                [pf.featureId]: { ...pf, configValue: e.target.value },
                                               },
                                             }));
                                           }}
@@ -448,10 +525,7 @@ const PackageManagement: React.FC = () => {
                                               ...prev,
                                               [product.id]: {
                                                 ...prev[product.id],
-                                                [pf.featureId]: {
-                                                  ...pf,
-                                                  configValue: e.target.value,
-                                                },
+                                                [pf.featureId]: { ...pf, configValue: e.target.value },
                                               },
                                             }));
                                           }}
@@ -466,6 +540,7 @@ const PackageManagement: React.FC = () => {
                               type="primary"
                               size="small"
                               style={{ marginTop: 8 }}
+                              icon={<CheckCircleOutlined />}
                               onClick={() => {
                                 const features = Object.values(packageProductFeatures[product.id] || {}).map((pf: ProductFeature) => ({
                                   featureId: pf.featureId,
