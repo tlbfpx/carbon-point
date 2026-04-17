@@ -30,7 +30,6 @@ import {
 } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
-import { Text } = Typography;
 import type { PermissionPackage, Product, Feature, ProductFeature } from '@/api/platform';
 import {
   getPackages,
@@ -47,6 +46,7 @@ import {
 import { extractArray } from '@/utils';
 
 const { Panel } = Collapse;
+const { Text } = Typography;
 
 const PackageManagement: React.FC = () => {
   const queryClient = useQueryClient();

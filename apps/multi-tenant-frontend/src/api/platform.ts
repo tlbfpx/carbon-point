@@ -336,12 +336,12 @@ export interface PackageDetail extends PermissionPackage {
 
 // Product APIs
 export const getProducts = async (params?: { page?: number; size?: number; category?: string; status?: number; keyword?: string }) => {
-  const res = await platformApiClient.get('/products', { params });
+  const res = await platformApiClient.get('/platform/products', { params });
   return res.data;
 };
 
 export const getProduct = async (id: string) => {
-  const res = await platformApiClient.get(`/products/${id}`);
+  const res = await platformApiClient.get(`/platform/products/${id}`);
   return res.data;
 };
 
@@ -353,7 +353,7 @@ export const createProduct = async (data: {
   status?: number;
   sortOrder?: number;
 }) => {
-  const res = await platformApiClient.post('/products', data);
+  const res = await platformApiClient.post('/platform/products', data);
   return res.data;
 };
 
@@ -361,23 +361,23 @@ export const updateProduct = async (
   id: string,
   data: { name?: string; description?: string; status?: number; sortOrder?: number }
 ) => {
-  const res = await platformApiClient.put(`/products/${id}`, data);
+  const res = await platformApiClient.put(`/platform/products/${id}`, data);
   return res.data;
 };
 
 export const deleteProduct = async (id: string) => {
-  const res = await platformApiClient.delete(`/products/${id}`);
+  const res = await platformApiClient.delete(`/platform/products/${id}`);
   return res.data;
 };
 
 // Product Feature APIs
 export const getProductFeatures = async (productId: string) => {
-  const res = await platformApiClient.get(`/products/${productId}/features`);
+  const res = await platformApiClient.get(`/platform/products/${productId}/features`);
   return res.data;
 };
 
 export const updateProductFeatures = async (productId: string, features: { featureId: string; configValue?: string; isRequired: boolean; isEnabled: boolean }[]) => {
-  const res = await platformApiClient.put(`/products/${productId}/features`, { features });
+  const res = await platformApiClient.put(`/platform/products/${productId}/features`, { features });
   return res.data;
 };
 
