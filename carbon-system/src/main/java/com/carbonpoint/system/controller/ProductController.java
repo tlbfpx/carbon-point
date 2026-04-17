@@ -17,7 +17,7 @@ import java.util.List;
  * Product management controller - platform level.
  */
 @RestController
-@RequestMapping("/products")
+@RequestMapping("/platform/products")
 @RequiredArgsConstructor
 public class ProductController {
 
