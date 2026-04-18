@@ -1,0 +1,65 @@
+spring:
+  application:
+    name: carbon-point-test
+  main:
+    allow-bean-definition-overriding: true
+
+  autoconfigure:
+    exclude:
+      - org.redisson.spring.starter.RedissonAutoConfigurationV2
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:testdb;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false
+    username: sa
+    password:
+
+  sql:
+    init:
+      mode: embedded
+      schema-locations: classpath:db/schema-h2.sql
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 1
+
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+
+  http:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force-request: true
+      force-response: true
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+jwt:
+  secret: test-integration-key-for-unit-testing-only-32chars
+  access-token-expiration: 86400000
+  refresh-token-expiration: 604800000
+
+security:
+  captcha:
+    enabled: false
+  lock:
+    enabled: false
+    duration-minutes: 30
+
+logging:
+  level:
+    com.carbonpoint: info

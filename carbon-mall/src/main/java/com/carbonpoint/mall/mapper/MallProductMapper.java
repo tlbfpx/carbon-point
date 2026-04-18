@@ -10,7 +10,7 @@ import org.apache.ibatis.annotations.Update;
  * Mapper for products table.
  */
 @Mapper
-public interface ProductMapper extends BaseMapper<Product> {
+public interface MallProductMapper extends BaseMapper<Product> {
 
     /**
      * Atomically deduct 1 from product stock with version check and stock positivity check.

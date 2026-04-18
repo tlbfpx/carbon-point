@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS users (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     tenant_id BIGINT NOT NULL,
     phone VARCHAR(20) NOT NULL UNIQUE,
+    email VARCHAR(100),
     password_hash VARCHAR(255) NOT NULL,
     nickname VARCHAR(50),
     avatar VARCHAR(500),
@@ -156,6 +157,19 @@ CREATE TABLE IF NOT EXISTS permissions (
     deleted INT NOT NULL DEFAULT 0
 );
 
+-- Seed data for permissions (needed for RolePermission FK and permission checks)
+INSERT INTO permissions (code, module, operation, description, sort_order, deleted) VALUES
+    ('user:create', 'user', 'create', '创建用户', 1, 0),
+    ('user:update', 'user', 'update', '更新用户', 2, 0),
+    ('user:delete', 'user', 'delete', '删除用户', 3, 0),
+    ('user:view', 'user', 'view', '查看用户', 4, 0),
+    ('user:import', 'user', 'import', '导入用户', 5, 0),
+    ('user:disable', 'user', 'disable', '禁用用户', 6, 0),
+    ('role:create', 'role', 'create', '创建角色', 10, 0),
+    ('role:update', 'role', 'update', '更新角色', 11, 0),
+    ('role:delete', 'role', 'delete', '删除角色', 12, 0),
+    ('role:assign', 'role', 'assign', '分配角色权限', 13, 0);
+
 CREATE TABLE IF NOT EXISTS role_permissions (
     role_id BIGINT NOT NULL,
     permission_code VARCHAR(60) NOT NULL,
@@ -234,6 +248,22 @@ CREATE TABLE IF NOT EXISTS notification_templates (
     is_preset BOOLEAN NOT NULL DEFAULT TRUE,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ============================================================
+-- Outbox Events (for transactional outbox pattern)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS outbox_events (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    tenant_id BIGINT NOT NULL,
+    aggregate_type VARCHAR(30) NOT NULL,
+    aggregate_id BIGINT NOT NULL,
+    event_type VARCHAR(50) NOT NULL,
+    payload TEXT,
+    trace_id VARCHAR(64),
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    processed INT NOT NULL DEFAULT 0,
+    processed_at DATETIME
 );
 
 -- Seed data for notification templates

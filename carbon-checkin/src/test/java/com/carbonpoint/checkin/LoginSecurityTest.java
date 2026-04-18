@@ -183,7 +183,7 @@ class LoginSecurityTest extends BaseIntegrationTest {
         result.getResponse().setCharacterEncoding("UTF-8");
         String content = result.getResponse().getContentAsString();
         assertTrue(
-                content.contains("\"code\":3001") || content.contains("\"code\":2004"),
+                content.contains("\"code\":\"USER001\"") || content.contains("\"code\": \"USER001\""),
                 "Wrong password should return auth error, got: " + content
         );
 
@@ -264,7 +264,9 @@ class LoginSecurityTest extends BaseIntegrationTest {
         // Should be rejected because account has too many failures
         // With failureThreshold=2, captcha may be required (3005) before lock (3002) triggers
         assertTrue(
-                content.contains("\"code\":3002") || content.contains("\"code\":3005") || content.contains("锁定") || content.contains("图形验证码"),
+                content.contains("\"code\":\"USER002\"") || content.contains("\"code\": \"USER002\"") ||
+                content.contains("\"code\":\"USER005\"") || content.contains("\"code\": \"USER005\"") ||
+                content.contains("锁定") || content.contains("图形验证码"),
                 "Login with excessive failures should be rejected, got: " + content
         );
     }

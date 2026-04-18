@@ -9,7 +9,7 @@ import com.carbonpoint.common.result.ErrorCode;
 import com.carbonpoint.mall.entity.ExchangeOrder;
 import com.carbonpoint.mall.mapper.ExchangeOrderMapper;
 import com.carbonpoint.mall.entity.Product;
-import com.carbonpoint.mall.mapper.ProductMapper;
+import com.carbonpoint.mall.mapper.MallProductMapper;
 import com.carbonpoint.common.entity.PointTransactionEntity;
 import com.carbonpoint.common.mapper.PointTransactionMapper;
 import com.carbonpoint.report.dto.EnterpriseDashboardDTO;
@@ -45,7 +45,7 @@ public class ReportService {
     private final CheckInRecordMapper checkInRecordMapper;
     private final PointTransactionMapper pointTransactionMapper;
     private final ExchangeOrderMapper exchangeOrderMapper;
-    private final ProductMapper productMapper;
+    private final MallProductMapper productMapper;
     private final TenantMapper tenantMapper;
     private final UserMapper userMapper;
 

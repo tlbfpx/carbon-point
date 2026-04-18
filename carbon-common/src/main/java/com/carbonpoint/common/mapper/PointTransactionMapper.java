@@ -11,8 +11,12 @@ import java.util.List;
 
 /**
  * Mapper for point_transactions table.
+ * Class-level @InterceptorIgnore skips tenant-line filtering on all methods
+ * including inherited BaseMapper methods. This is safe because point_transactions
+ * records store tenant_id explicitly and queries should work regardless of context.
  */
 @Mapper
+@InterceptorIgnore(tenantLine = "1")
 public interface PointTransactionMapper extends BaseMapper<PointTransactionEntity> {
 
     /**

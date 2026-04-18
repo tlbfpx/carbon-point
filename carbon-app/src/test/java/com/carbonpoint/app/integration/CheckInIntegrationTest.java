@@ -169,7 +169,7 @@ class CheckInIntegrationTest extends BaseIntegrationTest {
         MvcResult result = postJson("/api/checkin", checkInJson, token);
 
         // Should receive CHECKIN_ALREADY_DONE error (code 10002)
-        assertErrorCode(result, 10002);
+        assertErrorCode(result, "CHECKIN002");
 
         // Verify no transaction was created (pre-existing record and rejected duplicate both have no transaction)
         LambdaQueryWrapper<PointTransactionEntity> wrapper = new LambdaQueryWrapper<>();

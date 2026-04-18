@@ -89,9 +89,9 @@ class CheckInConcurrencyTest extends BaseIntegrationTest {
                     result.getResponse().setCharacterEncoding("UTF-8");
                     String content = result.getResponse().getContentAsString();
 
-                    if (content.contains("\"code\":200")) {
+                    if (content.contains("\"code\":\"0000\"") || content.contains("\"code\": \"0000\"")) {
                         successCount.incrementAndGet();
-                    } else if (content.contains("\"code\":10002")) {
+                    } else if (content.contains("\"code\":\"CHECKIN002\"") || content.contains("\"code\": \"CHECKIN002\"")) {
                         // CHECKIN_ALREADY_DONE — expected for duplicates
                         duplicateCount.incrementAndGet();
                     } else {
@@ -179,7 +179,7 @@ class CheckInConcurrencyTest extends BaseIntegrationTest {
                     MvcResult result = postJson("/api/checkin", checkInJson, token);
                     result.getResponse().setCharacterEncoding("UTF-8");
                     String content = result.getResponse().getContentAsString();
-                    if (content.contains("\"code\":200")) {
+                    if (content.contains("\"code\":\"0000\"") || content.contains("\"code\": \"0000\"")) {
                         successCount.incrementAndGet();
                     } else {
                         errorCount.incrementAndGet();

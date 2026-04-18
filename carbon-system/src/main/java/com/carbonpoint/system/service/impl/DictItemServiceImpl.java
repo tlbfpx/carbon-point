@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.carbonpoint.common.exception.BusinessException;
+import com.carbonpoint.common.result.ErrorCode;
 import com.carbonpoint.system.entity.DictItemEntity;
 import com.carbonpoint.system.mapper.DictItemMapper;
 import com.carbonpoint.system.service.DictItemService;
@@ -60,7 +61,7 @@ public class DictItemServiceImpl implements DictItemService {
     public void updateDictItem(String id, DictItemEntity entity) {
         DictItemEntity existing = dictItemMapper.selectById(id);
         if (existing == null) {
-            throw new BusinessException("字典项不存在");
+            throw new BusinessException(ErrorCode.NOT_FOUND, "字典项不存在");
         }
         entity.setId(id);
         entity.setUpdateTime(LocalDateTime.now());

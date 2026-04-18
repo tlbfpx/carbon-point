@@ -344,19 +344,27 @@ public class PointAccountService {
         wrapper.eq(PointTransactionEntity::getUserId, userId)
                 .orderByDesc(PointTransactionEntity::getCreatedAt);
 
-        Page<PointTransactionEntity> result = transactionMapper.selectPage(new Page<>(page, effectiveSize), wrapper);
-        Page<PointTransactionDTO> dtoPage = new Page<>(result.getCurrent(), result.getSize(), result.getTotal());
-        dtoPage.setRecords(result.getRecords().stream().map(tx -> {
-            PointTransactionDTO d = new PointTransactionDTO();
-            d.setId(tx.getId());
-            d.setAmount(tx.getAmount());
-            d.setType(tx.getType());
-            d.setReferenceId(tx.getReferenceId());
-            d.setBalanceAfter(tx.getBalanceAfter());
-            d.setRemark(tx.getRemark());
-            d.setCreatedAt(tx.getCreatedAt());
-            return d;
-        }).toList());
+        // Use selectList + manual pagination to avoid TenantLineInnerInterceptor
+        // bug where selectPage count query returns 0 due to duplicate tenant_id filter.
+        List<PointTransactionEntity> all = transactionMapper.selectList(wrapper);
+        Page<PointTransactionDTO> dtoPage = new Page<>(page, effectiveSize, all.size());
+        int start = (int) ((page - 1) * effectiveSize);
+        int end = Math.min(start + effectiveSize, all.size());
+        if (start < all.size()) {
+            dtoPage.setRecords(all.subList(start, end).stream().map(tx -> {
+                PointTransactionDTO d = new PointTransactionDTO();
+                d.setId(tx.getId());
+                d.setAmount(tx.getAmount());
+                d.setType(tx.getType());
+                d.setReferenceId(tx.getReferenceId());
+                d.setBalanceAfter(tx.getBalanceAfter());
+                d.setRemark(tx.getRemark());
+                d.setCreatedAt(tx.getCreatedAt());
+                return d;
+            }).toList());
+        } else {
+            dtoPage.setRecords(List.of());
+        }
         return dtoPage;
     }
 

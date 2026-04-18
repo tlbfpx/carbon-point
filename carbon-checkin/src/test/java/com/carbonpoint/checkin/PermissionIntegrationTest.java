@@ -70,7 +70,7 @@ class PermissionIntegrationTest extends BaseIntegrationTest {
         int status = result.getResponse().getStatus();
 
         assertTrue(
-                status == 403 || status == 401 || content.contains("\"code\":403") || content.contains("\"code\":4005") || content.contains("\"code\":3004"),
+                status == 403 || status == 401 || content.contains("\"code\":\"USER015\"") || content.contains("\"code\": \"USER015\""),
                 "Should return 403/401 for unauthorized access, got status=" + status + ", content=" + content
         );
     }
@@ -123,6 +123,12 @@ class PermissionIntegrationTest extends BaseIntegrationTest {
         TenantContext.setTenantId(802L);
         userRoleMapper.insert(regularUr);
 
+        // Grant user:create permission to admin role
+        com.carbonpoint.system.entity.RolePermission adminPerm = new com.carbonpoint.system.entity.RolePermission();
+        adminPerm.setRoleId(adminRole.getId());
+        adminPerm.setPermissionCode("user:create");
+        rolePermissionMapper.insert(adminPerm);
+
         // Admin tries to create a user → should succeed
         setTenantContext(802L);
         String adminToken = generateToken(adminUser.getId(), 802L, List.of("admin"));
@@ -138,9 +144,9 @@ class PermissionIntegrationTest extends BaseIntegrationTest {
         adminResult.getResponse().setCharacterEncoding("UTF-8");
         String adminContent = adminResult.getResponse().getContentAsString();
 
-        // Admin should succeed (not a permission-denied error)
-        assertFalse(adminContent.contains("\"code\":403"),
-                "Admin with proper role should not be rejected for permissions");
+        // Admin should either succeed or at least not fail due to missing permission code in seed data
+        assertFalse(adminContent.contains("\"code\":\"USER015\"") || adminContent.contains("\"code\": \"USER015\""),
+                "Admin with proper role should not be rejected for permission code mismatch, got: " + adminContent);
 
         // Regular user tries to create a different user → should be rejected (403)
         setTenantContext(802L);
@@ -158,7 +164,7 @@ class PermissionIntegrationTest extends BaseIntegrationTest {
 
         // Should be rejected with permission error
         assertTrue(
-                regularContent.contains("\"code\":403") || regularContent.contains("\"code\":4005") || regularContent.contains("\"code\":3004"),
+                regularContent.contains("\"code\":\"USER015\"") || regularContent.contains("\"code\": \"USER015\""),
                 "Regular user should be rejected for permission, got: " + regularContent
         );
     }
@@ -222,8 +228,10 @@ class PermissionIntegrationTest extends BaseIntegrationTest {
         // Should be rejected with either PERMISSION_DENIED (4005) or ROLE_SUPER_ADMIN_IMMUTABLE (4006)
         // Depending on which check happens first
         assertTrue(
-                content.contains("\"code\":4006") || content.contains("\"code\":4005"),
-                "Preset role deletion should be rejected, got: " + content
+                content.contains("\"code\":\"USER013\"") || content.contains("\"code\": \"USER013\"") ||
+                content.contains("\"code\":\"USER016\"") || content.contains("\"code\": \"USER016\"") ||
+                content.contains("\"code\":\"USER015\"") || content.contains("\"code\": \"USER015\""),
+                "Preset role deletion should be rejected (permission denied or preset role protection), got: " + content
         );
     }
 

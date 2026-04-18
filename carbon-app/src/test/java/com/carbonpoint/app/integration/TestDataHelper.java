@@ -9,7 +9,7 @@ import com.carbonpoint.common.mapper.PointTransactionMapper;
 import com.carbonpoint.mall.entity.ExchangeOrder;
 import com.carbonpoint.mall.entity.Product;
 import com.carbonpoint.mall.mapper.ExchangeOrderMapper;
-import com.carbonpoint.mall.mapper.ProductMapper;
+import com.carbonpoint.mall.mapper.MallProductMapper;
 import com.carbonpoint.points.entity.PointRule;
 import com.carbonpoint.points.mapper.PointRuleMapper;
 import com.carbonpoint.system.entity.User;
@@ -37,7 +37,7 @@ public class TestDataHelper {
     @Autowired private CheckInRecordMapper checkInRecordMapper;
     @Autowired private PointTransactionMapper pointTransactionMapper;
     @Autowired private PointRuleMapper pointRuleMapper;
-    @Autowired private ProductMapper productMapper;
+    @Autowired private MallProductMapper productMapper;
     @Autowired private ExchangeOrderMapper exchangeOrderMapper;
     @Autowired private AppPasswordEncoder passwordEncoder;
 

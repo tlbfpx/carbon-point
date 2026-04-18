@@ -1,6 +1,7 @@
 package com.carbonpoint.checkin;
 
 import com.carbonpoint.common.security.SecurityProperties;
+import com.carbonpoint.system.service.EmailService;
 import org.mockito.Mockito;
 import org.mybatis.spring.annotation.MapperScan;
 import org.redisson.api.RLock;
@@ -8,6 +9,7 @@ import org.redisson.api.RedissonClient;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -30,7 +32,6 @@ import static org.mockito.Mockito.*;
 /**
  * Test application entry point for integration tests.
  */
-@EnableAspectJAutoProxy(proxyTargetClass = true)
 @SpringBootApplication(scanBasePackages = "com.carbonpoint")
 @EnableScheduling
 @EnableConfigurationProperties(SecurityProperties.class)
@@ -39,6 +40,36 @@ public class TestApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(TestApplication.class, args);
+    }
+
+    /**
+     * Register a mock servlet with an empty name so that Spring Security's
+     * DispatcherServletRequestMatcher (used internally by Spring Security 6.2+)
+     * can find it in the MockMvc servlet context during integration tests.
+     *
+     * Without this, Spring Security throws:
+     *   "Failed to find servlet [] in the servlet context"
+     *
+     * We use ServletContextInitializer (not ServletRegistrationBean) because
+     * ServletRegistrationBean validates that name is non-empty, but we need
+     * to register a servlet with the empty name that matches the default
+     * DispatcherServlet path pattern.
+     */
+    @Bean
+    public ServletContextInitializer mockDispatcherServletInitializer() {
+        return servletContext -> {
+            // Register a mock servlet under the empty name
+            // This satisfies DispatcherServletRequestMatcher which looks up ""
+            servletContext.addServlet("", new jakarta.servlet.http.HttpServlet() {
+                // No-op servlet - just needs to exist so the matcher finds it
+            });
+        };
+    }
+
+    @Bean
+    @Primary
+    public EmailService emailService() {
+        return Mockito.mock(EmailService.class);
     }
 
     @Bean

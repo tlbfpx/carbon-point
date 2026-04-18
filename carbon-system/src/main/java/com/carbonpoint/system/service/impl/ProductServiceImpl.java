@@ -181,7 +181,7 @@ public class ProductServiceImpl implements ProductService {
         return pfs.stream().map(pf -> {
             FeatureEntity feature = featureMap.get(pf.getFeatureId());
             return ProductFeatureRes.builder()
-                    .id(pf.getId())
+                    .id(pf.getId() != null ? String.valueOf(pf.getId()) : null)
                     .productId(pf.getProductId())
                     .featureId(pf.getFeatureId())
                     .featureCode(feature != null ? feature.getCode() : null)
@@ -212,7 +212,6 @@ public class ProductServiceImpl implements ProductService {
 
         // Insert new mappings
         if (req.getFeatures() != null && !req.getFeatures().isEmpty()) {
-            List<ProductFeatureEntity> entities = new ArrayList<>();
             for (ProductFeatureUpdateReq.ProductFeatureItem item : req.getFeatures()) {
                 ProductFeatureEntity pf = new ProductFeatureEntity();
                 pf.setProductId(productId);
@@ -220,9 +219,8 @@ public class ProductServiceImpl implements ProductService {
                 pf.setConfigValue(item.getConfigValue());
                 pf.setIsRequired(item.getIsRequired() != null ? item.getIsRequired() : false);
                 pf.setIsEnabled(item.getIsEnabled() != null ? item.getIsEnabled() : true);
-                entities.add(pf);
+                productFeatureMapper.insert(pf);
             }
-            productFeatureMapper.insertBatchSomeColumn(entities);
         }
 
         log.info("Product features updated: productId={}, featureCount={}",
@@ -232,7 +230,7 @@ public class ProductServiceImpl implements ProductService {
     private ProductRes toRes(ProductEntity product) {
         int featureCount = productFeatureMapper.selectCount(
                 new LambdaQueryWrapper<ProductFeatureEntity>()
-                        .eq(ProductFeatureEntity::getProductId, product.getId()));
+                        .eq(ProductFeatureEntity::getProductId, product.getId())).intValue();
         return ProductRes.builder()
                 .id(product.getId())
                 .code(product.getCode())
