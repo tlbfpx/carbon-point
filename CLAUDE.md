@@ -6,7 +6,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Carbon Point (碳积分打卡平台) — a multi-tenant SaaS platform that incentivizes corporate employees to exercise by climbing stairs, rewarding them with points redeemable for virtual goods. **Current stage: specification only, no source code yet.**
 
-All business specs live in `openspec/`. Implementation plans and supplementary specs live in `docs/superpowers/`.
+All business specs and implementation plans live in `openspec/`. Key directories:
+- `openspec/PLANS/` — Implementation plans
+- `openspec/specs/` — Design specifications and improvement docs
+- `openspec/changes/` — OpenSpec change management
+- `openspec/review/ddl/` — Database schema files
 
 ## Planned Tech Stack
 
@@ -65,11 +69,11 @@ packages/utils/    # Shared utilities
 | Implementation task list (15 groups, ~110+ items) | `openspec/changes/carbon-point-platform/tasks.md` |
 | Module-level specs (Given-When-Then, 13 modules) | `openspec/changes/carbon-point-platform/specs/{module}/spec.md` |
 | Honor system (levels, badges, leaderboards) | `openspec/specs/2026-04-08-honor-system-mvp-design.md` |
-| Phased implementation plan | `docs/superpowers/plans/2026-04-08-carbon-point-full.md` |
-| TDD chunk-based implementation plan | `docs/superpowers/plans/2026-04-10-carbon-point-platform-full-implementation.md` |
-| UX / technical / business / product improvements | `docs/superpowers/specs/` |
-| Complete DDL with indexes and partitioning | `docs/review/ddl/carbon-point-schema.sql` |
-| Platform review report (4-expert audit) | `docs/review/2026-04-11-platform-review.md` |
+| Phased implementation plan | `openspec/PLANS/2026-04-08-carbon-point-full.md` |
+| TDD chunk-based implementation plan | `openspec/PLANS/2026-04-10-carbon-point-platform-full-implementation.md` |
+| UX / technical / business / product improvements | `openspec/specs/` |
+| Complete DDL with indexes and partitioning | `openspec/review/ddl/carbon-point-schema.sql` |
+| Platform review report (4-expert audit) | `openspec/review/2026-04-11-platform-review.md` |
 
 ## Planned Build & Test Commands (Once Code Exists)
 
