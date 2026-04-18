@@ -12,7 +12,6 @@ test.describe('企业后台 - 订单管理 (25 tests)', () => {
     // Navigate to orders page via sidebar
     await page.locator('text=订单管理').first().click({ force: true });
     await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
   });
 
   test('ORD-001: 订单管理页面可访问', async ({ page }) => {

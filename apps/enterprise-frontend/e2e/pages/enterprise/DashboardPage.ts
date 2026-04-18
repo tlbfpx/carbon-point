@@ -9,9 +9,10 @@ export class DashboardPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.statCards = page.locator('.ant-statistic');
-    this.checkinChart = page.locator('.ant-card').filter({ hasText: '打卡趋势' });
-    this.pointsChart = page.locator('.ant-card').filter({ hasText: '积分发放趋势' });
+    // GlassCardStat components - look for stat card containers
+    this.statCards = page.locator('[class*="glassCard"]');
+    this.checkinChart = page.locator('text=签到趋势').first();
+    this.pointsChart = page.locator('text=积分概况').first();
   }
 
   async goto() {
@@ -21,12 +22,11 @@ export class DashboardPage {
 
   async getStatCardValues(): Promise<Record<string, string>> {
     const stats: Record<string, string> = {};
-    const statElements = await this.statCards.all();
-    for (const stat of statElements) {
-      const title = await stat.locator('.ant-statistic-title').textContent();
-      const value = await stat.locator('.ant-statistic-content-value').textContent();
-      if (title && value) {
-        stats[title] = value;
+    const labels = await this.page.locator('text=今日签到,text=今日积分,text=活跃成员,text=本月兑换').all();
+    for (const label of labels) {
+      const text = await label.textContent();
+      if (text) {
+        stats[text] = text;
       }
     }
     return stats;

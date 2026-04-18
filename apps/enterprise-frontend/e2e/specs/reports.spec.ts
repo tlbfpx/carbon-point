@@ -11,7 +11,6 @@ test.describe('企业后台 - 数据报表 (20 tests)', () => {
     await loginAsEnterpriseAdmin(page, BASE_URL);
     await page.locator('text=数据报表').first().click({ force: true });
     await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
   });
 
   test('RPT-001: 数据报表页面可访问', async ({ page }) => {

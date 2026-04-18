@@ -11,7 +11,7 @@ export class MemberPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.addButton = page.locator('button').filter({ hasText: '添加员工' });
+    this.addButton = page.locator('button').filter({ hasText: '添加成员' });
     this.importButton = page.locator('button').filter({ hasText: '批量导入' });
     this.searchInput = page.locator('input[placeholder*="搜索"], input[placeholder*="姓名"], input.ant-input');
     this.table = page.locator('.ant-table');
