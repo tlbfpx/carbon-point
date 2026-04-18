@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Table,
   Button,
@@ -117,7 +117,7 @@ const Member: React.FC = () => {
     5: { bg: '#fce4ec', text: '#ec407a' },
   };
 
-  const columns = [
+  const columns = useMemo(() => [
     {
       title: '成员信息',
       dataIndex: 'username',
@@ -233,7 +233,7 @@ const Member: React.FC = () => {
         </Space>
       ),
     },
-  ];
+  ], [primaryColor, inviteMutation, toggleMutation]);
 
   return (
     <div style={{ padding: '24px', background: '#faf9f6', minHeight: '100vh' }}>

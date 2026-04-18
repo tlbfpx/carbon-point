@@ -16,9 +16,19 @@ export interface AdminUser {
   permissions: string[];
 }
 
+export interface LoginResponse {
+  code: number;
+  data: {
+    accessToken: string;
+    refreshToken: string;
+    user: AdminUser;
+  };
+  message?: string;
+}
+
 export const login = async (params: LoginParams) => {
   const res = await apiClient.post('/auth/login', params);
-  return res.data;
+  return res;
 };
 
 export const logout = async () => {
@@ -27,10 +37,10 @@ export const logout = async () => {
 
 export const getCurrentUser = async () => {
   const res = await apiClient.get('/auth/current');
-  return res.data;
+  return res;
 };
 
 export const getMyPermissions = async (): Promise<string[]> => {
-  const res = await apiClient.get<{ data: string[] }>('/permissions/my');
-  return res.data.data ?? [];
+  const res = await apiClient.get('/permissions/my');
+  return (res as unknown as string[]) ?? [];
 };

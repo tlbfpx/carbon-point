@@ -17,7 +17,11 @@
     "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@carbon-point/utils": ["../../packages/utils/src"],
+      "@carbon-point/api": ["../../packages/api/src"],
+      "@carbon-point/hooks": ["../../packages/hooks/src"],
+      "@carbon-point/ui": ["../../packages/ui/src"]
     }
   },
   "include": ["src", "src/vite-env.d.ts"],

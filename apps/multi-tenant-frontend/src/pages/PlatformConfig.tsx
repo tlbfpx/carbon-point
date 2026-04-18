@@ -36,31 +36,32 @@ const PlatformConfigPage: React.FC = () => {
   const { data: configData, isLoading: configLoading } = useQuery({
     queryKey: ['platform-config'],
     queryFn: getPlatformConfig,
-    onSuccess: (data: any) => {
-      if (data?.data) {
-        const configs = data.data;
-        const flags: Record<string, boolean> = {};
-        const templateList: RuleTemplate[] = [];
-
-        configs.forEach((c: PlatformConfig) => {
-          if (c.group === 'feature_flag') {
-            flags[c.key] = c.value as boolean;
-          }
-          if (c.group === 'rule_template') {
-            try {
-              const parsed = JSON.parse(c.value as string);
-              templateList.push({ id: c.key, name: parsed.name || c.key, description: parsed.description, slots: parsed.slots || [] });
-            } catch {
-              templateList.push({ id: c.key, name: c.key, slots: [] });
-            }
-          }
-        });
-
-        setFeatureFlags(flags);
-        setTemplates(templateList);
-      }
-    },
   });
+
+  useEffect(() => {
+    if (configData) {
+      const configs = configData as PlatformConfig[];
+      const flags: Record<string, boolean> = {};
+      const templateList: RuleTemplate[] = [];
+
+      configs.forEach((c: PlatformConfig) => {
+        if (c.group === 'feature_flag') {
+          flags[c.key] = c.value as boolean;
+        }
+        if (c.group === 'rule_template') {
+          try {
+            const parsed = JSON.parse(c.value as string);
+            templateList.push({ id: c.key, name: parsed.name || c.key, description: parsed.description, slots: parsed.slots || [] });
+          } catch {
+            templateList.push({ id: c.key, name: c.key, slots: [] });
+          }
+        }
+      });
+
+      setFeatureFlags(flags);
+      setTemplates(templateList);
+    }
+  }, [configData]);
 
   const updateMutation = useMutation({
     mutationFn: updatePlatformConfig,

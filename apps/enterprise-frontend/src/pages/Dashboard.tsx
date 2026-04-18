@@ -79,9 +79,7 @@ const EnterpriseDashboard: React.FC = () => {
     enabled: !!tenantId,
   });
 
-  const stats: DashboardStats = (statsData && typeof statsData === 'object' && 'data' in statsData)
-    ? (statsData as { data: DashboardStats }).data
-    : (statsData as DashboardStats) || {
+  const stats: DashboardStats = (statsData as DashboardStats) || {
     todayCheckInCount: 0,
     todayPointsGranted: 0,
     activeUsers: 0,
@@ -90,8 +88,8 @@ const EnterpriseDashboard: React.FC = () => {
 
   const extractArray = <T,>(data: unknown): T[] => {
     if (Array.isArray(data)) return data as T[];
-    if (data && typeof data === 'object' && 'data' in data) {
-      return (data as { data: T[] }).data;
+    if (data && typeof data === 'object' && 'records' in data) {
+      return (data as { records: T[] }).records;
     }
     return [];
   };
@@ -114,7 +112,7 @@ const EnterpriseDashboard: React.FC = () => {
             fontFamily: 'var(--font-body)',
           }}
         >
-          <p style={{ margin: 0, marginBottom: 4, fontSize: 12, color: '#8c8c8c' }}>{label}</p>
+          <p style={{ margin: 0, marginBottom: 4, fontSize: 12, color: 'var(--color-text-muted)' }}>{label}</p>
           {payload.map((entry: any, index: number) => (
             <p
               key={index}
@@ -159,7 +157,7 @@ const EnterpriseDashboard: React.FC = () => {
               fontSize: 28,
               fontWeight: 700,
               margin: 0,
-              color: '#1f1f1f',
+              color: 'var(--color-text-primary)',
             }}
           >
             数据概览
@@ -169,7 +167,7 @@ const EnterpriseDashboard: React.FC = () => {
           style={{
             fontFamily: 'var(--font-body)',
             fontSize: 14,
-            color: '#8c8c8c',
+            color: 'var(--color-text-muted)',
             margin: '8px 0 0 16px',
           }}
         >
@@ -214,7 +212,7 @@ const EnterpriseDashboard: React.FC = () => {
                     fontFamily: 'var(--font-heading)',
                     fontSize: 32,
                     fontWeight: 700,
-                    color: '#1f1f1f',
+                    color: 'var(--color-text-primary)',
                     lineHeight: 1,
                   }}
                 >
@@ -224,7 +222,7 @@ const EnterpriseDashboard: React.FC = () => {
                   style={{
                     fontFamily: 'var(--font-body)',
                     fontSize: 14,
-                    color: '#8c8c8c',
+                    color: 'var(--color-text-muted)',
                     marginTop: 8,
                   }}
                 >
@@ -268,7 +266,7 @@ const EnterpriseDashboard: React.FC = () => {
                     fontFamily: 'var(--font-heading)',
                     fontSize: 32,
                     fontWeight: 700,
-                    color: '#1f1f1f',
+                    color: 'var(--color-text-primary)',
                     lineHeight: 1,
                   }}
                 >
@@ -278,7 +276,7 @@ const EnterpriseDashboard: React.FC = () => {
                   style={{
                     fontFamily: 'var(--font-body)',
                     fontSize: 14,
-                    color: '#8c8c8c',
+                    color: 'var(--color-text-muted)',
                     marginTop: 8,
                   }}
                 >
@@ -322,7 +320,7 @@ const EnterpriseDashboard: React.FC = () => {
                     fontFamily: 'var(--font-heading)',
                     fontSize: 32,
                     fontWeight: 700,
-                    color: '#1f1f1f',
+                    color: 'var(--color-text-primary)',
                     lineHeight: 1,
                   }}
                 >
@@ -332,7 +330,7 @@ const EnterpriseDashboard: React.FC = () => {
                   style={{
                     fontFamily: 'var(--font-body)',
                     fontSize: 14,
-                    color: '#8c8c8c',
+                    color: 'var(--color-text-muted)',
                     marginTop: 8,
                   }}
                 >
@@ -376,7 +374,7 @@ const EnterpriseDashboard: React.FC = () => {
                     fontFamily: 'var(--font-heading)',
                     fontSize: 32,
                     fontWeight: 700,
-                    color: '#1f1f1f',
+                    color: 'var(--color-text-primary)',
                     lineHeight: 1,
                   }}
                 >
@@ -386,7 +384,7 @@ const EnterpriseDashboard: React.FC = () => {
                   style={{
                     fontFamily: 'var(--font-body)',
                     fontSize: 14,
-                    color: '#8c8c8c',
+                    color: 'var(--color-text-muted)',
                     marginTop: 8,
                   }}
                 >
@@ -433,7 +431,7 @@ const EnterpriseDashboard: React.FC = () => {
                     fontSize: 16,
                     fontWeight: 600,
                     margin: 0,
-                    color: '#1f1f1f',
+                    color: 'var(--color-text-primary)',
                   }}
                 >
                   签到趋势
@@ -442,7 +440,7 @@ const EnterpriseDashboard: React.FC = () => {
                   style={{
                     fontFamily: 'var(--font-body)',
                     fontSize: 13,
-                    color: '#8c8c8c',
+                    color: 'var(--color-text-muted)',
                     marginLeft: 4,
                   }}
                 >
@@ -520,7 +518,7 @@ const EnterpriseDashboard: React.FC = () => {
                     fontSize: 16,
                     fontWeight: 600,
                     margin: 0,
-                    color: '#1f1f1f',
+                    color: 'var(--color-text-primary)',
                   }}
                 >
                   积分趋势
@@ -529,7 +527,7 @@ const EnterpriseDashboard: React.FC = () => {
                   style={{
                     fontFamily: 'var(--font-body)',
                     fontSize: 13,
-                    color: '#8c8c8c',
+                    color: 'var(--color-text-muted)',
                     marginLeft: 4,
                   }}
                 >
@@ -617,7 +615,7 @@ const EnterpriseDashboard: React.FC = () => {
                 fontSize: 16,
                 fontWeight: 600,
                 margin: 0,
-                color: '#1f1f1f',
+                color: 'var(--color-text-primary)',
               }}
             >
               热门商品
@@ -626,7 +624,7 @@ const EnterpriseDashboard: React.FC = () => {
               style={{
                 fontFamily: 'var(--font-body)',
                 fontSize: 13,
-                color: '#8c8c8c',
+                color: 'var(--color-text-muted)',
                 marginLeft: 4,
               }}
             >
@@ -664,7 +662,7 @@ const EnterpriseDashboard: React.FC = () => {
                           : index === 2
                             ? 'linear-gradient(135deg, #cd7f32 0%, #e5a66b 100%)'
                             : '#f5f5f5',
-                    color: index < 3 ? '#fff' : '#8c8c8c',
+                    color: index < 3 ? '#fff' : 'var(--color-text-muted)',
                   }}
                 >
                   {index + 1}

@@ -142,6 +142,9 @@ export const randomString = (length: number): string => {
  * Deep clone an object
  */
 export const deepClone = <T>(obj: T): T => {
+  if (typeof structuredClone === 'function') {
+    return structuredClone(obj);
+  }
   return JSON.parse(JSON.stringify(obj));
 };
 

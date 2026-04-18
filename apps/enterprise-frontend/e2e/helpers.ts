@@ -1,8 +1,20 @@
+import fs from 'fs';
+import path from 'path';
 import { type Page } from '@playwright/test';
 
 /**
  * Common helper utilities for E2E tests
  */
+
+const CREDS_CACHE_FILE = path.join(process.cwd(), 'e2e', '.test-creds.json');
+
+function getTestCreds(): { phone: string; password: string } {
+  try {
+    return JSON.parse(fs.readFileSync(CREDS_CACHE_FILE, 'utf-8'));
+  } catch {
+    throw new Error('Test credentials not found. Run global-setup first or ensure .env.e2e is configured.');
+  }
+}
 
 /**
  * Wait for an Ant Design success message to appear
@@ -99,10 +111,11 @@ export async function logout(page: Page) {
  * we bypass the UI form and directly call the API to get tokens, then inject into localStorage.
  */
 export async function loginAsEnterpriseAdmin(page: Page, baseUrl: string) {
+  const { phone, password } = getTestCreds();
   // First, get the auth token directly from the API
   const apiResponse = await page.request.post('http://localhost:8080/api/auth/login', {
     headers: { 'Content-Type': 'application/json' },
-    data: { phone: '13800138001', password: 'password123' },
+    data: { phone, password },
   });
   const apiData = await apiResponse.json();
 

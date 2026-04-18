@@ -45,9 +45,13 @@ export const grantPoints = async (data: {
   tenantId: string;
   points: number;
   description: string;
-  operatorId: string;
+  operatorId?: string;
 }) => {
-  const res = await apiClient.post('/points/grant', data);
+  const payload = { ...data };
+  if (!payload.operatorId) {
+    delete payload.operatorId;
+  }
+  const res = await apiClient.post('/points/grant', payload);
   return res.data;
 };
 
@@ -56,9 +60,13 @@ export const deductPoints = async (data: {
   tenantId: string;
   points: number;
   description: string;
-  operatorId: string;
+  operatorId?: string;
 }) => {
-  const res = await apiClient.post('/points/deduct', data);
+  const payload = { ...data };
+  if (!payload.operatorId) {
+    delete payload.operatorId;
+  }
+  const res = await apiClient.post('/points/deduct', payload);
   return res.data;
 };
 

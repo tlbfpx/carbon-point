@@ -7,6 +7,10 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      '@carbon-point/utils': path.resolve(__dirname, '../../packages/utils/src'),
+      '@carbon-point/api': path.resolve(__dirname, '../../packages/api/src'),
+      '@carbon-point/hooks': path.resolve(__dirname, '../../packages/hooks/src'),
+      '@carbon-point/ui': path.resolve(__dirname, '../../packages/ui/src'),
     },
   },
   server: {

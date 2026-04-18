@@ -9,6 +9,10 @@ export const apiClient = axios.create({
   timeout: 30000,
 });
 
+// Token refresh mutex to prevent race conditions
+let isRefreshing = false;
+let refreshQueue: Array<(token: string) => void> = [];
+
 // Helper to serialize request data for logging
 const serializeData = (data: unknown): unknown => {
   if (!data) return data;
@@ -41,7 +45,8 @@ apiClient.interceptors.response.use(
       status: res.status,
       statusText: res.statusText,
     });
-    return res;
+    // Unwrap the data from the standard API response
+    return res.data;
   },
   async (error: AxiosError) => {
     const url = error.config?.url || 'unknown';
@@ -61,22 +66,46 @@ apiClient.interceptors.response.use(
 
     if (error.response?.status === 401) {
       const refreshToken = useAuthStore.getState().refreshToken;
-      if (refreshToken) {
-        try {
-          const refreshRes = await axios.post(`${BASE_URL}/auth/refresh`, { refreshToken });
-          const { accessToken, refreshToken: newRefreshToken } = refreshRes.data.data;
-          const authState = useAuthStore.getState();
-          authState.login(accessToken, newRefreshToken || authState.refreshToken!, authState.user!);
-          const originalRequest = error.config;
-          if (originalRequest) {
-            originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-            return apiClient(originalRequest);
+      const originalRequest = error.config as (typeof error.config & { _retry?: boolean }) | undefined;
+
+      if (originalRequest && !originalRequest._retry) {
+        originalRequest._retry = true;
+
+        if (refreshToken) {
+          if (!isRefreshing) {
+            isRefreshing = true;
+            try {
+              const refreshRes = await axios.post(`${BASE_URL}/auth/refresh`, { refreshToken });
+              const { accessToken, refreshToken: newRefresh } = refreshRes.data.data;
+              useAuthStore.getState().login(accessToken, newRefresh, useAuthStore.getState().user!);
+
+              // Process queued requests with new token
+              refreshQueue.forEach(cb => cb(accessToken));
+              refreshQueue = [];
+            } catch {
+              // Reject all queued requests
+              refreshQueue.forEach(cb => cb(''));
+              refreshQueue = [];
+              useAuthStore.getState().logout();
+            } finally {
+              isRefreshing = false;
+            }
           }
-        } catch {
+
+          // Queue this request until token is refreshed
+          return new Promise((resolve, reject) => {
+            refreshQueue.push((token: string) => {
+              if (token && originalRequest) {
+                originalRequest.headers.Authorization = `Bearer ${token}`;
+                resolve(apiClient(originalRequest));
+              } else {
+                reject(error);
+              }
+            });
+          });
+        } else {
           useAuthStore.getState().logout();
         }
-      } else {
-        useAuthStore.getState().logout();
       }
     }
     return Promise.reject(error);

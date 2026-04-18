@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Table,
   Button,
@@ -82,7 +82,7 @@ const Orders: React.FC = () => {
     },
   });
 
-  const columns = [
+  const columns = useMemo(() => [
     {
       title: '用户',
       dataIndex: 'username',
@@ -253,7 +253,7 @@ const Orders: React.FC = () => {
         </Space>
       ),
     },
-  ];
+  ], [primaryColor, verifyMutation, cancelMutation]);
 
   return (
     <div style={{ padding: '0 0 24px', fontFamily: 'var(--font-body, "Noto Sans SC", sans-serif)' }}>

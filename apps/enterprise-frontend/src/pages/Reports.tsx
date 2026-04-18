@@ -90,9 +90,7 @@ const Reports: React.FC = () => {
     return [];
   };
 
-  const stats: DashboardStats = (statsData && typeof statsData === 'object' && 'data' in statsData)
-    ? (statsData as { data: DashboardStats }).data
-    : (statsData as DashboardStats) || {
+  const stats: DashboardStats = (statsData as DashboardStats) || {
     todayCheckInCount: 0,
     todayPointsGranted: 0,
     activeUsers: 0,

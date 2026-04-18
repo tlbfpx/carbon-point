@@ -20,35 +20,28 @@ export interface UpdateBrandingRequest {
   secondaryColor?: string;
 }
 
-// API response wrapper from backend
-interface ApiResponse<T> {
-  code: string;
-  data: T;
-  message: string;
-}
-
 // Get current tenant branding configuration
-export const getCurrentBranding = async () => {
-  const res = await apiClient.get<ApiResponse<TenantBranding>>('/branding');
-  return res.data.data;
+export const getCurrentBranding = async (): Promise<TenantBranding> => {
+  const res = await apiClient.get('/branding');
+  return res as unknown as TenantBranding;
 };
 
 // Update current tenant branding configuration
-export const updateBranding = async (data: UpdateBrandingRequest) => {
-  const res = await apiClient.put<ApiResponse<TenantBranding>>('/branding', data);
-  return res.data.data;
+export const updateBranding = async (data: UpdateBrandingRequest): Promise<TenantBranding> => {
+  const res = await apiClient.put('/branding', data);
+  return res as unknown as TenantBranding;
 };
 
 // Upload logo
-export const uploadLogo = async (file: File) => {
+export const uploadLogo = async (file: File): Promise<{ url: string }> => {
   const formData = new FormData();
   formData.append('file', file);
-  const res = await apiClient.post<ApiResponse<{ url: string }>>('/branding/logo', formData, {
+  const res = await apiClient.post('/branding/logo', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
   });
-  return res.data.data;
+  return res as unknown as { url: string };
 };
 
 // Delete logo
@@ -57,13 +50,13 @@ export const deleteLogo = async () => {
 };
 
 // Get branding by tenant ID (public API)
-export const getBrandingByTenantId = async (tenantId: number) => {
-  const res = await apiClient.get<ApiResponse<TenantBranding>>(`/branding/public/tenant/${tenantId}`);
-  return res.data.data;
+export const getBrandingByTenantId = async (tenantId: number): Promise<TenantBranding> => {
+  const res = await apiClient.get(`/branding/public/tenant/${tenantId}`);
+  return res as unknown as TenantBranding;
 };
 
 // Get branding by tenant domain (public API)
-export const getBrandingByDomain = async (domain: string) => {
-  const res = await apiClient.get<ApiResponse<TenantBranding>>(`/branding/public/domain/${domain}`);
-  return res.data.data;
+export const getBrandingByDomain = async (domain: string): Promise<TenantBranding> => {
+  const res = await apiClient.get(`/branding/public/domain/${domain}`);
+  return res as unknown as TenantBranding;
 };

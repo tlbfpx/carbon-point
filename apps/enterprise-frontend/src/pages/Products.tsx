@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Table,
   Button,
@@ -118,7 +118,7 @@ const Products: React.FC = () => {
     }
   };
 
-  const columns = [
+  const columns = useMemo(() => [
     {
       title: '商品图片',
       dataIndex: 'image',
@@ -258,7 +258,7 @@ const Products: React.FC = () => {
         </Space>
       ),
     },
-  ];
+  ], [primaryColor, toggleMutation, openStockEdit, openEdit]);
 
   return (
     <div style={{ padding: '0 0 24px', fontFamily: 'var(--font-body, "Noto Sans SC", sans-serif)' }}>
