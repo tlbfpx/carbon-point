@@ -32,8 +32,7 @@ export class PointsPage {
 
   async goto() {
     await this.page.goto(`${BASE_URL}/points`);
-    await this.page.waitForLoadState('networkidle');
-    await this.page.waitForTimeout(3000);
+    await this.page.waitForSelector('.ant-layout-content', { timeout: 15000 });
   }
 
   async getTableRows(): Promise<Locator> {

@@ -1,5 +1,6 @@
 import React from 'react';
-import { Card, List, ProgressBar, DotLoading, TabBar } from 'antd-mobile';
+import { GlassCard } from '@carbon-point/design-system';
+import { List, ProgressBar, DotLoading, TabBar } from 'antd-mobile';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getPointsAccount, getPointsHistory, getLeaderboardHistory, getLeaderboardContext, PointsHistoryItem } from '@/api/points';
@@ -85,7 +86,7 @@ const PointsPage: React.FC = () => {
       </div>
 
       <div style={{ padding: 16 }}>
-        <Card style={{ marginBottom: 16 }} title="等级进度">
+        <GlassCard style={{ marginBottom: 16 }} title="等级进度">
           <ProgressBar
             percent={Math.round(progressInLevel)}
             style={{ '--fill-color': currentLevel.color } as React.CSSProperties}
@@ -94,9 +95,9 @@ const PointsPage: React.FC = () => {
             <span style={{ fontSize: 12, color: '#999' }}>Lv.{currentLevel.level} {currentLevel.name}</span>
             {nextLevel && <span style={{ fontSize: 12, color: '#999' }}>Lv.{nextLevel.level} {nextLevel.name}</span>}
           </div>
-        </Card>
+        </GlassCard>
 
-        <Card style={{ marginBottom: 16 }} title="积分明细">
+        <GlassCard style={{ marginBottom: 16 }} title="积分明细">
           {historyLoading ? (
             <div style={{ display: 'flex', justifyContent: 'center', padding: 20 }}>
               <DotLoading />
@@ -115,9 +116,9 @@ const PointsPage: React.FC = () => {
               ))}
             </List>
           )}
-        </Card>
+        </GlassCard>
 
-        <Card style={{ marginBottom: 16 }} title="排行榜">
+        <GlassCard style={{ marginBottom: 16 }} title="排行榜">
           {leaderboardLoading ? (
             <div style={{ display: 'flex', justifyContent: 'center', padding: 20 }}>
               <DotLoading />
@@ -185,7 +186,7 @@ const PointsPage: React.FC = () => {
               </List>
             </>
           )}
-        </Card>
+        </GlassCard>
       </div>
 
       <TabBar activeKey="points" onChange={(key) => {

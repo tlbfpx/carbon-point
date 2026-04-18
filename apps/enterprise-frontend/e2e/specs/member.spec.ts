@@ -20,7 +20,7 @@ test.describe('企业后台 - 员工管理 (25 tests)', () => {
     await expect(memberPage.table).toBeVisible({ timeout: 10000 });
   });
 
-  test('MEM-002: 添加员工按钮可见', async ({ page }) => {
+  test('MEM-002: 添加成员按钮可见', async ({ page }) => {
     await page.waitForLoadState('networkidle');
     await expect(memberPage.addButton).toBeVisible();
   });
@@ -213,13 +213,12 @@ test.describe('企业后台 - 员工管理 (25 tests)', () => {
     await page.waitForLoadState('networkidle');
     const headers = memberPage.table.locator('.ant-table-thead th');
     const count = await headers.count();
-    expect(count).toBe(6);
-    await expect(headers.nth(0)).toContainText('姓名');
-    await expect(headers.nth(1)).toContainText('手机号');
-    await expect(headers.nth(2)).toContainText('积分');
-    await expect(headers.nth(3)).toContainText('等级');
-    await expect(headers.nth(4)).toContainText('状态');
-    await expect(headers.nth(5)).toContainText('操作');
+    expect(count).toBe(5);
+    await expect(headers.nth(0)).toContainText('成员信息');
+    await expect(headers.nth(1)).toContainText('积分');
+    await expect(headers.nth(2)).toContainText('等级');
+    await expect(headers.nth(3)).toContainText('状态');
+    await expect(headers.nth(4)).toContainText('操作');
   });
 
   test('MEM-021: 表格数据显示完整', async ({ page }) => {
@@ -229,7 +228,7 @@ test.describe('企业后台 - 员工管理 (25 tests)', () => {
     if (count > 0) {
       const firstRow = rows.first();
       const cells = firstRow.locator('td');
-      await expect(cells).toHaveCount(6);
+      await expect(cells).toHaveCount(5);
     }
   });
 

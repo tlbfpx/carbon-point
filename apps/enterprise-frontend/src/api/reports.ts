@@ -26,36 +26,36 @@ export interface DashboardStats {
   monthExchangeCount: number;
 }
 
-export const getDashboardStats = async (_tenantId: string) => {
+export const getDashboardStats = async (_tenantId: string): Promise<DashboardStats> => {
   const res = await apiClient.get('/reports/dashboard/stats');
-  return res.data;
+  return res as unknown as DashboardStats;
 };
 
 export const getCheckInTrend = async (_tenantId: string, days = 7) => {
   const res = await apiClient.get('/reports/dashboard/checkin-trend', {
     params: { days },
   });
-  return res.data;
+  return res;
 };
 
 export const getPointsTrend = async (_tenantId: string, days = 7) => {
   const res = await apiClient.get('/reports/dashboard/points-trend', {
     params: { days },
   });
-  return res.data;
+  return res;
 };
 
 export const getHotProducts = async (_tenantId: string, limit = 5) => {
   const res = await apiClient.get('/reports/dashboard/hot-products', {
     params: { limit },
   });
-  return res.data;
+  return res;
 };
 
-export const exportReport = async (_tenantId: string, type: string, startDate: string, endDate: string) => {
+export const exportReport = async (_tenantId: string, type: string, startDate: string, endDate: string): Promise<Blob> => {
   const res = await apiClient.get('/reports/export', {
     params: { type, startDate, endDate },
     responseType: 'blob',
   });
-  return res.data;
+  return res as unknown as Blob;
 };

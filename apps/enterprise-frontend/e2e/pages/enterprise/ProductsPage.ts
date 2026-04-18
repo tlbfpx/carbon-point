@@ -15,7 +15,7 @@ export class ProductsPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.heading = page.locator('h2').filter({ hasText: '商品' });
+    this.heading = page.locator('h1, h2').filter({ hasText: '商品' });
     this.addButton = page.locator('button').filter({ hasText: /创建|新增/ });
     this.table = page.locator('.ant-table');
     this.tableRows = this.table.locator('.ant-table-tbody tr');

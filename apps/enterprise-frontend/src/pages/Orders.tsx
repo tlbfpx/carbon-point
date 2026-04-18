@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Table,
   Button,
@@ -17,21 +17,22 @@ import dayjs from 'dayjs';
 import type { Dayjs } from 'dayjs';
 import { getOrders, verifyOrder, cancelOrder, Order } from '@/api/orders';
 import { useBranding } from '@/components/BrandingProvider';
+import { GlassCard } from '@carbon-point/design-system';
 
 const { RangePicker } = DatePicker;
 
 const statusLabels: Record<string, { text: string; bg: string; color: string }> = {
-  pending: { text: '待处理', bg: '#fff8e1', color: '#f57c00' },
-  fulfilled: { text: '已发放', bg: '#e8f5e9', color: '#388e3c' },
-  used: { text: '已使用', bg: '#e3f2fd', color: '#1976d2' },
-  expired: { text: '已过期', bg: '#f0f0f0', color: '#9e9e9e' },
-  cancelled: { text: '已取消', bg: '#fbe9e7', color: '#d32f2f' },
+  pending: { text: '待处理', bg: 'rgba(245,124,0,0.15)', color: '#f57c00' },
+  fulfilled: { text: '已发放', bg: 'rgba(56,142,60,0.15)', color: '#388e3c' },
+  used: { text: '已使用', bg: 'rgba(25,118,210,0.15)', color: '#1976d2' },
+  expired: { text: '已过期', bg: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.45)' },
+  cancelled: { text: '已取消', bg: 'rgba(211,47,47,0.15)', color: '#d32f2f' },
 };
 
 const productTypeLabels: Record<string, { text: string; bg: string; color: string }> = {
-  coupon: { text: '优惠券', bg: '#e3f2fd', color: '#1976d2' },
-  recharge: { text: '直充', bg: '#e8f5e9', color: '#388e3c' },
-  privilege: { text: '权益', bg: '#fff8e1', color: '#f57c00' },
+  coupon: { text: '优惠券', bg: 'rgba(25,118,210,0.15)', color: '#1976d2' },
+  recharge: { text: '直充', bg: 'rgba(56,142,60,0.15)', color: '#388e3c' },
+  privilege: { text: '权益', bg: 'rgba(245,124,0,0.15)', color: '#f57c00' },
 };
 
 const Orders: React.FC = () => {
@@ -82,7 +83,7 @@ const Orders: React.FC = () => {
     },
   });
 
-  const columns = [
+  const columns = useMemo(() => [
     {
       title: '用户',
       dataIndex: 'username',
@@ -101,7 +102,7 @@ const Orders: React.FC = () => {
       title: '手机号',
       dataIndex: 'phone',
       render: (phone: string) => (
-        <span style={{ fontFamily: 'Outfit, sans-serif', color: '#666' }}>
+        <span style={{ fontFamily: 'Outfit, sans-serif', color: 'rgba(255,255,255,0.65)' }}>
           {phone}
         </span>
       ),
@@ -184,7 +185,7 @@ const Orders: React.FC = () => {
       title: '下单时间',
       dataIndex: 'createTime',
       render: (t: string) => (
-        <span style={{ fontFamily: 'Outfit, sans-serif', color: '#888', fontSize: 13 }}>
+        <span style={{ fontFamily: 'Outfit, sans-serif', color: 'rgba(255,255,255,0.45)', fontSize: 13 }}>
           {dayjs(t).format('YYYY-MM-DD HH:mm')}
         </span>
       ),
@@ -206,7 +207,7 @@ const Orders: React.FC = () => {
                   icon={<CheckCircleOutlined />}
                   style={{
                     borderRadius: 20,
-                    border: '1px solid #d4d0c8',
+                    border: '1px solid rgba(56,142,60,0.4)',
                     color: '#388e3c',
                     fontFamily: 'var(--font-body, "Noto Sans SC", sans-serif)',
                   }}
@@ -225,7 +226,7 @@ const Orders: React.FC = () => {
                   icon={<CloseCircleOutlined />}
                   style={{
                     borderRadius: 20,
-                    border: '1px solid #d4d0c8',
+                    border: '1px solid rgba(211,47,47,0.4)',
                     color: '#d32f2f',
                     fontFamily: 'var(--font-body, "Noto Sans SC", sans-serif)',
                   }}
@@ -242,7 +243,7 @@ const Orders: React.FC = () => {
               onClick={() => { setSelectedOrder(record); setCouponModalOpen(true); }}
               style={{
                 borderRadius: 20,
-                border: '1px solid #d4d0c8',
+                border: '1px solid rgba(255,255,255,0.12)',
                 color: primaryColor,
                 fontFamily: 'var(--font-body, "Noto Sans SC", sans-serif)',
               }}
@@ -253,7 +254,7 @@ const Orders: React.FC = () => {
         </Space>
       ),
     },
-  ];
+  ], [primaryColor, verifyMutation, cancelMutation]);
 
   return (
     <div style={{ padding: '0 0 24px', fontFamily: 'var(--font-body, "Noto Sans SC", sans-serif)' }}>
@@ -265,27 +266,16 @@ const Orders: React.FC = () => {
             fontSize: 24,
             fontWeight: 700,
             marginBottom: 4,
-            color: '#1a1a1a',
+            color: '#fff',
           }}
         >
           订单管理
         </h1>
-        <p style={{ color: '#888', fontSize: 14, margin: 0 }}>查看和管理所有兑换订单</p>
+        <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 14, margin: 0 }}>查看和管理所有兑换订单</p>
       </div>
 
       {/* Filter Bar */}
-      <div
-        style={{
-          background: '#fafaf7',
-          borderRadius: 16,
-          padding: '16px 20px',
-          marginBottom: 20,
-          display: 'flex',
-          gap: 12,
-          alignItems: 'center',
-          flexWrap: 'wrap',
-        }}
-      >
+      <GlassCard hoverable style={{ marginBottom: 20, padding: '16px 20px', display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
         <Input.Search
           placeholder="搜索用户/商品"
           allowClear
@@ -294,7 +284,7 @@ const Orders: React.FC = () => {
           styles={{
             input: {
               borderRadius: 12,
-              border: '1px solid #d4d0c8',
+              border: '1px solid rgba(255,255,255,0.1)',
             },
           }}
         />
@@ -311,21 +301,14 @@ const Orders: React.FC = () => {
           placeholder={['开始日期', '结束日期']}
           style={{
             borderRadius: 12,
-            border: '1px solid #d4d0c8',
+            border: '1px solid rgba(255,255,255,0.1)',
           }}
           popupClassName="digital-garden-calendar"
         />
-      </div>
+      </GlassCard>
 
       {/* Table Card */}
-      <div
-        style={{
-          background: '#fff',
-          borderRadius: 16,
-          boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
-          overflow: 'hidden',
-        }}
-      >
+      <GlassCard hoverable style={{ overflow: 'hidden' }}>
         <Table
           columns={columns}
           dataSource={data?.data?.records || []}
@@ -343,9 +326,9 @@ const Orders: React.FC = () => {
                   <Button
                     style={{
                       borderRadius: 8,
-                      border: '1px solid #d4d0c8',
-                      color: current === page ? primaryColor : '#666',
-                      background: current === page ? `${primaryColor}15` : '#fff',
+                      border: '1px solid rgba(255,255,255,0.12)',
+                      color: current === page ? primaryColor : 'rgba(255,255,255,0.65)',
+                      background: current === page ? `${primaryColor}15` : 'rgba(255,255,255,0.04)',
                       fontWeight: current === page ? 600 : 400,
                     }}
                   >
@@ -359,7 +342,7 @@ const Orders: React.FC = () => {
           className="digital-garden-table"
           rowClassName={(record, index) => (index % 2 === 0 ? '' : 'odd-row')}
         />
-      </div>
+      </GlassCard>
 
       {/* Coupon Code Modal */}
       <Modal
@@ -380,7 +363,7 @@ const Orders: React.FC = () => {
         <div
           style={{
             padding: '20px 24px',
-            borderBottom: '1px solid #f0f0f0',
+            borderBottom: '1px solid rgba(255,255,255,0.08)',
           }}
         >
           <h2
@@ -389,7 +372,7 @@ const Orders: React.FC = () => {
               fontSize: 18,
               fontWeight: 600,
               margin: 0,
-              color: '#1a1a1a',
+              color: '#fff',
             }}
           >
             券码信息
@@ -400,7 +383,7 @@ const Orders: React.FC = () => {
             <div>
               <p
                 style={{
-                  color: '#666',
+                  color: 'rgba(255,255,255,0.65)',
                   marginBottom: 16,
                   fontFamily: 'var(--font-body, "Noto Sans SC", sans-serif)',
                 }}
@@ -415,12 +398,12 @@ const Orders: React.FC = () => {
                     background: 'linear-gradient(135deg, #f8f7f4 0%, #f0efea 100%)',
                     borderRadius: 16,
                     textAlign: 'center',
-                    border: '1px dashed #d4d0c8',
+                    border: '1px dashed rgba(255,255,255,0.12)',
                   }}
                 >
                   <p
                     style={{
-                      color: '#999',
+                      color: 'rgba(255,255,255,0.45)',
                       fontSize: 12,
                       marginBottom: 8,
                       fontFamily: 'var(--font-body, "Noto Sans SC", sans-serif)',
@@ -434,7 +417,7 @@ const Orders: React.FC = () => {
                       fontWeight: 700,
                       fontFamily: 'Outfit, monospace',
                       letterSpacing: 4,
-                      color: '#1a1a1a',
+                      color: '#fff',
                       margin: 0,
                     }}
                   >
@@ -449,8 +432,8 @@ const Orders: React.FC = () => {
               onClick={() => setCouponModalOpen(false)}
               style={{
                 borderRadius: 20,
-                border: '1px solid #d4d0c8',
-                color: '#666',
+                border: '1px solid rgba(255,255,255,0.12)',
+                color: 'rgba(255,255,255,0.65)',
                 fontFamily: 'var(--font-body, "Noto Sans SC", sans-serif)',
               }}
             >
@@ -462,19 +445,20 @@ const Orders: React.FC = () => {
 
       <style>{`
         .digital-garden-table .ant-table-thead > tr > th {
-          background: #f8f7f4 !important;
-          border-bottom: 1px solid #ebe9e4 !important;
+          background: rgba(255,255,255,0.04) !important;
+          border-bottom: 1px solid rgba(255,255,255,0.06) !important;
           font-family: 'Outfit', sans-serif !important;
           font-weight: 600 !important;
-          color: #333 !important;
+          color: rgba(255,255,255,0.65) !important;
           padding: 16px !important;
         }
         .digital-garden-table .ant-table-tbody > tr > td {
           padding: 16px !important;
-          border-bottom: 1px solid #f5f5f0 !important;
+          border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+          color: rgba(255,255,255,0.85) !important;
         }
         .digital-garden-table .ant-table-tbody > tr:hover > td {
-          background: #fafaf7 !important;
+          background: rgba(255,255,255,0.04) !important;
         }
         .digital-garden-table .ant-table-tbody > tr > td:first-child {
           border-top-left-radius: 12px;
@@ -484,12 +468,12 @@ const Orders: React.FC = () => {
           border-top-right-radius: 12px;
           border-bottom-right-radius: 12px;
         }
-        .digital-garden-table .ant-table-tbody > tr.odd-row {
-          background: #fbfbf9;
+        .digital-garden-table .ant-table-tbody > tr.odd-row > td {
+          background: rgba(255,255,255,0.02) !important;
         }
         .digital-garden-table .ant-pagination-item {
           border-radius: 8px !important;
-          border: 1px solid #d4d0c8 !important;
+          border: 1px solid rgba(255,255,255,0.12) !important;
         }
         .digital-garden-table .ant-pagination-item-active {
           background: ${primaryColor}15 !important;

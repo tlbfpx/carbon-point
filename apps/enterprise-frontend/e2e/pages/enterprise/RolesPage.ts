@@ -10,7 +10,7 @@ export class RolesPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.heading = page.locator('h2').filter({ hasText: '角色权限' });
+    this.heading = page.locator('h1, h2').filter({ hasText: '角色' });
     this.addButton = page.locator('button').filter({ hasText: '新增自定义角色' });
     this.table = page.locator('.ant-table');
     this.tableRows = this.table.locator('.ant-table-tbody tr');

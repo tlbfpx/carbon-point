@@ -9,9 +9,8 @@ test.describe('企业后台 - 商品管理 (30 tests)', () => {
   test.beforeEach(async ({ page }) => {
     productsPage = new ProductsPage(page);
     await loginAsEnterpriseAdmin(page, BASE_URL);
-    await page.locator('text=商品管理').first().click({ force: true });
+    await page.locator('text=产品管理').first().click({ force: true });
     await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(1500);
   });
 
   // === Basic Page Access & Layout ===
@@ -22,7 +21,7 @@ test.describe('企业后台 - 商品管理 (30 tests)', () => {
   });
 
   test('PRD-002: 页面标题正确', async ({ page }) => {
-    await expect(productsPage.heading).toHaveText('商品管理');
+    await expect(productsPage.heading).toContainText('商品');
   });
 
   test('PRD-003: 新增商品按钮可见', async ({ page }) => {

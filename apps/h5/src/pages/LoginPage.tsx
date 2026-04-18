@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, List, Input, Button, Toast, Checkbox } from 'antd-mobile';
+import { GlassCard } from '@carbon-point/design-system';
+import { List, Input, Button, Toast, Checkbox } from 'antd-mobile';
 import { useMutation } from '@tanstack/react-query';
 import { login } from '@/api/auth';
 import { useAuthStore } from '@/store/authStore';
@@ -44,7 +45,7 @@ const LoginPage: React.FC = () => {
         <p style={{ color: '#999', marginTop: 8 }}>健康运动，积分激励</p>
       </div>
 
-      <Card>
+      <GlassCard>
         <List>
           <Input
             placeholder="请输入手机号"
@@ -89,7 +90,7 @@ const LoginPage: React.FC = () => {
             立即注册
           </span>
         </div>
-      </Card>
+      </GlassCard>
     </div>
   );
 };

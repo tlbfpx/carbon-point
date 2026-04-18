@@ -146,6 +146,7 @@ export const updatePlatformAdmin = async (
     email?: string;
     roles?: string[];
     status?: number;
+    newPassword?: string;
   }
 ) => {
   const res = await platformApiClient.put(`/admins/${userId}`, data);

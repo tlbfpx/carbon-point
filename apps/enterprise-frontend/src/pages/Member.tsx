@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Table,
   Button,
@@ -25,6 +25,7 @@ import { getMembers, createMember, toggleMemberStatus, generateInviteLink } from
 import type { Member } from '@/api/members';
 import { useAuthStore } from '@/store/authStore';
 import { useBranding } from '@/components/BrandingProvider';
+import { GlassCard } from '@carbon-point/design-system';
 import type { UploadProps } from 'antd';
 
 interface ApiResponse {
@@ -110,14 +111,14 @@ const Member: React.FC = () => {
   };
 
   const levelColors: Record<number, { bg: string; text: string }> = {
-    1: { bg: '#efebe9', text: '#8d6e63' },
-    2: { bg: '#eceff1', text: '#78909c' },
-    3: { bg: '#fff8e1', text: '#fbc02d' },
-    4: { bg: '#e8eaf6', text: '#5c6bc0' },
-    5: { bg: '#fce4ec', text: '#ec407a' },
+    1: { bg: 'rgba(141,110,99,0.15)', text: '#8d6e63' },
+    2: { bg: 'rgba(120,144,156,0.15)', text: '#78909c' },
+    3: { bg: 'rgba(251,192,45,0.15)', text: '#fbc02d' },
+    4: { bg: 'rgba(92,107,192,0.15)', text: '#5c6bc0' },
+    5: { bg: 'rgba(236,64,122,0.15)', text: '#ec407a' },
   };
 
-  const columns = [
+  const columns = useMemo(() => [
     {
       title: '成员信息',
       dataIndex: 'username',
@@ -139,7 +140,7 @@ const Member: React.FC = () => {
           </div>
           <div>
             <div style={{ fontWeight: 500, fontFamily: 'var(--font-body)' }}>{name}</div>
-            <div style={{ fontSize: 12, color: '#999' }}>{record.phone}</div>
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)' }}>{record.phone}</div>
           </div>
         </div>
       ),
@@ -181,7 +182,7 @@ const Member: React.FC = () => {
           style={{
             borderRadius: 20,
             padding: '4px 12px',
-            background: status === 'active' ? '#e8f5e9' : '#fbe9e7',
+            background: status === 'active' ? 'rgba(46,125,50,0.15)' : 'rgba(198,40,40,0.15)',
             color: status === 'active' ? '#2e7d32' : '#c62828',
             border: 'none',
             fontWeight: 500,
@@ -233,10 +234,10 @@ const Member: React.FC = () => {
         </Space>
       ),
     },
-  ];
+  ], [primaryColor, inviteMutation, toggleMutation]);
 
   return (
-    <div style={{ padding: '24px', background: '#faf9f6', minHeight: '100vh' }}>
+    <div style={{ padding: '24px', minHeight: '100vh' }}>
       {/* Page Header */}
       <div style={{ marginBottom: 24 }}>
         <h1
@@ -245,12 +246,12 @@ const Member: React.FC = () => {
             fontSize: 24,
             fontWeight: 700,
             marginBottom: 8,
-            color: '#1a1a1a',
+            color: '#fff',
           }}
         >
           成员管理
         </h1>
-        <p style={{ color: '#888', fontSize: 14, fontFamily: 'var(--font-body)' }}>
+        <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 14, fontFamily: 'var(--font-body)' }}>
           管理组织成员、查看积分等级、邀请新成员加入
         </p>
       </div>
@@ -287,8 +288,8 @@ const Member: React.FC = () => {
             icon={<UploadOutlined />}
             style={{
               borderRadius: 20,
-              borderColor: '#d4d0c8',
-              color: '#666',
+              borderColor: 'rgba(255,255,255,0.12)',
+              color: 'rgba(255,255,255,0.65)',
             }}
           >
             批量导入
@@ -297,14 +298,7 @@ const Member: React.FC = () => {
       </div>
 
       {/* Table Card */}
-      <div
-        style={{
-          background: '#fff',
-          borderRadius: 16,
-          boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
-          overflow: 'hidden',
-        }}
-      >
+      <GlassCard hoverable style={{ overflow: 'hidden' }}>
         <Table
           columns={columns}
           dataSource={data?.data?.records || []}
@@ -323,7 +317,7 @@ const Member: React.FC = () => {
                   <div
                     style={{
                       borderRadius: 12,
-                      borderColor: '#d4d0c8',
+                      borderColor: 'rgba(255,255,255,0.12)',
                       minWidth: 36,
                       height: 36,
                       display: 'flex',
@@ -348,7 +342,7 @@ const Member: React.FC = () => {
               cursor: 'pointer',
             },
             onMouseEnter: (e) => {
-              e.currentTarget.style.background = '#faf8f5';
+              e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
             },
             onMouseLeave: (e) => {
               e.currentTarget.style.background = 'transparent';
@@ -361,12 +355,12 @@ const Member: React.FC = () => {
                   {...props}
                   style={{
                     ...props.style,
-                    background: '#f8f7f4',
+                    background: 'rgba(255,255,255,0.04)',
                     fontFamily: 'var(--font-heading)',
                     fontWeight: 600,
-                    color: '#555',
+                    color: 'rgba(255,255,255,0.65)',
                     padding: '16px 24px',
-                    borderBottom: '1px solid #efece6',
+                    borderBottom: '1px solid rgba(255,255,255,0.06)',
                   }}
                 />
               ),
@@ -387,14 +381,14 @@ const Member: React.FC = () => {
                   style={{
                     ...props.style,
                     padding: '16px 24px',
-                    borderBottom: '1px solid #f5f3f0',
+                    borderBottom: '1px solid rgba(255,255,255,0.06)',
                   }}
                 />
               ),
             },
           }}
         />
-      </div>
+      </GlassCard>
 
       {/* Add Member Modal */}
       <Modal
@@ -414,7 +408,7 @@ const Member: React.FC = () => {
         <div
           style={{
             padding: '24px 32px 20px',
-            borderBottom: '1px solid #f0efe9',
+            borderBottom: '1px solid rgba(255,255,255,0.08)',
           }}
         >
           <h2
@@ -423,12 +417,12 @@ const Member: React.FC = () => {
               fontSize: 20,
               fontWeight: 600,
               margin: 0,
-              color: '#1a1a1a',
+              color: '#fff',
             }}
           >
             添加成员
           </h2>
-          <p style={{ color: '#999', fontSize: 13, marginTop: 4, fontFamily: 'var(--font-body)' }}>
+          <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 13, marginTop: 4, fontFamily: 'var(--font-body)' }}>
             邀请新成员加入您的组织
           </p>
         </div>
@@ -449,7 +443,7 @@ const Member: React.FC = () => {
                 placeholder="请输入手机号"
                 style={{
                   borderRadius: 12,
-                  borderColor: '#d4d0c8',
+                  borderColor: 'rgba(255,255,255,0.1)',
                   padding: '10px 16px',
                 }}
               />
@@ -465,7 +459,7 @@ const Member: React.FC = () => {
                 placeholder="请输入姓名"
                 style={{
                   borderRadius: 12,
-                  borderColor: '#d4d0c8',
+                  borderColor: 'rgba(255,255,255,0.1)',
                   padding: '10px 16px',
                 }}
               />
@@ -491,7 +485,8 @@ const Member: React.FC = () => {
                   onClick={() => setCreateModalOpen(false)}
                   style={{
                     borderRadius: 20,
-                    borderColor: '#d4d0c8',
+                    borderColor: 'rgba(255,255,255,0.12)',
+                    color: 'rgba(255,255,255,0.65)',
                     minWidth: 80,
                   }}
                 >

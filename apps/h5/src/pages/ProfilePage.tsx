@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { List, Card, Button, Switch, Toast, TabBar, DotLoading } from 'antd-mobile';
+import { List, Button, Switch, Toast, TabBar, DotLoading } from 'antd-mobile';
+import { GlassCard } from '@carbon-point/design-system';
 import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '@/store/authStore';
 import { getPointsAccount } from '@/api/points';
@@ -91,7 +92,7 @@ const ProfilePage: React.FC = () => {
         </div>
       </div>
 
-      <Card
+      <GlassCard
         style={{ margin: 16 }}
         title="我的积分"
         onClick={() => navigate('/points')}
@@ -119,17 +120,17 @@ const ProfilePage: React.FC = () => {
             <p style={{ fontSize: 12, color: '#1677ff', margin: '4px 0 0' }}>查看详情 →</p>
           </div>
         </div>
-      </Card>
+      </GlassCard>
 
-      <Card style={{ margin: '0 16px 16px' }} title="个人信息">
+      <GlassCard style={{ margin: '0 16px 16px' }} title="个人信息">
         <List>
           <List.Item extra={user?.username || '-'}>用户名</List.Item>
           <List.Item extra={user?.phone || '-'}>手机号</List.Item>
           <List.Item extra={user?.email || '-'}>邮箱</List.Item>
         </List>
-      </Card>
+      </GlassCard>
 
-      <Card style={{ margin: '0 16px 16px' }} title="设置">
+      <GlassCard style={{ margin: '0 16px 16px' }} title="设置">
         <List>
           <List.Item
             extra={
@@ -158,7 +159,7 @@ const ProfilePage: React.FC = () => {
             声音提示
           </List.Item>
         </List>
-      </Card>
+      </GlassCard>
 
       <div style={{ padding: '0 16px' }}>
         <Button block color="danger" onClick={handleLogout}>

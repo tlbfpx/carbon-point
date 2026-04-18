@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   Table,
   Space,
-  Card,
   Form,
   Input,
   Select,
@@ -14,6 +13,7 @@ import {
   message,
   Tooltip,
 } from 'antd';
+import { GlassCard } from '@carbon-point/design-system';
 import { SearchOutlined, EyeOutlined, ReloadOutlined, ExportOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
@@ -113,7 +113,7 @@ const OperationLogs: React.FC = () => {
     <div>
       <h2 style={{ marginBottom: 16 }}>操作日志</h2>
 
-      <Card style={{ marginBottom: 16 }}>
+      <GlassCard style={{ marginBottom: 16 }}>
         <Form
           form={form}
           layout="inline"
@@ -150,7 +150,7 @@ const OperationLogs: React.FC = () => {
             </Space>
           </Form.Item>
         </Form>
-      </Card>
+      </GlassCard>
 
       <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ color: '#666' }}>共 {total} 条记录</span>

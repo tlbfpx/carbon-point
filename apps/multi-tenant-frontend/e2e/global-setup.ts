@@ -6,7 +6,7 @@ const PLATFORM_AUTH_CACHE_FILE = path.join(process.cwd(), 'e2e', '.platform-auth
 async function globalSetup() {
   // Platform admin auth (uses /platform/auth/login)
   try {
-    const resp = await fetch('http://localhost:8080/platform/auth/login', {
+    const resp = await fetch('http://localhost:8088/platform/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username: 'admin', password: 'admin123' }),

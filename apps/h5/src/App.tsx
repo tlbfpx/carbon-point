@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ConfigProvider } from 'antd-mobile';
+import { designSystemConfig } from '@carbon-point/design-system';
 import HomePage from '@/pages/HomePage';
 import CheckInPage from '@/pages/CheckInPage';
 import CheckInHistoryPage from '@/pages/CheckInHistoryPage';
@@ -39,7 +40,7 @@ const App: React.FC = () => {
   }, []);
 
   return (
-    <ConfigProvider>
+    <ConfigProvider {...designSystemConfig.dark}>
       <ErrorBoundary>
         <BrowserRouter basename="/h5">
           <RouteLogger />

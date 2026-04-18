@@ -9,6 +9,7 @@ dist/
 # E2E test artifacts
 e2e/reports/
 e2e/.auth/
+e2e/.test-creds.json
 e2e/test-results/
 apps/dashboard/e2e/reports/
 apps/dashboard/e2e/.auth/

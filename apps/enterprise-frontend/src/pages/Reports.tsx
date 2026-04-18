@@ -29,6 +29,16 @@ import { useAuthStore } from '@/store/authStore';
 import { getDashboardStats, getCheckInTrend, getPointsTrend, exportReport, DashboardStats, CheckInTrend, PointsTrend } from '@/api/reports';
 import { useBranding } from '@/components/BrandingProvider';
 
+// Chart & table accent colors
+const ACCENT_COLORS = {
+  blue: '#1890ff',
+  green: '#52c41a',
+  orange: '#fa8c16',
+  purple: '#722ed1',
+  red: '#ff7875',
+  redDark: '#ff4d4f',
+} as const;
+
 const { RangePicker } = DatePicker;
 
 // Gradient definitions for organic feel
@@ -90,9 +100,7 @@ const Reports: React.FC = () => {
     return [];
   };
 
-  const stats: DashboardStats = (statsData && typeof statsData === 'object' && 'data' in statsData)
-    ? (statsData as { data: DashboardStats }).data
-    : (statsData as DashboardStats) || {
+  const stats: DashboardStats = (statsData as DashboardStats) || {
     todayCheckInCount: 0,
     todayPointsGranted: 0,
     activeUsers: 0,
@@ -123,7 +131,7 @@ const Reports: React.FC = () => {
       icon: <TeamOutlined />,
       gradient: 'linear-gradient(135deg, #e6f7ff 0%, #bae7ff 100%)',
       iconGradient: 'linear-gradient(135deg, #1890ff 0%, #40a9ff 100%)',
-      accent: '#1890ff',
+      accent: ACCENT_COLORS.blue,
     },
     {
       key: 'points',
@@ -132,7 +140,7 @@ const Reports: React.FC = () => {
       icon: <TrophyOutlined />,
       gradient: 'linear-gradient(135deg, #f6ffed 0%, #d9f7be 100%)',
       iconGradient: 'linear-gradient(135deg, #52c41a 0%, #73d13d 100%)',
-      accent: '#52c41a',
+      accent: ACCENT_COLORS.green,
     },
     {
       key: 'active',
@@ -141,7 +149,7 @@ const Reports: React.FC = () => {
       icon: <LineChartOutlined />,
       gradient: 'linear-gradient(135deg, #fff7e6 0%, #ffd591 100%)',
       iconGradient: 'linear-gradient(135deg, #fa8c16 0%, #ffa940 100%)',
-      accent: '#fa8c16',
+      accent: ACCENT_COLORS.orange,
     },
     {
       key: 'exchange',
@@ -150,7 +158,7 @@ const Reports: React.FC = () => {
       icon: <ShoppingOutlined />,
       gradient: 'linear-gradient(135deg, #f9f0ff 0%, #efdbff 100%)',
       iconGradient: 'linear-gradient(135deg, #722ed1 0%, #b37feb 100%)',
-      accent: '#722ed1',
+      accent: ACCENT_COLORS.purple,
     },
   ];
 
@@ -435,7 +443,7 @@ const Reports: React.FC = () => {
                     <stop offset="100%" stopColor={colors.gradientGreen[1]} stopOpacity={0.6} />
                   </linearGradient>
                   <linearGradient id="barConsumed" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#ff7875" stopOpacity={1} />
+                    <stop offset="0%" stopColor={ACCENT_COLORS.red} stopOpacity={1} />
                     <stop offset="100%" stopColor="#ffccc7" stopOpacity={0.6} />
                   </linearGradient>
                 </defs>
@@ -584,7 +592,7 @@ const Reports: React.FC = () => {
                   title: '消耗积分',
                   dataIndex: 'consumed',
                   render: (value: number) => (
-                    <span style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 600, color: '#ff7875' }}>{value}</span>
+                    <span style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 600, color: ACCENT_COLORS.red }}>{value}</span>
                   ),
                 },
                 {
@@ -596,7 +604,7 @@ const Reports: React.FC = () => {
                         style={{
                           fontFamily: 'Outfit, sans-serif',
                           fontWeight: 600,
-                          color: net >= 0 ? colors.gradientGreen[0] : '#ff4d4f',
+                          color: net >= 0 ? ACCENT_COLORS.green : ACCENT_COLORS.redDark,
                           display: 'flex',
                           alignItems: 'center',
                           gap: 4,

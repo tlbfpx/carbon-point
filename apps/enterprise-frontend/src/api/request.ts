@@ -2,12 +2,22 @@ import axios, { AxiosError } from 'axios';
 import { useAuthStore } from '../store/authStore';
 import { apiLogger } from '../utils/logger';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+interface ErrorResponse {
+  code?: number;
+  message?: string;
+  data?: unknown;
+}
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,
   timeout: 30000,
 });
+
+// Token refresh mutex to prevent race conditions
+let isRefreshing = false;
+let refreshQueue: Array<(token: string) => void> = [];
 
 // Helper to serialize request data for logging
 const serializeData = (data: unknown): unknown => {
@@ -41,13 +51,14 @@ apiClient.interceptors.response.use(
       status: res.status,
       statusText: res.statusText,
     });
-    return res;
+    // Unwrap the data from the standard API response
+    return res.data;
   },
   async (error: AxiosError) => {
     const url = error.config?.url || 'unknown';
     const method = error.config?.method?.toUpperCase() || 'UNKNOWN';
     const status = error.response?.status;
-    const message = error.message || (error.response?.data as any)?.message || '网络错误';
+    const message = error.message || (error.response?.data as ErrorResponse)?.message || '网络错误';
 
     if (status === 401) {
       apiLogger.warn(`[API错误] ${method} ${url} - 401 Unauthorized`);
@@ -61,21 +72,44 @@ apiClient.interceptors.response.use(
 
     if (error.response?.status === 401) {
       const refreshToken = useAuthStore.getState().refreshToken;
-      if (refreshToken) {
-        try {
-          const refreshRes = await axios.post(`${BASE_URL}/auth/refresh`, { refreshToken });
-          const { accessToken, refreshToken: newRefresh } = refreshRes.data.data;
-          useAuthStore.getState().login(accessToken, newRefresh, useAuthStore.getState().user!);
-          const originalRequest = error.config;
-          if (originalRequest) {
-            originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-            return apiClient(originalRequest);
+      const originalRequest = error.config as (typeof error.config & { _retry?: boolean }) | undefined;
+
+      if (originalRequest && !originalRequest._retry) {
+        originalRequest._retry = true;
+
+        if (refreshToken) {
+          if (!isRefreshing) {
+            isRefreshing = true;
+            try {
+              const refreshRes = await axios.post(`${BASE_URL}/auth/refresh`, { refreshToken });
+              const { accessToken, refreshToken: newRefresh } = refreshRes.data.data;
+              useAuthStore.getState().login(accessToken, newRefresh, useAuthStore.getState().user!);
+
+              // Process queued requests with new token
+              refreshQueue.forEach(cb => cb(accessToken));
+              refreshQueue = [];
+            } catch {
+              // Reject all queued requests (do NOT logout — the token exists but refresh
+              // failed, likely a backend issue. The user's session should remain intact.)
+              refreshQueue.forEach(cb => cb(''));
+              refreshQueue = [];
+            } finally {
+              isRefreshing = false;
+            }
           }
-        } catch {
-          useAuthStore.getState().logout();
+
+          // Queue this request until token is refreshed
+          return new Promise((resolve, reject) => {
+            refreshQueue.push((token: string) => {
+              if (token && originalRequest) {
+                originalRequest.headers.Authorization = `Bearer ${token}`;
+                resolve(apiClient(originalRequest));
+              } else {
+                reject(error);
+              }
+            });
+          });
         }
-      } else {
-        useAuthStore.getState().logout();
       }
     }
     return Promise.reject(error);

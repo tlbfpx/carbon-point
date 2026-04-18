@@ -16,12 +16,12 @@ export class ReportsPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.heading = page.locator('h2').filter({ hasText: '数据报表' });
+    this.heading = page.locator('h1, h2').filter({ hasText: '数据报表' });
     this.dateRangePicker = page.locator('.ant-picker-range');
     this.exportCheckinBtn = page.locator('button').filter({ hasText: '导出打卡报表' });
     this.exportPointsBtn = page.locator('button').filter({ hasText: '导出积分报表' });
     this.exportOrdersBtn = page.locator('button').filter({ hasText: '导出订单报表' });
-    this.statCards = page.locator('.ant-card');
+    this.statCards = page.locator('.ant-card, [class*="glassCard"], [class*="stat"]');
     this.checkinTrendChart = page.locator('.recharts-lineChart').first();
     this.pointsTrendChart = page.locator('.recharts-barChart').first();
     this.checkinTable = page.locator('.ant-table').filter({ hasText: '打卡数据明细' });

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Card, Tabs, Badge, Button, Empty, TabBar } from 'antd-mobile';
+import { GlassCard } from '@carbon-point/design-system';
+import { Tabs, Badge, Button, Empty, TabBar } from 'antd-mobile';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getMyCoupons } from '@/api/mall';
@@ -52,7 +53,7 @@ const MyCouponsPage: React.FC = () => {
           <Empty description="暂无卡券" />
         ) : (
           coupons.map((coupon) => (
-            <Card key={coupon.id} style={{ marginBottom: 12 }}>
+            <GlassCard key={coupon.id} style={{ marginBottom: 12 }}>
               <div style={{ padding: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <p style={{ fontWeight: 'bold', fontSize: 16, margin: 0 }}>{coupon.name}</p>
@@ -64,7 +65,7 @@ const MyCouponsPage: React.FC = () => {
                   {coupon.status === 'available' ? '使用' : coupon.status === 'used' ? '已使用' : '已过期'}
                 </Button>
               </div>
-            </Card>
+            </GlassCard>
           ))
         )}
       </div>

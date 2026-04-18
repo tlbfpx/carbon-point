@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Button, DotLoading, TabBar, List } from 'antd-mobile';
+import { Button, DotLoading, TabBar, List } from 'antd-mobile';
+import { GlassCard } from '@carbon-point/design-system';
 import { useQuery } from '@tanstack/react-query';
 import { getTodayCheckInStatus } from '@/api/checkin';
 import { getLeaderboardHistory, getLeaderboardContext, type LeaderboardEntry } from '@/api/points';
@@ -47,7 +48,7 @@ const HomePage: React.FC = () => {
         <p style={{ color: '#999', fontSize: 14 }}>坚持运动，健康生活</p>
       </div>
 
-      <Card style={{ marginBottom: 16 }} title="今日打卡状态">
+      <GlassCard style={{ marginBottom: 16 }} title="今日打卡状态">
         {checkInLoading ? (
           <div style={{ display: 'flex', justifyContent: 'center', padding: 20 }}>
             <DotLoading />
@@ -79,9 +80,9 @@ const HomePage: React.FC = () => {
             </Button>
           </div>
         )}
-      </Card>
+      </GlassCard>
 
-      <Card style={{ marginBottom: 16 }} title="快捷入口">
+      <GlassCard style={{ marginBottom: 16 }} title="快捷入口">
         <div style={{ display: 'flex', justifyContent: 'space-around' }}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer' }} onClick={() => navigate('/checkin')}>
             <div style={{ fontSize: 28 }}>🏃</div>
@@ -100,9 +101,9 @@ const HomePage: React.FC = () => {
             <span style={{ fontSize: 12, marginTop: 4 }}>消息</span>
           </div>
         </div>
-      </Card>
+      </GlassCard>
 
-      <Card
+      <GlassCard
         title="排行榜"
         extra={<span style={{ color: '#1677ff', fontSize: 12, cursor: 'pointer' }} onClick={() => navigate('/points')}>查看全部 →</span>}
       >
@@ -164,7 +165,7 @@ const HomePage: React.FC = () => {
             </List>
           </>
         )}
-      </Card>
+      </GlassCard>
 
       <TabBar activeKey="home" onChange={(key) => {
         if (key === 'checkin') navigate('/checkin');

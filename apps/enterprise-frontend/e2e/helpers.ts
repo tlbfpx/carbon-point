@@ -1,8 +1,21 @@
+import fs from 'fs';
+import path from 'path';
 import { type Page } from '@playwright/test';
+import { API_BASE } from './config';
 
 /**
  * Common helper utilities for E2E tests
  */
+
+const CREDS_CACHE_FILE = path.join(process.cwd(), 'e2e', '.test-creds.json');
+
+function getTestCreds(): { phone: string; password: string } {
+  try {
+    return JSON.parse(fs.readFileSync(CREDS_CACHE_FILE, 'utf-8'));
+  } catch {
+    throw new Error('Test credentials not found. Run global-setup first or ensure .env.e2e is configured.');
+  }
+}
 
 /**
  * Wait for an Ant Design success message to appear
@@ -99,14 +112,15 @@ export async function logout(page: Page) {
  * we bypass the UI form and directly call the API to get tokens, then inject into localStorage.
  */
 export async function loginAsEnterpriseAdmin(page: Page, baseUrl: string) {
+  const { phone, password } = getTestCreds();
   // First, get the auth token directly from the API
-  const apiResponse = await page.request.post('http://localhost:8080/api/auth/login', {
+  const apiResponse = await page.request.post(`${API_BASE}/api/auth/login`, {
     headers: { 'Content-Type': 'application/json' },
-    data: { phone: '13800138001', password: 'password123' },
+    data: { phone, password },
   });
   const apiData = await apiResponse.json();
 
-  if (apiData.code === 200 && apiData.data) {
+  if ((apiData.code === 200 || apiData.code === '0000') && apiData.data) {
     const { accessToken, refreshToken, user } = apiData.data;
     // Navigate to the login page first to set up the app context
     await page.goto(`${baseUrl}/login`);
@@ -127,8 +141,12 @@ export async function loginAsEnterpriseAdmin(page: Page, baseUrl: string) {
   }
 
   // Navigate to the enterprise dashboard
-  await page.goto(`${baseUrl}/#/dashboard`);
-  await page.waitForLoadState('networkidle');
-  await page.waitForTimeout(2000);
+  await page.goto(`${baseUrl}/dashboard`);
+  // Wait for React to mount and hydrate auth state from localStorage.
+  // Use waitForSelector for a robust, stable wait rather than a one-shot check.
+  // We wait for the sidebar AND a menu item to be visible to ensure the full layout renders.
+  await page.waitForSelector('.ant-layout-sider', { state: 'visible', timeout: 20000 });
+  // Also wait for at least one menu item to confirm the navigation settled
+  await page.waitForSelector('.ant-menu-item', { state: 'visible', timeout: 20000 });
 }
 

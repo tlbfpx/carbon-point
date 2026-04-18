@@ -7,6 +7,11 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      '@carbon-point/utils': path.resolve(__dirname, '../../packages/utils/src'),
+      '@carbon-point/api': path.resolve(__dirname, '../../packages/api/src'),
+      '@carbon-point/hooks': path.resolve(__dirname, '../../packages/hooks/src'),
+      '@carbon-point/ui': path.resolve(__dirname, '../../packages/ui/src'),
+      '@carbon-point/design-system': path.resolve(__dirname, '../../packages/design-system/src'),
     },
   },
   server: {
@@ -15,11 +20,11 @@ export default defineConfig({
     host: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:8080',
+        target: 'http://localhost:8088',
         changeOrigin: true,
       },
       '/platform': {
-        target: 'http://localhost:8080',
+        target: 'http://localhost:8088',
         changeOrigin: true,
       },
     },
@@ -42,5 +47,8 @@ export default defineConfig({
     cssCodeSplit: true,
     minify: 'esbuild',
     sourcemap: false,
+  },
+  optimizeDeps: {
+    include: ['@ant-design/icons', '@ant-design/cssinjs', 'antd', 'react', 'react-dom'],
   },
 });

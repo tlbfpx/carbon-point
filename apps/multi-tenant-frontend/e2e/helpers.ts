@@ -105,7 +105,7 @@ export async function logout(page: Page) {
  */
 export async function loginAsPlatformAdmin(page: Page, baseUrl: string) {
   // Platform API is at port 8080, not the frontend port (3001)
-  const apiResponse = await page.request.post(`http://localhost:8080/platform/auth/login`, {
+  const apiResponse = await page.request.post(`http://localhost:8088/platform/auth/login`, {
     headers: { 'Content-Type': 'application/json' },
     data: { username: 'admin', password: 'admin123' },
   });

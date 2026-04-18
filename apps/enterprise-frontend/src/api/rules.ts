@@ -30,14 +30,37 @@ export interface LevelCoefficient {
 
 export interface DailyCap {
   maxPoints: number;
+  id?: string;
 }
+
+// Helper to fetch rules by type from backend
+const fetchRulesByType = async (tenantId: string, type: string) => {
+  const res = await apiClient.get('/point-rules/list', { params: { type } }) as any[];
+  const allRules = res || [];
+  return allRules
+    .filter((r: any) => r.type === type)
+    .map((r: any) => {
+      let config: any = {};
+      try {
+        config = JSON.parse(r.config || '{}');
+      } catch {}
+      return {
+        id: String(r.id),
+        name: r.name,
+        enabled: r.enabled,
+        sortOrder: r.sortOrder || 0,
+        config,
+        type: r.type,
+      };
+    });
+};
 
 // Map time slot CRUD to the backend PointRulesController
 
 export const getTimeSlotRules = async (_tenantId: string) => {
-  const res = await apiClient.get('/point-rules/enabled');
+  const res = await apiClient.get('/point-rules/enabled') as any[];
   // Filter to time_slot type and parse config for display
-  const allRules = res.data || [];
+  const allRules = res || [];
   return allRules
     .filter((r: any) => r.type === 'time_slot')
     .map((r: any) => {
@@ -77,7 +100,7 @@ export const createTimeSlotRule = async (data: any) => {
     enabled: data.enabled !== false,
     sortOrder: data.sortOrder || 0,
   });
-  return res.data;
+  return res;
 };
 
 export const updateTimeSlotRule = async (id: string, data: Partial<TimeSlotRule>) => {
@@ -94,19 +117,18 @@ export const updateTimeSlotRule = async (id: string, data: Partial<TimeSlotRule>
     enabled: data.enabled,
     sortOrder: data.sortOrder,
   });
-  return res.data;
+  return res;
 };
 
 export const deleteTimeSlotRule = async (id: string) => {
   const res = await apiClient.delete(`/point-rules/${id}`);
-  return res.data;
+  return res;
 };
 
 // These rule types are stored in point_rules table with their respective types
-// Stub implementations until backend endpoints are added
 
+// Consecutive rewards are calculated by the point engine, not stored as rules
 export const getConsecutiveRewards = async (_tenantId: string) => {
-  // Not yet implemented in backend - return empty
   return [];
 };
 
@@ -115,29 +137,80 @@ export const updateConsecutiveRewards = async (_tenantId: string, _data: Consecu
 };
 
 export const getSpecialDates = async (_tenantId: string) => {
-  return [];
+  const rules = await fetchRulesByType(_tenantId, 'special_date');
+  return rules.map((r: any) => ({
+    id: r.id,
+    date: r.config.date || r.name,
+    multiplier: r.config.multiplier || 1,
+    description: r.config.description || '',
+  }));
 };
 
-export const createSpecialDate = async (_data: Partial<SpecialDate> & { tenantId: string }) => {
-  return null;
+export const createSpecialDate = async (data: Partial<SpecialDate> & { tenantId: string }) => {
+  const res = await apiClient.post('/point-rules', {
+    type: 'special_date',
+    name: data.date,
+    config: JSON.stringify({
+      date: data.date,
+      multiplier: data.multiplier || 1,
+      description: data.description || '',
+    }),
+    enabled: true,
+    sortOrder: 0,
+  });
+  return res;
 };
 
-export const deleteSpecialDate = async (_id: string) => {
-  return null;
+export const deleteSpecialDate = async (id: string) => {
+  const res = await apiClient.delete(`/point-rules/${id}`);
+  return res;
 };
 
 export const getLevelCoefficients = async (_tenantId: string) => {
-  return [];
+  const rules = await fetchRulesByType(_tenantId, 'level_coefficient');
+  return rules.map((r: any) => ({
+    level: r.config.level || 1,
+    coefficient: r.config.coefficient || 1,
+    id: r.id,
+  }));
 };
 
-export const updateLevelCoefficients = async (_tenantId: string, _data: LevelCoefficient[]) => {
+export const updateLevelCoefficients = async (_tenantId: string, data: LevelCoefficient[]) => {
+  // Delete existing and recreate
+  const existing = await fetchRulesByType(_tenantId, 'level_coefficient');
+  await Promise.all(existing.map((r: any) => apiClient.delete(`/point-rules/${r.id}`)));
+  await Promise.all(data.map(d =>
+    apiClient.post('/point-rules', {
+      type: 'level_coefficient',
+      name: `Level ${d.level}`,
+      config: JSON.stringify({ level: d.level, coefficient: d.coefficient }),
+      enabled: true,
+      sortOrder: d.level,
+    })
+  ));
   return [];
 };
 
 export const getDailyCap = async (_tenantId: string) => {
+  const rules = await fetchRulesByType(_tenantId, 'daily_cap');
+  if (rules.length > 0) {
+    return { maxPoints: rules[0].config.maxPoints || 500, id: rules[0].id };
+  }
   return { maxPoints: 500 };
 };
 
-export const updateDailyCap = async (_tenantId: string, _data: DailyCap) => {
+export const updateDailyCap = async (_tenantId: string, data: DailyCap) => {
+  const existing = await fetchRulesByType(_tenantId, 'daily_cap');
+  const payload = {
+    type: 'daily_cap',
+    name: 'Daily Cap',
+    config: JSON.stringify({ maxPoints: data.maxPoints }),
+    enabled: true,
+  };
+  if (existing.length > 0) {
+    await apiClient.put('/point-rules', { id: Number(existing[0].id), ...payload });
+  } else {
+    await apiClient.post('/point-rules', { ...payload, sortOrder: 0 });
+  }
   return [];
 };

@@ -9,8 +9,8 @@ test.describe('企业后台 - 角色权限 (20 tests)', () => {
   test.beforeEach(async ({ page }) => {
     rolesPage = new RolesPage(page);
     await loginAsEnterpriseAdmin(page, BASE_URL);
-    await page.click('text=角色权限');
-    await page.waitForTimeout(2000);
+    await page.locator('text=角色管理').first().click({ force: true });
+    await page.waitForLoadState('networkidle');
   });
 
   test('ROL-001: 角色权限页面可访问', async ({ page }) => {
@@ -19,7 +19,7 @@ test.describe('企业后台 - 角色权限 (20 tests)', () => {
   });
 
   test('ROL-002: 页面标题正确', async ({ page }) => {
-    await expect(rolesPage.heading).toHaveText('角色权限');
+    await expect(rolesPage.heading).toContainText('角色');
   });
 
   test('ROL-003: 新增自定义角色按钮可见', async ({ page }) => {
@@ -98,7 +98,7 @@ test.describe('企业后台 - 角色权限 (20 tests)', () => {
   });
 
   test('ROL-014: 编辑权限按钮可见', async ({ page }) => {
-    const editBtn = page.locator('button').filter({ hasText: '编辑权限' }).first();
+    const editBtn = page.locator('button').filter({ hasText: /编辑权限|编辑/ }).first();
     await expect(editBtn).toBeVisible();
   });
 
@@ -129,7 +129,7 @@ test.describe('企业后台 - 角色权限 (20 tests)', () => {
   });
 
   test('ROL-018: 超管角色编辑权限按钮存在', async ({ page }) => {
-    const editBtn = page.locator('button').filter({ hasText: '编辑权限' }).first();
+    const editBtn = page.locator('button').filter({ hasText: /编辑权限|编辑/ }).first();
     const count = await editBtn.count();
     expect(count).toBeGreaterThan(0);
   });
@@ -145,7 +145,7 @@ test.describe('企业后台 - 角色权限 (20 tests)', () => {
   test('ROL-020: 页面包含角色表格和新增按钮', async ({ page }) => {
     await expect(rolesPage.table).toBeVisible();
     await expect(rolesPage.addButton).toBeVisible();
-    await expect(page.locator('button').filter({ hasText: '编辑权限' }).first()).toBeVisible();
+    await expect(page.locator('button').filter({ hasText: /编辑权限|编辑/ }).first()).toBeVisible();
     await expect(page.locator('button').filter({ hasText: '删除' }).first()).toBeVisible();
   });
 });

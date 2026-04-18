@@ -65,13 +65,16 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
 
   hydrate: () => {
     const stored = loadFromStorage();
+    console.log('[authStore] hydrate() called, stored.hasToken:', !!(stored.accessToken || stored.refreshToken || stored.user));
     if (stored.accessToken || stored.refreshToken || stored.user) {
+      console.log('[authStore] Setting isAuthenticated=true');
       set({ ...stored, isAuthenticated: true });
       get().fetchPermissions();
     }
   },
 
   login: (accessToken, refreshToken, user) => {
+    console.log('[authStore] login() called');
     const state = { accessToken, refreshToken, user, isAuthenticated: true as const };
     set(state);
     saveToStorage(state);
@@ -79,6 +82,7 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
   },
 
   logout: () => {
+    console.log('[authStore] logout() called, clearing auth state');
     const state = { accessToken: null, refreshToken: null, user: null, permissions: [], isAuthenticated: false as const };
     set(state);
     try { localStorage.removeItem(STORAGE_KEY); } catch {}
