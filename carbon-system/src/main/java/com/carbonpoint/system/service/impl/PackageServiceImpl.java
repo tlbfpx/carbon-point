@@ -430,7 +430,7 @@ public class PackageServiceImpl implements PackageService {
         List<PackageProductRes> productResList = new ArrayList<>();
 
         for (PackageProductEntity pp : packageProducts) {
-            ProductEntity product = productMapper.selectById(pp.getProductId());
+            ProductEntity product = productMapper.selectById(String.valueOf(pp.getProductId()));
             if (product == null) {
                 continue;
             }

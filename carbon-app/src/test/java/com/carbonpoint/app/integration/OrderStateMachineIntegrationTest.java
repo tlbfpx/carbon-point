@@ -3,7 +3,7 @@ package com.carbonpoint.app.integration;
 import com.carbonpoint.mall.entity.ExchangeOrder;
 import com.carbonpoint.mall.entity.Product;
 import com.carbonpoint.mall.mapper.ExchangeOrderMapper;
-import com.carbonpoint.mall.mapper.ProductMapper;
+import com.carbonpoint.mall.mapper.MallProductMapper;
 import com.carbonpoint.mall.service.ExchangeService;
 import com.carbonpoint.points.service.PointAccountService;
 import com.carbonpoint.system.entity.User;
@@ -46,7 +46,7 @@ class OrderStateMachineIntegrationTest extends BaseIntegrationTest {
     private ExchangeOrderMapper exchangeOrderMapper;
 
     @Autowired
-    private ProductMapper productMapper;
+    private MallProductMapper productMapper;
 
     @Autowired
     private UserMapper userMapper;
@@ -311,7 +311,7 @@ class OrderStateMachineIntegrationTest extends BaseIntegrationTest {
         ).andReturn();
 
         // Fulfilled orders cannot be cancelled (ORDER_STATUS_ERROR)
-        assertErrorCode(cancelResult, 10404);
+        assertErrorCode(cancelResult, "ORDER004");
 
         // Stock should remain at 9 (no change since cancellation failed)
         TenantContext.setTenantId(7004L);
@@ -372,7 +372,7 @@ class OrderStateMachineIntegrationTest extends BaseIntegrationTest {
         ).andReturn();
 
         // Should fail because order is fulfilled, not pending
-        assertErrorCode(cancelResult, 10404); // ORDER_STATUS_ERROR
+        assertErrorCode(cancelResult, "ORDER004"); // ORDER_STATUS_ERROR
     }
 
     // ─────────────────────────────────────────
@@ -421,7 +421,7 @@ class OrderStateMachineIntegrationTest extends BaseIntegrationTest {
                         .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
         ).andReturn();
 
-        assertErrorCode(cancelResult, 10404); // ORDER_STATUS_ERROR
+        assertErrorCode(cancelResult, "ORDER004"); // ORDER_STATUS_ERROR
     }
 
     // ═══════════════════════════════════════════════════════════════════
@@ -561,7 +561,7 @@ class OrderStateMachineIntegrationTest extends BaseIntegrationTest {
                         .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
         ).andReturn();
 
-        assertErrorCode(secondRedeem, 10402); // MALL_COUPON_ALREADY_USED
+        assertErrorCode(secondRedeem, "ORDER002"); // MALL_COUPON_ALREADY_USED
     }
 
     // ─────────────────────────────────────────
@@ -587,7 +587,7 @@ class OrderStateMachineIntegrationTest extends BaseIntegrationTest {
         ).andReturn();
 
         // 10804 = MALL_COUPON_NOT_FOUND ("优惠券不存在")
-        assertErrorCode(result, 10804);
+        assertErrorCode(result, "MALL004");
     }
 
     // ═══════════════════════════════════════════════════════════════════

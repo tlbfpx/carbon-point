@@ -42,7 +42,7 @@ public class ExchangeController {
             @PathVariable Long id) {
         ExchangeOrder order = exchangeService.getOrderById(id);
         if (!order.getUserId().equals(principal.getUserId())
-                && !order.getTenantId().equals(principal.getTenantId())) {
+                || !order.getTenantId().equals(principal.getTenantId())) {
             throw new BusinessException(ErrorCode.FORBIDDEN);
         }
         return Result.success(order);

@@ -7,7 +7,7 @@ import com.carbonpoint.common.result.ErrorCode;
 import com.carbonpoint.common.tenant.TenantContext;
 import com.carbonpoint.mall.dto.ProductCreateDTO;
 import com.carbonpoint.mall.entity.Product;
-import com.carbonpoint.mall.mapper.ProductMapper;
+import com.carbonpoint.mall.mapper.MallProductMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,7 +21,7 @@ import java.time.LocalDateTime;
 public class ProductService {
 
     private static final int MAX_PAGE_SIZE = 100;
-    private final ProductMapper productMapper;
+    private final MallProductMapper productMapper;
 
     @Transactional
     public Product create(ProductCreateDTO dto) {

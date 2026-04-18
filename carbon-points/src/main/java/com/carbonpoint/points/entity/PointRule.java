@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @TableName("point_rules")
 public class PointRule {
 
-    @TableId(type = IdType.NONE)
+    @TableId(type = IdType.ASSIGN_ID)
     private Long id;
 
     private Long tenantId;

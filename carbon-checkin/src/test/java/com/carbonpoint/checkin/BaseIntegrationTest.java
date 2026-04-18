@@ -15,7 +15,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
@@ -31,13 +30,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
  * Base class for all integration tests.
  * Provides common setup, authentication helpers, and utility methods.
  */
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = TestApplication.class)
+@SpringBootTest(classes = TestApplication.class)
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
 public abstract class BaseIntegrationTest {
-
-    @LocalServerPort
-    protected int port;
 
     @Autowired
     protected MockMvc mockMvc;
@@ -169,25 +165,25 @@ public abstract class BaseIntegrationTest {
     // ─────────────────────────────────────────
 
     /**
-     * Assert that the response was successful (code 200).
+     * Assert that the response was successful (code "0000").
      */
     protected void assertSuccess(MvcResult result) throws Exception {
         result.getResponse().setCharacterEncoding("UTF-8");
         String content = result.getResponse().getContentAsString();
         org.junit.jupiter.api.Assertions.assertTrue(
-                content.contains("\"code\":200") || content.contains("\"code\": 200"),
-                "Expected success response but got: " + content
+                content.contains("\"code\":\"0000\"") || content.contains("\"code\": \"0000\""),
+                "Expected success response (code:0000) but got: " + content
         );
     }
 
     /**
      * Assert that the response contains the given error code.
      */
-    protected void assertErrorCode(MvcResult result, int errorCode) throws Exception {
+    protected void assertErrorCode(MvcResult result, String errorCode) throws Exception {
         result.getResponse().setCharacterEncoding("UTF-8");
         String content = result.getResponse().getContentAsString();
         org.junit.jupiter.api.Assertions.assertTrue(
-                content.contains("\"code\":" + errorCode) || content.contains("\"code\": " + errorCode),
+                content.contains("\"code\":\"" + errorCode + "\"") || content.contains("\"code\": \"" + errorCode + "\""),
                 "Expected error code " + errorCode + " but got: " + content
         );
     }

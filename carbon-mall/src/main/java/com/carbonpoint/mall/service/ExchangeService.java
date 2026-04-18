@@ -8,7 +8,7 @@ import com.carbonpoint.common.tenant.TenantContext;
 import com.carbonpoint.mall.entity.ExchangeOrder;
 import com.carbonpoint.mall.entity.Product;
 import com.carbonpoint.mall.mapper.ExchangeOrderMapper;
-import com.carbonpoint.mall.mapper.ProductMapper;
+import com.carbonpoint.mall.mapper.MallProductMapper;
 import com.carbonpoint.mall.util.CouponGenerator;
 import com.carbonpoint.points.service.PointAccountService;
 import com.carbonpoint.points.mapper.PointsUserMapper;
@@ -41,7 +41,7 @@ public class ExchangeService {
     /** 最大分页条数限制 */
     private static final int MAX_PAGE_SIZE = 100;
 
-    private final ProductMapper productMapper;
+    private final MallProductMapper productMapper;
     private final ExchangeOrderMapper exchangeOrderMapper;
     private final PointAccountService pointAccountService;
     private final PointsUserMapper userMapper;

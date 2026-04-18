@@ -2,7 +2,7 @@ package com.carbonpoint.app.integration;
 
 import com.carbonpoint.mall.entity.Product;
 import com.carbonpoint.mall.entity.ExchangeOrder;
-import com.carbonpoint.mall.mapper.ProductMapper;
+import com.carbonpoint.mall.mapper.MallProductMapper;
 import com.carbonpoint.mall.mapper.ExchangeOrderMapper;
 import com.carbonpoint.points.service.PointAccountService;
 import com.carbonpoint.system.entity.User;
@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class PointExchangeIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
-    private ProductMapper productMapper;
+    private MallProductMapper productMapper;
 
     @Autowired
     private ExchangeOrderMapper exchangeOrderMapper;

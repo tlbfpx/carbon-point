@@ -11,6 +11,7 @@ public class UserRole {
     @TableId
     private Long userId;
     private Long roleId;
+    private Long tenantId;
 
     @TableLogic
     private Integer deleted;

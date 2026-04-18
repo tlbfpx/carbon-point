@@ -17,7 +17,7 @@ import java.util.List;
 @AllArgsConstructor
 public class PackageProductRes {
 
-    private Long productId;
+    private String productId;
     private String productCode;
     private String productName;
     private String productCategory;

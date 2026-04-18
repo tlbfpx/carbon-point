@@ -2,7 +2,7 @@ package com.carbonpoint.app.integration;
 
 import com.carbonpoint.mall.entity.Product;
 import com.carbonpoint.mall.entity.ExchangeOrder;
-import com.carbonpoint.mall.mapper.ProductMapper;
+import com.carbonpoint.mall.mapper.MallProductMapper;
 import com.carbonpoint.mall.mapper.ExchangeOrderMapper;
 import com.carbonpoint.system.entity.User;
 import com.carbonpoint.common.tenant.TenantContext;
@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class StockConcurrencyTest extends BaseIntegrationTest {
 
     @Autowired
-    private ProductMapper productMapper;
+    private MallProductMapper productMapper;
 
     @Autowired
     private ExchangeOrderMapper exchangeOrderMapper;

@@ -42,4 +42,12 @@ public interface UserMapper extends BaseMapper<User> {
     @InterceptorIgnore(tenantLine = "1")
     @org.apache.ibatis.annotations.Update("UPDATE users SET password_hash = #{passwordHash} WHERE id = #{userId}")
     void updatePasswordHash(@Param("userId") Long userId, @Param("passwordHash") String passwordHash);
+
+    /**
+     * Delete user by ID without tenant filtering.
+     * Used by integration tests to ensure idempotent user creation.
+     */
+    @InterceptorIgnore(tenantLine = "1")
+    @org.apache.ibatis.annotations.Delete("DELETE FROM users WHERE id = #{userId}")
+    void deleteByIdNoTenant(@Param("userId") Long userId);
 }

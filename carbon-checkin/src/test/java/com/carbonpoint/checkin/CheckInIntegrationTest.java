@@ -131,8 +131,8 @@ class CheckInIntegrationTest extends BaseIntegrationTest {
 
         MvcResult result = postJson("/api/checkin", checkInJson, token);
 
-        // Should receive CHECKIN_ALREADY_DONE error (code 10002)
-        assertErrorCode(result, 10002);
+        // Should receive CHECKIN_ALREADY_DONE error (code CHECKIN002)
+        assertErrorCode(result, "CHECKIN002");
 
         // Verify no new check-in record was inserted (count stays at 1)
         setTenantContext(1L);

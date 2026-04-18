@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @TableName("point_transactions")
 public class PointTransactionEntity {
 
-    @TableId(type = IdType.AUTO)
+    @TableId(type = IdType.ASSIGN_ID)
     private Long id;
 
     private Long userId;

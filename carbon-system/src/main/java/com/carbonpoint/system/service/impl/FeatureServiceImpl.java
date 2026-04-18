@@ -69,7 +69,7 @@ public class FeatureServiceImpl implements FeatureService {
         long count = featureMapper.selectCount(new LambdaQueryWrapper<FeatureEntity>()
                 .eq(FeatureEntity::getCode, data.getCode()));
         if (count > 0) {
-            throw new BusinessException(ErrorCode.BAD_REQUEST, "功能点编码已存在");
+            throw new BusinessException(ErrorCode.PARAM_INVALID, "功能点编码已存在");
         }
 
         data.setCreateTime(LocalDateTime.now());
@@ -93,7 +93,7 @@ public class FeatureServiceImpl implements FeatureService {
                     .eq(FeatureEntity::getCode, data.getCode())
                     .ne(FeatureEntity::getId, id));
             if (count > 0) {
-                throw new BusinessException(ErrorCode.BAD_REQUEST, "功能点编码已存在");
+                throw new BusinessException(ErrorCode.PARAM_INVALID, "功能点编码已存在");
             }
             existing.setCode(data.getCode());
         }
@@ -136,7 +136,7 @@ public class FeatureServiceImpl implements FeatureService {
                 new LambdaQueryWrapper<ProductFeatureEntity>()
                         .eq(ProductFeatureEntity::getFeatureId, id));
         if (usageCount > 0) {
-            throw new BusinessException(ErrorCode.BAD_REQUEST, "该功能点已被产品使用，无法删除");
+            throw new BusinessException(ErrorCode.PARAM_INVALID, "该功能点已被产品使用，无法删除");
         }
 
         featureMapper.deleteById(id);

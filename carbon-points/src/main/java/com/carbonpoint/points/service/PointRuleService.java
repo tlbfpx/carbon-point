@@ -105,9 +105,17 @@ public class PointRuleService {
             wrapper.eq(PointRule::getType, type);
         }
         wrapper.orderByAsc(PointRule::getSortOrder);
-        Page<PointRule> result = pointRuleMapper.selectPage(new Page<>(page, size), wrapper);
-        Page<PointRuleDTO> dtoPage = new Page<>(result.getCurrent(), result.getSize(), result.getTotal());
-        dtoPage.setRecords(result.getRecords().stream().map(this::toDTO).collect(Collectors.toList()));
+        // Use selectList + manual pagination to avoid TenantLineInnerInterceptor
+        // bug where selectPage count query returns 0 due to duplicate tenant_id filter.
+        List<PointRule> all = pointRuleMapper.selectList(wrapper);
+        Page<PointRuleDTO> dtoPage = new Page<>(page, size, all.size());
+        int start = (int) ((page - 1) * size);
+        int end = Math.min(start + size, all.size());
+        if (start < all.size()) {
+            dtoPage.setRecords(all.subList(start, end).stream().map(this::toDTO).collect(Collectors.toList()));
+        } else {
+            dtoPage.setRecords(List.of());
+        }
         return dtoPage;
     }
 
