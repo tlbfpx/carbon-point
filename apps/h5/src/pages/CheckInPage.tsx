@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Button, Toast, DotLoading, Badge, TabBar } from 'antd-mobile';
+import { GlassCard } from '@carbon-point/design-system';
+import { Button, Toast, DotLoading, Badge, TabBar } from 'antd-mobile';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { doCheckIn, getTimeSlots, TimeSlotResponse } from '@/api/checkin';
 import { isInWeChat, configureWeChat, getWeChatLocation } from '@/utils/wechat';
@@ -216,7 +217,7 @@ const CheckInPage: React.FC = () => {
 
   return (
     <div style={{ minHeight: '100vh', background: '#f5f5f5', padding: 16 }}>
-      <Card style={{ marginBottom: 16 }} title="今日打卡时段">
+      <GlassCard style={{ marginBottom: 16 }} title="今日打卡时段">
         {slotsLoading ? (
           <div style={{ display: 'flex', justifyContent: 'center', padding: 24 }}>
             <DotLoading />
@@ -260,16 +261,16 @@ const CheckInPage: React.FC = () => {
             )}
           </div>
         )}
-      </Card>
+      </GlassCard>
 
-      <Card title="打卡须知">
+      <GlassCard title="打卡须知">
         <ul style={{ paddingLeft: 20, fontSize: 14, color: '#666', lineHeight: 1.8, margin: 0 }}>
           <li>请确保已完成爬楼梯运动</li>
           <li>每个时间段只能打卡一次</li>
           <li>积分根据规则引擎自动计算</li>
           <li>连续打卡可获得额外奖励</li>
         </ul>
-      </Card>
+      </GlassCard>
 
       <div style={{ textAlign: 'center', marginTop: 12 }}>
         <span

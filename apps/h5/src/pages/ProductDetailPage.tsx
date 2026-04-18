@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card, Button, Toast, Dialog, Input } from 'antd-mobile';
+import { GlassCard } from '@carbon-point/design-system';
+import { Button, Toast, Dialog, Input } from 'antd-mobile';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getProductDetail, exchangeProduct } from '@/api/mall';
 import { useAuthStore } from '@/store/authStore';
@@ -97,11 +98,11 @@ const ProductDetailPage: React.FC = () => {
   if (isLoading || !product) {
     return (
       <div style={{ padding: 16 }}>
-        <Card>
+        <GlassCard>
           <div style={{ display: 'flex', justifyContent: 'center', padding: 20 }}>
             加载中...
           </div>
-        </Card>
+        </GlassCard>
       </div>
     );
   }
@@ -138,14 +139,14 @@ const ProductDetailPage: React.FC = () => {
         <p style={{ color: '#666', fontSize: 14, lineHeight: 1.6 }}>{product.description}</p>
       </div>
 
-      <Card style={{ margin: 16 }} title="兑换说明">
+      <GlassCard style={{ margin: 16 }} title="兑换说明">
         <ul style={{ paddingLeft: 20, fontSize: 14, color: '#666', lineHeight: 1.8, margin: 0 }}>
           <li>兑换后积分将自动扣除</li>
           <li>虚拟商品兑换后不可退款</li>
           <li>直充类商品请确保账号正确</li>
           <li>如有疑问请联系客服</li>
         </ul>
-      </Card>
+      </GlassCard>
 
       <div
         style={{

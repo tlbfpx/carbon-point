@@ -13,6 +13,9 @@ importers:
       '@ant-design/icons':
         specifier: ^5.3.0
         version: 5.6.1(react-dom@18.3.1)(react@18.3.1)
+      '@carbon-point/design-system':
+        specifier: workspace:*
+        version: link:../../packages/design-system
       '@tanstack/react-query':
         specifier: ^5.28.0
         version: 5.99.0(react@18.3.1)
@@ -83,6 +86,9 @@ importers:
 
   apps/h5:
     dependencies:
+      '@carbon-point/design-system':
+        specifier: workspace:*
+        version: link:../../packages/design-system
       '@tanstack/react-query':
         specifier: ^5.28.0
         version: 5.99.0(react@18.3.1)
@@ -159,6 +165,9 @@ importers:
       '@ant-design/icons':
         specifier: ^5.3.0
         version: 5.6.1(react-dom@18.3.1)(react@18.3.1)
+      '@carbon-point/design-system':
+        specifier: workspace:*
+        version: link:../../packages/design-system
       '@tanstack/react-query':
         specifier: ^5.28.0
         version: 5.99.0(react@18.3.1)
@@ -236,6 +245,30 @@ importers:
       typescript:
         specifier: ^5.4.2
         version: 5.9.3
+
+  packages/design-system:
+    dependencies:
+      '@ant-design/cssinjs':
+        specifier: ^1.18.0
+        version: 1.24.0(react-dom@18.3.1)(react@18.3.1)
+      '@ant-design/icons':
+        specifier: ^5.3.0
+        version: 5.6.1(react-dom@18.3.1)(react@18.3.1)
+      '@types/react':
+        specifier: ^18.2.0
+        version: 18.3.28
+      '@types/react-dom':
+        specifier: ^18.2.0
+        version: 18.3.7(@types/react@18.3.28)
+      antd:
+        specifier: ^5.15.0
+        version: 5.29.3(react-dom@18.3.1)(react@18.3.1)
+      react:
+        specifier: ^18.2.0
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.2.0
+        version: 18.3.1(react@18.3.1)
 
   packages/hooks:
     dependencies:
@@ -1484,7 +1517,6 @@ packages:
       '@types/react': ^18.0.0
     dependencies:
       '@types/react': 18.3.28
-    dev: true
 
   /@types/react@18.3.28:
     resolution: {integrity: sha512-z9VXpC7MWrhfWipitjNdgCauoMLRdIILQsAEV+ZesIzBq/oUlxk0m3ApZuMFCXdnS4U7KrI+l3WRUEGQ8K1QKw==}

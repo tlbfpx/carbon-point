@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, List, DotLoading, Empty, TabBar, Tabs } from 'antd-mobile';
+import { GlassCard } from '@carbon-point/design-system';
+import { List, DotLoading, Empty, TabBar, Tabs } from 'antd-mobile';
 import { useQuery } from '@tanstack/react-query';
 import { getLeaderboard } from '@/api/leaderboard';
 import { getLeaderboardContext } from '@/api/points';
@@ -69,7 +70,7 @@ const LeaderboardPage: React.FC = () => {
         ) : entries.length === 0 ? (
           <Empty description="暂无排行榜数据" />
         ) : (
-          <Card>
+          <GlassCard>
             <List>
               {entries.map((entry: { rank: number; userId: string; nickname: string; points: number; avatar?: string }) => (
                 <List.Item
@@ -117,7 +118,7 @@ const LeaderboardPage: React.FC = () => {
                 </List.Item>
               ))}
             </List>
-          </Card>
+          </GlassCard>
         )}
       </div>
 

@@ -21,9 +21,11 @@
       "@carbon-point/utils": ["../../packages/utils/src"],
       "@carbon-point/api": ["../../packages/api/src"],
       "@carbon-point/hooks": ["../../packages/hooks/src"],
-      "@carbon-point/ui": ["../../packages/ui/src"]
+      "@carbon-point/ui": ["../../packages/ui/src"],
+      "@carbon-point/design-system": ["../../packages/design-system/src"]
     }
   },
   "include": ["src"],
+  "exclude": ["../../packages/design-system/src/**/*"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

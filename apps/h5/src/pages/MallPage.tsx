@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, SearchBar, TabBar, List, Button, Badge, Tabs, Empty, DotLoading } from 'antd-mobile';
+import { GlassCard } from '@carbon-point/design-system';
+import { SearchBar, TabBar, List, Button, Badge, Tabs, Empty, DotLoading } from 'antd-mobile';
 import { useQuery } from '@tanstack/react-query';
 import { getProducts } from '@/api/mall';
 import { useAuthStore } from '@/store/authStore';
@@ -81,7 +82,7 @@ const MallPage: React.FC = () => {
           <Empty description="暂无商品" />
         ) : (
           filteredProducts.map((product) => (
-            <Card
+            <GlassCard
               key={product.id}
               style={{ marginBottom: 12 }}
               onClick={() => navigate(`/mall/${product.id}`)}
@@ -106,7 +107,7 @@ const MallPage: React.FC = () => {
                   兑换
                 </Button>
               </div>
-            </Card>
+            </GlassCard>
           ))
         )}
       </div>

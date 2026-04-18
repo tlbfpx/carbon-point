@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, List, Input, Button, Toast } from 'antd-mobile';
+import { GlassCard } from '@carbon-point/design-system';
+import { List, Input, Button, Toast } from 'antd-mobile';
 import { useMutation } from '@tanstack/react-query';
 import { register, sendSmsCode } from '@/api/auth';
 
@@ -75,7 +76,7 @@ const RegisterPage: React.FC = () => {
         <p style={{ color: '#999', marginTop: 8 }}>加入碳积分，健康生活</p>
       </div>
 
-      <Card>
+      <GlassCard>
         <List>
           <Input
             placeholder="请输入手机号"
@@ -146,7 +147,7 @@ const RegisterPage: React.FC = () => {
             立即登录
           </span>
         </div>
-      </Card>
+      </GlassCard>
     </div>
   );
 };

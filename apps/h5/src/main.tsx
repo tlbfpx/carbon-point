@@ -4,6 +4,12 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ConfigProvider } from 'antd-mobile';
 import App from './App';
 import './index.css';
+import { globalStyles } from '@carbon-point/design-system';
+
+// Inject design system global styles into document head
+const styleEl = document.createElement('style');
+styleEl.textContent = globalStyles;
+document.head.appendChild(styleEl);
 
 const queryClient = new QueryClient({
   defaultOptions: {

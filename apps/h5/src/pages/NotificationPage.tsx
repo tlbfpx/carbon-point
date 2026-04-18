@@ -1,5 +1,6 @@
 import React from 'react';
-import { Card, Badge, Empty, TabBar } from 'antd-mobile';
+import { GlassCard } from '@carbon-point/design-system';
+import { Badge, Empty, TabBar } from 'antd-mobile';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getNotifications } from '@/api/notification';
@@ -42,7 +43,7 @@ const NotificationPage: React.FC = () => {
           <Empty description="暂无消息" />
         ) : (
           notifications.map((item) => (
-            <Card
+            <GlassCard
               key={item.id}
               style={{ marginBottom: 12, opacity: item.isRead ? 0.7 : 1 }}
             >
@@ -56,7 +57,7 @@ const NotificationPage: React.FC = () => {
                 </div>
                 <p style={{ color: '#666', fontSize: 14, margin: 0 }}>{item.content}</p>
               </div>
-            </Card>
+            </GlassCard>
           ))
         )}
       </div>

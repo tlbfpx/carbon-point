@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Empty, DotLoading, TabBar, Tabs, Badge } from 'antd-mobile';
+import { Empty, DotLoading, TabBar, Tabs, Badge } from 'antd-mobile';
+import { GlassCard } from '@carbon-point/design-system';
 import { useQuery } from '@tanstack/react-query';
 import { getMyOrders } from '@/api/mall';
 import { useAuthStore } from '@/store/authStore';
@@ -84,7 +85,7 @@ const OrderHistoryPage: React.FC = () => {
             status: OrderStatus;
             createTime: string;
           }) => (
-            <Card key={order.id} style={{ marginBottom: 12 }}>
+            <GlassCard key={order.id} style={{ marginBottom: 12 }}>
               <div style={{ padding: 12 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div>
@@ -111,7 +112,7 @@ const OrderHistoryPage: React.FC = () => {
                   </span>
                 </div>
               </div>
-            </Card>
+            </GlassCard>
           ))
         )}
       </div>
