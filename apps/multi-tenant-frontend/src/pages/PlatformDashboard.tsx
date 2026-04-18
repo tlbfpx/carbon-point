@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Row, Col, Card, Statistic, Table, Button, Space, Segmented, TableColumnsType, message } from 'antd';
+import { Row, Col, Statistic, Table, Button, Space, Segmented, TableColumnsType, message } from 'antd';
+import { GlassCard } from '@carbon-point/design-system';
 import {
   TeamOutlined,
   ShopOutlined,
@@ -195,79 +196,79 @@ const PlatformDashboard: React.FC = () => {
       {/* Stats Row 1 */}
       <Row gutter={16} style={{ marginBottom: 16 }}>
         <Col span={6}>
-          <Card loading={!statsData}>
+          <GlassCard loading={!statsData} hoverable>
             <Statistic
               title="企业总数"
               value={stats.totalEnterprises}
               prefix={<ShopOutlined style={{ color: '#1890ff' }} />}
             />
-          </Card>
+          </GlassCard>
         </Col>
         <Col span={6}>
-          <Card loading={!statsData}>
+          <GlassCard loading={!statsData} hoverable>
             <Statistic
               title="活跃企业"
               value={stats.activeEnterprises}
               prefix={<TeamOutlined style={{ color: '#52c41a' }} />}
               valueStyle={{ color: '#52c41a' }}
             />
-          </Card>
+          </GlassCard>
         </Col>
         <Col span={6}>
-          <Card loading={!statsData}>
+          <GlassCard loading={!statsData} hoverable>
             <Statistic
               title="总用户数"
               value={stats.totalUsers}
               prefix={<UserOutlined style={{ color: '#fa8c16' }} />}
             />
-          </Card>
+          </GlassCard>
         </Col>
         <Col span={6}>
-          <Card loading={!statsData}>
+          <GlassCard loading={!statsData} hoverable>
             <Statistic
               title="总积分发放"
               value={stats.totalPoints}
               prefix={<TrophyOutlined style={{ color: '#722ed1' }} />}
             />
-          </Card>
+          </GlassCard>
         </Col>
       </Row>
 
       {/* Stats Row 2 */}
       <Row gutter={16} style={{ marginBottom: 24 }}>
         <Col span={8}>
-          <Card loading={!statsData}>
+          <GlassCard loading={!statsData} hoverable>
             <Statistic
               title="总兑换量"
               value={stats.totalExchanges}
               prefix={<ShoppingOutlined style={{ color: '#eb2f96' }} />}
             />
-          </Card>
+          </GlassCard>
         </Col>
         <Col span={8}>
-          <Card loading={!statsData}>
+          <GlassCard loading={!statsData} hoverable>
             <Statistic
               title="平均企业用户"
               value={stats.totalEnterprises > 0 ? Math.round(stats.totalUsers / stats.totalEnterprises) : 0}
             />
-          </Card>
+          </GlassCard>
         </Col>
         <Col span={8}>
-          <Card loading={!statsData}>
+          <GlassCard loading={!statsData} hoverable>
             <Statistic
               title="企业活跃率"
               value={stats.totalEnterprises > 0 ? Math.round((stats.activeEnterprises / stats.totalEnterprises) * 100) : 0}
               suffix="%"
               valueStyle={{ color: stats.totalEnterprises > 0 && (stats.activeEnterprises / stats.totalEnterprises) > 0.5 ? '#52c41a' : '#fa8c16' }}
             />
-          </Card>
+          </GlassCard>
         </Col>
       </Row>
 
       {/* Trend Charts */}
       <Row gutter={16} style={{ marginBottom: 24 }}>
         <Col span={12}>
-          <Card title="积分发放与消耗趋势" loading={trendLoading}>
+          <GlassCard title="积分发放与消耗趋势" loading={trendLoading}>
             <ResponsiveContainer width="100%" height={280} minWidth={300}>
               <AreaChart data={trend} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                 <defs>
@@ -314,10 +315,10 @@ const PlatformDashboard: React.FC = () => {
                 />
               </AreaChart>
             </ResponsiveContainer>
-          </Card>
+          </GlassCard>
         </Col>
         <Col span={12}>
-          <Card title="用户与兑换量趋势" loading={trendLoading}>
+          <GlassCard title="用户与兑换量趋势" loading={trendLoading}>
             <ResponsiveContainer width="100%" height={280} minWidth={300}>
               <LineChart data={trend} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -355,14 +356,14 @@ const PlatformDashboard: React.FC = () => {
                 />
               </LineChart>
             </ResponsiveContainer>
-          </Card>
+          </GlassCard>
         </Col>
       </Row>
 
       {/* Enterprise Bar Chart */}
       <Row gutter={16} style={{ marginBottom: 24 }}>
         <Col span={24}>
-          <Card title="企业积分排行 TOP 10" loading={!rankingData}>
+          <GlassCard title="企业积分排行 TOP 10" loading={!rankingData}>
             <ResponsiveContainer width="100%" height={300} minWidth={300}>
               <BarChart
                 data={ranking.slice(0, 10)}
@@ -409,12 +410,12 @@ const PlatformDashboard: React.FC = () => {
                 />
               </BarChart>
             </ResponsiveContainer>
-          </Card>
+          </GlassCard>
         </Col>
       </Row>
 
       {/* Enterprise Ranking Table */}
-      <Card title="企业排行详情">
+      <GlassCard title="企业排行详情">
         <Table
           columns={rankingColumns}
           dataSource={ranking}
@@ -422,7 +423,7 @@ const PlatformDashboard: React.FC = () => {
           pagination={false}
           size="middle"
         />
-      </Card>
+      </GlassCard>
     </div>
   );
 };

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Form, InputNumber, Switch, Button, Space, message, Table, Tag, Modal, Input, Popconfirm } from 'antd';
+import { Form, InputNumber, Switch, Button, Space, message, Table, Tag, Modal, Input, Popconfirm } from 'antd';
+import { GlassCard } from '@carbon-point/design-system';
 import { SaveOutlined, PlusOutlined, EditOutlined, DeleteOutlined, CheckOutlined, CloseOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
@@ -187,7 +188,7 @@ const PlatformConfigPage: React.FC = () => {
     return (
       <div>
         {slots.map((slot, index) => (
-          <Card key={index} size="small" style={{ marginBottom: 8 }} title={`时段 ${index + 1}`}>
+          <GlassCard key={index} size="small" style={{ marginBottom: 8 }} title={`时段 ${index + 1}`} hoverable>
             <Space align="start" style={{ width: '100%' }}>
               <Form.Item label="时段名称" style={{ marginBottom: 0 }}>
                 <Input
@@ -246,7 +247,7 @@ const PlatformConfigPage: React.FC = () => {
                 删除
               </Button>
             </Space>
-          </Card>
+          </GlassCard>
         ))}
         <Button
           type="dashed"
@@ -264,7 +265,7 @@ const PlatformConfigPage: React.FC = () => {
     <div>
       <h2 style={{ marginBottom: 24 }}>平台配置</h2>
 
-      <Card title="功能开关" style={{ marginBottom: 24 }}>
+      <GlassCard title="功能开关" style={{ marginBottom: 24 }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
           {Object.entries(FLAG_DESCRIPTIONS).map(([key, { label, description }]) => (
             <div
@@ -298,9 +299,9 @@ const PlatformConfigPage: React.FC = () => {
         >
           保存功能开关
         </Button>
-      </Card>
+      </GlassCard>
 
-      <Card
+      <GlassCard
         title="默认规则模板"
         extra={
           <Button type="primary" icon={<PlusOutlined />} size="small" onClick={openCreateTemplate}>
@@ -325,9 +326,9 @@ const PlatformConfigPage: React.FC = () => {
         <p style={{ color: '#999', fontSize: 12, marginTop: 8 }}>
           提示：新企业开通时将自动应用选定的规则模板，可创建多个模板供选择
         </p>
-      </Card>
+      </GlassCard>
 
-      <Card title="平台参数">
+      <GlassCard title="平台参数">
         <Form
           layout="vertical"
           form={form}
@@ -366,7 +367,7 @@ const PlatformConfigPage: React.FC = () => {
             保存参数
           </Button>
         </Form>
-      </Card>
+      </GlassCard>
 
       {/* Rule Template Create/Edit Modal */}
       <Modal

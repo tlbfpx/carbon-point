@@ -21,6 +21,7 @@ import {
   TimeSlotRule,
 } from '@/api/rules';
 import { useBranding } from '@/components/BrandingProvider';
+import { GlassCard } from '@carbon-point/design-system';
 
 type TableCellProps = React.HTMLAttributes<HTMLTableCellElement> & { style?: React.CSSProperties };
 
@@ -151,14 +152,7 @@ const TimeSlotTab: React.FC<TimeSlotTabProps> = ({ tenantId }) => {
 
   return (
     <>
-      <div
-        style={{
-          background: '#fff',
-          borderRadius: 16,
-          boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
-          overflow: 'hidden',
-        }}
-      >
+      <GlassCard hoverable style={{ overflow: 'hidden' }}>
         <div style={{ padding: '20px 24px 16px' }}>
           <Button
             type="primary"
@@ -185,7 +179,7 @@ const TimeSlotTab: React.FC<TimeSlotTabProps> = ({ tenantId }) => {
             style={{ fontFamily: 'var(--font-body)' }}
             onRow={(record) => ({
               style: { transition: 'all 0.2s ease', cursor: 'pointer' },
-              onMouseEnter: (e) => { e.currentTarget.style.background = '#faf8f5'; },
+              onMouseEnter: (e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; },
               onMouseLeave: (e) => { e.currentTarget.style.background = 'transparent'; },
             })}
             components={{
@@ -195,12 +189,12 @@ const TimeSlotTab: React.FC<TimeSlotTabProps> = ({ tenantId }) => {
                     {...props}
                     style={{
                       ...props.style,
-                      background: '#f8f7f4',
+                      background: 'rgba(255,255,255,0.04)',
                       fontFamily: 'var(--font-heading)',
                       fontWeight: 600,
-                      color: '#555',
+                      color: 'rgba(255,255,255,0.65)',
                       padding: '16px',
-                      borderBottom: '1px solid #efece6',
+                      borderBottom: '1px solid rgba(255,255,255,0.06)',
                     }}
                   />
                 ),
@@ -212,7 +206,7 @@ const TimeSlotTab: React.FC<TimeSlotTabProps> = ({ tenantId }) => {
                     style={{
                       ...props.style,
                       padding: '16px',
-                      borderBottom: '1px solid #f5f3f0',
+                      borderBottom: '1px solid rgba(255,255,255,0.06)',
                     }}
                   />
                 ),
@@ -220,7 +214,7 @@ const TimeSlotTab: React.FC<TimeSlotTabProps> = ({ tenantId }) => {
             }}
           />
         </div>
-      </div>
+      </GlassCard>
 
       <Modal
         open={modalOpen}
@@ -230,25 +224,25 @@ const TimeSlotTab: React.FC<TimeSlotTabProps> = ({ tenantId }) => {
         centered
         styles={{ content: { borderRadius: 24, padding: 0, overflow: 'hidden' } }}
       >
-        <div style={{ padding: '24px 32px 20px', borderBottom: '1px solid #f0efe9' }}>
-          <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: 20, fontWeight: 600, margin: 0, color: '#1a1a1a' }}>
+        <div style={{ padding: '24px 32px 20px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+          <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: 20, fontWeight: 600, margin: 0, color: '#fff' }}>
             {editingRule ? '编辑时段' : '新增时段'}
           </h2>
-          <p style={{ color: '#999', fontSize: 13, marginTop: 4, fontFamily: 'var(--font-body)' }}>
+          <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 13, marginTop: 4, fontFamily: 'var(--font-body)' }}>
             设置打卡时间段和基础积分
           </p>
         </div>
         <div style={{ padding: '32px' }}>
           <Form form={form} layout="vertical" onFinish={handleFormSubmit}>
             <Form.Item name="name" label={<span style={{ fontFamily: 'var(--font-body)', fontWeight: 500 }}>时段名称</span>} rules={[{ required: true, message: '请输入时段名称' }]}>
-              <Input placeholder="如：早高峰" style={{ borderRadius: 12, borderColor: '#d4d0c8', padding: '10px 16px' }} />
+              <Input placeholder="如：早高峰" style={{ borderRadius: 12, borderColor: 'rgba(255,255,255,0.1)', padding: '10px 16px' }} />
             </Form.Item>
             <div style={{ display: 'flex', gap: 16 }}>
               <Form.Item name="startTime" label={<span style={{ fontFamily: 'var(--font-body)', fontWeight: 500 }}>开始时间</span>} rules={[{ required: true, message: '请输入开始时间' }]} style={{ flex: 1 }}>
-                <Input placeholder="如：07:00" style={{ borderRadius: 12, borderColor: '#d4d0c8', padding: '10px 16px' }} />
+                <Input placeholder="如：07:00" style={{ borderRadius: 12, borderColor: 'rgba(255,255,255,0.1)', padding: '10px 16px' }} />
               </Form.Item>
               <Form.Item name="endTime" label={<span style={{ fontFamily: 'var(--font-body)', fontWeight: 500 }}>结束时间</span>} rules={[{ required: true, message: '请输入结束时间' }]} style={{ flex: 1 }}>
-                <Input placeholder="如：09:00" style={{ borderRadius: 12, borderColor: '#d4d0c8', padding: '10px 16px' }} />
+                <Input placeholder="如：09:00" style={{ borderRadius: 12, borderColor: 'rgba(255,255,255,0.1)', padding: '10px 16px' }} />
               </Form.Item>
             </div>
             <Form.Item name="basePoints" label={<span style={{ fontFamily: 'var(--font-body)', fontWeight: 500 }}>基础积分</span>} rules={[{ required: true, message: '请输入基础积分' }]}>
@@ -274,7 +268,7 @@ const TimeSlotTab: React.FC<TimeSlotTabProps> = ({ tenantId }) => {
                 >
                   确定
                 </Button>
-                <Button onClick={() => setModalOpen(false)} style={{ borderRadius: 20, borderColor: '#d4d0c8', minWidth: 80 }}>
+                <Button onClick={() => setModalOpen(false)} style={{ borderRadius: 20, borderColor: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.65)', minWidth: 80 }}>
                   取消
                 </Button>
               </Space>

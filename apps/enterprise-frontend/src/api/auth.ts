@@ -41,6 +41,6 @@ export const getCurrentUser = async () => {
 };
 
 export const getMyPermissions = async (): Promise<string[]> => {
-  const res = await apiClient.get('/permissions/my');
-  return (res as unknown as string[]) ?? [];
+  const res = await apiClient.get('/permissions/my') as { data?: string[] };
+  return res?.data ?? [];
 };

@@ -19,6 +19,25 @@ import { useAuthStore } from '@/store/authStore';
 import { usePermissions } from '@/hooks/usePermission';
 import { useBranding } from '@/components/BrandingProvider';
 
+// Status/Type color constants
+const STATUS_COLORS = {
+  success: { bg: '#f6ffed', text: '#52c41a' },
+  warning: { bg: '#fff7e6', text: '#fa8c16' },
+  error: { bg: '#fff1f0', text: '#ff4d4f' },
+  info: { bg: '#e6f7ff', text: '#1890ff' },
+  purple: { bg: '#f9f0ff', text: '#722ed1' },
+  pink: { bg: '#fff0f6', text: '#eb2f96' },
+  gray: { bg: '#f5f5f5', text: '#8c8c8c' },
+} as const;
+
+const TYPE_TAG_COLORS: Record<string, { bg: string; text: string; label: string }> = {
+  checkin: { ...STATUS_COLORS.success, label: '打卡奖励' },
+  exchange: { ...STATUS_COLORS.warning, label: '商品兑换' },
+  adjust: { ...STATUS_COLORS.info, label: '手动调整' },
+  consecutive_bonus: { ...STATUS_COLORS.purple, label: '连续打卡奖励' },
+  special_date_bonus: { ...STATUS_COLORS.pink, label: '特殊日期奖励' },
+};
+
 const Points: React.FC = () => {
   const user = useAuthStore((s) => s.user);
   const tenantId = user?.tenantId || '';
@@ -149,14 +168,7 @@ const Points: React.FC = () => {
   });
 
   const getTypeTagStyle = (type: string) => {
-    const typeConfig: Record<string, { bg: string; text: string; label: string }> = {
-      checkin: { bg: '#f6ffed', text: '#52c41a', label: '打卡奖励' },
-      exchange: { bg: '#fff7e6', text: '#fa8c16', label: '商品兑换' },
-      adjust: { bg: '#e6f7ff', text: '#1890ff', label: '手动调整' },
-      consecutive_bonus: { bg: '#f9f0ff', text: '#722ed1', label: '连续打卡奖励' },
-      special_date_bonus: { bg: '#fff0f6', text: '#eb2f96', label: '特殊日期奖励' },
-    };
-    const config = typeConfig[type] || { bg: '#f5f5f5', text: '#8c8c8c', label: type };
+    const config = TYPE_TAG_COLORS[type] || { ...STATUS_COLORS.gray, label: type };
     return { backgroundColor: config.bg, color: config.text, label: config.label };
   };
 

@@ -3,6 +3,7 @@ import { Button, Form, InputNumber, message } from 'antd';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { getLevelCoefficients, updateLevelCoefficients, LevelCoefficient } from '@/api/rules';
 import { useBranding } from '@/components/BrandingProvider';
+import { GlassCard } from '@carbon-point/design-system';
 
 interface LevelTabProps {
   tenantId: string;
@@ -26,21 +27,14 @@ const LevelTab: React.FC<LevelTabProps> = ({ tenantId }) => {
   });
 
   return (
-    <div
-      style={{
-        background: '#fff',
-        borderRadius: 16,
-        boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
-        padding: '32px',
-      }}
-    >
+    <GlassCard hoverable>
       <h3
         style={{
           fontFamily: 'var(--font-heading)',
           fontSize: 16,
           fontWeight: 600,
           marginBottom: 24,
-          color: '#333',
+          color: '#fff',
         }}
       >
         等级积分系数配置
@@ -68,7 +62,7 @@ const LevelTab: React.FC<LevelTabProps> = ({ tenantId }) => {
                     padding: '16px 20px',
                     borderRadius: 12,
                     marginBottom: 12,
-                    background: '#faf9f6',
+                    background: 'rgba(255,255,255,0.04)',
                     borderLeft: `4px solid ${levelColors[index]}`,
                   }}
                 >
@@ -114,7 +108,7 @@ const LevelTab: React.FC<LevelTabProps> = ({ tenantId }) => {
           保存
         </Button>
       </Form>
-    </div>
+    </GlassCard>
   );
 };
 

@@ -4,6 +4,7 @@ import { PlusOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getConsecutiveRewards, updateConsecutiveRewards, ConsecutiveReward } from '@/api/rules';
 import { useBranding } from '@/components/BrandingProvider';
+import { GlassCard } from '@carbon-point/design-system';
 
 interface ConsecutiveTabProps {
   tenantId: string;
@@ -25,21 +26,14 @@ const ConsecutiveTab: React.FC<ConsecutiveTabProps> = ({ tenantId }) => {
   });
 
   return (
-    <div
-      style={{
-        background: '#fff',
-        borderRadius: 16,
-        boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
-        padding: '32px',
-      }}
-    >
+    <GlassCard hoverable>
       <h3
         style={{
           fontFamily: 'var(--font-heading)',
           fontSize: 16,
           fontWeight: 600,
           marginBottom: 24,
-          color: '#333',
+          color: '#fff',
         }}
       >
         连续打卡奖励配置
@@ -62,11 +56,11 @@ const ConsecutiveTab: React.FC<ConsecutiveTabProps> = ({ tenantId }) => {
                 <div
                   key={key}
                   style={{
-                    background: index % 2 === 0 ? '#faf9f6' : '#fff',
+                    background: index % 2 === 0 ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.06)',
                     padding: '20px',
                     borderRadius: 12,
                     marginBottom: 12,
-                    border: '1px solid #f0efe9',
+                    border: '1px solid rgba(255,255,255,0.08)',
                   }}
                 >
                   <div style={{ display: 'flex', gap: 24, alignItems: 'flex-end', flexWrap: 'wrap' }}>
@@ -98,8 +92,8 @@ const ConsecutiveTab: React.FC<ConsecutiveTabProps> = ({ tenantId }) => {
                 icon={<PlusOutlined />}
                 style={{
                   borderRadius: 12,
-                  borderColor: '#d4d0c8',
-                  color: '#666',
+                  borderColor: 'rgba(255,255,255,0.12)',
+                  color: 'rgba(255,255,255,0.65)',
                   marginTop: 8,
                 }}
               >
@@ -124,7 +118,7 @@ const ConsecutiveTab: React.FC<ConsecutiveTabProps> = ({ tenantId }) => {
           保存
         </Button>
       </Form>
-    </div>
+    </GlassCard>
   );
 };
 

@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { getSpecialDates, createSpecialDate, deleteSpecialDate, SpecialDate } from '@/api/rules';
 import { useBranding } from '@/components/BrandingProvider';
+import { GlassCard } from '@carbon-point/design-system';
 
 type TableCellProps = React.HTMLAttributes<HTMLTableCellElement> & { style?: React.CSSProperties };
 
@@ -76,14 +77,7 @@ const SpecialTab: React.FC<SpecialTabProps> = ({ tenantId }) => {
 
   return (
     <>
-      <div
-        style={{
-          background: '#fff',
-          borderRadius: 16,
-          boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
-          overflow: 'hidden',
-        }}
-      >
+      <GlassCard hoverable style={{ overflow: 'hidden' }}>
         <div style={{ padding: '20px 24px 16px' }}>
           <Button
             type="primary"
@@ -110,24 +104,24 @@ const SpecialTab: React.FC<SpecialTabProps> = ({ tenantId }) => {
             style={{ fontFamily: 'var(--font-body)' }}
             onRow={(record) => ({
               style: { transition: 'all 0.2s ease', cursor: 'pointer' },
-              onMouseEnter: (e) => { e.currentTarget.style.background = '#faf8f5'; },
+              onMouseEnter: (e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; },
               onMouseLeave: (e) => { e.currentTarget.style.background = 'transparent'; },
             })}
             components={{
               header: {
                 cell: (props: TableCellProps) => (
-                  <th {...props} style={{ ...props.style, background: '#f8f7f4', fontFamily: 'var(--font-heading)', fontWeight: 600, color: '#555', padding: '16px', borderBottom: '1px solid #efece6' }} />
+                  <th {...props} style={{ ...props.style, background: 'rgba(255,255,255,0.04)', fontFamily: 'var(--font-heading)', fontWeight: 600, color: 'rgba(255,255,255,0.65)', padding: '16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }} />
                 ),
               },
               body: {
                 cell: (props: TableCellProps) => (
-                  <td {...props} style={{ ...props.style, padding: '16px', borderBottom: '1px solid #f5f3f0' }} />
+                  <td {...props} style={{ ...props.style, padding: '16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }} />
                 ),
               },
             }}
           />
         </div>
-      </div>
+      </GlassCard>
 
       <Modal
         open={modalOpen}
@@ -137,11 +131,11 @@ const SpecialTab: React.FC<SpecialTabProps> = ({ tenantId }) => {
         centered
         styles={{ content: { borderRadius: 24, padding: 0, overflow: 'hidden' } }}
       >
-        <div style={{ padding: '24px 32px 20px', borderBottom: '1px solid #f0efe9' }}>
-          <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: 20, fontWeight: 600, margin: 0, color: '#1a1a1a' }}>
+        <div style={{ padding: '24px 32px 20px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+          <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: 20, fontWeight: 600, margin: 0, color: '#fff' }}>
             添加特殊日期
           </h2>
-          <p style={{ color: '#999', fontSize: 13, marginTop: 4, fontFamily: 'var(--font-body)' }}>
+          <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 13, marginTop: 4, fontFamily: 'var(--font-body)' }}>
             设置特定日期的积分倍率
           </p>
         </div>
@@ -166,7 +160,7 @@ const SpecialTab: React.FC<SpecialTabProps> = ({ tenantId }) => {
               <InputNumber min={1} max={10} style={{ width: '100%', borderRadius: 12 }} placeholder="积分倍数" />
             </Form.Item>
             <Form.Item name="description" label={<span style={{ fontFamily: 'var(--font-body)', fontWeight: 500 }}>说明</span>}>
-              <Input placeholder="如：国庆节" style={{ borderRadius: 12, borderColor: '#d4d0c8', padding: '10px 16px' }} />
+              <Input placeholder="如：国庆节" style={{ borderRadius: 12, borderColor: 'rgba(255,255,255,0.1)', padding: '10px 16px' }} />
             </Form.Item>
             <Form.Item style={{ marginBottom: 0, marginTop: 32 }}>
               <Space>
@@ -185,7 +179,7 @@ const SpecialTab: React.FC<SpecialTabProps> = ({ tenantId }) => {
                 >
                   确定
                 </Button>
-                <Button onClick={() => setModalOpen(false)} style={{ borderRadius: 20, borderColor: '#d4d0c8', minWidth: 80 }}>
+                <Button onClick={() => setModalOpen(false)} style={{ borderRadius: 20, borderColor: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.65)', minWidth: 80 }}>
                   取消
                 </Button>
               </Space>

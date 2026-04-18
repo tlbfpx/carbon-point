@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
-import { Layout, Menu, Avatar, Dropdown, Button, Image } from 'antd';
+import { Layout, Menu, Avatar, Dropdown, Button, Image, ConfigProvider } from 'antd';
+import { designSystemConfig } from '@carbon-point/design-system';
 import {
     DashboardOutlined,
     TeamOutlined,
@@ -86,6 +87,9 @@ const EnterpriseContent: React.FC = () => {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const { branding, primaryColor } = useBranding();
+
+  // Debug logging
+  console.log('[EnterpriseContent render] isAuthenticated:', isAuthenticated, 'user:', !!user, 'location:', location.pathname);
 
   useEffect(() => {
     useAuthStore.getState().hydrate();
@@ -377,11 +381,13 @@ const EnterpriseContent: React.FC = () => {
 };
 
 const App: React.FC = () => (
-  <BrowserRouter>
-    <ErrorBoundary>
-      <EnterpriseContent />
-    </ErrorBoundary>
-  </BrowserRouter>
+  <ConfigProvider {...designSystemConfig.dark}>
+    <BrowserRouter>
+      <ErrorBoundary>
+        <EnterpriseContent />
+      </ErrorBoundary>
+    </BrowserRouter>
+  </ConfigProvider>
 );
 
 export default App;

@@ -3,6 +3,7 @@ import { Button, Form, InputNumber, message } from 'antd';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { getDailyCap, updateDailyCap, DailyCap } from '@/api/rules';
 import { useBranding } from '@/components/BrandingProvider';
+import { GlassCard } from '@carbon-point/design-system';
 
 interface DailyCapTabProps {
   tenantId: string;
@@ -23,21 +24,14 @@ const DailyCapTab: React.FC<DailyCapTabProps> = ({ tenantId }) => {
   });
 
   return (
-    <div
-      style={{
-        background: '#fff',
-        borderRadius: 16,
-        boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
-        padding: '32px',
-      }}
-    >
+    <GlassCard hoverable>
       <h3
         style={{
           fontFamily: 'var(--font-heading)',
           fontSize: 16,
           fontWeight: 600,
           marginBottom: 24,
-          color: '#333',
+          color: '#fff',
         }}
       >
         每日积分上限配置
@@ -75,7 +69,7 @@ const DailyCapTab: React.FC<DailyCapTabProps> = ({ tenantId }) => {
           保存
         </Button>
       </Form>
-    </div>
+    </GlassCard>
   );
 };
 

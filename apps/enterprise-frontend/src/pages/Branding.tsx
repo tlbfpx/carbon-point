@@ -26,6 +26,7 @@ import {
   UpdateBrandingRequest,
 } from '@/api/branding';
 import { useBranding } from '@/components/BrandingProvider';
+import { GlassCard } from '@carbon-point/design-system';
 
 const PRESET_THEMES = [
   {
@@ -181,15 +182,13 @@ const Branding: React.FC = () => {
       gap: 0,
       minHeight: 'calc(100vh - 160px)',
       margin: '-24px',
-      background: '#fafafa',
     } as React.CSSProperties,
 
     leftPanel: {
       padding: '48px 40px',
       overflowY: 'auto' as const,
       maxHeight: 'calc(100vh - 160px)',
-      borderRight: '1px solid #f0f0f0',
-      background: '#fff',
+      borderRight: '1px solid rgba(255,255,255,0.06)',
     } as React.CSSProperties,
 
     rightPanel: {
@@ -198,7 +197,6 @@ const Branding: React.FC = () => {
       flexDirection: 'column' as const,
       alignItems: 'center',
       justifyContent: 'center',
-      background: 'linear-gradient(180deg, #fafafa 0%, #f5f5f5 100%)',
       position: 'relative' as const,
     } as React.CSSProperties,
 
@@ -207,7 +205,7 @@ const Branding: React.FC = () => {
       fontWeight: 600,
       letterSpacing: '1.5px',
       textTransform: 'uppercase' as const,
-      color: '#999',
+      color: 'rgba(255,255,255,0.45)',
       marginBottom: 16,
     } as React.CSSProperties,
 
@@ -215,13 +213,13 @@ const Branding: React.FC = () => {
       fontFamily: "'Playfair Display', Georgia, serif",
       fontSize: 28,
       fontWeight: 700,
-      color: '#1a1a1a',
+      color: '#fff',
       marginBottom: 4,
     } as React.CSSProperties,
 
     subheading: {
       fontSize: 14,
-      color: '#888',
+      color: 'rgba(255,255,255,0.45)',
       marginBottom: 40,
     } as React.CSSProperties,
 
@@ -232,7 +230,7 @@ const Branding: React.FC = () => {
     logoFrame: {
       width: '100%',
       height: 120,
-      border: '2px dashed #d9d9d9',
+      border: '2px dashed rgba(255,255,255,0.12)',
       borderRadius: 12,
       display: 'flex',
       flexDirection: 'column' as const,
@@ -269,7 +267,7 @@ const Branding: React.FC = () => {
 
     swatchInfo: {
       padding: '12px 14px',
-      background: '#fff',
+      background: 'rgba(26,26,36,0.8)',
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
@@ -281,7 +279,6 @@ const Branding: React.FC = () => {
       left: 0,
       right: 0,
       padding: '20px 0',
-      background: 'linear-gradient(0deg, #fff 60%, transparent)',
       display: 'flex',
       gap: 12,
       zIndex: 10,
@@ -292,14 +289,14 @@ const Branding: React.FC = () => {
       width: 340,
       borderRadius: 12,
       overflow: 'hidden',
-      boxShadow: '0 20px 60px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.05)',
+      boxShadow: '0 20px 60px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.06)',
       transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-      background: '#fff',
+      background: '#1a1a24',
     } as React.CSSProperties,
 
     miniTitlebar: {
       height: 28,
-      background: '#f5f5f5',
+      background: 'rgba(255,255,255,0.04)',
       display: 'flex',
       alignItems: 'center',
       padding: '0 10px',
@@ -364,16 +361,17 @@ const Branding: React.FC = () => {
       width: 16,
       height: 16,
       borderRadius: '50%',
-      background: '#e0e0e0',
+      background: 'rgba(255,255,255,0.1)',
     } as React.CSSProperties,
 
     miniCard: {
       borderRadius: 6,
-      border: '1px solid #f0f0f0',
+      border: '1px solid rgba(255,255,255,0.06)',
       padding: 10,
       display: 'flex',
       flexDirection: 'column',
       gap: 6,
+      background: 'rgba(255,255,255,0.03)',
     } as React.CSSProperties,
 
     miniStatRow: {
@@ -385,7 +383,7 @@ const Branding: React.FC = () => {
       flex: 1,
       height: 36,
       borderRadius: 4,
-      background: `${color}12`,
+      background: `${color}15`,
       border: `1px solid ${color}30`,
       display: 'flex',
       alignItems: 'center',
@@ -398,8 +396,8 @@ const Branding: React.FC = () => {
     miniButton: (color: string, filled: boolean) => ({
       height: 20,
       borderRadius: 4,
-      background: filled ? color : '#fff',
-      border: `1px solid ${color}`,
+      background: filled ? color : 'rgba(255,255,255,0.04)',
+      border: `1px solid ${color}40`,
       color: filled ? '#fff' : color,
       display: 'flex',
       alignItems: 'center',
@@ -411,7 +409,7 @@ const Branding: React.FC = () => {
 
     modeToggle: {
       display: 'flex',
-      background: '#f5f5f5',
+      background: 'rgba(255,255,255,0.04)',
       borderRadius: 10,
       padding: 3,
       marginBottom: 20,
@@ -422,10 +420,10 @@ const Branding: React.FC = () => {
       padding: '8px 0',
       borderRadius: 8,
       border: 'none',
-      background: active ? '#fff' : 'transparent',
-      boxShadow: active ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
+      background: active ? 'rgba(255,255,255,0.08)' : 'transparent',
+      boxShadow: active ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
       fontWeight: active ? 600 : 400,
-      color: active ? '#1a1a1a' : '#888',
+      color: active ? '#fff' : 'rgba(255,255,255,0.45)',
       cursor: 'pointer',
       transition: 'all 0.25s ease',
       fontSize: 13,
@@ -441,7 +439,7 @@ const Branding: React.FC = () => {
     colorLabel: {
       fontSize: 13,
       fontWeight: 500,
-      color: '#555',
+      color: 'rgba(255,255,255,0.65)',
       width: 60,
     } as React.CSSProperties,
 
@@ -451,7 +449,7 @@ const Branding: React.FC = () => {
       borderRadius: 10,
       background: color,
       transition: 'background-color 0.3s ease',
-      boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.06)',
+      boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.06)',
     } as React.CSSProperties),
 
     previewLabel: {
@@ -459,7 +457,7 @@ const Branding: React.FC = () => {
       fontSize: 11,
       letterSpacing: '1px',
       textTransform: 'uppercase',
-      color: '#bbb',
+      color: 'rgba(255,255,255,0.35)',
       marginBottom: 20,
       fontWeight: 600,
     } as React.CSSProperties,
@@ -486,9 +484,9 @@ const Branding: React.FC = () => {
             <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 12 }}>
               <div style={{
                 width: 160, height: 80, borderRadius: 12,
-                border: '1px solid #f0f0f0', display: 'flex',
+                border: '1px solid rgba(255,255,255,0.08)', display: 'flex',
                 alignItems: 'center', justifyContent: 'center',
-                background: '#fafafa', padding: 12,
+                background: 'rgba(255,255,255,0.03)', padding: 12,
               }}>
                 <img src={logoUrl} alt="Logo" style={s.logoImg} />
               </div>
@@ -512,14 +510,14 @@ const Branding: React.FC = () => {
           >
             <div className="branding-upload-zone" style={{
               ...s.logoFrame,
-              borderColor: logoUrl ? '#e8e8e8' : '#d9d9d9',
+              borderColor: logoUrl ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.12)',
             }}>
               {uploadMutation.isPending ? (
                 <div style={{ fontSize: 13, color: '#999' }}>上传中...</div>
               ) : (
                 <>
                   <UploadOutlined style={{ fontSize: 20, color: '#bbb' }} />
-                  <span style={{ fontSize: 12, color: '#aaa' }}>
+                  <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>
                     点击上传 · PNG / JPG / SVG · ≤ 500KB
                   </span>
                 </>
@@ -583,10 +581,10 @@ const Branding: React.FC = () => {
                     </div>
                     <div style={s.swatchInfo}>
                       <div>
-                        <div style={{ fontWeight: 600, fontSize: 13, color: '#1a1a1a' }}>
+                        <div style={{ fontWeight: 600, fontSize: 13, color: '#fff' }}>
                           {theme.label}
                         </div>
-                        <div style={{ fontSize: 10, color: '#bbb', marginTop: 1 }}>
+                        <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', marginTop: 1 }}>
                           {theme.sublabel}
                         </div>
                       </div>
@@ -703,8 +701,8 @@ const Branding: React.FC = () => {
 
               {/* Card */}
               <div style={s.miniCard}>
-                <div style={{ fontSize: 8, fontWeight: 600, color: '#333' }}>最近活动</div>
-                <div style={{ height: 4, borderRadius: 2, background: '#f0f0f0', width: '100%' }}>
+                <div style={{ fontSize: 8, fontWeight: 600, color: 'rgba(255,255,255,0.85)' }}>最近活动</div>
+                <div style={{ height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.08)', width: '100%' }}>
                   <div style={{
                     height: '100%',
                     borderRadius: 2,
@@ -719,7 +717,7 @@ const Branding: React.FC = () => {
                       flex: 1,
                       height: 28,
                       borderRadius: 3,
-                      background: i <= 3 ? previewPrimary : '#f0f0f0',
+                      background: i <= 3 ? previewPrimary : 'rgba(255,255,255,0.06)',
                       opacity: i <= 3 ? 0.2 + i * 0.2 : 1,
                       transition: 'background 0.3s ease',
                     }} />
@@ -740,7 +738,7 @@ const Branding: React.FC = () => {
         <div style={{
           marginTop: 20,
           fontSize: 13,
-          color: '#999',
+          color: 'rgba(255,255,255,0.45)',
           display: 'flex',
           alignItems: 'center',
           gap: 8,

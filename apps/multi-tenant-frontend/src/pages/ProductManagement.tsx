@@ -12,11 +12,11 @@ import {
   Tag,
   InputNumber,
   Switch,
-  Card,
   Checkbox,
   Empty,
   Tooltip,
 } from 'antd';
+import { GlassCard } from '@carbon-point/design-system';
 import { PlusOutlined, EditOutlined, DeleteOutlined, SettingOutlined, ReloadOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
@@ -367,7 +367,7 @@ const ProductManagement: React.FC = () => {
         width={800}
         destroyOnClose
       >
-        <Card size="small" type="inner" title="功能点列表" style={{ marginBottom: 0 }}>
+        <GlassCard size="small" type="inner" title="功能点列表" style={{ marginBottom: 0 }}>
           {allFeatures.length === 0 ? (
             <Empty description="暂无可配置的功能点" image={Empty.PRESENTED_IMAGE_SIMPLE} />
           ) : (
@@ -422,7 +422,7 @@ const ProductManagement: React.FC = () => {
               </div>
             ))
           )}
-        </Card>
+        </GlassCard>
       </Modal>
     </div>
   );

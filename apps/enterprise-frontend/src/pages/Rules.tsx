@@ -35,7 +35,7 @@ const Rules: React.FC = () => {
   const [activeTab, setActiveTab] = useState('timeslot');
 
   return (
-    <div style={{ padding: '24px', background: '#faf9f6', minHeight: '100vh' }}>
+    <div style={{ padding: '24px', minHeight: '100vh' }}>
       {/* Page Header */}
       <div style={{ marginBottom: 24 }}>
         <h1
@@ -44,12 +44,12 @@ const Rules: React.FC = () => {
             fontSize: 24,
             fontWeight: 700,
             marginBottom: 8,
-            color: '#1a1a1a',
+            color: '#fff',
           }}
         >
           规则配置
         </h1>
-        <p style={{ color: '#888', fontSize: 14, fontFamily: 'var(--font-body)' }}>
+        <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 14, fontFamily: 'var(--font-body)' }}>
           自定义打卡积分规则、连续奖励和特殊日期倍率
         </p>
       </div>
@@ -76,8 +76,8 @@ const Rules: React.FC = () => {
               border: 'none',
               background: activeTab === tab.key
                 ? `linear-gradient(135deg, ${primaryColor}, ${primaryColor}dd)`
-                : '#fff',
-              color: activeTab === tab.key ? '#fff' : '#666',
+                : 'rgba(255,255,255,0.04)',
+              color: activeTab === tab.key ? '#fff' : 'rgba(255,255,255,0.65)',
               fontFamily: 'var(--font-body)',
               fontSize: 14,
               fontWeight: activeTab === tab.key ? 600 : 500,
@@ -90,13 +90,13 @@ const Rules: React.FC = () => {
             onMouseEnter={(e) => {
               if (activeTab !== tab.key) {
                 e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
               }
             }}
             onMouseLeave={(e) => {
               if (activeTab !== tab.key) {
                 e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)';
+                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
               }
             }}
           >

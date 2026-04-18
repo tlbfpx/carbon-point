@@ -2,7 +2,7 @@ import axios, { AxiosError } from 'axios';
 import { useAuthStore } from '../store/authStore';
 import { apiLogger } from '../utils/logger';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 interface ErrorResponse {
   code?: number;
@@ -89,10 +89,10 @@ apiClient.interceptors.response.use(
               refreshQueue.forEach(cb => cb(accessToken));
               refreshQueue = [];
             } catch {
-              // Reject all queued requests
+              // Reject all queued requests (do NOT logout — the token exists but refresh
+              // failed, likely a backend issue. The user's session should remain intact.)
               refreshQueue.forEach(cb => cb(''));
               refreshQueue = [];
-              useAuthStore.getState().logout();
             } finally {
               isRefreshing = false;
             }
@@ -109,8 +109,6 @@ apiClient.interceptors.response.use(
               }
             });
           });
-        } else {
-          useAuthStore.getState().logout();
         }
       }
     }

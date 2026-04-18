@@ -15,6 +15,7 @@ import {
   ShopOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
+import { designSystemConfig } from '@carbon-point/design-system';
 
 import PlatformDashboard from '@/pages/PlatformDashboard';
 import EnterpriseManagement from '@/pages/EnterpriseManagement';
@@ -222,9 +223,11 @@ const PlatformContent: React.FC = () => {
 
 const App: React.FC = () => (
   <BrowserRouter>
-    <ErrorBoundary>
-      <PlatformContent />
-    </ErrorBoundary>
+    <ConfigProvider {...designSystemConfig.dark}>
+      <ErrorBoundary>
+        <PlatformContent />
+      </ErrorBoundary>
+    </ConfigProvider>
   </BrowserRouter>
 );
 

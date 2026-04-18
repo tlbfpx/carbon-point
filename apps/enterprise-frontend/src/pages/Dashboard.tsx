@@ -1,21 +1,15 @@
 import React from 'react';
-import { Row, Col, Card, Table, Progress, Empty } from 'antd';
+import { Table, Progress, Empty, Button, Flex, Typography } from 'antd';
 import {
   TeamOutlined,
   TrophyOutlined,
   ShoppingOutlined,
   RiseOutlined,
-  UserOutlined,
-  CheckCircleOutlined,
-  FireOutlined,
-  StarOutlined,
+  ArrowRightOutlined,
+  ThunderboltOutlined,
 } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
@@ -23,6 +17,8 @@ import {
   Bar,
   Area,
   AreaChart,
+  XAxis,
+  YAxis,
 } from 'recharts';
 import { useAuthStore } from '@/store/authStore';
 import {
@@ -35,20 +31,143 @@ import {
   PointsTrend,
   HotProduct,
 } from '@/api/reports';
+import {
+  GlassCard,
+  GlassCardStat,
+  BentoGrid,
+  BentoItem,
+  InsightBanner,
+  NaturalLanguageQuery,
+  PageHeader,
+} from '@carbon-point/design-system';
+import type { InsightData, QueryResult } from '@carbon-point/design-system';
+import { BRAND_PALETTE, darkThemeTokens } from '@carbon-point/design-system';
 
-// Chart gradient definitions
+const { Text } = Typography;
+
+// 设计系统颜色（基于 BRAND_PALETTE）
 const CHART_COLORS = {
-  primary: { start: '#1890ff', end: '#69c0ff' },
-  secondary: { start: '#52c41a', end: '#73d13d' },
-  accent: { start: '#fa8c16', end: '#ffa940' },
-  tertiary: { start: '#722ed1', end: '#b37feb' },
+  primary: { start: BRAND_PALETTE.primary, end: BRAND_PALETTE.secondary },
+  secondary: { start: BRAND_PALETTE.success, end: '#34D399' },
+  accent: { start: BRAND_PALETTE.warning, end: '#FBBF24' },
+  tertiary: { start: BRAND_PALETTE.accent, end: '#F472B6' },
 };
 
-const STAT_ICONS = {
-  blue: { icon: <UserOutlined />, bg: 'linear-gradient(135deg, #e6f7ff 0%, #bae7ff 100%)', color: '#1890ff' },
-  green: { icon: <CheckCircleOutlined />, bg: 'linear-gradient(135deg, #f6ffed 0%, #d9f7be 100%)', color: '#52c41a' },
-  amber: { icon: <FireOutlined />, bg: 'linear-gradient(135deg, #fff7e6 0%, #ffd591 100%)', color: '#fa8c16' },
-  purple: { icon: <StarOutlined />, bg: 'linear-gradient(135deg, #f9f0ff 0%, #efdbff 100%)', color: '#722ed1' },
+// 排行榜金银铜颜色
+const RANKING_COLORS = {
+  gold: { start: '#FFD700', end: '#FFED4E' },
+  silver: { start: '#C0C0C0', end: '#E8E8E8' },
+  bronze: { start: '#CD7F32', end: '#E5A66B' },
+  default: 'rgba(255,255,255,0.06)',
+};
+
+// 图标配置
+const STAT_CONFIG = [
+  {
+    key: 'checkin',
+    label: '今日签到',
+    icon: <TeamOutlined />,
+    color: BRAND_PALETTE.primary,
+    gradient: `linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.05))`,
+  },
+  {
+    key: 'points',
+    label: '今日积分',
+    icon: <TrophyOutlined />,
+    color: BRAND_PALETTE.success,
+    gradient: `linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(52, 211, 153, 0.05))`,
+  },
+  {
+    key: 'users',
+    label: '活跃成员',
+    icon: <RiseOutlined />,
+    color: BRAND_PALETTE.warning,
+    gradient: `linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(251, 191, 36, 0.05))`,
+  },
+  {
+    key: 'exchange',
+    label: '本月兑换',
+    icon: <ShoppingOutlined />,
+    color: BRAND_PALETTE.accent,
+    gradient: `linear-gradient(135deg, rgba(236, 72, 153, 0.15), rgba(244, 114, 182, 0.05))`,
+  },
+];
+
+// 智能洞察数据
+const DEFAULT_INSIGHTS: InsightData[] = [
+  {
+    type: 'tip',
+    title: '签到率提升机会',
+    description: '周末签到率相比工作日下降 12%，可考虑增加周末专属活动',
+    metrics: [
+      { label: '工作日', value: '85%', trend: 'up' },
+      { label: '周末', value: '73%', trend: 'down' },
+    ],
+    action: {
+      label: '查看详情',
+      onClick: () => console.log('View weekend insights'),
+    },
+  },
+  {
+    type: 'success',
+    title: '本周运营数据亮眼',
+    description: '连续签到 3 天以上的用户增长 18.5%',
+    metrics: [{ label: '活跃用户', value: '1,247', trend: 'up' }],
+  },
+  {
+    type: 'warning',
+    title: '热门商品库存不足',
+    description: '¥10 话费券仅剩 234 张，建议尽快补货',
+    action: {
+      label: '立即补货',
+      onClick: () => console.log('Restock'),
+    },
+  },
+];
+
+// 自然语言查询处理器
+const handleNaturalQuery = async (query: string): Promise<QueryResult> => {
+  await new Promise((resolve) => setTimeout(resolve, 1500));
+
+  const lowerQ = query.toLowerCase();
+
+  if (lowerQ.includes('签到')) {
+    return {
+      title: '签到数据分析',
+      summary: '今日签到人数 1,247 人，环比昨日增长 12.5%',
+      insights: [
+        '9:00-10:00 为签到高峰，占全天 35%',
+        '连续签到 3 天以上用户占比 42%',
+        '建议关注周末签到率下滑问题',
+      ],
+      actions: [
+        { label: '查看趋势图', onClick: () => {} },
+        { label: '导出数据', onClick: () => {} },
+      ],
+    };
+  }
+
+  if (lowerQ.includes('用户') || lowerQ.includes('新增')) {
+    return {
+      title: '用户增长分析',
+      summary: '本周新增注册 586 人，环比增长 18.5%',
+      insights: [
+        '通过邀请链接注册的用户占 35%',
+        '新用户 7 日留存率 62.3%',
+        '广东、浙江、江苏为主要来源省份',
+      ],
+      actions: [
+        { label: '用户画像详情', onClick: () => {} },
+        { label: '设置转化漏斗', onClick: () => {} },
+      ],
+    };
+  }
+
+  return {
+    title: '查询结果',
+    summary: `关于"${query}"的分析已完成`,
+    insights: ['更多详情请浏览对应模块'],
+  };
 };
 
 const EnterpriseDashboard: React.FC = () => {
@@ -98,21 +217,32 @@ const EnterpriseDashboard: React.FC = () => {
   const pointsTrend: PointsTrend[] = extractArray<PointsTrend>(pointsTrendData);
   const hotProducts: HotProduct[] = extractArray<HotProduct>(hotProductsData);
 
-  // Custom tooltip for charts
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  // 统计数据
+  const statValues = [
+    { value: stats.todayCheckInCount, trend: { value: 12.5, isPositive: true } },
+    { value: stats.todayPointsGranted, trend: { value: 8.3, isPositive: true } },
+    { value: stats.activeUsers, trend: { value: 5.2, isPositive: true } },
+    { value: stats.monthExchangeCount, trend: { value: 3.1, isPositive: false } },
+  ];
+
+  // 图表 tooltip 样式
+  const glassTooltipStyle = {
+    backgroundColor: 'rgba(26, 26, 36, 0.95)',
+    backdropFilter: 'blur(12px)',
+    border: '1px solid rgba(255, 255, 255, 0.12)',
+    borderRadius: 12,
+    padding: '12px 16px',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+    fontFamily: "'Inter', sans-serif",
+  };
+
+  const GlassTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div
-          style={{
-            backgroundColor: 'rgba(255, 255, 255, 0.95)',
-            border: '1px solid rgba(0, 0, 0, 0.06)',
-            borderRadius: '12px',
-            padding: '12px 16px',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
-            fontFamily: 'var(--font-body)',
-          }}
-        >
-          <p style={{ margin: 0, marginBottom: 4, fontSize: 12, color: 'var(--color-text-muted)' }}>{label}</p>
+        <div style={glassTooltipStyle}>
+          <p style={{ margin: 0, marginBottom: 4, fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>
+            {label}
+          </p>
           {payload.map((entry: any, index: number) => (
             <p
               key={index}
@@ -133,580 +263,328 @@ const EnterpriseDashboard: React.FC = () => {
   };
 
   return (
-    <div style={{ padding: '20px 0' }}>
-      {/* Page Header */}
-      <div style={{ marginBottom: 32 }}>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 12,
-          }}
-        >
-          <div
+    <div>
+      {/* 页面标题 - 使用新版 PageHeader */}
+      <PageHeader
+        title="数据概览"
+        subtitle="实时运营数据监控"
+        actions={
+          <Button
+            type="primary"
+            icon={<ThunderboltOutlined />}
             style={{
-              width: 4,
-              height: 28,
-              background: 'linear-gradient(180deg, #1890ff 0%, #69c0ff 100%)',
-              borderRadius: 2,
-            }}
-          />
-          <h1
-            style={{
-              fontFamily: 'var(--font-heading)',
-              fontSize: 28,
-              fontWeight: 700,
-              margin: 0,
-              color: 'var(--color-text-primary)',
+              background: `linear-gradient(135deg, ${BRAND_PALETTE.primary}, ${BRAND_PALETTE.secondary})`,
+              border: 'none',
+              borderRadius: 10,
+              height: 40,
+              paddingInline: 20,
             }}
           >
-            数据概览
-          </h1>
-        </div>
-        <p
-          style={{
-            fontFamily: 'var(--font-body)',
-            fontSize: 14,
-            color: 'var(--color-text-muted)',
-            margin: '8px 0 0 16px',
-          }}
-        >
-          实时运营数据监控
-        </p>
+            导出报告
+          </Button>
+        }
+      />
+
+      {/* 智能洞察 Banner */}
+      <div style={{ marginBottom: 24 }}>
+        <InsightBanner insights={DEFAULT_INSIGHTS} mode="carousel" autoRotateInterval={6000} />
       </div>
 
-      {/* Stat Cards */}
-      <Row gutter={20} style={{ marginBottom: 24 }}>
-        <Col span={6}>
-          <Card
-            bordered={false}
-            style={{
-              borderRadius: 'var(--radius-card)',
-              boxShadow: 'var(--shadow-card)',
-              borderTop: `3px solid transparent`,
-              background: `linear-gradient(to bottom, #1890ff 3px, white 3px)`,
-              transition: 'all 0.3s ease',
-            }}
-            styles={{
-              body: { padding: '24px' },
-            }}
-            hoverable
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+      {/* 统计卡片 - 使用 GlassCardStat + BentoGrid */}
+      <BentoGrid cols={4} gap={16} style={{ marginBottom: 24 }}>
+        {STAT_CONFIG.map((config, index) => (
+          <GlassCardStat
+            key={config.key}
+            label={config.label}
+            value={statValues[index].value.toLocaleString()}
+            icon={
               <div
                 style={{
-                  width: 56,
-                  height: 56,
-                  borderRadius: '50%',
+                  width: 48,
+                  height: 48,
+                  borderRadius: 14,
+                  background: config.gradient,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  background: STAT_ICONS.blue.bg,
+                  fontSize: 22,
+                  color: config.color,
                 }}
               >
-                <TeamOutlined style={{ fontSize: 24, color: STAT_ICONS.blue.color }} />
+                {React.cloneElement(config.icon as React.ReactElement, { style: { color: config.color } })}
               </div>
-              <div style={{ flex: 1 }}>
-                <div
-                  style={{
-                    fontFamily: 'var(--font-heading)',
-                    fontSize: 32,
-                    fontWeight: 700,
-                    color: 'var(--color-text-primary)',
-                    lineHeight: 1,
-                  }}
-                >
-                  {stats.todayCheckInCount}
-                </div>
-                <div
-                  style={{
-                    fontFamily: 'var(--font-body)',
-                    fontSize: 14,
-                    color: 'var(--color-text-muted)',
-                    marginTop: 8,
-                  }}
-                >
-                  今日签到
-                </div>
-              </div>
-            </div>
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card
-            bordered={false}
-            style={{
-              borderRadius: 'var(--radius-card)',
-              boxShadow: 'var(--shadow-card)',
-              background: `linear-gradient(to bottom, ${CHART_COLORS.secondary.start} 3px, white 3px)`,
-              transition: 'all 0.3s ease',
-            }}
-            styles={{
-              body: { padding: '24px' },
-            }}
-            hoverable
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-              <div
-                style={{
-                  width: 56,
-                  height: 56,
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  background: STAT_ICONS.green.bg,
-                }}
-              >
-                <TrophyOutlined style={{ fontSize: 24, color: STAT_ICONS.green.color }} />
-              </div>
-              <div style={{ flex: 1 }}>
-                <div
-                  style={{
-                    fontFamily: 'var(--font-heading)',
-                    fontSize: 32,
-                    fontWeight: 700,
-                    color: 'var(--color-text-primary)',
-                    lineHeight: 1,
-                  }}
-                >
-                  {stats.todayPointsGranted}
-                </div>
-                <div
-                  style={{
-                    fontFamily: 'var(--font-body)',
-                    fontSize: 14,
-                    color: 'var(--color-text-muted)',
-                    marginTop: 8,
-                  }}
-                >
-                  今日积分
-                </div>
-              </div>
-            </div>
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card
-            bordered={false}
-            style={{
-              borderRadius: 'var(--radius-card)',
-              boxShadow: 'var(--shadow-card)',
-              background: `linear-gradient(to bottom, ${CHART_COLORS.accent.start} 3px, white 3px)`,
-              transition: 'all 0.3s ease',
-            }}
-            styles={{
-              body: { padding: '24px' },
-            }}
-            hoverable
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-              <div
-                style={{
-                  width: 56,
-                  height: 56,
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  background: STAT_ICONS.amber.bg,
-                }}
-              >
-                <RiseOutlined style={{ fontSize: 24, color: STAT_ICONS.amber.color }} />
-              </div>
-              <div style={{ flex: 1 }}>
-                <div
-                  style={{
-                    fontFamily: 'var(--font-heading)',
-                    fontSize: 32,
-                    fontWeight: 700,
-                    color: 'var(--color-text-primary)',
-                    lineHeight: 1,
-                  }}
-                >
-                  {stats.activeUsers}
-                </div>
-                <div
-                  style={{
-                    fontFamily: 'var(--font-body)',
-                    fontSize: 14,
-                    color: 'var(--color-text-muted)',
-                    marginTop: 8,
-                  }}
-                >
-                  活跃成员
-                </div>
-              </div>
-            </div>
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card
-            bordered={false}
-            style={{
-              borderRadius: 'var(--radius-card)',
-              boxShadow: 'var(--shadow-card)',
-              background: `linear-gradient(to bottom, ${CHART_COLORS.tertiary.start} 3px, white 3px)`,
-              transition: 'all 0.3s ease',
-            }}
-            styles={{
-              body: { padding: '24px' },
-            }}
-            hoverable
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-              <div
-                style={{
-                  width: 56,
-                  height: 56,
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  background: STAT_ICONS.purple.bg,
-                }}
-              >
-                <ShoppingOutlined style={{ fontSize: 24, color: STAT_ICONS.purple.color }} />
-              </div>
-              <div style={{ flex: 1 }}>
-                <div
-                  style={{
-                    fontFamily: 'var(--font-heading)',
-                    fontSize: 32,
-                    fontWeight: 700,
-                    color: 'var(--color-text-primary)',
-                    lineHeight: 1,
-                  }}
-                >
-                  {stats.monthExchangeCount}
-                </div>
-                <div
-                  style={{
-                    fontFamily: 'var(--font-body)',
-                    fontSize: 14,
-                    color: 'var(--color-text-muted)',
-                    marginTop: 8,
-                  }}
-                >
-                  本月兑换
-                </div>
-              </div>
-            </div>
-          </Card>
-        </Col>
-      </Row>
+            }
+            trend={statValues[index].trend}
+            color={config.color}
+          />
+        ))}
+      </BentoGrid>
 
-      {/* Charts Section */}
-      <Row gutter={20} style={{ marginBottom: 24 }}>
-        <Col span={12}>
-          <Card
-            bordered={false}
-            style={{
-              borderRadius: 'var(--radius-card)',
-              boxShadow: 'var(--shadow-card)',
-            }}
-            styles={{
-              body: { padding: '24px' },
-            }}
-          >
-            <div style={{ marginBottom: 20 }}>
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 10,
-                }}
-              >
+      {/* 图表区域 - 使用 BentoGrid 实现不对称布局 */}
+      <BentoGrid cols={3} gap={16} style={{ marginBottom: 24 }}>
+        {/* 签到趋势 - 占 2 列 */}
+        <BentoItem span={2}>
+          <GlassCard hoverable>
+            <Flex justify="space-between" align="center" style={{ marginBottom: 20 }}>
+              <Flex align="center" gap={12}>
                 <div
                   style={{
-                    width: 3,
-                    height: 20,
-                    background: `linear-gradient(180deg, ${CHART_COLORS.primary.start} 0%, ${CHART_COLORS.primary.end} 100%)`,
+                    width: 4,
+                    height: 24,
+                    background: `linear-gradient(180deg, ${BRAND_PALETTE.primary}, ${BRAND_PALETTE.secondary})`,
                     borderRadius: 2,
                   }}
                 />
                 <h3
                   style={{
-                    fontFamily: 'var(--font-heading)',
                     fontSize: 16,
                     fontWeight: 600,
                     margin: 0,
-                    color: 'var(--color-text-primary)',
+                    color: '#fff',
                   }}
                 >
                   签到趋势
                 </h3>
-                <span
-                  style={{
-                    fontFamily: 'var(--font-body)',
-                    fontSize: 13,
-                    color: 'var(--color-text-muted)',
-                    marginLeft: 4,
-                  }}
-                >
-                  近7天
-                </span>
-              </div>
-            </div>
-            <ResponsiveContainer width="100%" height={260}>
+                <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>近7天</Text>
+              </Flex>
+              <Button type="link" style={{ color: BRAND_PALETTE.primary }}>
+                查看更多 <ArrowRightOutlined />
+              </Button>
+            </Flex>
+
+            <ResponsiveContainer width="100%" height={280}>
               {checkInTrend.length > 0 ? (
                 <AreaChart data={checkInTrend}>
                   <defs>
-                    <linearGradient id="colorCheckIn" x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient id="glassGradientCheckIn" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor={CHART_COLORS.primary.start} stopOpacity={0.3} />
                       <stop offset="95%" stopColor={CHART_COLORS.primary.start} stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
                   <XAxis
                     dataKey="date"
-                    style={{ fontFamily: 'var(--font-body)', fontSize: 12 }}
-                    stroke="#bfbfbf"
+                    style={{ fontFamily: "'Inter', sans-serif", fontSize: 12 }}
+                    stroke="rgba(255,255,255,0.3)"
                   />
                   <YAxis
-                    style={{ fontFamily: 'var(--font-body)', fontSize: 12 }}
-                    stroke="#bfbfbf"
+                    style={{ fontFamily: "'Inter', sans-serif", fontSize: 12 }}
+                    stroke="rgba(255,255,255,0.3)"
                   />
-                  <Tooltip content={<CustomTooltip />} />
+                  <Tooltip content={<GlassTooltip />} />
                   <Area
                     type="monotone"
                     dataKey="count"
                     stroke={CHART_COLORS.primary.start}
                     strokeWidth={2}
-                    fill="url(#colorCheckIn)"
+                    fill="url(#glassGradientCheckIn)"
                     name="签到人数"
                   />
                 </AreaChart>
               ) : (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-                  <Empty description="暂无签到数据" image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                </div>
+                <Empty description="暂无签到数据" />
               )}
             </ResponsiveContainer>
-          </Card>
-        </Col>
-        <Col span={12}>
-          <Card
-            bordered={false}
-            style={{
-              borderRadius: 'var(--radius-card)',
-              boxShadow: 'var(--shadow-card)',
-            }}
-            styles={{
-              body: { padding: '24px' },
-            }}
-          >
-            <div style={{ marginBottom: 20 }}>
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 10,
-                }}
-              >
+          </GlassCard>
+        </BentoItem>
+
+        {/* 积分趋势 - 占 1 列 */}
+        <BentoItem>
+          <GlassCard hoverable style={{ height: '100%' }}>
+            <Flex justify="space-between" align="center" style={{ marginBottom: 20 }}>
+              <Flex align="center" gap={12}>
                 <div
                   style={{
-                    width: 3,
-                    height: 20,
-                    background: `linear-gradient(180deg, ${CHART_COLORS.secondary.start} 0%, ${CHART_COLORS.secondary.end} 100%)`,
+                    width: 4,
+                    height: 24,
+                    background: `linear-gradient(180deg, ${BRAND_PALETTE.success}, #34D399)`,
                     borderRadius: 2,
                   }}
                 />
                 <h3
                   style={{
-                    fontFamily: 'var(--font-heading)',
                     fontSize: 16,
                     fontWeight: 600,
                     margin: 0,
-                    color: 'var(--color-text-primary)',
+                    color: '#fff',
                   }}
                 >
-                  积分趋势
+                  积分概况
                 </h3>
-                <span
-                  style={{
-                    fontFamily: 'var(--font-body)',
-                    fontSize: 13,
-                    color: 'var(--color-text-muted)',
-                    marginLeft: 4,
-                  }}
-                >
-                  近7天
-                </span>
-              </div>
-            </div>
-            <ResponsiveContainer width="100%" height={260}>
+              </Flex>
+            </Flex>
+
+            <ResponsiveContainer width="100%" height={280}>
               {pointsTrend.length > 0 ? (
-                <BarChart data={pointsTrend} barSize={24}>
+                <BarChart data={pointsTrend} barSize={20}>
                   <defs>
-                    <linearGradient id="barGranted" x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient id="glassBarGranted" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor={CHART_COLORS.secondary.start} stopOpacity={1} />
-                      <stop offset="100%" stopColor={CHART_COLORS.secondary.end} stopOpacity={1} />
+                      <stop offset="100%" stopColor={CHART_COLORS.secondary.end} stopOpacity={0.6} />
                     </linearGradient>
-                    <linearGradient id="barConsumed" x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient id="glassBarConsumed" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor={CHART_COLORS.accent.start} stopOpacity={1} />
-                      <stop offset="100%" stopColor={CHART_COLORS.accent.end} stopOpacity={1} />
+                      <stop offset="100%" stopColor={CHART_COLORS.accent.end} stopOpacity={0.6} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
                   <XAxis
                     dataKey="date"
-                    style={{ fontFamily: 'var(--font-body)', fontSize: 12 }}
-                    stroke="#bfbfbf"
+                    style={{ fontFamily: "'Inter', sans-serif", fontSize: 12 }}
+                    stroke="rgba(255,255,255,0.3)"
                   />
                   <YAxis
-                    style={{ fontFamily: 'var(--font-body)', fontSize: 12 }}
-                    stroke="#bfbfbf"
+                    style={{ fontFamily: "'Inter', sans-serif", fontSize: 12 }}
+                    stroke="rgba(255,255,255,0.3)"
                   />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Bar
-                    dataKey="granted"
-                    fill="url(#barGranted)"
-                    name="发放积分"
-                    radius={[4, 4, 0, 0]}
-                  />
-                  <Bar
-                    dataKey="consumed"
-                    fill="url(#barConsumed)"
-                    name="消耗积分"
-                    radius={[4, 4, 0, 0]}
-                  />
+                  <Tooltip content={<GlassTooltip />} />
+                  <Bar dataKey="granted" fill="url(#glassBarGranted)" name="发放" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="consumed" fill="url(#glassBarConsumed)" name="消耗" radius={[4, 4, 0, 0]} />
                 </BarChart>
               ) : (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-                  <Empty description="暂无积分数据" image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                </div>
+                <Empty description="暂无积分数据" />
               )}
             </ResponsiveContainer>
-          </Card>
-        </Col>
-      </Row>
+          </GlassCard>
+        </BentoItem>
+      </BentoGrid>
 
-      {/* Hot Products Table */}
-      <Card
-        bordered={false}
-        style={{
-          borderRadius: 'var(--radius-card)',
-          boxShadow: 'var(--shadow-card)',
-        }}
-        styles={{
-          body: { padding: '24px' },
-        }}
-      >
-        <div style={{ marginBottom: 20 }}>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 10,
-            }}
-          >
-            <div
-              style={{
-                width: 3,
-                height: 20,
-                background: `linear-gradient(180deg, ${CHART_COLORS.tertiary.start} 0%, ${CHART_COLORS.tertiary.end} 100%)`,
-                borderRadius: 2,
-              }}
-            />
-            <h3
-              style={{
-                fontFamily: 'var(--font-heading)',
-                fontSize: 16,
-                fontWeight: 600,
-                margin: 0,
-                color: 'var(--color-text-primary)',
-              }}
-            >
-              热门商品
-            </h3>
-            <span
-              style={{
-                fontFamily: 'var(--font-body)',
-                fontSize: 13,
-                color: 'var(--color-text-muted)',
-                marginLeft: 4,
-              }}
-            >
-              TOP5
-            </span>
-          </div>
-        </div>
-        <Table
-          dataSource={hotProducts}
-          rowKey="productId"
-          pagination={false}
-          style={{
-            fontFamily: 'var(--font-body)',
-          }}
-          columns={[
-            {
-              title: '排名',
-              render: (_: unknown, __: unknown, index: number) => (
+      {/* 热门商品 + 自然语言查询 - 底部区域 */}
+      <BentoGrid cols={3} gap={16}>
+        {/* 热门商品 - 占 2 列 */}
+        <BentoItem span={2}>
+          <GlassCard hoverable>
+            <Flex justify="space-between" align="center" style={{ marginBottom: 20 }}>
+              <Flex align="center" gap={12}>
                 <div
                   style={{
-                    width: 28,
-                    height: 28,
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontFamily: 'var(--font-heading)',
+                    width: 4,
+                    height: 24,
+                    background: `linear-gradient(180deg, ${BRAND_PALETTE.accent}, #F472B6)`,
+                    borderRadius: 2,
+                  }}
+                />
+                <h3
+                  style={{
+                    fontSize: 16,
                     fontWeight: 600,
-                    fontSize: 14,
-                    background:
-                      index === 0
-                        ? 'linear-gradient(135deg, #ffd700 0%, #ffed4e 100%)'
-                        : index === 1
-                          ? 'linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 100%)'
-                          : index === 2
-                            ? 'linear-gradient(135deg, #cd7f32 0%, #e5a66b 100%)'
-                            : '#f5f5f5',
-                    color: index < 3 ? '#fff' : 'var(--color-text-muted)',
+                    margin: 0,
+                    color: '#fff',
                   }}
                 >
-                  {index + 1}
-                </div>
-              ),
-            },
-            {
-              title: '商品名称',
-              dataIndex: 'productName',
-            },
-            {
-              title: '兑换次数',
-              dataIndex: 'exchangeCount',
-              sorter: (a: HotProduct, b: HotProduct) => a.exchangeCount - b.exchangeCount,
-            },
-            {
-              title: '消耗积分',
-              dataIndex: 'totalPoints',
-            },
-            {
-              title: '热度',
-              render: (_: unknown, record: HotProduct) => {
-                const max = Math.max(...hotProducts.map((p) => p.exchangeCount), 1);
-                const percent = Math.round((record.exchangeCount / max) * 100);
-                return (
-                  <Progress
-                    percent={percent}
-                    strokeColor={{
-                      '0%': CHART_COLORS.tertiary.start,
-                      '100%': CHART_COLORS.tertiary.end,
-                    }}
-                    trailColor="#f5f5f5"
-                    showInfo={false}
-                    strokeWidth={8}
-                    style={{
-                      fontFamily: 'var(--font-body)',
-                    }}
-                  />
-                );
-              },
-            },
-          ]}
-        />
-      </Card>
+                  热门商品
+                </h3>
+                <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>TOP5</Text>
+              </Flex>
+              <Button type="link" style={{ color: BRAND_PALETTE.primary }}>
+                查看全部 <ArrowRightOutlined />
+              </Button>
+            </Flex>
+
+            <Table
+              dataSource={hotProducts}
+              rowKey="productId"
+              pagination={false}
+              style={{ fontFamily: "'Inter', sans-serif" }}
+              columns={[
+                {
+                  title: '排名',
+                  render: (_: unknown, __: unknown, index: number) => (
+                    <div
+                      style={{
+                        width: 28,
+                        height: 28,
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontWeight: 600,
+                        fontSize: 14,
+                        background:
+                          index === 0
+                            ? `linear-gradient(135deg, ${RANKING_COLORS.gold.start}, ${RANKING_COLORS.gold.end})`
+                            : index === 1
+                              ? `linear-gradient(135deg, ${RANKING_COLORS.silver.start}, ${RANKING_COLORS.silver.end})`
+                              : index === 2
+                                ? `linear-gradient(135deg, ${RANKING_COLORS.bronze.start}, ${RANKING_COLORS.bronze.end})`
+                                : RANKING_COLORS.default,
+                        color: index < 3 ? '#18181B' : 'rgba(255,255,255,0.6)',
+                      }}
+                    >
+                      {index + 1}
+                    </div>
+                  ),
+                },
+                {
+                  title: '商品名称',
+                  dataIndex: 'productName',
+                  render: (text: string) => <Text style={{ color: '#fff' }}>{text}</Text>,
+                },
+                {
+                  title: '兑换次数',
+                  dataIndex: 'exchangeCount',
+                  render: (v: number) => <Text style={{ color: 'rgba(255,255,255,0.8)' }}>{v}</Text>,
+                },
+                {
+                  title: '消耗积分',
+                  dataIndex: 'totalPoints',
+                  render: (v: number) => <Text style={{ color: 'rgba(255,255,255,0.8)' }}>{v}</Text>,
+                },
+                {
+                  title: '热度',
+                  render: (_: unknown, record: HotProduct) => {
+                    const max = Math.max(...hotProducts.map((p) => p.exchangeCount), 1);
+                    const percent = Math.round((record.exchangeCount / max) * 100);
+                    return (
+                      <Progress
+                        percent={percent}
+                        strokeColor={{
+                          '0%': CHART_COLORS.tertiary.start,
+                          '100%': CHART_COLORS.tertiary.end,
+                        }}
+                        trailColor="rgba(255,255,255,0.06)"
+                        showInfo={false}
+                        strokeWidth={6}
+                      />
+                    );
+                  },
+                },
+              ]}
+            />
+          </GlassCard>
+        </BentoItem>
+
+        {/* 自然语言查询 - 占 1 列 */}
+        <BentoItem>
+          <GlassCard hoverable style={{ height: '100%' }}>
+            <Flex align="center" gap={12} style={{ marginBottom: 16 }}>
+              <div
+                style={{
+                  width: 4,
+                  height: 24,
+                  background: `linear-gradient(180deg, ${BRAND_PALETTE.primary}, ${BRAND_PALETTE.secondary})`,
+                  borderRadius: 2,
+                }}
+              />
+              <h3
+                style={{
+                  fontSize: 16,
+                  fontWeight: 600,
+                  margin: 0,
+                  color: '#fff',
+                }}
+              >
+                智能查询
+              </h3>
+            </Flex>
+            <NaturalLanguageQuery
+              onQuery={handleNaturalQuery}
+              quickQueries={['今日签到数据', '本周新增用户', '热门商品排行']}
+              theme="dark"
+            />
+          </GlassCard>
+        </BentoItem>
+      </BentoGrid>
     </div>
   );
 };

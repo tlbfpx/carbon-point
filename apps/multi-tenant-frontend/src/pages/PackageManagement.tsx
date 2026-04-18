@@ -11,7 +11,6 @@ import {
   Popconfirm,
   Collapse,
   Checkbox,
-  Card,
   Switch,
   Typography,
   InputNumber,
@@ -19,6 +18,7 @@ import {
   Empty,
   Descriptions,
 } from 'antd';
+import { GlassCard } from '@carbon-point/design-system';
 import {
   PlusOutlined,
   DeleteOutlined,
@@ -376,7 +376,7 @@ const PackageManagement: React.FC = () => {
         width={800}
       >
         <div style={{ marginBottom: 16 }}>
-          <Card size="small" type="inner" title="选择产品">
+          <GlassCard size="small" type="inner" title="选择产品">
             {allProducts.length === 0 ? (
               <Empty description="暂无可用产品" image={Empty.PRESENTED_IMAGE_SIMPLE} />
             ) : (
@@ -408,11 +408,11 @@ const PackageManagement: React.FC = () => {
                 </div>
               ))
             )}
-          </Card>
+          </GlassCard>
         </div>
 
         {selectedProducts.length > 0 && (
-          <Card size="small" type="inner" title="产品功能点配置（可选）">
+          <GlassCard size="small" type="inner" title="产品功能点配置（可选）">
             <Collapse defaultActiveKey={selectedProducts}>
               {allProducts
                 .filter((p: Product) => selectedProducts.includes(p.id))
@@ -564,7 +564,7 @@ const PackageManagement: React.FC = () => {
                   </Panel>
                 ))}
             </Collapse>
-          </Card>
+          </GlassCard>
         )}
       </Modal>
     </div>

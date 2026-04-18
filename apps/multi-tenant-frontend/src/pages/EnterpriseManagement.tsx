@@ -15,8 +15,8 @@ import {
   Statistic,
   Row,
   Col,
-  Card,
 } from 'antd';
+import { GlassCard } from '@carbon-point/design-system';
 import {
   PlusOutlined,
   EditOutlined,
@@ -393,24 +393,24 @@ const EnterpriseManagement: React.FC = () => {
       {stats && (
         <Row gutter={16} style={{ marginBottom: 16 }}>
           <Col span={6}>
-            <Card size="small">
+            <GlassCard hoverable>
               <Statistic title="企业总数" value={stats.totalEnterprises || 0} />
-            </Card>
+            </GlassCard>
           </Col>
           <Col span={6}>
-            <Card size="small">
+            <GlassCard hoverable>
               <Statistic title="活跃企业" value={stats.activeEnterprises || 0} valueStyle={{ color: '#52c41a' }} />
-            </Card>
+            </GlassCard>
           </Col>
           <Col span={6}>
-            <Card size="small">
+            <GlassCard hoverable>
               <Statistic title="用户总数" value={stats.totalUsers || 0} />
-            </Card>
+            </GlassCard>
           </Col>
           <Col span={6}>
-            <Card size="small">
+            <GlassCard hoverable>
               <Statistic title="兑换总数" value={stats.totalExchanges || 0} />
-            </Card>
+            </GlassCard>
           </Col>
         </Row>
       )}
