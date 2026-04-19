@@ -66,6 +66,7 @@ const PLATFORM_MENU_ROLES: Record<string, PlatformRole[]> = {
   '/system/roles': [PLATFORM_ROLES.SUPER_ADMIN],
   '/system/logs': [PLATFORM_ROLES.SUPER_ADMIN],
   '/system/dict': [PLATFORM_ROLES.SUPER_ADMIN],
+  '/features': [PLATFORM_ROLES.SUPER_ADMIN, PLATFORM_ROLES.ADMIN],
   '/features/products': [PLATFORM_ROLES.SUPER_ADMIN, PLATFORM_ROLES.ADMIN],
   '/features/features': [PLATFORM_ROLES.SUPER_ADMIN, PLATFORM_ROLES.ADMIN],
   '/packages': [PLATFORM_ROLES.SUPER_ADMIN, PLATFORM_ROLES.ADMIN, PLATFORM_ROLES.VIEWER],
@@ -222,7 +223,10 @@ const PlatformContent: React.FC = () => {
 };
 
 const App: React.FC = () => (
-  <BrowserRouter basename="/platform">
+  <BrowserRouter
+    basename="/platform"
+    future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+  >
     <ConfigProvider {...designSystemConfig.dark}>
       <ErrorBoundary>
         <PlatformContent />

@@ -342,7 +342,6 @@ const PackageManagement: React.FC = () => {
         onCancel={() => { setPackageModalOpen(false); setEditingPackage(null); form.resetFields(); }}
         footer={null}
         width={480}
-        destroyOnClose
       >
         <Form form={form} layout="vertical" onFinish={handleFormFinish}>
           {packageModalMode === 'create' && (

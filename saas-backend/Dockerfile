@@ -12,8 +12,10 @@ COPY .mvn .mvn
 # Copy all module directories first (needed for Maven reactor)
 COPY carbon-common ./carbon-common
 COPY carbon-system ./carbon-system
-COPY carbon-checkin ./carbon-checkin
+COPY carbon-platform ./carbon-platform
 COPY carbon-points ./carbon-points
+COPY carbon-stair ./carbon-stair
+COPY carbon-walking ./carbon-walking
 COPY carbon-mall ./carbon-mall
 COPY carbon-report ./carbon-report
 COPY carbon-honor ./carbon-honor

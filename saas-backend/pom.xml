@@ -15,7 +15,6 @@
     <modules>
         <module>carbon-common</module>
         <module>carbon-system</module>
-        <module>carbon-checkin</module>
         <module>carbon-stair</module>
         <module>carbon-points</module>
         <module>carbon-mall</module>
@@ -150,7 +149,7 @@
             </dependency>
             <dependency>
                 <groupId>com.carbonpoint</groupId>
-                <artifactId>carbon-checkin</artifactId>
+                <artifactId>carbon-stair</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

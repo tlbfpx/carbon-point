@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Carbon Point (碳积分打卡平台) — a multi-tenant SaaS platform that incentivizes corporate employees to exercise by climbing stairs, rewarding them with points redeemable for virtual goods. **Current stage: specification only, no source code yet.**
+Carbon Point (碳积分打卡平台) — a multi-tenant SaaS platform that incentivizes corporate employees to exercise by climbing stairs and walking, rewarding them with points redeemable for virtual goods. **Current stage: implementation, multi-product architecture live.**
 
 All business specs and implementation plans live in `openspec/`. Key directories:
 - `openspec/PLANS/` — Implementation plans
@@ -24,16 +24,19 @@ All business specs and implementation plans live in `openspec/`. Key directories
 | Auth | JWT (access_token + refresh_token); payload carries `user_id`, `tenant_id`, `roles` |
 | Password Hashing | Argon2id (not BCrypt) |
 
-## Backend Module Layout (Planned)
+## Backend Module Layout
 
 ```
-carbon-common     # Shared: Result<T> response wrapper, error codes, global exception handler, constants
-carbon-system     # Tenants, users, RBAC, JWT authentication
-carbon-checkin    # Check-in logic, time-slot rules, concurrency guard
-carbon-points     # Point rule engine, point accounts, level progression
+carbon-common     # Shared: Result<T>, error codes, global exception handler, security utils
+carbon-system     # Tenants, users, RBAC, JWT auth, packages, platform admin
+carbon-platform   # Product SPI/registry, rule chain engine, trigger abstraction
+carbon-stair      # Stair climbing check-in (replaces carbon-checkin)
+carbon-walking    # Walking steps integration, step→points conversion
+carbon-points     # Point accounts, level progression, PointsEventBus
 carbon-mall       # Virtual products (coupon/recharge/privilege), exchange orders
 carbon-report     # Dashboards, trend reports, Excel export
-carbon-app        # Spring Boot application entry point
+carbon-honor      # Honor system (levels, badges, leaderboards)
+carbon-app        # Spring Boot application entry point, Flyway migrations
 ```
 
 Base package: `com.carbonpoint`
@@ -115,22 +118,53 @@ pnpm --filter @carbon-point/h5 dev                   # H5 用户端 :3002
 
 **禁止**：在一个测试失败后立即修改代码再去跑下一个测试，这会导致测试顺序依赖和修复优先级混乱。
 
-## Planned Build & Test Commands (Once Code Exists)
+## Unit Test Execution Protocol
 
-```bash
-# Backend (Maven)
-./mvnw clean install                    # Build all modules
-./mvnw test -pl carbon-checkin          # Run tests for a single module
-./mvnw test -Dtest=CheckInServiceTest   # Run a single test class
-./mvnw spring-boot:run -pl carbon-app   # Start the application
+执行后端单元测试时必须严格遵循以下规则：
 
-# Frontend (pnpm monorepo)
-pnpm install                            # Install all workspace dependencies
-pnpm --filter @carbon-point/h5 dev      # Start H5 dev server
-pnpm --filter @carbon-point/dashboard dev  # Start dashboard dev server
-pnpm -r build                           # Build all apps
-pnpm -r test                            # Run all tests
+### Serial Execution
+
+- **严禁**并行运行多个 Maven 测试进程
+- 一次只执行一个测试类，等待完全结束再启动下一个
+- 必须使用单点测试：`./mvnw test -pl <module> -am -Dtest=<ClassName>`
+
+### Batch Processing
+
+- 超过 5 个测试文件时分批执行，每批不超过 3 个
+- 每个文件只提取 Surefire 统计行、失败断言和退出码
+- 生成结构化摘要后立即丢弃原始 Maven 输出：
+
 ```
+[文件] <ClassName> | 运行: R | 失败: F | 错误: E | 跳过: S
+失败详情: <第一条失败消息，≤200字符>
+```
+
+### Resource Checks
+
+- 启动测试前检查：无其他 Maven/Java 测试进程（`pgrep -f surefire`）
+- 若系统已有测试进程，等待其结束后再执行
+- **禁止**使用固定 `sleep`，使用条件等待
+
+### Command Rules
+
+- **禁止** `./mvnw test`（全量无 `-Dtest`）
+- **禁止** `./mvnw test -T`（并行执行）
+- 只允许：`./mvnw test -pl <module> -am -Dtest=<ClassName> -q ; echo "EXIT_CODE=$?"`
+- 用 `-pl <module> -am` 跳过无关模块
+- 用 `-q` 减少日志噪音
+- 每个命令后必须捕获退出码
+
+### Exception Handling
+
+- 测试挂起超过 60 秒：`jps -l` 找到进程后 `kill -9`
+- 连续 3 个文件失败：暂停执行，报告用户检查环境
+- 记录超时文件为"超时失败"后继续下一个
+
+### Context Management
+
+- 每完成一个文件，清理其原始日志
+- 上下文 token 超过 70% 时生成检查点（已完成列表、失败清单、待处理队列）
+- 清理历史，仅保留检查点
 
 ## OpenSpec Workflow
 

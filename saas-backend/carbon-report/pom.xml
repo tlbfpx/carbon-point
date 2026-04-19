@@ -23,7 +23,7 @@
         </dependency>
         <dependency>
             <groupId>com.carbonpoint</groupId>
-            <artifactId>carbon-checkin</artifactId>
+            <artifactId>carbon-stair</artifactId>
         </dependency>
         <dependency>
             <groupId>com.carbonpoint</groupId>

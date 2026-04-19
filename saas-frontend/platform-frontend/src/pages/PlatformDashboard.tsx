@@ -35,6 +35,7 @@ import {
   PlatformTrend,
   TrendDimension,
 } from '@/api/platform';
+import { extractArray } from '@/utils';
 
 const PlatformDashboard: React.FC = () => {
   const [dimension, setDimension] = useState<TrendDimension>('day');
