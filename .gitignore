@@ -47,3 +47,14 @@ test-results/
 # AI agent tools
 .opencode/
 .swarm/
+
+# Root-level mirrors of saas-* directories (build artifacts / IDE syncs)
+/carbon-app/
+/carbon-checkin/
+/carbon-common/
+/carbon-honor/
+/carbon-mall/
+/carbon-points/
+/carbon-report/
+/carbon-system/
+/apps/
