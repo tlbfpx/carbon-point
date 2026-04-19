@@ -6,6 +6,7 @@ interface ProductState {
   loading: boolean;
   loaded: boolean;
   fetchProducts: () => Promise<void>;
+  invalidate: () => void;
   isProductEnabled: (code: string) => boolean;
   getFeatureConfig: (productCode: string, featureCode: string) => string | undefined;
 }
@@ -16,14 +17,19 @@ export const useProductStore = create<ProductState>()((set, get) => ({
   loaded: false,
 
   fetchProducts: async () => {
-    if (get().loaded || get().loading) return;
+    if (get().loading) return;
     set({ loading: true });
     try {
       const products = await getTenantProducts();
       set({ products, loaded: true, loading: false });
-    } catch {
+    } catch (e) {
+      console.error('[productStore] Failed to fetch tenant products:', e);
       set({ loading: false });
     }
+  },
+
+  invalidate: () => {
+    set({ loaded: false, loading: false });
   },
 
   isProductEnabled: (code: string) => {

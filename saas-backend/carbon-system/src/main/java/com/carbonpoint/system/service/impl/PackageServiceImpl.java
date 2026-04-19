@@ -430,7 +430,7 @@ public class PackageServiceImpl implements PackageService {
         List<PackageProductRes> productResList = new ArrayList<>();
 
         for (PackageProductEntity pp : packageProducts) {
-            ProductEntity product = productMapper.selectById(String.valueOf(pp.getProductId()));
+            ProductEntity product = productMapper.selectById(pp.getProductId());
             if (product == null) {
                 continue;
             }
@@ -524,7 +524,7 @@ public class PackageServiceImpl implements PackageService {
     }
 
     @Override
-    public List<PackageFeatureRes> getPackageProductFeatures(Long packageId, Long productId) {
+    public List<PackageFeatureRes> getPackageProductFeatures(Long packageId, String productId) {
         PermissionPackage pkg = packageMapper.selectById(packageId);
         if (pkg == null) {
             throw new BusinessException(ErrorCode.PACKAGE_NOT_FOUND);
@@ -537,7 +537,7 @@ public class PackageServiceImpl implements PackageService {
 
     @Override
     @Transactional
-    public void updatePackageProductFeatures(Long packageId, Long productId, PackageProductFeatureUpdateReq req) {
+    public void updatePackageProductFeatures(Long packageId, String productId, PackageProductFeatureUpdateReq req) {
         PermissionPackage pkg = packageMapper.selectById(packageId);
         if (pkg == null) {
             throw new BusinessException(ErrorCode.PACKAGE_NOT_FOUND);
@@ -579,7 +579,7 @@ public class PackageServiceImpl implements PackageService {
     /**
      * Build feature response list by enriching with product defaults and system defaults.
      */
-    private List<PackageFeatureRes> buildFeatureResList(Long productId, List<PackageProductFeatureEntity> ppfList) {
+    private List<PackageFeatureRes> buildFeatureResList(String productId, List<PackageProductFeatureEntity> ppfList) {
         if (ppfList.isEmpty()) {
             return Collections.emptyList();
         }
@@ -630,7 +630,7 @@ public class PackageServiceImpl implements PackageService {
     /**
      * Determine if the config value has been customized (differs from product default).
      */
-    private Boolean determineIfCustomized(Long productId, String featureId, String configValue) {
+    private Boolean determineIfCustomized(String productId, String featureId, String configValue) {
         ProductFeatureEntity pf = productFeatureMapper.selectByProductIdAndFeatureId(String.valueOf(productId), featureId);
         if (pf == null || pf.getConfigValue() == null) {
             return false;

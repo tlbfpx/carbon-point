@@ -48,7 +48,7 @@ public class TenantProductServiceImpl implements TenantProductService {
         // 3. Build product response list
         List<TenantProductRes> result = new ArrayList<>();
         for (PackageProductEntity pp : packageProducts) {
-            ProductEntity product = productMapper.selectById(String.valueOf(pp.getProductId()));
+            ProductEntity product = productMapper.selectById(pp.getProductId());
             if (product == null || product.getStatus() == null || product.getStatus() != 1) {
                 continue;
             }

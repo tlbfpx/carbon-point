@@ -55,7 +55,7 @@ const PackageManagement: React.FC = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [productModalOpen, setProductModalOpen] = useState(false);
-  const [selectedPackage, setSelectedPackage] = useState<any>(null);
+  const [selectedPackage, setSelectedPackage] = useState<PermissionPackage | null>(null);
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [packageProductFeatures, setPackageProductFeatures] = useState<Record<string, Record<string, ProductFeature>>>({});
   const [productFeaturesLoading, setProductFeaturesLoading] = useState(false);
@@ -86,8 +86,9 @@ const PackageManagement: React.FC = () => {
         message.error(res.message || '创建失败');
       }
     },
-    onError: (err: any) => {
-      message.error(err?.response?.data?.message || '创建失败');
+    onError: (err: unknown) => {
+      const error = err as { response?: { data?: { message?: string } } };
+      message.error(error?.response?.data?.message || '创建失败');
     },
   });
 
@@ -105,8 +106,9 @@ const PackageManagement: React.FC = () => {
         message.error(res.message || '更新失败');
       }
     },
-    onError: (err: any) => {
-      message.error(err?.response?.data?.message || '更新失败');
+    onError: (err: unknown) => {
+      const error = err as { response?: { data?: { message?: string } } };
+      message.error(error?.response?.data?.message || '更新失败');
     },
   });
 
@@ -120,8 +122,9 @@ const PackageManagement: React.FC = () => {
         message.error(res.message || '删除失败');
       }
     },
-    onError: (err: any) => {
-      message.error(err?.response?.data?.message || '删除失败');
+    onError: (err: unknown) => {
+      const error = err as { response?: { data?: { message?: string } } };
+      message.error(error?.response?.data?.message || '删除失败');
     },
   });
 
@@ -137,8 +140,9 @@ const PackageManagement: React.FC = () => {
         message.error(res.message || '更新失败');
       }
     },
-    onError: (err: any) => {
-      message.error(err?.response?.data?.message || '更新失败');
+    onError: (err: unknown) => {
+      const error = err as { response?: { data?: { message?: string } } };
+      message.error(error?.response?.data?.message || '更新失败');
     },
   });
 
@@ -155,8 +159,9 @@ const PackageManagement: React.FC = () => {
         message.error(res.message || '保存失败');
       }
     },
-    onError: (err: any) => {
-      message.error(err?.response?.data?.message || '保存失败');
+    onError: (err: unknown) => {
+      const error = err as { response?: { data?: { message?: string } } };
+      message.error(error?.response?.data?.message || '保存失败');
     },
   });
 
@@ -174,13 +179,13 @@ const PackageManagement: React.FC = () => {
     setPackageModalOpen(true);
   };
 
-  const openProductModal = async (record: any) => {
+  const openProductModal = async (record: PermissionPackage) => {
     setSelectedPackage(record);
     setProductFeaturesLoading(true);
     try {
       const detail = await getPackageDetail(record.id);
       const packageProducts = detail.data?.products || [];
-      const newSelectedProducts = packageProducts.map((p: any) => p.productId);
+      const newSelectedProducts = packageProducts.map((p: PackageProduct) => p.productId);
       setSelectedProducts(newSelectedProducts);
 
       const featureMap: Record<string, Record<string, ProductFeature>> = {};

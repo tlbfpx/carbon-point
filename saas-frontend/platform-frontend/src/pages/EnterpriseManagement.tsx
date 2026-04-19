@@ -17,6 +17,7 @@ import {
   Col,
   Empty,
   Spin,
+  Typography,
 } from 'antd';
 import { GlassCard } from '@carbon-point/design-system';
 import {
@@ -41,7 +42,11 @@ import {
   getTenantProducts,
   Enterprise,
   EnterpriseUser,
+  TenantProductInfo,
 } from '@/api/platform';
+import { extractArray } from '@/utils';
+
+const { Text } = Typography;
 
 const EnterpriseManagement: React.FC = () => {
   const queryClient = useQueryClient();
@@ -95,14 +100,6 @@ const EnterpriseManagement: React.FC = () => {
     retry: false,
   });
 
-  const extractArray = <T,>(data: unknown): T[] => {
-    if (Array.isArray(data)) return data as T[];
-    if (data && typeof data === 'object' && 'data' in data) {
-      return (data as { data: T[] }).data;
-    }
-    return [];
-  };
-
   const createMutation = useMutation({
     mutationFn: createEnterprise,
     onSuccess: (res: { code: number; message?: string }) => {
@@ -116,8 +113,9 @@ const EnterpriseManagement: React.FC = () => {
         message.error(res.message || '创建失败');
       }
     },
-    onError: (err: any) => {
-      message.error(err?.response?.data?.message || '创建失败');
+    onError: (err: unknown) => {
+      const error = err as { response?: { data?: { message?: string } } };
+      message.error(error?.response?.data?.message || '创建失败');
     },
   });
 
@@ -133,8 +131,9 @@ const EnterpriseManagement: React.FC = () => {
         message.error(res.message || '状态更新失败');
       }
     },
-    onError: (err: any) => {
-      message.error(err?.response?.data?.message || '状态更新失败');
+    onError: (err: unknown) => {
+      const error = err as { response?: { data?: { message?: string } } };
+      message.error(error?.response?.data?.message || '状态更新失败');
     },
   });
 
@@ -150,8 +149,9 @@ const EnterpriseManagement: React.FC = () => {
         message.error(res.message || '套餐更换失败');
       }
     },
-    onError: (err: any) => {
-      message.error(err?.response?.data?.message || '套餐更换失败');
+    onError: (err: unknown) => {
+      const error = err as { response?: { data?: { message?: string } } };
+      message.error(error?.response?.data?.message || '套餐更换失败');
     },
   });
 
@@ -166,8 +166,9 @@ const EnterpriseManagement: React.FC = () => {
         message.error(res.message || '分配失败');
       }
     },
-    onError: (err: any) => {
-      message.error(err?.response?.data?.message || '分配失败');
+    onError: (err: unknown) => {
+      const error = err as { response?: { data?: { message?: string } } };
+      message.error(error?.response?.data?.message || '分配失败');
     },
   });
 
@@ -337,7 +338,7 @@ const EnterpriseManagement: React.FC = () => {
             <div><strong>企业名称：</strong>{editingEnterprise.name}</div>
             <div><strong>联系人：</strong>{editingEnterprise.contactName}</div>
             <div><strong>联系电话：</strong>{editingEnterprise.contactPhone}</div>
-            <div><strong>联系邮箱：</strong>{(editingEnterprise as any).contactEmail || '-'}</div>
+            <div><strong>联系邮箱：</strong>{editingEnterprise.contactEmail || '-'}</div>
           </div>
         </div>
 
@@ -419,7 +420,7 @@ const EnterpriseManagement: React.FC = () => {
           style={{ marginBottom: 16 }}
         />
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          {products.map((product: any) => (
+          {products.map((product: TenantProductInfo) => (
             <GlassCard
               key={product.productId || product.productCode}
               size="small"

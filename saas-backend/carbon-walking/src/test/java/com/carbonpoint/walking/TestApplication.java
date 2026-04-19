@@ -9,7 +9,6 @@ import org.redisson.api.RedissonClient;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -44,13 +43,6 @@ public class TestApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(TestApplication.class, args);
-    }
-
-    @Bean
-    public ServletContextInitializer mockDispatcherServletInitializer() {
-        return servletContext -> {
-            servletContext.addServlet("", new jakarta.servlet.http.HttpServlet() {});
-        };
     }
 
     @Bean

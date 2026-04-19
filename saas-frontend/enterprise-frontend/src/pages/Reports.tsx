@@ -28,6 +28,7 @@ import type { Dayjs } from 'dayjs';
 import { useAuthStore } from '@/store/authStore';
 import { getDashboardStats, getCheckInTrend, getPointsTrend, exportReport, DashboardStats, CheckInTrend, PointsTrend } from '@/api/reports';
 import { useBranding } from '@/components/BrandingProvider';
+import { extractArray } from '@/utils';
 
 // Chart & table accent colors
 const ACCENT_COLORS = {
@@ -92,13 +93,8 @@ const Reports: React.FC = () => {
     enabled: !!tenantId,
   });
 
-  const extractArray = <T,>(data: unknown): T[] => {
-    if (Array.isArray(data)) return data as T[];
-    if (data && typeof data === 'object' && 'data' in data) {
-      return (data as { data: T[] }).data;
-    }
-    return [];
-  };
+  const checkInTrend: CheckInTrend[] = extractArray<CheckInTrend>(checkInTrendData);
+  const pointsTrend: PointsTrend[] = extractArray<PointsTrend>(pointsTrendData);
 
   const stats: DashboardStats = (statsData as DashboardStats) || {
     todayCheckInCount: 0,
@@ -106,8 +102,6 @@ const Reports: React.FC = () => {
     activeUsers: 0,
     monthExchangeCount: 0,
   };
-  const checkInTrend: CheckInTrend[] = extractArray<CheckInTrend>(checkInTrendData);
-  const pointsTrend: PointsTrend[] = extractArray<PointsTrend>(pointsTrendData);
 
   const handleExport = (type: string) => {
     exportReport(tenantId, type, startDate, endDate).then((blob: Blob) => {

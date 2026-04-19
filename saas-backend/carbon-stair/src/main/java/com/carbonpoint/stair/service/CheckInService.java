@@ -52,7 +52,7 @@ public class CheckInService {
     private final PointRuleService pointRuleService;
     private final DistributedLock distributedLock;
     private final OutboxEventMapper outboxEventMapper;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");

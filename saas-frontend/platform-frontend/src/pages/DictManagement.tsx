@@ -22,6 +22,7 @@ import {
   deleteDictItem,
   DictItem,
 } from '@/api/platform';
+import { extractArray } from '@/utils';
 
 const DictManagement: React.FC = () => {
   const queryClient = useQueryClient();
@@ -34,14 +35,6 @@ const DictManagement: React.FC = () => {
     queryKey: ['dict-items', dictTypeFilter],
     queryFn: () => getDictItems({ dictType: dictTypeFilter, size: 100 }),
   });
-
-  const extractArray = <T,>(data: unknown): T[] => {
-    if (Array.isArray(data)) return data as T[];
-    if (data && typeof data === 'object' && 'data' in data) {
-      return (data as { data: T[] }).data;
-    }
-    return [];
-  };
 
   const createMutation = useMutation({
     mutationFn: createDictItem,

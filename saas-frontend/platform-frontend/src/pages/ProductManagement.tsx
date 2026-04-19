@@ -93,13 +93,14 @@ const ProductManagement: React.FC = () => {
         message.error(res.message || '创建失败');
       }
     },
-    onError: (err: any) => {
-      message.error(err?.response?.data?.message || '创建失败');
+    onError: (err: unknown) => {
+      const error = err as { response?: { data?: { message?: string } } };
+      message.error(error?.response?.data?.message || '创建失败');
     },
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: any }) => updateProduct(id, data),
+    mutationFn: ({ id, data }: { id: string; data: { name?: string; description?: string; status?: number; sortOrder?: number } }) => updateProduct(id, data),
     onSuccess: (res: { code: number; message?: string }) => {
       if (res.code === 200 || res.code === 0) {
         message.success('更新成功');
@@ -111,8 +112,9 @@ const ProductManagement: React.FC = () => {
         message.error(res.message || '更新失败');
       }
     },
-    onError: (err: any) => {
-      message.error(err?.response?.data?.message || '更新失败');
+    onError: (err: unknown) => {
+      const error = err as { response?: { data?: { message?: string } } };
+      message.error(error?.response?.data?.message || '更新失败');
     },
   });
 
@@ -126,13 +128,14 @@ const ProductManagement: React.FC = () => {
         message.error(res.message || '删除失败');
       }
     },
-    onError: (err: any) => {
-      message.error(err?.response?.data?.message || '删除失败');
+    onError: (err: unknown) => {
+      const error = err as { response?: { data?: { message?: string } } };
+      message.error(error?.response?.data?.message || '删除失败');
     },
   });
 
   const updateFeaturesMutation = useMutation({
-    mutationFn: ({ productId, features }: { productId: string; features: any[] }) =>
+    mutationFn: ({ productId, features }: { productId: string; features: { featureId: string; isEnabled: boolean; isRequired: boolean; configValue?: string }[] }) =>
       updateProductFeatures(productId, features),
     onSuccess: (res: { code: number; message?: string }) => {
       if (res.code === 200 || res.code === 0) {
@@ -143,8 +146,9 @@ const ProductManagement: React.FC = () => {
         message.error(res.message || '更新失败');
       }
     },
-    onError: (err: any) => {
-      message.error(err?.response?.data?.message || '更新失败');
+    onError: (err: unknown) => {
+      const error = err as { response?: { data?: { message?: string } } };
+      message.error(error?.response?.data?.message || '更新失败');
     },
   });
 
@@ -170,7 +174,7 @@ const ProductManagement: React.FC = () => {
     try {
       const productFeatures = await getProductFeatures(record.id);
       const featureMap: Record<string, { enabled: boolean; required: boolean; configValue?: string }> = {};
-      (productFeatures.data || []).forEach((pf: any) => {
+      (productFeatures.data || []).forEach((pf: ProductFeature) => {
         featureMap[pf.featureId] = {
           enabled: pf.isEnabled,
           required: pf.isRequired,
@@ -189,7 +193,7 @@ const ProductManagement: React.FC = () => {
     setDrawerOpen(true);
   };
 
-  const handleFormFinish = (values: any) => {
+  const handleFormFinish = (values: { code?: string; name: string; description?: string; status: number; sortOrder: number; category?: string }) => {
     if (editingProduct) {
       updateMutation.mutate({ id: editingProduct.id, data: values });
     } else {
@@ -451,7 +455,7 @@ const ProductManagement: React.FC = () => {
               }
               return (
                 <div>
-                  {features.map((pf: any) => (
+                  {features.map((pf: ProductFeature) => (
                     <div
                       key={pf.featureId}
                       style={{

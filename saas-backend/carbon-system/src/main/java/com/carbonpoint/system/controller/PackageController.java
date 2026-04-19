@@ -108,7 +108,7 @@ public class PackageController {
     @PlatformAdminOnly
     public Result<List<PackageFeatureRes>> getPackageProductFeatures(
             @PathVariable Long id,
-            @PathVariable Long productId) {
+            @PathVariable String productId) {
         return Result.success(packageService.getPackageProductFeatures(id, productId));
     }
 
@@ -120,7 +120,7 @@ public class PackageController {
     @PlatformAdminOnly
     public Result<Void> updatePackageProductFeatures(
             @PathVariable Long id,
-            @PathVariable Long productId,
+            @PathVariable String productId,
             @RequestBody PackageProductFeatureUpdateReq req) {
         packageService.updatePackageProductFeatures(id, productId, req);
         return Result.success();

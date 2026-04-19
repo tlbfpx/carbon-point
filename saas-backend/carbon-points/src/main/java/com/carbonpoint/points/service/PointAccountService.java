@@ -105,40 +105,8 @@ public class PointAccountService {
     public int awardPoints(Long userId, Integer amount, String type, String referenceId, String remark) {
         if (amount == null || amount <= 0) return 0;
 
-        User user = userMapper.selectById(userId);
-        if (user == null) throw new BusinessException(ErrorCode.USER_NOT_FOUND);
-
-        Long tenantId = user.getTenantId();
-
-        // Atomic update with optimistic locking via SQL
-        int updated = userMapper.updatePointsAtomic(userId, amount, 0);
-        if (updated == 0) {
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "积分发放失败，请重试");
-        }
-
-        // Re-query user to get authoritative post-update values
-        user = userMapper.selectById(userId);
-        int availablePoints = user.getAvailablePoints();
-        int frozenPoints = user.getFrozenPoints();
-        int totalPoints = user.getTotalPoints();
-
-        // Record transaction
-        PointTransactionEntity tx = new PointTransactionEntity();
-        tx.setUserId(userId);
-        tx.setTenantId(tenantId);
-        tx.setAmount(amount);
-        tx.setType(type);
-        tx.setReferenceId(referenceId);
-        tx.setBalanceAfter(availablePoints);
-        tx.setFrozenAfter(frozenPoints);
-        tx.setRemark(remark);
-        transactionMapper.insert(tx);
-
-        // Auto update level
-        updateLevel(userId, totalPoints);
-
-        log.info("Awarded {} points to user {}, new balance: {}", amount, userId, availablePoints);
-        return availablePoints;
+        PointsEvent event = new PointsEvent(null, userId, null, type, amount, referenceId, remark);
+        return awardPointsFromEvent(event);
     }
 
     /**

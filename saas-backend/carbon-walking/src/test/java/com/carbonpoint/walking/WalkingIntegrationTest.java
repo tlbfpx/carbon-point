@@ -74,7 +74,7 @@ class WalkingIntegrationTest {
         TenantContext.setTenantId(tenantId);
         User user = new User();
         user.setTenantId(tenantId);
-        user.setPhone("walk_integ_" + System.nanoTime());
+        user.setPhone(String.valueOf(10000000000L + System.nanoTime() % 90000000000L));
         user.setPasswordHash(passwordEncoder.encode("test123"));
         user.setNickname("WalkingIntegUser");
         user.setStatus("active");

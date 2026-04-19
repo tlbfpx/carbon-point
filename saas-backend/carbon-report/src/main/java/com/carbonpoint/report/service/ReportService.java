@@ -1,6 +1,7 @@
 package com.carbonpoint.report.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.carbonpoint.checkin.entity.CheckInRecordEntity;
 import com.carbonpoint.checkin.mapper.CheckInRecordMapper;
@@ -169,57 +170,58 @@ public class ReportService {
 
         // Active tenants (tenants with users active in last 30 days)
         LocalDateTime thirtyDaysAgo = LocalDate.now().minusDays(30).atStartOfDay();
-        List<User> recentUsers = userMapper.selectList(
-            new LambdaQueryWrapper<User>()
-                .ge(User::getUpdatedAt, thirtyDaysAgo)
-        );
-        long uniqueTenants = recentUsers.stream().map(User::getTenantId).distinct().count();
-        dto.setActiveTenants((int) uniqueTenants);
+        QueryWrapper<User> activeTenantsWrapper = new QueryWrapper<>();
+        activeTenantsWrapper.select("COUNT(DISTINCT tenant_id) as cnt")
+                .ge("updated_at", thirtyDaysAgo);
+        List<Map<String, Object>> activeTenantsResult = userMapper.selectMaps(activeTenantsWrapper);
+        int uniqueTenants = activeTenantsResult.isEmpty() ? 0 :
+                ((Number) activeTenantsResult.get(0).getOrDefault("cnt", 0)).intValue();
+        dto.setActiveTenants(uniqueTenants);
 
         // Total users
         Long totalUsers = userMapper.selectCount(null);
         dto.setTotalUsers(totalUsers != null ? totalUsers.intValue() : 0);
 
-        // Total points issued
-        List<PointTransactionEntity> allIssued = pointTransactionMapper.selectList(
-            new LambdaQueryWrapper<PointTransactionEntity>()
-                .in(PointTransactionEntity::getType, Arrays.asList("check_in", "streak_bonus", "manual_add"))
-        );
-        long totalIssued = allIssued.stream().mapToLong(PointTransactionEntity::getAmount).filter(a -> a > 0).sum();
+        // Total points issued (aggregate SUM)
+        QueryWrapper<PointTransactionEntity> issuedWrapper = new QueryWrapper<>();
+        issuedWrapper.select("COALESCE(SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END), 0) as total")
+                .in("type", Arrays.asList("check_in", "streak_bonus", "manual_add"));
+        List<Map<String, Object>> issuedResult = pointTransactionMapper.selectMaps(issuedWrapper);
+        long totalIssued = issuedResult.isEmpty() ? 0 :
+                ((Number) issuedResult.get(0).getOrDefault("total", 0)).longValue();
         dto.setTotalPointsIssued(totalIssued);
 
-        // Total points exchanged
-        List<PointTransactionEntity> allExchanged = pointTransactionMapper.selectList(
-            new LambdaQueryWrapper<PointTransactionEntity>()
-                .eq(PointTransactionEntity::getType, "exchange")
-        );
-        long totalExchanged = allExchanged.stream().mapToLong(tx -> Math.abs(tx.getAmount())).sum();
+        // Total points exchanged (aggregate SUM)
+        QueryWrapper<PointTransactionEntity> exchangedWrapper = new QueryWrapper<>();
+        exchangedWrapper.select("COALESCE(SUM(ABS(amount)), 0) as total")
+                .eq("type", "exchange");
+        List<Map<String, Object>> exchangedResult = pointTransactionMapper.selectMaps(exchangedWrapper);
+        long totalExchanged = exchangedResult.isEmpty() ? 0 :
+                ((Number) exchangedResult.get(0).getOrDefault("total", 0)).longValue();
         dto.setTotalPointsExchanged(totalExchanged);
 
         // Total exchange orders
         Long totalOrders = exchangeOrderMapper.selectCount(null);
         dto.setTotalExchangeOrders(totalOrders != null ? totalOrders.intValue() : 0);
 
-        // Tenant ranking by total points
-        List<User> allUsers = userMapper.selectList(null);
-        Map<Long, Long> tenantPoints = allUsers.stream()
-            .collect(Collectors.groupingBy(User::getTenantId, Collectors.summingLong(u -> u.getTotalPoints() != null ? u.getTotalPoints() : 0)));
-        Map<Long, Long> tenantUserCount = allUsers.stream()
-            .collect(Collectors.groupingBy(User::getTenantId, Collectors.counting()));
-        
-        List<Map.Entry<Long, Long>> ranked = tenantPoints.entrySet().stream()
-            .sorted(Map.Entry.<Long, Long>comparingByValue().reversed())
-            .limit(20)
-            .collect(Collectors.toList());
-        
+        // Tenant ranking by total points (aggregate query)
+        QueryWrapper<User> tenantRankWrapper = new QueryWrapper<>();
+        tenantRankWrapper.select("tenant_id", "COUNT(*) as user_count",
+                        "COALESCE(SUM(total_points), 0) as total_points")
+                .groupBy("tenant_id")
+                .orderByDesc("total_points")
+                .last("LIMIT 20");
+        List<Map<String, Object>> tenantStats = userMapper.selectMaps(tenantRankWrapper);
+
         List<PlatformDashboardDTO.TenantRankDTO> ranking = new ArrayList<>();
-        for (Map.Entry<Long, Long> entry : ranked) {
+        for (Map<String, Object> stat : tenantStats) {
             PlatformDashboardDTO.TenantRankDTO rd = new PlatformDashboardDTO.TenantRankDTO();
-            rd.setTenantId(entry.getKey());
-            Tenant tenant = tenantMapper.selectById(entry.getKey());
+            Long tId = ((Number) stat.get("tenant_id")).longValue();
+            rd.setTenantId(tId);
+            Tenant tenant = tenantMapper.selectById(tId);
             rd.setTenantName(tenant != null ? tenant.getName() : "未知企业");
-            rd.setUserCount(tenantUserCount.getOrDefault(entry.getKey(), 0L).intValue());
-            rd.setTotalPoints(entry.getValue());
+            rd.setUserCount(((Number) stat.get("user_count")).intValue());
+            rd.setTotalPoints(((Number) stat.get("total_points")).longValue());
             ranking.add(rd);
         }
         dto.setTenantRanking(ranking);
@@ -230,56 +232,83 @@ public class ReportService {
     public PointTrendDTO getPointTrend(Long tenantId, String dimension, LocalDate start, LocalDate end) {
         PointTrendDTO dto = new PointTrendDTO();
         dto.setDimension(dimension);
-        
+
+        LocalDateTime rangeStart = start.atStartOfDay();
+        LocalDateTime rangeEnd = end.atTime(LocalTime.MAX);
+
+        // Single aggregate query grouped by date
+        QueryWrapper<PointTransactionEntity> qw = new QueryWrapper<>();
+        qw.select("DATE(created_at) as period",
+                        "COALESCE(SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END), 0) as issued",
+                        "COALESCE(SUM(ABS(amount)), 0) as consumed")
+                .ge("created_at", rangeStart)
+                .le("created_at", rangeEnd)
+                .groupBy("DATE(created_at)")
+                .orderBy(true, true, "DATE(created_at)");
+        if (tenantId != null) {
+            qw.eq("tenant_id", tenantId);
+        }
+
+        List<Map<String, Object>> rows = pointTransactionMapper.selectMaps(qw);
+
+        // Build daily lookup map
+        Map<LocalDate, long[]> dailyMap = new LinkedHashMap<>();
+        for (Map<String, Object> row : rows) {
+            LocalDate date = LocalDate.parse(String.valueOf(row.get("period")));
+            long issued = ((Number) row.get("issued")).longValue();
+            long consumed = ((Number) row.get("consumed")).longValue();
+            dailyMap.put(date, new long[]{issued, consumed});
+        }
+
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        // Generate series based on dimension, aggregating from daily data
         List<PointTrendDTO.TrendPoint> series = new ArrayList<>();
         LocalDate current = start;
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        
         while (!current.isAfter(end)) {
             LocalDate periodStart;
             LocalDate periodEnd;
             String periodLabel;
-            
+
             switch (dimension) {
                 case "week":
                     periodStart = current;
                     periodEnd = current.plusDays(6);
                     periodLabel = current.format(fmt) + " ~ " + periodEnd.format(fmt);
-                    current = current.plusWeeks(1);
                     break;
                 case "month":
                     periodStart = current.withDayOfMonth(1);
                     periodEnd = current.with(TemporalAdjusters.lastDayOfMonth());
                     periodLabel = current.format(DateTimeFormatter.ofPattern("yyyy-MM"));
-                    current = current.plusMonths(1);
                     break;
-                default: // day
+                default:
                     periodStart = current;
                     periodEnd = current;
                     periodLabel = current.format(fmt);
-                    current = current.plusDays(1);
             }
-            
-            LocalDateTime ps = periodStart.atStartOfDay();
-            LocalDateTime pe = periodEnd.atTime(LocalTime.MAX);
-            
-            LambdaQueryWrapper<PointTransactionEntity> qw = new LambdaQueryWrapper<PointTransactionEntity>()
-                .eq(tenantId != null, PointTransactionEntity::getTenantId, tenantId)
-                .ge(PointTransactionEntity::getCreatedAt, ps)
-                .le(PointTransactionEntity::getCreatedAt, pe);
-            
-            List<PointTransactionEntity> txs = pointTransactionMapper.selectList(qw);
-            
-            long issued = txs.stream().mapToLong(PointTransactionEntity::getAmount).filter(a -> a > 0).sum();
-            long consumed = txs.stream().mapToLong(tx -> Math.abs(tx.getAmount())).filter(a -> a > 0).sum();
-            
+
+            long issued = 0, consumed = 0;
+            for (LocalDate d = periodStart; !d.isAfter(periodEnd); d = d.plusDays(1)) {
+                long[] vals = dailyMap.get(d);
+                if (vals != null) {
+                    issued += vals[0];
+                    consumed += vals[1];
+                }
+            }
+
             PointTrendDTO.TrendPoint tp = new PointTrendDTO.TrendPoint();
             tp.setPeriod(periodLabel);
             tp.setIssued(issued);
             tp.setConsumed(consumed);
             series.add(tp);
+
+            switch (dimension) {
+                case "week" -> current = current.plusWeeks(1);
+                case "month" -> current = current.plusMonths(1);
+                default -> current = current.plusDays(1);
+            }
         }
-        
+
         dto.setSeries(series);
         return dto;
     }
@@ -477,31 +506,49 @@ public class ReportService {
      */
     public List<Map<String, Object>> getCheckInTrend(Long tenantId, int days) {
         LocalDate today = LocalDate.now();
+        LocalDate startDate = today.minusDays(days - 1);
+
+        // Single aggregate query for check-in counts
+        QueryWrapper<CheckInRecordEntity> checkinWrapper = new QueryWrapper<>();
+        checkinWrapper.select("checkin_date as d", "COUNT(*) as cnt")
+                .eq("tenant_id", tenantId)
+                .ge("checkin_date", startDate)
+                .le("checkin_date", today)
+                .groupBy("checkin_date");
+        List<Map<String, Object>> checkinRows = checkInRecordMapper.selectMaps(checkinWrapper);
+        Map<String, Integer> checkinMap = new LinkedHashMap<>();
+        for (Map<String, Object> row : checkinRows) {
+            String dateKey = String.valueOf(row.get("d"));
+            int count = ((Number) row.get("cnt")).intValue();
+            checkinMap.put(dateKey, count);
+        }
+
+        // Single aggregate query for points
+        QueryWrapper<PointTransactionEntity> pointsWrapper = new QueryWrapper<>();
+        pointsWrapper.select("DATE(created_at) as d",
+                        "COALESCE(SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END), 0) as total")
+                .eq("tenant_id", tenantId)
+                .ge("created_at", startDate.atStartOfDay())
+                .le("created_at", today.atTime(LocalTime.MAX))
+                .in("type", Arrays.asList("check_in", "streak_bonus"))
+                .groupBy("DATE(created_at)");
+        List<Map<String, Object>> pointsRows = pointTransactionMapper.selectMaps(pointsWrapper);
+        Map<String, Integer> pointsMap = new LinkedHashMap<>();
+        for (Map<String, Object> row : pointsRows) {
+            String dateKey = String.valueOf(row.get("d"));
+            int total = ((Number) row.get("total")).intValue();
+            pointsMap.put(dateKey, total);
+        }
+
+        // Assemble trend with zero-fill for missing days
         List<Map<String, Object>> trend = new ArrayList<>();
         for (int i = days - 1; i >= 0; i--) {
             LocalDate date = today.minusDays(i);
-            LocalDateTime dayStart = date.atStartOfDay();
-            LocalDateTime dayEnd = date.atTime(LocalTime.MAX);
-
-            Long count = checkInRecordMapper.selectCount(
-                new LambdaQueryWrapper<CheckInRecordEntity>()
-                    .eq(CheckInRecordEntity::getTenantId, tenantId)
-                    .eq(CheckInRecordEntity::getCheckinDate, date)
-            );
-
-            List<PointTransactionEntity> dayTxs = pointTransactionMapper.selectList(
-                new LambdaQueryWrapper<PointTransactionEntity>()
-                    .eq(PointTransactionEntity::getTenantId, tenantId)
-                    .ge(PointTransactionEntity::getCreatedAt, dayStart)
-                    .le(PointTransactionEntity::getCreatedAt, dayEnd)
-                    .in(PointTransactionEntity::getType, Arrays.asList("check_in", "streak_bonus"))
-            );
-            int totalPoints = dayTxs.stream().filter(tx -> tx.getAmount() != null && tx.getAmount() > 0).mapToInt(tx -> (int) tx.getAmount()).sum();
-
+            String dateKey = date.toString();
             Map<String, Object> point = new HashMap<>();
-            point.put("date", date.toString());
-            point.put("count", count != null ? count.intValue() : 0);
-            point.put("totalPoints", totalPoints);
+            point.put("date", dateKey);
+            point.put("count", checkinMap.getOrDefault(dateKey, 0));
+            point.put("totalPoints", pointsMap.getOrDefault(dateKey, 0));
             trend.add(point);
         }
         return trend;
@@ -512,32 +559,34 @@ public class ReportService {
      */
     public List<Map<String, Object>> getPointsTrend(Long tenantId, int days) {
         LocalDate today = LocalDate.now();
+        LocalDate startDate = today.minusDays(days - 1);
+
+        // Single aggregate query
+        QueryWrapper<PointTransactionEntity> qw = new QueryWrapper<>();
+        qw.select("DATE(created_at) as d",
+                        "COALESCE(SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END), 0) as granted",
+                        "COALESCE(SUM(CASE WHEN amount < 0 THEN ABS(amount) ELSE 0 END), 0) as consumed")
+                .eq("tenant_id", tenantId)
+                .ge("created_at", startDate.atStartOfDay())
+                .le("created_at", today.atTime(LocalTime.MAX))
+                .groupBy("DATE(created_at)");
+        List<Map<String, Object>> rows = pointTransactionMapper.selectMaps(qw);
+
+        Map<String, Map<String, Object>> rowMap = new LinkedHashMap<>();
+        for (Map<String, Object> row : rows) {
+            rowMap.put(String.valueOf(row.get("d")), row);
+        }
+
+        // Assemble trend with zero-fill for missing days
         List<Map<String, Object>> trend = new ArrayList<>();
         for (int i = days - 1; i >= 0; i--) {
             LocalDate date = today.minusDays(i);
-            LocalDateTime dayStart = date.atStartOfDay();
-            LocalDateTime dayEnd = date.atTime(LocalTime.MAX);
-
-            List<PointTransactionEntity> dayTxs = pointTransactionMapper.selectList(
-                new LambdaQueryWrapper<PointTransactionEntity>()
-                    .eq(PointTransactionEntity::getTenantId, tenantId)
-                    .ge(PointTransactionEntity::getCreatedAt, dayStart)
-                    .le(PointTransactionEntity::getCreatedAt, dayEnd)
-            );
-
-            long granted = dayTxs.stream()
-                .filter(tx -> tx.getAmount() != null && tx.getAmount() > 0)
-                .mapToLong(tx -> (long) tx.getAmount())
-                .sum();
-            long consumed = dayTxs.stream()
-                .filter(tx -> tx.getAmount() != null && tx.getAmount() < 0)
-                .mapToLong(tx -> Math.abs((long) tx.getAmount()))
-                .sum();
-
+            String dateKey = date.toString();
+            Map<String, Object> row = rowMap.get(dateKey);
             Map<String, Object> point = new HashMap<>();
-            point.put("date", date.toString());
-            point.put("granted", granted);
-            point.put("consumed", consumed);
+            point.put("date", dateKey);
+            point.put("granted", row != null ? ((Number) row.get("granted")).longValue() : 0L);
+            point.put("consumed", row != null ? ((Number) row.get("consumed")).longValue() : 0L);
             trend.add(point);
         }
         return trend;

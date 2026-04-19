@@ -2,47 +2,46 @@ package com.carbonpoint.platform.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
 
 import java.util.Map;
 
 /**
  * Input context for a rule node execution.
+ * Immutable — rule nodes read from this context but cannot mutate it.
  */
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter
 @Builder
+@AllArgsConstructor
 public class RuleContext {
 
     /**
      * The user being evaluated.
      */
-    private Long userId;
+    private final Long userId;
 
     /**
      * The tenant the user belongs to.
      */
-    private Long tenantId;
+    private final Long tenantId;
 
     /**
      * The product code being processed.
      */
-    private String productCode;
+    private final String productCode;
 
     /**
-     * Current point value entering this rule node.
+     * Initial point value entering the rule chain.
      */
-    private int currentPoints;
+    private final int currentPoints;
 
     /**
      * Tenant-specific configuration for rules.
      */
-    private Map<String, Object> tenantConfig;
+    private final Map<String, Object> tenantConfig;
 
     /**
      * Data produced by the trigger.
      */
-    private Map<String, Object> triggerData;
+    private final Map<String, Object> triggerData;
 }

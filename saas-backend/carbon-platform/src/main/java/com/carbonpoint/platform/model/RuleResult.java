@@ -1,36 +1,33 @@
 package com.carbonpoint.platform.model;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
 
 import java.util.Collections;
 import java.util.Map;
 
 /**
  * Result of a rule node execution.
+ * Immutable — each rule node produces a new RuleResult.
  */
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter
 @Builder
 public class RuleResult {
 
     /**
      * The points value after this rule was applied.
      */
-    private int points;
+    private final int points;
 
     /**
      * Whether this rule modified the points value.
      */
-    private boolean applied;
+    private final boolean applied;
 
     /**
      * Metadata produced by this rule node (e.g. multiplier used, cap hit).
      */
-    private Map<String, Object> metadata;
+    private final Map<String, Object> metadata;
 
     /**
      * Create a passthrough result that does not modify points.

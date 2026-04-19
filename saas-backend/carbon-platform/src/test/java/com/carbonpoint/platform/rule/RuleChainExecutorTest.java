@@ -17,12 +17,12 @@ class RuleChainExecutorTest {
 
     private final RuleChainExecutor executor = new RuleChainExecutor();
 
-    private RuleContext baseContext() {
+    private RuleContext baseContext(int points) {
         return RuleContext.builder()
                 .userId(1L)
                 .tenantId(100L)
                 .productCode("checkin")
-                .currentPoints(0)
+                .currentPoints(points)
                 .triggerData(Map.of())
                 .tenantConfig(Map.of())
                 .build();
@@ -35,8 +35,7 @@ class RuleChainExecutorTest {
         @Test
         @DisplayName("returns passthrough with currentPoints")
         void emptyChain() {
-            RuleContext context = baseContext();
-            context.setCurrentPoints(10);
+            RuleContext context = baseContext(10);
 
             RuleResult result = executor.execute(List.of(), context);
 
@@ -64,8 +63,7 @@ class RuleChainExecutorTest {
                 }
             };
 
-            RuleContext context = baseContext();
-            context.setCurrentPoints(5);
+            RuleContext context = baseContext(5);
 
             RuleResult result = executor.execute(List.of(doubling), context);
 
@@ -105,8 +103,7 @@ class RuleChainExecutorTest {
                 }
             };
 
-            RuleContext context = baseContext();
-            context.setCurrentPoints(5);
+            RuleContext context = baseContext(5);
 
             RuleResult result = executor.execute(List.of(doubler, adder), context);
 
@@ -154,8 +151,7 @@ class RuleChainExecutorTest {
                 }
             };
 
-            RuleContext context = baseContext();
-            context.setCurrentPoints(10);
+            RuleContext context = baseContext(10);
 
             RuleResult result = executor.execute(List.of(times3, minus1, divider), context);
 

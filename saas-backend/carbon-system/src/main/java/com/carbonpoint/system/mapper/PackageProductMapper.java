@@ -17,13 +17,13 @@ import java.util.List;
 public interface PackageProductMapper extends BaseMapper<PackageProductEntity> {
 
     @Select("SELECT product_id FROM package_products WHERE package_id = #{packageId} ORDER BY sort_order ASC")
-    List<Long> selectProductIdsByPackageId(@Param("packageId") Long packageId);
+    List<String> selectProductIdsByPackageId(@Param("packageId") Long packageId);
 
     @Select("SELECT * FROM package_products WHERE package_id = #{packageId} ORDER BY sort_order ASC")
     List<PackageProductEntity> selectByPackageId(@Param("packageId") Long packageId);
 
     @Select("SELECT * FROM package_products WHERE package_id = #{packageId} AND product_id = #{productId}")
-    PackageProductEntity selectByPackageIdAndProductId(@Param("packageId") Long packageId, @Param("productId") Long productId);
+    PackageProductEntity selectByPackageIdAndProductId(@Param("packageId") Long packageId, @Param("productId") String productId);
 
     @Select("DELETE FROM package_products WHERE package_id = #{packageId}")
     int deleteByPackageId(@Param("packageId") Long packageId);

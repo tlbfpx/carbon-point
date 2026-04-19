@@ -18,8 +18,8 @@ public class PackageProductUpdateReq {
 
     @Data
     public static class ProductItem {
-        /** Product ID (required) */
-        private Long productId;
+        /** Product ID (UUID, required) */
+        private String productId;
 
         /** Display sort order */
         private Integer sortOrder;

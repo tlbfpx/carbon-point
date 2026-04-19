@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS product_features (
     config_value    VARCHAR(500) COMMENT '功能点的默认配置值',
     is_required     TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否为产品必需功能: 0=可选, 1=必需',
     is_enabled      TINYINT(1) NOT NULL DEFAULT 1 COMMENT '是否启用: 0=禁用, 1=启用',
+    deleted         TINYINT(1) NOT NULL DEFAULT 0 COMMENT '0=正常, 1=已删除',
     created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
 
@@ -34,6 +35,7 @@ CREATE TABLE IF NOT EXISTS package_products (
     package_id      BIGINT NOT NULL COMMENT '权限套餐ID，关联 permission_packages.id',
     product_id      VARCHAR(36) NOT NULL COMMENT '平台产品ID，关联 platform_products.id',
     sort_order      INT NOT NULL DEFAULT 0 COMMENT '展示排序',
+    deleted         TINYINT(1) NOT NULL DEFAULT 0 COMMENT '0=正常, 1=已删除',
     created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
 
     UNIQUE KEY uk_package_product (package_id, product_id),
@@ -53,6 +55,7 @@ CREATE TABLE IF NOT EXISTS package_product_features (
     config_value    VARCHAR(500) COMMENT '自定义配置值（覆盖产品默认值）',
     is_enabled      TINYINT(1) NOT NULL DEFAULT 1 COMMENT '是否启用: 0=禁用, 1=启用',
     is_customized   TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否已自定义（与产品默认值不同）: 0=继承默认, 1=已自定义',
+    deleted         TINYINT(1) NOT NULL DEFAULT 0 COMMENT '0=正常, 1=已删除',
     created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
 
@@ -71,6 +74,7 @@ CREATE TABLE IF NOT EXISTS product_configs (
     product_id      VARCHAR(36) NOT NULL COMMENT '平台产品ID，关联 platform_products.id',
     enabled         TINYINT(1) NOT NULL DEFAULT 1 COMMENT '是否启用: 0=禁用, 1=启用',
     config_json     JSON COMMENT '产品级配置JSON（如步数目标、时间段等）',
+    deleted         TINYINT(1) NOT NULL DEFAULT 0 COMMENT '0=正常, 1=已删除',
     created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
 
@@ -88,6 +92,7 @@ CREATE TABLE IF NOT EXISTS product_feature_configs (
     product_id      VARCHAR(36) NOT NULL COMMENT '平台产品ID，关联 platform_products.id',
     feature_id      VARCHAR(36) NOT NULL COMMENT '功能点ID，关联 features.id',
     enabled         TINYINT(1) NOT NULL DEFAULT 1 COMMENT '是否启用: 0=禁用, 1=启用',
+    deleted         TINYINT(1) NOT NULL DEFAULT 0 COMMENT '0=正常, 1=已删除',
     created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
 
@@ -107,7 +112,9 @@ CREATE TABLE IF NOT EXISTS step_daily_records (
     record_date     DATE NOT NULL COMMENT '记录日期',
     step_count      INT NOT NULL DEFAULT 0 COMMENT '步数',
     points_awarded  INT NOT NULL DEFAULT 0 COMMENT '已发放积分',
+    claimed         TINYINT(1) NOT NULL DEFAULT 0 COMMENT '0=未领取, 1=已领取积分',
     source          VARCHAR(20) COMMENT '数据来源: werun/healthkit/health_connect',
+    deleted         TINYINT(1) NOT NULL DEFAULT 0 COMMENT '0=正常, 1=已删除',
     created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
 
     UNIQUE KEY uk_user_date (user_id, record_date),

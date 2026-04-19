@@ -48,6 +48,7 @@ class WalkingServiceTest {
     @AfterEach
     void tearDown() {
         TenantContext.clear();
+        stubHealthApiClient.setOverrideStepCount(null);
     }
 
     @Test
@@ -161,7 +162,7 @@ class WalkingServiceTest {
         userCounter++;
         User user = new User();
         user.setTenantId(tenantId);
-        user.setPhone("walk_svc_" + tenantId + "_" + System.nanoTime() + "_" + userCounter);
+        user.setPhone(String.valueOf(10000000000L + System.nanoTime() % 90000000000L));
         user.setPasswordHash(passwordEncoder.encode("test123"));
         user.setNickname("WalkingSvcTester");
         user.setStatus("active");

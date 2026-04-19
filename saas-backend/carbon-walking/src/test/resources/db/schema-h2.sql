@@ -48,6 +48,7 @@ CREATE TABLE IF NOT EXISTS step_daily_records (
     points_awarded INT NOT NULL DEFAULT 0,
     source VARCHAR(30),
     claimed BOOLEAN NOT NULL DEFAULT FALSE,
+    deleted TINYINT(1) NOT NULL DEFAULT 0,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (user_id, record_date)
 );
@@ -59,8 +60,8 @@ CREATE TABLE IF NOT EXISTS point_transactions (
     amount INT NOT NULL,
     type VARCHAR(30) NOT NULL,
     reference_id VARCHAR(64),
-    product_code VARCHAR(30),
-    source_type VARCHAR(30),
+    product_code VARCHAR(50) DEFAULT NULL,
+    source_type VARCHAR(50) DEFAULT NULL,
     balance_after INT NOT NULL,
     frozen_after INT NOT NULL DEFAULT 0,
     remark VARCHAR(200),

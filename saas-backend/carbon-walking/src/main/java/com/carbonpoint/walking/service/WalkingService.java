@@ -53,6 +53,15 @@ public class WalkingService {
         Long tenantId = TenantContext.getTenantId();
         LocalDate today = LocalDate.now();
 
+        // 0. Validate user exists and belongs to tenant
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+        }
+        if (!user.getTenantId().equals(tenantId)) {
+            throw new BusinessException(ErrorCode.USER_NOT_IN_TENANT);
+        }
+
         // 1. Check for existing record today
         StepDailyRecordEntity existing = selectByUserAndDate(userId, today);
         if (existing != null && Boolean.TRUE.equals(existing.getClaimed())) {
