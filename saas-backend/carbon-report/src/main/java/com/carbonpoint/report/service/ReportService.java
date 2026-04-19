@@ -12,13 +12,18 @@ import com.carbonpoint.mall.entity.Product;
 import com.carbonpoint.mall.mapper.MallProductMapper;
 import com.carbonpoint.common.entity.PointTransactionEntity;
 import com.carbonpoint.common.mapper.PointTransactionMapper;
+import com.carbonpoint.report.dto.CrossProductOverviewDTO;
 import com.carbonpoint.report.dto.EnterpriseDashboardDTO;
 import com.carbonpoint.report.dto.PlatformDashboardDTO;
 import com.carbonpoint.report.dto.PointTrendDTO;
+import com.carbonpoint.report.dto.ProductPointStatsDTO;
+import com.carbonpoint.report.dto.WalkingStatsDTO;
 import com.carbonpoint.system.entity.Tenant;
 import com.carbonpoint.system.entity.User;
 import com.carbonpoint.system.mapper.TenantMapper;
 import com.carbonpoint.system.mapper.UserMapper;
+import com.carbonpoint.walking.entity.StepDailyRecordEntity;
+import com.carbonpoint.walking.mapper.StepDailyRecordMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
@@ -48,6 +53,7 @@ public class ReportService {
     private final MallProductMapper productMapper;
     private final TenantMapper tenantMapper;
     private final UserMapper userMapper;
+    private final StepDailyRecordMapper stepDailyRecordMapper;
 
     public EnterpriseDashboardDTO getEnterpriseDashboard(Long tenantId) {
         EnterpriseDashboardDTO dto = new EnterpriseDashboardDTO();
@@ -535,6 +541,195 @@ public class ReportService {
             trend.add(point);
         }
         return trend;
+    }
+
+    /**
+     * Per-product point statistics with daily breakdown.
+     */
+    public List<ProductPointStatsDTO> getProductStats(Long tenantId, LocalDate start, LocalDate end) {
+        LocalDateTime startDateTime = start.atStartOfDay();
+        LocalDateTime endDateTime = end.atTime(LocalTime.MAX);
+
+        // Fetch all positive point transactions in the period for this tenant
+        List<PointTransactionEntity> txs = pointTransactionMapper.selectList(
+            new LambdaQueryWrapper<PointTransactionEntity>()
+                .eq(PointTransactionEntity::getTenantId, tenantId)
+                .ge(PointTransactionEntity::getCreatedAt, startDateTime)
+                .le(PointTransactionEntity::getCreatedAt, endDateTime)
+                .gt(PointTransactionEntity::getAmount, 0)
+        );
+
+        // Group by product_code (null -> "stair_climbing" for backward compat)
+        Map<String, List<PointTransactionEntity>> byProduct = txs.stream()
+            .collect(Collectors.groupingBy(tx ->
+                tx.getProductCode() != null ? tx.getProductCode() : "stair_climbing"));
+
+        List<ProductPointStatsDTO> result = new ArrayList<>();
+        for (Map.Entry<String, List<PointTransactionEntity>> entry : byProduct.entrySet()) {
+            String productCode = entry.getKey();
+            List<PointTransactionEntity> productTxs = entry.getValue();
+
+            long totalPoints = productTxs.stream().mapToLong(PointTransactionEntity::getAmount).sum();
+
+            // Build daily stats
+            Map<LocalDate, List<PointTransactionEntity>> byDate = productTxs.stream()
+                .collect(Collectors.groupingBy(tx -> tx.getCreatedAt().toLocalDate()));
+
+            List<ProductPointStatsDTO.DailyPointStat> dailyStats = new ArrayList<>();
+            LocalDate current = start;
+            while (!current.isAfter(end)) {
+                List<PointTransactionEntity> dayTxs = byDate.getOrDefault(current, Collections.emptyList());
+                if (!dayTxs.isEmpty()) {
+                    dailyStats.add(ProductPointStatsDTO.DailyPointStat.builder()
+                        .date(current.toString())
+                        .points(dayTxs.stream().mapToInt(PointTransactionEntity::getAmount).sum())
+                        .count(dayTxs.size())
+                        .build());
+                }
+                current = current.plusDays(1);
+            }
+
+            // Derive display name from code
+            String productName = deriveProductName(productCode);
+
+            result.add(ProductPointStatsDTO.builder()
+                .productCode(productCode)
+                .productName(productName)
+                .totalPointsIssued(totalPoints)
+                .transactionCount(productTxs.size())
+                .dailyStats(dailyStats)
+                .build());
+        }
+
+        return result;
+    }
+
+    /**
+     * Cross-product overview for pie chart visualization.
+     */
+    public CrossProductOverviewDTO getCrossProductOverview(Long tenantId, LocalDate start, LocalDate end) {
+        LocalDateTime startDateTime = start.atStartOfDay();
+        LocalDateTime endDateTime = end.atTime(LocalTime.MAX);
+
+        List<PointTransactionEntity> txs = pointTransactionMapper.selectList(
+            new LambdaQueryWrapper<PointTransactionEntity>()
+                .eq(PointTransactionEntity::getTenantId, tenantId)
+                .ge(PointTransactionEntity::getCreatedAt, startDateTime)
+                .le(PointTransactionEntity::getCreatedAt, endDateTime)
+                .gt(PointTransactionEntity::getAmount, 0)
+        );
+
+        Map<String, Long> byProduct = txs.stream()
+            .collect(Collectors.groupingBy(
+                tx -> tx.getProductCode() != null ? tx.getProductCode() : "stair_climbing",
+                Collectors.summingLong(PointTransactionEntity::getAmount)));
+
+        long totalPoints = byProduct.values().stream().mapToLong(Long::longValue).sum();
+
+        List<CrossProductOverviewDTO.ProductSlice> slices = byProduct.entrySet().stream()
+            .map(entry -> {
+                double percentage = totalPoints > 0
+                    ? Math.round(entry.getValue() * 10000.0 / totalPoints) / 100.0
+                    : 0.0;
+                return CrossProductOverviewDTO.ProductSlice.builder()
+                    .productCode(entry.getKey())
+                    .productName(deriveProductName(entry.getKey()))
+                    .points(entry.getValue())
+                    .percentage(percentage)
+                    .build();
+            })
+            .sorted((a, b) -> Long.compare(b.getPoints(), a.getPoints()))
+            .collect(Collectors.toList());
+
+        return CrossProductOverviewDTO.builder()
+            .slices(slices)
+            .totalPoints(totalPoints)
+            .build();
+    }
+
+    /**
+     * Walking-specific statistics.
+     */
+    public WalkingStatsDTO getWalkingStats(Long tenantId, LocalDate start, LocalDate end) {
+        List<StepDailyRecordEntity> records = stepDailyRecordMapper.selectList(
+            new LambdaQueryWrapper<StepDailyRecordEntity>()
+                .eq(StepDailyRecordEntity::getTenantId, tenantId)
+                .ge(StepDailyRecordEntity::getRecordDate, start)
+                .le(StepDailyRecordEntity::getRecordDate, end)
+        );
+
+        if (records.isEmpty()) {
+            return WalkingStatsDTO.builder()
+                .averageDailySteps(0.0)
+                .totalRecords(0)
+                .uniqueUsers(0)
+                .stepDistribution(Map.of())
+                .claimRate(0.0)
+                .totalPointsAwarded(0L)
+                .build();
+        }
+
+        // Average daily steps
+        double avgSteps = records.stream()
+            .mapToInt(StepDailyRecordEntity::getStepCount)
+            .average()
+            .orElse(0.0);
+
+        // Unique users
+        long uniqueUsers = records.stream()
+            .map(StepDailyRecordEntity::getUserId)
+            .distinct()
+            .count();
+
+        // Step distribution: 0-3k, 3k-6k, 6k-10k, 10k+
+        Map<String, Integer> distribution = new LinkedHashMap<>();
+        distribution.put("0-3000", 0);
+        distribution.put("3000-6000", 0);
+        distribution.put("6000-10000", 0);
+        distribution.put("10000+", 0);
+        for (StepDailyRecordEntity r : records) {
+            int steps = r.getStepCount();
+            if (steps < 3000) {
+                distribution.merge("0-3000", 1, Integer::sum);
+            } else if (steps < 6000) {
+                distribution.merge("3000-6000", 1, Integer::sum);
+            } else if (steps < 10000) {
+                distribution.merge("6000-10000", 1, Integer::sum);
+            } else {
+                distribution.merge("10000+", 1, Integer::sum);
+            }
+        }
+
+        // Claim rate
+        long claimed = records.stream().filter(r -> Boolean.TRUE.equals(r.getClaimed())).count();
+        double claimRate = Math.round(claimed * 10000.0 / records.size()) / 100.0;
+
+        // Total points awarded from claims
+        long totalPointsAwarded = records.stream()
+            .filter(r -> Boolean.TRUE.equals(r.getClaimed()) && r.getPointsAwarded() != null)
+            .mapToLong(StepDailyRecordEntity::getPointsAwarded)
+            .sum();
+
+        return WalkingStatsDTO.builder()
+            .averageDailySteps(Math.round(avgSteps * 100.0) / 100.0)
+            .totalRecords(records.size())
+            .uniqueUsers((int) uniqueUsers)
+            .stepDistribution(distribution)
+            .claimRate(claimRate)
+            .totalPointsAwarded(totalPointsAwarded)
+            .build();
+    }
+
+    /**
+     * Derive human-readable product name from product code.
+     */
+    private String deriveProductName(String productCode) {
+        if (productCode == null) return "爬楼梯";
+        return switch (productCode) {
+            case "stair_climbing" -> "爬楼梯";
+            case "walking" -> "走路";
+            default -> productCode;
+        };
     }
 
     /**

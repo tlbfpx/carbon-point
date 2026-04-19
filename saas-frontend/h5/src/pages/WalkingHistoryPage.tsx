@@ -1,19 +1,19 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { List, Empty, DotLoading, TabBar, Button } from 'antd-mobile';
+import { List, Empty, DotLoading, Button } from 'antd-mobile';
 import { useQuery } from '@tanstack/react-query';
-import { getCheckInHistory } from '@/api/checkin';
+import { getWalkingHistory } from '@/api/walking';
 import { useAuthStore } from '@/store/authStore';
 
-const CheckInHistoryPage: React.FC = () => {
+const WalkingHistoryPage: React.FC = () => {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const [page, setPage] = useState(1);
   const pageSize = 10;
 
   const { data, isLoading } = useQuery({
-    queryKey: ['checkInHistory', page],
-    queryFn: () => getCheckInHistory({ page, size: pageSize }),
+    queryKey: ['walkingHistory', page],
+    queryFn: () => getWalkingHistory(page, pageSize),
     enabled: !!user?.userId,
   });
 
@@ -25,23 +25,24 @@ const CheckInHistoryPage: React.FC = () => {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   };
 
-  const formatTime = (dateStr: string) => {
-    const d = new Date(dateStr);
-    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}`;
-  };
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'checked_in': return '打卡成功';
-      case 'failed': return '打卡失败';
-      default: return status;
-    }
-  };
-
   return (
     <div style={{ minHeight: '100vh', background: '#f5f5f5' }}>
-      <div style={{ background: '#fff', padding: '12px 16px', borderBottom: '1px solid #eee' }}>
-        <h2 style={{ margin: 0, fontSize: 18 }}>打卡历史</h2>
+      {/* Header */}
+      <div style={{
+        background: '#fff',
+        padding: '12px 16px',
+        borderBottom: '1px solid #eee',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 12,
+      }}>
+        <span
+          style={{ fontSize: 18, cursor: 'pointer', color: '#1677ff' }}
+          onClick={() => navigate('/walking')}
+        >
+          ← 返回
+        </span>
+        <h2 style={{ margin: 0, fontSize: 18 }}>走路历史</h2>
       </div>
 
       <div style={{ padding: 16 }}>
@@ -50,28 +51,28 @@ const CheckInHistoryPage: React.FC = () => {
             <DotLoading />
           </div>
         ) : records.length === 0 ? (
-          <Empty description="暂无打卡记录" />
+          <Empty description="暂无走路记录" />
         ) : (
           <>
             <List>
-              {records.map((record: Record<string, unknown>) => (
-                <List.Item key={record.id as string}>
+              {records.map((record) => (
+                <List.Item key={record.id}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                     <div>
                       <p style={{ margin: 0, fontWeight: 500 }}>
-                        {record.timeSlotName ? String(record.timeSlotName) : '打卡记录'}
+                        {record.source === 'manual' ? '手动领取' : '自动领取'}
                       </p>
                       <p style={{ margin: '4px 0 0', fontSize: 12, color: '#999' }}>
-                        {formatDate(record.checkInTime as string)} {formatTime(record.checkInTime as string)}
+                        {formatDate(record.date)}
                       </p>
                     </div>
                     <div style={{ textAlign: 'right' }}>
-                      <span style={{ color: '#52c41a', fontWeight: 'bold' }}>
-                        +{record.pointsEarned as number}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'flex-end' }}>
+                        <span style={{ fontSize: 13, color: '#666' }}>{record.steps.toLocaleString()} 步</span>
+                      </div>
+                      <span style={{ color: '#52c41a', fontWeight: 'bold', fontSize: 15 }}>
+                        +{record.pointsEarned}
                       </span>
-                      <p style={{ margin: '4px 0 0', fontSize: 12, color: '#52c41a' }}>
-                        {getStatusLabel(record.status as string)}
-                      </p>
                     </div>
                   </div>
                 </List.Item>
@@ -102,21 +103,8 @@ const CheckInHistoryPage: React.FC = () => {
           </>
         )}
       </div>
-
-      <TabBar activeKey="checkin" onChange={(key) => {
-        if (key === 'home') navigate('/');
-        else if (key === 'walking') navigate('/walking');
-        else if (key === 'mall') navigate('/mall');
-        else if (key === 'profile') navigate('/profile');
-      }}>
-        <TabBar.Item key="home" title="首页" />
-        <TabBar.Item key="checkin" title="打卡" />
-        <TabBar.Item key="walking" title="走路" />
-        <TabBar.Item key="mall" title="商城" />
-        <TabBar.Item key="profile" title="我的" />
-      </TabBar>
     </div>
   );
 };
 
-export default CheckInHistoryPage;
+export default WalkingHistoryPage;

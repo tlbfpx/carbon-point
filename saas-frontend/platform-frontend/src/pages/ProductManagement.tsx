@@ -15,9 +15,13 @@ import {
   Checkbox,
   Empty,
   Tooltip,
+  Drawer,
+  Descriptions,
+  Badge,
+  Timeline,
 } from 'antd';
 import { GlassCard } from '@carbon-point/design-system';
-import { PlusOutlined, EditOutlined, DeleteOutlined, SettingOutlined, ReloadOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { PlusOutlined, EditOutlined, DeleteOutlined, SettingOutlined, ReloadOutlined, CheckCircleOutlined, EyeOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import {
@@ -38,6 +42,11 @@ const CATEGORY_OPTIONS = [
   { value: 'walking', label: '走路积分', color: 'green' },
 ] as const;
 
+const TRIGGER_TYPE_MAP: Record<string, { label: string; color: string }> = {
+  stairs_climbing: { label: '爬楼打卡', color: 'blue' },
+  walking: { label: '走路计步', color: 'green' },
+};
+
 const ProductManagement: React.FC = () => {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
@@ -45,8 +54,10 @@ const ProductManagement: React.FC = () => {
   const [categoryFilter, setCategoryFilter] = useState<string | undefined>();
   const [modalOpen, setModalOpen] = useState(false);
   const [featureModalOpen, setFeatureModalOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [drawerProduct, setDrawerProduct] = useState<Product | null>(null);
   const [selectedFeatures, setSelectedFeatures] = useState<Record<string, { enabled: boolean; required: boolean; configValue?: string }>>({});
   const [form] = Form.useForm();
 
@@ -61,6 +72,13 @@ const ProductManagement: React.FC = () => {
     queryKey: ['all-features'],
     queryFn: () => getFeatures({ size: 100 }),
     enabled: featureModalOpen,
+  });
+
+  const { data: drawerProductFeatures, isLoading: drawerFeaturesLoading } = useQuery({
+    queryKey: ['product-features-detail', drawerProduct?.id],
+    queryFn: () => getProductFeatures(drawerProduct!.id),
+    enabled: !!drawerProduct?.id && drawerOpen,
+    retry: false,
   });
 
   const createMutation = useMutation({
@@ -166,6 +184,11 @@ const ProductManagement: React.FC = () => {
     setFeatureModalOpen(true);
   };
 
+  const openDetailDrawer = (record: Product) => {
+    setDrawerProduct(record);
+    setDrawerOpen(true);
+  };
+
   const handleFormFinish = (values: any) => {
     if (editingProduct) {
       updateMutation.mutate({ id: editingProduct.id, data: values });
@@ -199,13 +222,23 @@ const ProductManagement: React.FC = () => {
     { title: '产品编码', dataIndex: 'code', width: 140 },
     { title: '产品名称', dataIndex: 'name' },
     {
-      title: '分类',
+      title: '触发类型',
       dataIndex: 'category',
-      width: 100,
+      width: 110,
       render: (category: string) => {
-        const config = getCategoryConfig(category);
-        return <Tag color={config.color}>{config.label}</Tag>;
+        const trigger = TRIGGER_TYPE_MAP[category];
+        return trigger ? (
+          <Tag color={trigger.color}>{trigger.label}</Tag>
+        ) : (
+          <Tag>{category}</Tag>
+        );
       },
+    },
+    {
+      title: '功能点',
+      dataIndex: 'featureCount',
+      width: 90,
+      render: (n: number) => <Badge count={n ?? 0} showZero color="blue" style={{ marginLeft: 4 }} />,
     },
     { title: '描述', dataIndex: 'description', ellipsis: true },
     {
@@ -218,14 +251,16 @@ const ProductManagement: React.FC = () => {
         </Tag>
       ),
     },
-    { title: '功能点数', dataIndex: 'featureCount', width: 90, render: (n: number) => n ?? 0 },
     { title: '排序', dataIndex: 'sortOrder', width: 60 },
     { title: '创建时间', dataIndex: 'createTime', width: 110, render: (t: string) => t ? dayjs(t).format('YYYY-MM-DD') : '-' },
     {
       title: '操作',
-      width: 200,
+      width: 240,
       render: (_: unknown, record: Product) => (
         <Space size="small">
+          <Button type="link" size="small" icon={<EyeOutlined />} onClick={() => openDetailDrawer(record)}>
+            详情
+          </Button>
           <Button type="link" size="small" icon={<EditOutlined />} onClick={() => openEditModal(record)}>
             编辑
           </Button>
@@ -356,6 +391,110 @@ const ProductManagement: React.FC = () => {
           </Form.Item>
         </Form>
       </Modal>
+
+      {/* Product Detail Drawer */}
+      <Drawer
+        title={`产品详情 - ${drawerProduct?.name}`}
+        open={drawerOpen}
+        onClose={() => { setDrawerOpen(false); setDrawerProduct(null); }}
+        width={560}
+        destroyOnClose
+      >
+        {drawerProduct && (
+          <>
+            <Descriptions column={1} bordered size="small" style={{ marginBottom: 24 }}>
+              <Descriptions.Item label="产品编码">{drawerProduct.code}</Descriptions.Item>
+              <Descriptions.Item label="产品名称">{drawerProduct.name}</Descriptions.Item>
+              <Descriptions.Item label="触发类型">
+                {(() => {
+                  const trigger = TRIGGER_TYPE_MAP[drawerProduct.category];
+                  return trigger ? (
+                    <Tag color={trigger.color}>{trigger.label}</Tag>
+                  ) : (
+                    <Tag>{drawerProduct.category}</Tag>
+                  );
+                })()}
+              </Descriptions.Item>
+              <Descriptions.Item label="状态">
+                <Tag color={drawerProduct.status === 1 ? 'green' : 'default'}>
+                  {drawerProduct.status === 1 ? '启用' : '禁用'}
+                </Tag>
+              </Descriptions.Item>
+              <Descriptions.Item label="描述">{drawerProduct.description || '-'}</Descriptions.Item>
+              <Descriptions.Item label="排序">{drawerProduct.sortOrder}</Descriptions.Item>
+              <Descriptions.Item label="创建时间">
+                {drawerProduct.createTime ? dayjs(drawerProduct.createTime).format('YYYY-MM-DD HH:mm') : '-'}
+              </Descriptions.Item>
+            </Descriptions>
+
+            <h4 style={{ marginBottom: 12 }}>规则链预览</h4>
+            <Timeline
+              style={{ marginBottom: 24, marginTop: 8 }}
+              items={[
+                { color: drawerProduct.category === 'stairs_climbing' ? 'blue' : 'green', children: '触发类型匹配' },
+                { color: 'gray', children: '基础积分计算' },
+                { color: 'gray', children: '特殊日期加成' },
+                { color: 'gray', children: '等级系数应用' },
+                { color: 'gray', children: '数值取整处理' },
+                { color: 'gray', children: '每日上限检查' },
+                { color: 'gray', children: '连续打卡奖励' },
+              ]}
+            />
+
+            <h4 style={{ marginBottom: 12 }}>功能点列表</h4>
+            {drawerFeaturesLoading ? (
+              <div style={{ textAlign: 'center', padding: 24, color: '#999' }}>加载中...</div>
+            ) : (() => {
+              const features = drawerProductFeatures?.data || [];
+              if (features.length === 0) {
+                return <Empty description="暂无功能点配置" image={Empty.PRESENTED_IMAGE_SIMPLE} />;
+              }
+              return (
+                <div>
+                  {features.map((pf: any) => (
+                    <div
+                      key={pf.featureId}
+                      style={{
+                        padding: '8px 12px',
+                        marginBottom: 8,
+                        background: '#fafafa',
+                        borderRadius: 6,
+                        border: '1px solid #f0f0f0',
+                      }}
+                    >
+                      <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+                        <Space>
+                          <strong>{pf.feature?.name || pf.featureId}</strong>
+                          <Tag color={pf.feature?.type === 'permission' ? 'blue' : 'orange'}>
+                            {pf.feature?.type === 'permission' ? '权限' : '配置'}
+                          </Tag>
+                        </Space>
+                        <Space>
+                          {pf.isRequired && <Tag color="red">必需</Tag>}
+                          {!pf.isRequired && <Tag color="default">可选</Tag>}
+                          {pf.isEnabled ? (
+                            <Tag color="green">已启用</Tag>
+                          ) : (
+                            <Tag color="default">未启用</Tag>
+                          )}
+                        </Space>
+                      </Space>
+                      {pf.feature?.description && (
+                        <div style={{ color: '#999', fontSize: 12, marginTop: 4 }}>{pf.feature.description}</div>
+                      )}
+                      {pf.configValue && (
+                        <div style={{ color: '#666', fontSize: 12, marginTop: 2 }}>
+                          配置值: <Tag>{pf.configValue}</Tag>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+          </>
+        )}
+      </Drawer>
 
       {/* Feature Configuration Modal */}
       <Modal

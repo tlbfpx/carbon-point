@@ -444,6 +444,20 @@ export const updatePackageProductFeatures = async (
   return res.data;
 };
 
+// Tenant Product APIs
+export interface TenantProductInfo {
+  productId: string;
+  productCode: string;
+  productName: string;
+  category: string;
+  featureConfig: Record<string, string>;
+}
+
+export const getTenantProducts = async (tenantId: string) => {
+  const res = await platformApiClient.get(`/tenants/${tenantId}/products`);
+  return res.data;
+};
+
 // System Management APIs
 export interface OperationLog {
   id: string;

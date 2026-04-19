@@ -20,6 +20,7 @@ import {
     AppstoreOutlined,
     BookOutlined,
     FileTextOutlined,
+    WomanOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 
@@ -36,6 +37,7 @@ import FeatureMatrix from '@/pages/FeatureMatrix';
 import DictManagement from '@/pages/DictManagement';
 import LoginPage from '@/pages/LoginPage';
 import OperationLog from '@/pages/OperationLog';
+import WalkingManagement from '@/pages/walking/WalkingManagement';
 
 import { useAuthStore } from '@/store/authStore';
 import { useBranding } from '@/components/BrandingProvider';
@@ -58,6 +60,9 @@ const ENTERPRISE_PERMISSION_MAP: Record<string, string | undefined> = {
   '/dict-management': 'enterprise:dict:view',
   '/branding': undefined,
   '/operation-log': 'enterprise:log:query',
+  '/walking': 'enterprise:walking:view',
+  '/walking/step-config': 'enterprise:walking:config',
+  '/walking/fun-equiv': 'enterprise:walking:config',
 };
 
 const EnterpriseMenuItems: MenuProps['items'] = [
@@ -73,6 +78,7 @@ const EnterpriseMenuItems: MenuProps['items'] = [
   { key: '/dict-management', icon: <BookOutlined />, label: '字典管理' },
   { key: '/branding', icon: <SkinOutlined />, label: '品牌配置' },
   { key: '/operation-log', icon: <FileTextOutlined />, label: '操作日志' },
+  { key: '/walking', icon: <WomanOutlined />, label: '走路管理' },
 ];
 
 // Dark gradient sidebar colors
@@ -372,6 +378,9 @@ const EnterpriseContent: React.FC = () => {
             <Route path="/dict-management" element={<DictManagement />} />
             <Route path="/branding" element={<Branding />} />
             <Route path="/operation-log" element={<OperationLog />} />
+            <Route path="/walking" element={<WalkingManagement />} />
+            <Route path="/walking/step-config" element={<WalkingManagement />} />
+            <Route path="/walking/fun-equiv" element={<WalkingManagement />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </Content>

@@ -3,9 +3,12 @@ package com.carbonpoint.report.controller;
 import com.carbonpoint.system.security.RequirePerm;
 import com.carbonpoint.common.result.Result;
 import com.carbonpoint.common.security.JwtUserPrincipal;
+import com.carbonpoint.report.dto.CrossProductOverviewDTO;
 import com.carbonpoint.report.dto.EnterpriseDashboardDTO;
 import com.carbonpoint.report.dto.PlatformDashboardDTO;
 import com.carbonpoint.report.dto.PointTrendDTO;
+import com.carbonpoint.report.dto.ProductPointStatsDTO;
+import com.carbonpoint.report.dto.WalkingStatsDTO;
 import com.carbonpoint.report.service.ReportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -95,6 +98,39 @@ public class ReportController {
         if (end == null) end = LocalDate.now();
         Long tenantId = principal.getTenantId();
         return Result.success(reportService.getPointTrend(tenantId, dimension, start, end));
+    }
+
+    @GetMapping("/product-stats")
+    @RequirePerm("enterprise:report:view")
+    public Result<List<ProductPointStatsDTO>> getProductStats(
+            @AuthenticationPrincipal JwtUserPrincipal principal,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
+        if (start == null) start = LocalDate.now().minusDays(30);
+        if (end == null) end = LocalDate.now();
+        return Result.success(reportService.getProductStats(principal.getTenantId(), start, end));
+    }
+
+    @GetMapping("/product-overview")
+    @RequirePerm("enterprise:report:view")
+    public Result<CrossProductOverviewDTO> getCrossProductOverview(
+            @AuthenticationPrincipal JwtUserPrincipal principal,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
+        if (start == null) start = LocalDate.now().minusDays(30);
+        if (end == null) end = LocalDate.now();
+        return Result.success(reportService.getCrossProductOverview(principal.getTenantId(), start, end));
+    }
+
+    @GetMapping("/walking-stats")
+    @RequirePerm("enterprise:report:view")
+    public Result<WalkingStatsDTO> getWalkingStats(
+            @AuthenticationPrincipal JwtUserPrincipal principal,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
+        if (start == null) start = LocalDate.now().minusDays(30);
+        if (end == null) end = LocalDate.now();
+        return Result.success(reportService.getWalkingStats(principal.getTenantId(), start, end));
     }
 
     @GetMapping("/export")
