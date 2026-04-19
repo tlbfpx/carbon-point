@@ -56,13 +56,6 @@ done
 # ─── 后端启动 ───────────────────────────────────────────
 JAR_FILE="$BACKEND_DIR/carbon-app/target/carbon-app-1.0.0-SNAPSHOT.jar"
 
-# 检查是否已有后端在运行
-if pgrep -f "carbon-app-1.0.0-SNAPSHOT.jar" > /dev/null 2>&1; then
-  echo "  错误: 后端已在运行 (carbon-app-1.0.0-SNAPSHOT.jar)" >&2
-  echo "  请先停止现有进程: pkill -f carbon-app-1.0.0-SNAPSHOT.jar" >&2
-  exit 1
-fi
-
 if [ "$BUILD_MODE" = "rebuild" ]; then
   echo "  重新编译打包 (跳过测试)..."
   cd "$BACKEND_DIR"
@@ -87,13 +80,14 @@ java -jar "$JAR_FILE" --spring.profiles.active=dev > "$BACKEND_LOG" 2>&1 &
 BACKEND_PID=$!
 echo "  后端 PID: $BACKEND_PID"
 
-# 等待后端就绪，同时实时显示日志
+# 等待后端就绪
+BACKEND_OK=false
 echo "  等待后端启动 (最多 60s)..."
-echo "  ─── 后端启动日志 ───"
 for i in $(seq 1 60); do
   if curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/api/auth/login 2>/dev/null | grep -qE '^[0-9]{3}$'; then
     echo ""
     echo "  后端已就绪"
+    BACKEND_OK=true
     break
   fi
   if ! kill -0 $BACKEND_PID 2>/dev/null; then
@@ -103,16 +97,22 @@ for i in $(seq 1 60); do
     tail -20 "$BACKEND_LOG" >&2
     exit 1
   fi
-  # 每秒刷新最新日志
   sleep 1
   tail -1 "$BACKEND_LOG" 2>/dev/null | sed 's/^/  /'
 done
+
+if [ "$BACKEND_OK" = false ]; then
+  echo "  错误: 后端在 60s 内未就绪" >&2
+  echo "  最后 20 行日志:" >&2
+  tail -20 "$BACKEND_LOG" >&2
+  exit 1
+fi
 
 # ─── 三个前端启动 ───────────────────────────────────────
 echo ""
 echo "启动前端..."
 
-# 检查并安装前端依赖（node_modules 不存在或 vite 不可用时重装）
+# 检查并安装前端依赖
 for dir in enterprise-frontend platform-frontend h5; do
   NODE_MODULES="$FRONTEND_DIR/$dir/node_modules"
   if [ ! -d "$NODE_MODULES" ] || [ ! -f "$NODE_MODULES/vite/bin/vite.js" ]; then
@@ -125,22 +125,19 @@ done
 ENTERPRISE_LOG="$LOG_DIR/enterprise-frontend.log"
 cd "$FRONTEND_DIR/enterprise-frontend" && pnpm dev > "$ENTERPRISE_LOG" 2>&1 &
 ENTERPRISE_PID=$!
-echo "  企业前端 PID: $ENTERPRISE_PID (http://localhost:3000/enterprise)"
-echo "    日志: $ENTERPRISE_LOG"
+echo "  企业前端 PID: $ENTERPRISE_PID"
 
 PLATFORM_LOG="$LOG_DIR/platform-frontend.log"
 cd "$FRONTEND_DIR/platform-frontend" && pnpm dev > "$PLATFORM_LOG" 2>&1 &
 PLATFORM_PID=$!
-echo "  平台前端 PID: $PLATFORM_PID (http://localhost:3001/platform)"
-echo "    日志: $PLATFORM_LOG"
+echo "  平台前端 PID: $PLATFORM_PID"
 
 H5_LOG="$LOG_DIR/h5.log"
 cd "$FRONTEND_DIR/h5" && pnpm dev > "$H5_LOG" 2>&1 &
 H5_PID=$!
-echo "  H5 用户端 PID: $H5_PID (http://localhost:3002/h5/)"
-echo "    日志: $H5_LOG"
+echo "  H5 用户端 PID: $H5_PID"
 
-# 等待前端就绪
+# 等待前端就绪（严格模式：超时或崩溃视为失败）
 wait_for_port() {
   local name=$1 port=$2 pid=$3 log=$4
   echo -n "  等待 $name 就绪 (端口 $port)..."
@@ -157,35 +154,76 @@ wait_for_port() {
     fi
     sleep 1
   done
-  echo " 超时"
-  echo "  警告: $name 在 30s 内未就绪，请检查日志: $log"
-  return 0
+  echo " 超时!"
+  echo "  错误: $name 在 30s 内未就绪" >&2
+  tail -20 "$log" >&2
+  return 1
 }
 
 echo ""
-wait_for_port "企业前端" 3000 $ENTERPRISE_PID "$ENTERPRISE_LOG"
-wait_for_port "平台前端" 3001 $PLATFORM_PID "$PLATFORM_LOG"
-wait_for_port "H5 用户端" 3002 $H5_PID "$H5_LOG"
+ENTERPRISE_OK=true
+PLATFORM_OK=true
+H5_OK=true
 
-# ─── 完成输出 ───────────────────────────────────────────
+wait_for_port "企业前端" 3000 $ENTERPRISE_PID "$ENTERPRISE_LOG" || ENTERPRISE_OK=false
+wait_for_port "平台前端" 3001 $PLATFORM_PID "$PLATFORM_LOG" || PLATFORM_OK=false
+wait_for_port "H5 用户端" 3002 $H5_PID "$H5_LOG" || H5_OK=false
+
+# ─── 结果输出 ───────────────────────────────────────────
 echo ""
-echo "=========================================="
-echo "  所有服务已启动"
-echo "=========================================="
-echo ""
-printf "  %-20s  %s\n" "企业前端:" "http://localhost:3000/enterprise"
-printf "  %-20s  %s\n" "平台前端:" "http://localhost:3001/platform"
-printf "  %-20s  %s\n" "H5 用户端:" "http://localhost:3002/h5/"
-printf "  %-20s  %s\n" "后端 API:" "http://localhost:8080"
-echo ""
-echo "测试账号:"
-echo "  企业租户 (1380003xxxx / 123456)"
-echo "  平台管理员 (1380001xxxx / 123456)"
-echo ""
-echo "日志目录: $LOG_DIR/"
-echo "  查看实时日志: tail -f $LOG_DIR/<service>.log"
-echo ""
-echo "按 Ctrl+C 停止所有服务"
+ALL_OK=true
+
+check_service() {
+  local label=$1 url=$2 ok=$3
+  if [ "$ok" = true ]; then
+    printf "  %-20s  %s\n" "$label" "$url"
+  else
+    ALL_OK=false
+    printf "  %-20s  %s  [启动失败]\n" "$label" "$url"
+  fi
+}
+
+if [ "$BACKEND_OK" = true ] && [ "$ENTERPRISE_OK" = true ] && [ "$PLATFORM_OK" = true ] && [ "$H5_OK" = true ]; then
+  echo "=========================================="
+  echo "  所有服务已启动"
+  echo "=========================================="
+  echo ""
+  check_service "企业前端:" "http://localhost:3000/enterprise" $ENTERPRISE_OK
+  check_service "平台前端:" "http://localhost:3001/platform" $PLATFORM_OK
+  check_service "H5 用户端:" "http://localhost:3002/h5/" $H5_OK
+  check_service "后端 API:" "http://localhost:8080" $BACKEND_OK
+  echo ""
+  echo "测试账号:"
+  echo "  企业租户 (1380003xxxx / 123456)"
+  echo "  平台管理员 (1380001xxxx / 123456)"
+  echo ""
+  echo "日志目录: $LOG_DIR/"
+  echo "  查看实时日志: tail -f $LOG_DIR/<service>.log"
+  echo ""
+  echo "按 Ctrl+C 停止所有服务"
+else
+  echo "=========================================="
+  echo "  部分服务启动失败"
+  echo "=========================================="
+  echo ""
+  check_service "企业前端:" "http://localhost:3000/enterprise" $ENTERPRISE_OK
+  check_service "平台前端:" "http://localhost:3001/platform" $PLATFORM_OK
+  check_service "H5 用户端:" "http://localhost:3002/h5/" $H5_OK
+  check_service "后端 API:" "http://localhost:8080" $BACKEND_OK
+  echo ""
+  echo "请查看日志: $LOG_DIR/"
+  echo "  后端:   tail -f $BACKEND_LOG"
+  echo "  企业:   tail -f $ENTERPRISE_LOG"
+  echo "  平台:   tail -f $PLATFORM_LOG"
+  echo "  H5:     tail -f $H5_LOG"
+  echo ""
+  FAILED_COUNT=0
+  [ "$BACKEND_OK" = false ] && ((FAILED_COUNT++))
+  [ "$ENTERPRISE_OK" = false ] && ((FAILED_COUNT++))
+  [ "$PLATFORM_OK" = false ] && ((FAILED_COUNT++))
+  [ "$H5_OK" = false ] && ((FAILED_COUNT++))
+  echo "启动失败: $FAILED_COUNT 个服务"
+fi
 
 # trap Ctrl+C
 stop_all() {

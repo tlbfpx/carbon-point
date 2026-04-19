@@ -17,33 +17,63 @@ import java.util.Map;
 @Service
 public class PlatformPermissionService {
 
+    private static final List<String> ALL_PERMISSIONS = List.of(
+            "platform:dashboard:view",
+            "platform:enterprise:list",
+            "platform:enterprise:manage",
+            "platform:system:view",
+            "platform:system:manage",
+            "platform:system:user:list",
+            "platform:system:user:manage",
+            "platform:system:role:list",
+            "platform:system:role:manage",
+            "platform:system:log:query",
+            "platform:system:dict:view",
+            "platform:system:dict:manage",
+            "platform:config:view",
+            "platform:config:manage",
+            "platform:admin:list",
+            "platform:admin:manage",
+            "platform:product:list",
+            "platform:product:manage",
+            "platform:feature:list",
+            "platform:feature:manage",
+            "platform:package:list",
+            "platform:package:manage",
+            "platform:report:view"
+    );
+
     private static final Map<String, List<String>> ROLE_PERMISSIONS = Map.of(
-            "super_admin", List.of(
+            "super_admin", ALL_PERMISSIONS,
+            "admin", List.of(
                     "platform:dashboard:view",
                     "platform:enterprise:list",
                     "platform:enterprise:manage",
                     "platform:system:view",
-                    "platform:system:manage",
                     "platform:config:view",
                     "platform:config:manage",
                     "platform:admin:list",
                     "platform:admin:manage",
-                    "platform:package:view",
-                    "platform:package:manage"
-            ),
-            "admin", List.of(
-                    "platform:dashboard:view",
-                    "platform:enterprise:list",
-                    "platform:system:view",
-                    "platform:package:view"
+                    "platform:product:list",
+                    "platform:product:manage",
+                    "platform:feature:list",
+                    "platform:feature:manage",
+                    "platform:package:list",
+                    "platform:package:manage",
+                    "platform:report:view"
             ),
             "operator", List.of(
                     "platform:dashboard:view",
                     "platform:enterprise:list",
-                    "platform:package:view"
+                    "platform:package:list",
+                    "platform:product:list",
+                    "platform:report:view"
             ),
             "viewer", List.of(
-                    "platform:dashboard:view"
+                    "platform:dashboard:view",
+                    "platform:enterprise:list",
+                    "platform:package:list",
+                    "platform:report:view"
             )
     );
 
