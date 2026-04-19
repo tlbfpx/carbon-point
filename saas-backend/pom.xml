@@ -154,6 +154,11 @@
             </dependency>
             <dependency>
                 <groupId>com.carbonpoint</groupId>
+                <artifactId>carbon-stair</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.carbonpoint</groupId>
                 <artifactId>carbon-points</artifactId>
                 <version>${project.version}</version>
             </dependency>

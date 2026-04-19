@@ -17,8 +17,8 @@ const WalkingHistoryPage: React.FC = () => {
     enabled: !!user?.userId,
   });
 
-  const records = data?.records || [];
-  const total = data?.total || 0;
+  const records = data?.data?.records || [];
+  const total = data?.data?.total || 0;
 
   const formatDate = (dateStr: string) => {
     const d = new Date(dateStr);
