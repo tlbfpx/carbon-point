@@ -4,6 +4,7 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
+  base: '/platform/',
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -20,7 +21,7 @@ export default defineConfig({
     host: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:8088',
+        target: 'http://localhost:8080',
         changeOrigin: true,
       },
     },
@@ -28,7 +29,6 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     emptyOutDir: true,
-    base: '/platform/',
     rollupOptions: {
       output: {
         manualChunks: {
