@@ -44,7 +44,7 @@ const App: React.FC = () => {
   return (
     <ConfigProvider {...designSystemConfig.dark}>
       <ErrorBoundary>
-        <BrowserRouter basename="/h5">
+        <BrowserRouter basename="/h5" future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <RouteLogger />
           <Routes>
           <Route path="/login" element={<LoginPage />} />

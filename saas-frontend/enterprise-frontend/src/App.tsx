@@ -391,7 +391,7 @@ const EnterpriseContent: React.FC = () => {
 
 const App: React.FC = () => (
   <ConfigProvider {...designSystemConfig.dark}>
-    <BrowserRouter basename="/enterprise">
+    <BrowserRouter basename="/enterprise" future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <ErrorBoundary>
         <EnterpriseContent />
       </ErrorBoundary>

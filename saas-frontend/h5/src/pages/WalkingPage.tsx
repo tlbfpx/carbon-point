@@ -9,18 +9,16 @@ const WalkingPage: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { data: statusData, isLoading } = useQuery({
+  const { data: status, isLoading } = useQuery({
     queryKey: ['walkingStatus'],
     queryFn: getWalkingStatus,
   });
 
-  const status = statusData?.data;
-
   const claimMutation = useMutation({
     mutationFn: () => claimWalkingPoints('manual'),
     onSuccess: (res) => {
-      if (res.code === 200) {
-        Toast.show(`领取成功！获得 ${res.data?.pointsEarned || 0} 积分`);
+      if (res.success) {
+        Toast.show(`领取成功！获得 ${res.pointsEarned || 0} 积分`);
         queryClient.invalidateQueries({ queryKey: ['walkingStatus'] });
         queryClient.invalidateQueries({ queryKey: ['pointsAccount'] });
       } else {
