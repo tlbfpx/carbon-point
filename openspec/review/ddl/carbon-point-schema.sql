@@ -223,6 +223,8 @@ CREATE TABLE point_transactions (
     amount          INT NOT NULL COMMENT '变动积分（正=获得，负=消耗）',
     type            VARCHAR(30) NOT NULL COMMENT '类型: check_in/streak_bonus/exchange/manual_add/manual_deduct/expire/frozen/unfrozen',
     reference_id    VARCHAR(64) COMMENT '关联业务ID（打卡记录ID/订单ID）',
+    product_code    VARCHAR(30) COMMENT '产品编码: stair_climbing/walking',
+    source_type     VARCHAR(30) COMMENT '来源类型: check_in/step_claim/streak_bonus/exchange',
     balance_after   INT NOT NULL COMMENT '变动后可用余额',
     frozen_after    INT NOT NULL DEFAULT 0 COMMENT '变动后冻结余额',
     remark          VARCHAR(200),

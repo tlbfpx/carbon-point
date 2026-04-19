@@ -120,13 +120,13 @@ const OrderHistoryPage: React.FC = () => {
       <TabBar activeKey="mall" onChange={(key) => {
         if (key === 'home') navigate('/');
         else if (key === 'checkin') navigate('/checkin');
-        else if (key === 'coupons') navigate('/my-coupons');
+        else if (key === 'walking') navigate('/walking');
         else if (key === 'profile') navigate('/profile');
       }}>
         <TabBar.Item key="home" title="首页" />
         <TabBar.Item key="checkin" title="打卡" />
+        <TabBar.Item key="walking" title="走路" />
         <TabBar.Item key="mall" title="商城" />
-        <TabBar.Item key="coupons" title="卡券" />
         <TabBar.Item key="profile" title="我的" />
       </TabBar>
     </div>

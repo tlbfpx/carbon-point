@@ -1,0 +1,64 @@
+spring:
+  application:
+    name: carbon-walking-test
+  main:
+    allow-bean-definition-overriding: true
+  server:
+    servlet:
+      servlet-name: dispatcher
+
+  autoconfigure:
+    exclude:
+      - org.redisson.spring.starter.RedissonAutoConfigurationV2
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false
+    username: sa
+    password:
+
+  h2:
+    console:
+      enabled: true
+
+  sql:
+    init:
+      mode: embedded
+      schema-locations: classpath:db/schema-h2.sql
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 1
+
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+  mapper-locations: classpath*:/mapper/**/*.xml
+
+jwt:
+  secret: a3f8c9d2e1b47568a0f7e6d5c4b3a2918765432abcdef1234567890abcdef
+  access-token-expiration: 86400000
+  refresh-token-expiration: 604800000
+
+security:
+  captcha:
+    enabled: true
+  lock:
+    enabled: true
+    duration-minutes: 30
+
+logging:
+  level:
+    com.carbonpoint: info

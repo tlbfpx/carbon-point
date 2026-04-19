@@ -26,6 +26,7 @@ import {
   PlatformRole,
   PermissionNode,
 } from '@/api/platform';
+import { extractArray } from '@/utils';
 
 const SystemRoles: React.FC = () => {
   const queryClient = useQueryClient();
@@ -46,14 +47,6 @@ const SystemRoles: React.FC = () => {
     queryFn: getPlatformPermissions,
     enabled: permModalOpen,
   });
-
-  const extractArray = <T,>(data: unknown): T[] => {
-    if (Array.isArray(data)) return data as T[];
-    if (data && typeof data === 'object' && 'data' in data) {
-      return (data as { data: T[] }).data;
-    }
-    return [];
-  };
 
   const createMutation = useMutation({
     mutationFn: createPlatformRole,

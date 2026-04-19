@@ -48,10 +48,10 @@ public interface PackageService {
     /**
      * Get feature configurations for a specific product within a package.
      */
-    List<PackageFeatureRes> getPackageProductFeatures(Long packageId, Long productId);
+    List<PackageFeatureRes> getPackageProductFeatures(Long packageId, String productId);
 
     /**
      * Update feature configurations for a specific product within a package.
      */
-    void updatePackageProductFeatures(Long packageId, Long productId, PackageProductFeatureUpdateReq req);
+    void updatePackageProductFeatures(Long packageId, String productId, PackageProductFeatureUpdateReq req);
 }

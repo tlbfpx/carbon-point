@@ -1,0 +1,160 @@
+package com.carbonpoint.stair;
+
+import com.carbonpoint.stair.TestApplication;
+import com.carbonpoint.common.security.JwtUtil;
+import com.carbonpoint.common.tenant.TenantContext;
+import com.carbonpoint.system.entity.Tenant;
+import com.carbonpoint.system.entity.User;
+import com.carbonpoint.system.mapper.TenantMapper;
+import com.carbonpoint.system.mapper.UserMapper;
+import com.carbonpoint.common.security.AppPasswordEncoder;
+import com.carbonpoint.stair.entity.CheckInRecordEntity;
+import com.carbonpoint.stair.mapper.CheckInRecordMapper;
+import com.carbonpoint.common.mapper.PointTransactionMapper;
+import org.junit.jupiter.api.AfterEach;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+
+import java.util.List;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+
+/**
+ * Base class for all integration tests.
+ * Provides common setup, authentication helpers, and utility methods.
+ */
+@SpringBootTest(classes = TestApplication.class)
+@ActiveProfiles("test")
+@AutoConfigureMockMvc
+public abstract class BaseIntegrationTest {
+
+    @Autowired
+    protected MockMvc mockMvc;
+
+    @Autowired
+    protected UserMapper userMapper;
+
+    @Autowired
+    protected TenantMapper tenantMapper;
+
+    @Autowired
+    protected AppPasswordEncoder passwordEncoder;
+
+    @Autowired
+    protected JwtUtil jwtUtil;
+
+    @Autowired
+    protected StringRedisTemplate redisTemplate;
+
+    @Autowired
+    protected PointTransactionMapper pointTransactionMapper;
+
+    @Autowired
+    protected CheckInRecordMapper checkInRecordMapper;
+
+    @AfterEach
+    protected void tearDown() {
+        TenantContext.clear();
+        try {
+            redisTemplate.getConnectionFactory().getConnection().flushAll();
+        } catch (Exception e) {
+            // Redis may not be available in test environment
+        }
+    }
+
+    // ─────────────────────────────────────────
+    // Tenant setup helpers
+    // ─────────────────────────────────────────
+
+    protected Tenant createTestTenant(String name) {
+        Tenant tenant = new Tenant();
+        tenant.setName(name);
+        tenant.setPackageType("pro");
+        tenant.setMaxUsers(100);
+        tenant.setStatus("active");
+        tenantMapper.insert(tenant);
+        return tenant;
+    }
+
+    protected User createTestUser(Long tenantId, String phone, String password, String... roles) {
+        User user = new User();
+        user.setTenantId(tenantId);
+        user.setPhone(phone);
+        user.setPasswordHash(passwordEncoder.encode(password));
+        user.setNickname("TestUser_" + phone);
+        user.setStatus("active");
+        user.setLevel(1);
+        user.setTotalPoints(0);
+        user.setAvailablePoints(0);
+        user.setFrozenPoints(0);
+        user.setConsecutiveDays(0);
+        userMapper.insert(user);
+        return user;
+    }
+
+    protected String generateToken(User user, List<String> roles) {
+        return jwtUtil.generateAccessToken(user.getId(), user.getTenantId(), roles);
+    }
+
+    protected String generateToken(Long userId, Long tenantId, List<String> roles) {
+        return jwtUtil.generateAccessToken(userId, tenantId, roles);
+    }
+
+    protected void setTenantContext(Long tenantId) {
+        TenantContext.setTenantId(tenantId);
+    }
+
+    // ─────────────────────────────────────────
+    // HTTP request helpers
+    // ─────────────────────────────────────────
+
+    protected MvcResult postJson(String url, String jsonBody) throws Exception {
+        return mockMvc.perform(post(url)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonBody))
+                .andReturn();
+    }
+
+    protected MvcResult postJson(String url, String jsonBody, String token) throws Exception {
+        return mockMvc.perform(post(url)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", "Bearer " + token)
+                        .content(jsonBody))
+                .andReturn();
+    }
+
+    protected MvcResult getWithToken(String url, String token) throws Exception {
+        return mockMvc.perform(get(url)
+                        .header("Authorization", "Bearer " + token))
+                .andReturn();
+    }
+
+    // ─────────────────────────────────────────
+    // Result assertions
+    // ─────────────────────────────────────────
+
+    protected void assertSuccess(MvcResult result) throws Exception {
+        result.getResponse().setCharacterEncoding("UTF-8");
+        String content = result.getResponse().getContentAsString();
+        org.junit.jupiter.api.Assertions.assertTrue(
+                content.contains("\"code\":\"0000\"") || content.contains("\"code\": \"0000\""),
+                "Expected success response (code:0000) but got: " + content
+        );
+    }
+
+    protected void assertErrorCode(MvcResult result, String errorCode) throws Exception {
+        result.getResponse().setCharacterEncoding("UTF-8");
+        String content = result.getResponse().getContentAsString();
+        org.junit.jupiter.api.Assertions.assertTrue(
+                content.contains("\"code\":\"" + errorCode + "\"") || content.contains("\"code\": \"" + errorCode + "\""),
+                "Expected error code " + errorCode + " but got: " + content
+        );
+    }
+}

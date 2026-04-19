@@ -50,20 +50,21 @@ public class PointAccountService {
     }
 
     /**
-     * Atomically award points to a user.
-     * Updates total_points and available_points on the user record.
+     * Award points from a PointsEvent, recording productCode and sourceType on the transaction.
+     * This is the event-driven entry point used by PointsEventBus / PointsEventHandler.
      */
     @Transactional
-    public int awardPoints(Long userId, Integer amount, String type, String referenceId, String remark) {
-        if (amount == null || amount <= 0) return 0;
+    public int awardPointsFromEvent(PointsEvent event) {
+        if (event.points() <= 0) return 0;
 
+        Long userId = event.userId();
         User user = userMapper.selectById(userId);
         if (user == null) throw new BusinessException(ErrorCode.USER_NOT_FOUND);
 
         Long tenantId = user.getTenantId();
 
         // Atomic update with optimistic locking via SQL
-        int updated = userMapper.updatePointsAtomic(userId, amount, 0);
+        int updated = userMapper.updatePointsAtomic(userId, event.points(), 0);
         if (updated == 0) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "积分发放失败，请重试");
         }
@@ -74,23 +75,38 @@ public class PointAccountService {
         int frozenPoints = user.getFrozenPoints();
         int totalPoints = user.getTotalPoints();
 
-        // Record transaction
+        // Record transaction with productCode and sourceType
         PointTransactionEntity tx = new PointTransactionEntity();
         tx.setUserId(userId);
         tx.setTenantId(tenantId);
-        tx.setAmount(amount);
-        tx.setType(type);
-        tx.setReferenceId(referenceId);
+        tx.setAmount(event.points());
+        tx.setType(event.sourceType());
+        tx.setReferenceId(event.bizId());
+        tx.setProductCode(event.productCode());
+        tx.setSourceType(event.sourceType());
         tx.setBalanceAfter(availablePoints);
         tx.setFrozenAfter(frozenPoints);
-        tx.setRemark(remark);
+        tx.setRemark(event.remark());
         transactionMapper.insert(tx);
 
         // Auto update level
         updateLevel(userId, totalPoints);
 
-        log.info("Awarded {} points to user {}, new balance: {}", amount, userId, availablePoints);
+        log.info("Awarded {} points to user {} via event (product={}, source={}), new balance: {}",
+                event.points(), userId, event.productCode(), event.sourceType(), availablePoints);
         return availablePoints;
+    }
+
+    /**
+     * Atomically award points to a user.
+     * Updates total_points and available_points on the user record.
+     */
+    @Transactional
+    public int awardPoints(Long userId, Integer amount, String type, String referenceId, String remark) {
+        if (amount == null || amount <= 0) return 0;
+
+        PointsEvent event = new PointsEvent(null, userId, null, type, amount, referenceId, remark);
+        return awardPointsFromEvent(event);
     }
 
     /**
@@ -339,9 +355,14 @@ public class PointAccountService {
     }
 
     public Page<PointTransactionDTO> getTransactionList(Long userId, int page, int size) {
+        return getTransactionList(userId, null, page, size);
+    }
+
+    public Page<PointTransactionDTO> getTransactionList(Long userId, String productCode, int page, int size) {
         int effectiveSize = Math.min(size, MAX_PAGE_SIZE);
         LambdaQueryWrapper<PointTransactionEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(PointTransactionEntity::getUserId, userId)
+                .eq(productCode != null && !productCode.isBlank(), PointTransactionEntity::getProductCode, productCode)
                 .orderByDesc(PointTransactionEntity::getCreatedAt);
 
         // Use selectList + manual pagination to avoid TenantLineInnerInterceptor
@@ -359,6 +380,8 @@ public class PointAccountService {
                 d.setReferenceId(tx.getReferenceId());
                 d.setBalanceAfter(tx.getBalanceAfter());
                 d.setRemark(tx.getRemark());
+                d.setProductCode(tx.getProductCode());
+                d.setSourceType(tx.getSourceType());
                 d.setCreatedAt(tx.getCreatedAt());
                 return d;
             }).toList());

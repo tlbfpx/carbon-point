@@ -38,6 +38,10 @@
             <artifactId>carbon-system</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.carbonpoint</groupId>
+            <artifactId>carbon-walking</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <scope>provided</scope>

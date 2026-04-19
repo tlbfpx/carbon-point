@@ -27,7 +27,7 @@
         </dependency>
         <dependency>
             <groupId>com.carbonpoint</groupId>
-            <artifactId>carbon-checkin</artifactId>
+            <artifactId>carbon-stair</artifactId>
         </dependency>
         <dependency>
             <groupId>com.carbonpoint</groupId>
@@ -44,6 +44,10 @@
         <dependency>
             <groupId>com.carbonpoint</groupId>
             <artifactId>carbon-honor</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.carbonpoint</groupId>
+            <artifactId>carbon-walking</artifactId>
         </dependency>
 
         <dependency>

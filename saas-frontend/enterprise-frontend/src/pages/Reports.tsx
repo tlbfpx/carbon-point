@@ -28,6 +28,7 @@ import type { Dayjs } from 'dayjs';
 import { useAuthStore } from '@/store/authStore';
 import { getDashboardStats, getCheckInTrend, getPointsTrend, exportReport, DashboardStats, CheckInTrend, PointsTrend } from '@/api/reports';
 import { useBranding } from '@/components/BrandingProvider';
+import { extractArray } from '@/utils';
 
 // Chart & table accent colors
 const ACCENT_COLORS = {
@@ -92,13 +93,8 @@ const Reports: React.FC = () => {
     enabled: !!tenantId,
   });
 
-  const extractArray = <T,>(data: unknown): T[] => {
-    if (Array.isArray(data)) return data as T[];
-    if (data && typeof data === 'object' && 'data' in data) {
-      return (data as { data: T[] }).data;
-    }
-    return [];
-  };
+  const checkInTrend: CheckInTrend[] = extractArray<CheckInTrend>(checkInTrendData);
+  const pointsTrend: PointsTrend[] = extractArray<PointsTrend>(pointsTrendData);
 
   const stats: DashboardStats = (statsData as DashboardStats) || {
     todayCheckInCount: 0,
@@ -106,8 +102,6 @@ const Reports: React.FC = () => {
     activeUsers: 0,
     monthExchangeCount: 0,
   };
-  const checkInTrend: CheckInTrend[] = extractArray<CheckInTrend>(checkInTrendData);
-  const pointsTrend: PointsTrend[] = extractArray<PointsTrend>(pointsTrendData);
 
   const handleExport = (type: string) => {
     exportReport(tenantId, type, startDate, endDate).then((blob: Blob) => {
@@ -487,6 +481,105 @@ const Reports: React.FC = () => {
                 </div>
               )}
             </ResponsiveContainer>
+          </Card>
+        </Col>
+      </Row>
+
+      {/* Cross-Product Overview */}
+      <Row gutter={16} style={{ marginBottom: 24 }}>
+        <Col span={12}>
+          <Card
+            title={
+              <span style={{
+                fontFamily: 'Outfit, sans-serif',
+                fontSize: 18,
+                fontWeight: 600,
+                color: colors.textHeading,
+              }}>
+                产品积分分布
+              </span>
+            }
+            style={{
+              borderRadius: 16,
+              border: `1px solid ${colors.warmBorder}`,
+              boxShadow: '0 2px 16px rgba(0, 0, 0, 0.04)',
+            }}
+            styles={{ body: { padding: 24 } }}
+          >
+            <ResponsiveContainer width="100%" height={240} minWidth={300}>
+              <BarChart data={[
+                { name: '爬楼打卡', points: stats.todayPointsGranted, color: ACCENT_COLORS.blue },
+                { name: '走路积分', points: 0, color: ACCENT_COLORS.green },
+                { name: '商城兑换', points: stats.monthExchangeCount, color: ACCENT_COLORS.orange },
+              ]} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke={colors.warmBorder} strokeOpacity={0.5} />
+                <XAxis dataKey="name" style={{ fontFamily: 'Noto Sans SC, sans-serif', fontSize: 12 }} stroke={colors.textMuted} />
+                <YAxis style={{ fontFamily: 'Outfit, sans-serif', fontSize: 12 }} stroke={colors.textMuted} />
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: 12,
+                    border: `1px solid ${colors.warmBorder}`,
+                    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+                    fontFamily: 'Noto Sans SC, sans-serif',
+                  }}
+                />
+                <Bar dataKey="points" fill={ACCENT_COLORS.blue} name="积分" radius={[8, 8, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </Card>
+        </Col>
+        <Col span={12}>
+          <Card
+            title={
+              <span style={{
+                fontFamily: 'Outfit, sans-serif',
+                fontSize: 18,
+                fontWeight: 600,
+                color: colors.textHeading,
+              }}>
+                产品数据统计
+              </span>
+            }
+            style={{
+              borderRadius: 16,
+              border: `1px solid ${colors.warmBorder}`,
+              boxShadow: '0 2px 16px rgba(0, 0, 0, 0.04)',
+            }}
+            styles={{ body: { padding: 16 } }}
+          >
+            <Table
+              dataSource={[
+                { key: 'checkin', productName: '爬楼打卡', pointsIssued: stats.todayPointsGranted, transactionCount: stats.todayCheckInCount },
+                { key: 'walking', productName: '走路积分', pointsIssued: 0, transactionCount: 0 },
+                { key: 'mall', productName: '商城兑换', pointsIssued: 0, transactionCount: stats.monthExchangeCount },
+              ]}
+              pagination={false}
+              size="small"
+              columns={[
+                {
+                  title: '产品',
+                  dataIndex: 'productName',
+                  render: (text: string) => (
+                    <span style={{ fontFamily: 'Noto Sans SC, sans-serif', color: colors.textHeading }}>{text}</span>
+                  ),
+                },
+                {
+                  title: '积分发放',
+                  dataIndex: 'pointsIssued',
+                  render: (value: number) => (
+                    <span style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 600, color: colors.gradientGreen[0] }}>{value}</span>
+                  ),
+                },
+                {
+                  title: '交易次数',
+                  dataIndex: 'transactionCount',
+                  render: (value: number) => (
+                    <span style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 600, color: colors.gradientBlue[0] }}>{value}</span>
+                  ),
+                },
+              ]}
+              style={{ fontFamily: 'Noto Sans SC, sans-serif' }}
+            />
           </Card>
         </Col>
       </Row>

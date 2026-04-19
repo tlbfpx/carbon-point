@@ -20,16 +20,16 @@ public interface PackageProductFeatureMapper extends BaseMapper<PackageProductFe
 
     @Select("SELECT * FROM package_product_features WHERE package_id = #{packageId} AND product_id = #{productId}")
     List<PackageProductFeatureEntity> selectByPackageIdAndProductId(
-            @Param("packageId") Long packageId, @Param("productId") Long productId);
+            @Param("packageId") Long packageId, @Param("productId") String productId);
 
     @Select("SELECT * FROM package_product_features WHERE package_id = #{packageId}")
     List<PackageProductFeatureEntity> selectByPackageId(@Param("packageId") Long packageId);
 
     @Select("SELECT feature_id FROM package_product_features WHERE package_id = #{packageId} AND product_id = #{productId} AND is_enabled = 1")
-    List<String> selectEnabledFeatureIds(@Param("packageId") Long packageId, @Param("productId") Long productId);
+    List<String> selectEnabledFeatureIds(@Param("packageId") Long packageId, @Param("productId") String productId);
 
     @Delete("DELETE FROM package_product_features WHERE package_id = #{packageId} AND product_id = #{productId}")
-    int deleteByPackageIdAndProductId(@Param("packageId") Long packageId, @Param("productId") Long productId);
+    int deleteByPackageIdAndProductId(@Param("packageId") Long packageId, @Param("productId") String productId);
 
     @Delete("DELETE FROM package_product_features WHERE package_id = #{packageId}")
     int deleteByPackageId(@Param("packageId") Long packageId);

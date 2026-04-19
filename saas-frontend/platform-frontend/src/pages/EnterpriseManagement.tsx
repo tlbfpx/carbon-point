@@ -15,6 +15,9 @@ import {
   Statistic,
   Row,
   Col,
+  Empty,
+  Spin,
+  Typography,
 } from 'antd';
 import { GlassCard } from '@carbon-point/design-system';
 import {
@@ -23,6 +26,7 @@ import {
   CrownOutlined,
   ReloadOutlined,
   ExclamationCircleOutlined,
+  AppstoreOutlined,
 } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
@@ -35,9 +39,14 @@ import {
   getEnterpriseUsers,
   assignSuperAdmin,
   getPlatformStats,
+  getTenantProducts,
   Enterprise,
   EnterpriseUser,
+  TenantProductInfo,
 } from '@/api/platform';
+import { extractArray } from '@/utils';
+
+const { Text } = Typography;
 
 const EnterpriseManagement: React.FC = () => {
   const queryClient = useQueryClient();
@@ -51,6 +60,15 @@ const EnterpriseManagement: React.FC = () => {
   const [packageChangeConfirmOpen, setPackageChangeConfirmOpen] = useState(false);
   const [detailActiveTab, setDetailActiveTab] = useState('info');
   const [form] = Form.useForm();
+
+  const CATEGORY_COLOR_MAP: Record<string, string> = {
+    stairs_climbing: 'blue',
+    walking: 'green',
+  };
+  const CATEGORY_LABEL_MAP: Record<string, string> = {
+    stairs_climbing: '爬楼打卡',
+    walking: '走路计步',
+  };
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['enterprises', page, keyword, statusFilter],
@@ -75,13 +93,12 @@ const EnterpriseManagement: React.FC = () => {
     enabled: !!editingEnterprise?.id,
   });
 
-  const extractArray = <T,>(data: unknown): T[] => {
-    if (Array.isArray(data)) return data as T[];
-    if (data && typeof data === 'object' && 'data' in data) {
-      return (data as { data: T[] }).data;
-    }
-    return [];
-  };
+  const { data: tenantProductsData, isLoading: tenantProductsLoading } = useQuery({
+    queryKey: ['tenant-products', editingEnterprise?.id],
+    queryFn: () => getTenantProducts(editingEnterprise!.id),
+    enabled: !!editingEnterprise?.id && detailModalOpen && detailActiveTab === 'products',
+    retry: false,
+  });
 
   const createMutation = useMutation({
     mutationFn: createEnterprise,
@@ -96,8 +113,9 @@ const EnterpriseManagement: React.FC = () => {
         message.error(res.message || '创建失败');
       }
     },
-    onError: (err: any) => {
-      message.error(err?.response?.data?.message || '创建失败');
+    onError: (err: unknown) => {
+      const error = err as { response?: { data?: { message?: string } } };
+      message.error(error?.response?.data?.message || '创建失败');
     },
   });
 
@@ -113,8 +131,9 @@ const EnterpriseManagement: React.FC = () => {
         message.error(res.message || '状态更新失败');
       }
     },
-    onError: (err: any) => {
-      message.error(err?.response?.data?.message || '状态更新失败');
+    onError: (err: unknown) => {
+      const error = err as { response?: { data?: { message?: string } } };
+      message.error(error?.response?.data?.message || '状态更新失败');
     },
   });
 
@@ -130,8 +149,9 @@ const EnterpriseManagement: React.FC = () => {
         message.error(res.message || '套餐更换失败');
       }
     },
-    onError: (err: any) => {
-      message.error(err?.response?.data?.message || '套餐更换失败');
+    onError: (err: unknown) => {
+      const error = err as { response?: { data?: { message?: string } } };
+      message.error(error?.response?.data?.message || '套餐更换失败');
     },
   });
 
@@ -146,8 +166,9 @@ const EnterpriseManagement: React.FC = () => {
         message.error(res.message || '分配失败');
       }
     },
-    onError: (err: any) => {
-      message.error(err?.response?.data?.message || '分配失败');
+    onError: (err: unknown) => {
+      const error = err as { response?: { data?: { message?: string } } };
+      message.error(error?.response?.data?.message || '分配失败');
     },
   });
 
@@ -317,7 +338,7 @@ const EnterpriseManagement: React.FC = () => {
             <div><strong>企业名称：</strong>{editingEnterprise.name}</div>
             <div><strong>联系人：</strong>{editingEnterprise.contactName}</div>
             <div><strong>联系电话：</strong>{editingEnterprise.contactPhone}</div>
-            <div><strong>联系邮箱：</strong>{(editingEnterprise as any).contactEmail || '-'}</div>
+            <div><strong>联系邮箱：</strong>{editingEnterprise.contactEmail || '-'}</div>
           </div>
         </div>
 
@@ -368,6 +389,68 @@ const EnterpriseManagement: React.FC = () => {
           pagination={false}
           size="small"
         />
+      </div>
+    );
+  };
+
+  const renderDetailProducts = () => {
+    if (tenantProductsLoading) {
+      return (
+        <div style={{ textAlign: 'center', padding: 32 }}>
+          <Spin tip="加载中..." />
+        </div>
+      );
+    }
+    const products = tenantProductsData?.data || [];
+    if (!products || products.length === 0) {
+      return (
+        <div>
+          <Empty description="该企业尚未启用任何产品，请先绑定套餐" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+        </div>
+      );
+    }
+    return (
+      <div>
+        <Alert
+          type="info"
+          showIcon
+          icon={<AppstoreOutlined />}
+          message="已启用产品"
+          description="以下产品由企业绑定的套餐决定，更换套餐将自动更新可用产品列表。"
+          style={{ marginBottom: 16 }}
+        />
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          {products.map((product: TenantProductInfo) => (
+            <GlassCard
+              key={product.productId || product.productCode}
+              size="small"
+              hoverable
+              style={{ padding: '12px 16px' }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div>
+                  <div style={{ fontWeight: 500, marginBottom: 4 }}>{product.productName}</div>
+                  <Space size={4}>
+                    <Tag color={CATEGORY_COLOR_MAP[product.category] || 'default'}>
+                      {CATEGORY_LABEL_MAP[product.category] || product.category}
+                    </Tag>
+                    <Text type="secondary" style={{ fontSize: 12 }}>{product.productCode}</Text>
+                  </Space>
+                </div>
+              </div>
+              {product.featureConfig && Object.keys(product.featureConfig).length > 0 && (
+                <div style={{ marginTop: 8, borderTop: '1px solid #f0f0f0', paddingTop: 8 }}>
+                  <Text type="secondary" style={{ fontSize: 12 }}>功能配置:</Text>
+                  <div style={{ marginTop: 4, display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                    {Object.entries(product.featureConfig).map(([key, value]) => (
+                      <Tag key={key} style={{ fontSize: 11 }}>{key}: {String(value)}</Tag>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </GlassCard>
+          ))}
+        </div>
       </div>
     );
   };
@@ -562,6 +645,7 @@ const EnterpriseManagement: React.FC = () => {
             items={[
               { key: 'info', label: '基本信息', children: renderDetailInfo() },
               { key: 'users', label: '用户管理', children: renderDetailUsers() },
+              { key: 'products', label: '已启用产品', children: renderDetailProducts() },
             ]}
           />
         )}

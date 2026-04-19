@@ -23,8 +23,8 @@ public class PackageProductEntity {
     /** Package ID */
     private Long packageId;
 
-    /** Product ID */
-    private Long productId;
+    /** Product ID (UUID string matching platform_products.id) */
+    private String productId;
 
     /** Display sort order */
     private Integer sortOrder;

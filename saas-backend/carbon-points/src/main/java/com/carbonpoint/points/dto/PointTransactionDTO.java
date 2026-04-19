@@ -12,5 +12,7 @@ public class PointTransactionDTO {
     private Integer balanceAfter;
     private String remark;
     private String referenceId;
+    private String productCode;
+    private String sourceType;
     private LocalDateTime createdAt;
 }

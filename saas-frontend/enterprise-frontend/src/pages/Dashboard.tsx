@@ -42,6 +42,7 @@ import {
 } from '@carbon-point/design-system';
 import type { InsightData, QueryResult } from '@carbon-point/design-system';
 import { BRAND_PALETTE, darkThemeTokens } from '@carbon-point/design-system';
+import { extractArray } from '@/utils';
 
 const { Text } = Typography;
 
@@ -203,14 +204,6 @@ const EnterpriseDashboard: React.FC = () => {
     todayPointsGranted: 0,
     activeUsers: 0,
     monthExchangeCount: 0,
-  };
-
-  const extractArray = <T,>(data: unknown): T[] => {
-    if (Array.isArray(data)) return data as T[];
-    if (data && typeof data === 'object' && 'records' in data) {
-      return (data as { records: T[] }).records;
-    }
-    return [];
   };
 
   const checkInTrend: CheckInTrend[] = extractArray<CheckInTrend>(checkInTrendData);
