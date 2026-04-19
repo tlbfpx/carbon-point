@@ -38,16 +38,15 @@ carbon-app        # Spring Boot application entry point
 
 Base package: `com.carbonpoint`
 
-## Frontend Structure (Planned)
+## Frontend Structure
 
 ```
-apps/h5/           # User-facing H5 mobile (embedded in WeChat/APP WebView)
-apps/dashboard/    # Enterprise admin + Platform admin (single app, role-scoped menus)
-packages/ui/       # Shared UI components
-packages/api/      # Shared API layer
-packages/hooks/    # Shared React hooks
-packages/utils/    # Shared utilities
+saas-frontend/
+├── enterprise-frontend/   # Enterprise admin (port 3000)
+├── h5/                  # User-facing H5 mobile (port 3002, base: /h5/)
+└── platform-frontend/    # Platform admin (port 3001)
 ```
+Note: `packages/` has been inlined into each app — design-system, utils, and api layers are now local to each app for independent deployment.
 
 ## Architecture Decisions (Key)
 
@@ -74,6 +73,47 @@ packages/utils/    # Shared utilities
 | UX / technical / business / product improvements | `openspec/specs/` |
 | Complete DDL with indexes and partitioning | `openspec/review/ddl/carbon-point-schema.sql` |
 | Platform review report (4-expert audit) | `openspec/review/2026-04-11-platform-review.md` |
+
+## Project Structure
+
+```
+saas-backend/              # 后端多模块 Maven 项目
+saas-frontend/             # 前端独立应用（enterprise-frontend / h5 / platform-frontend）
+openspec/                  # 业务规范文档
+```
+
+## Build & Start Commands
+
+```bash
+# 后端 — 必须始终跳过测试编译
+cd saas-backend
+./mvnw clean package -Dmaven.test.skip=true   # 打包（跳过测试）
+java -jar carbon-app/target/carbon-app-1.0.0-SNAPSHOT.jar --spring.profiles.active=dev
+
+# 前端 — 各自独立启动
+cd saas-frontend
+pnpm --filter @carbon-point/enterprise-frontend dev   # 企业前端 :3000
+pnpm --filter @carbon-point/platform-frontend dev     # 平台前端 :3001
+pnpm --filter @carbon-point/h5 dev                   # H5 用户端 :3002
+```
+
+## Automated Testing Workflow
+
+**TDD / 批量测试原则：先跑完全部测试，再统一修复，不要边测边改。**
+
+1. 运行全部测试（后端优先）：
+   ```bash
+   cd saas-backend
+   ./mvnw test                          # 运行全部模块测试
+   cd ../saas-frontend
+   pnpm -r test                        # 运行全部前端测试
+   ```
+2. 收集所有失败的测试用例，不要逐个修复
+3. 按优先级排序（阻断性错误 > 功能性错误 > 警告）
+4. 从最根本的原因开始修复，修复后重新运行全部测试验证
+5. 重复直到全部通过
+
+**禁止**：在一个测试失败后立即修改代码再去跑下一个测试，这会导致测试顺序依赖和修复优先级混乱。
 
 ## Planned Build & Test Commands (Once Code Exists)
 

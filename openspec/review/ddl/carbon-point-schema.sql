@@ -196,6 +196,23 @@ CREATE TABLE check_in_records (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='打卡记录表';
 
 -- ============================================================
+-- Outbox 事件表（用于打卡积分发放事务一致性）
+-- ============================================================
+CREATE TABLE outbox_events (
+    id              BIGINT PRIMARY KEY AUTO_INCREMENT,
+    aggregate_type   VARCHAR(50) NOT NULL COMMENT '聚合根类型: check_in',
+    aggregate_id     BIGINT NOT NULL COMMENT '聚合根ID: check_in_record_id',
+    event_type       VARCHAR(50) NOT NULL COMMENT '事件类型: points_awarded',
+    payload         JSON NOT NULL COMMENT '事件payload: {userId, points, checkInRecordId}',
+    trace_id        VARCHAR(64) COMMENT '调用链trace ID',
+    created_at       DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    processed       TINYINT(1) NOT NULL DEFAULT 0 COMMENT '0=待处理, 1=已处理',
+    processed_at     DATETIME(3) COMMENT '处理时间',
+
+    INDEX idx_processed_created (processed, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Outbox 事件表（用于分布式事务最终一致性）';
+
+-- ============================================================
 -- 6. 积分账户与流水（分区表 — 核心大表）
 -- ============================================================
 

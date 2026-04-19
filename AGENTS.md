@@ -1,7 +1,7 @@
 # PROJECT KNOWLEDGE BASE
 
 **Generated:** 2026-04-08
-**Stage:** Specification (no source code yet)
+**Stage:** Implementation (backend + frontend with partial feature coverage)
 
 ## OVERVIEW
 
@@ -11,29 +11,24 @@ Carbon Point — 多租户 SaaS 碳积分打卡平台。通过爬楼梯打卡送
 
 ```
 carbon-point/
-├── openspec/
-│   ├── config.yaml                              # OpenSpec 全局配置
-│   ├── specs/                                   # 主规格文档（已落地）
-│   │   └── 2026-04-08-honor-system-mvp-design.md # 荣誉体系 MVP 设计
-│   └── changes/
-│       └── carbon-point-platform/               # 当前变更（平台完整设计）
-│           ├── proposal.md                      # 变更提案
-│           ├── design.md                        # 架构决策文档
-│           ├── tasks.md                         # 实施任务列表（13 组 ~70 项）
-│           └── specs/                           # 模块级规格
-│               ├── multi-tenant/spec.md         # 多租户
-│               ├── user-management/spec.md      # 用户管理
-│               ├── check-in/spec.md             # 打卡系统
-│               ├── point-engine/spec.md         # 积分规则引擎
-│               ├── point-account/spec.md        # 积分账户
-│               ├── virtual-mall/spec.md         # 虚拟商城
-│               ├── rbac/spec.md                 # 权限控制
-│               ├── reporting/spec.md            # 数据报表
-│               ├── h5-user-app/spec.md          # 用户端 H5
-│               ├── enterprise-admin/spec.md     # 企业管理后台
-│               └── platform-admin/spec.md       # 平台运营后台
-├── .claude/                                     # Claude skills & commands (OpenSpec)
-└── .opencode/                                   # OpenCode skills & commands (OpenSpec)
+├── openspec/                                  # 业务规范文档
+│   ├── specs/                                 # 主规格文档
+│   ├── changes/                               # OpenSpec 变更管理
+│   └── review/ddl/                            # 数据库 DDL
+├── saas-backend/                              # 后端多模块 Maven 项目
+│   ├── carbon-common/                        # 公共工具、统一响应、异常处理
+│   ├── carbon-system/                        # 用户、租户、RBAC、认证
+│   ├── carbon-checkin/                       # 打卡、时段规则、防并发
+│   ├── carbon-points/                        # 积分引擎、积分账户、等级
+│   ├── carbon-mall/                          # 虚拟商品、兑换、核销
+│   ├── carbon-report/                        # 数据报表、看板
+│   ├── carbon-honor/                         # 荣誉体系（等级/排行榜/徽章）
+│   └── carbon-app/                           # Spring Boot 启动模块
+├── saas-frontend/                            # 前端独立应用
+│   ├── enterprise-frontend/                   # 企业管理端（:3000）
+│   ├── h5/                                   # 用户 H5 端（:3002/h5/）
+│   └── platform-frontend/                    # 平台运营端（:3001）
+└── start.sh                                   # 一键启动脚本（支持 -i 重新打包）
 ```
 
 ## WHERE TO LOOK
@@ -71,16 +66,15 @@ carbon-report     # 数据报表、看板
 carbon-app        # Spring Boot 启动模块
 ```
 
-## FRONTEND STRUCTURE (Planned)
+## FRONTEND STRUCTURE
 
 ```
-apps/h5/           # 用户端 H5（嵌入 WebView）
-apps/dashboard/    # 企业后台 + 平台后台（登录身份区分）
-packages/ui/       # 共享 UI 组件
-packages/api/      # 共享 API 层
-packages/hooks/    # 共享 hooks
-packages/utils/    # 共享工具
+saas-frontend/
+├── enterprise-frontend/    # 企业管理端（端口 3000）
+├── h5/                    # 用户 H5 端（端口 3002，base: /h5/）
+└── platform-frontend/      # 平台运营端（端口 3001）
 ```
+注：`packages/` 已废弃，共享代码（design-system 等）内联至各 app 内部，各自独立运行。
 
 ## SPEC CONVENTIONS
 
@@ -116,15 +110,53 @@ packages/utils/    # 共享工具
 /opsx-archive       # 归档已完成变更
 ```
 
+## 构建与启动规范
+
+**后端启动必须跳过测试编译，禁止在启动命令中运行测试。**
+
+```bash
+# 方式一：直接启动（推荐）
+cd saas-backend
+./mvnw package -Dmaven.test.skip=true
+java -jar carbon-app/target/carbon-app-1.0.0-SNAPSHOT.jar --spring.profiles.active=dev
+
+# 方式二：使用一键脚本
+./start.sh          # 直接启动（使用已有 JAR）
+./start.sh -i       # 重新打包后再启动（跳过测试）
+```
+
+**自动化测试工作流（TDD 原则）：先跑完全部测试，再统一修复，禁止边测边改。**
+
+1. 运行全部测试：
+   ```bash
+   cd saas-backend && ./mvnw test                      # 后端全部测试
+   cd ../saas-frontend && pnpm -r test                 # 前端全部测试
+   ```
+2. 收集所有失败用例，按优先级排序（阻断性错误 > 功能性错误 > 警告）
+3. 从最根本的原因开始修复，修复后重新运行全部测试
+4. 重复直到全部通过
+
+**禁止行为**：一个测试失败后立即修改代码再去跑下一个测试，这会导致测试顺序依赖和修复优先级混乱。
+
+## Python 测试脚本规范
+
+所有 Python 测试脚本必须存放在 `scripts/` 目录下：
+
+```
+scripts/
+├── e2e/         # 端到端 API / UI 测试
+└── debug/       # 调试和巡检脚本
+```
+
 ## NOTES
 
-- 项目尚无源代码，当前阶段为规格定义
-- 所有业务规格在 `openspec/` 目录下，代码实现后结构会变化
+- 业务规范在 `openspec/` 目录下，代码实现以 `saas-backend/`（后端）和 `saas-frontend/`（前端）为准，规范与代码冲突时以规范为准
 - 积分计算链路顺序固定：时段匹配 → 随机基础 → 特殊日期倍率 → 等级系数 → 四舍五入 → 每日上限截断 → 连续打卡奖励
 - 平台管理员查询绕过租户拦截器（@InterceptorIgnore），需手动权限校验
 - 打卡防并发：数据库唯一索引 + Redis 分布式锁
 - 排行榜缓存 Redis，小时级更新
 - H5 需兼容微信小程序 WebView + APP WebView，注意内核版本差异
+- `start.sh` 是后端一键启动脚本，支持 `-i` 参数强制重新打包
 
 ## PROJECT ORGANIZATION
 

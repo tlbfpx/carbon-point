@@ -1,0 +1,173 @@
+name: Playwright E2E Tests
+
+on:
+  push:
+    branches: [main, develop, 'feature/**']
+  pull_request:
+    branches: [main, develop]
+
+concurrency:
+  group: pw-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # H5 E2E Tests
+  # ---------------------------------------------------------------------------
+  h5-e2e:
+    name: H5 E2E
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: ./saas-frontend
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium
+        working-directory: ./saas-frontend/h5
+
+      - name: Run H5 E2E tests
+        env:
+          CI: 'true'
+          PLAYWRIGHT_BASE_URL: ${{ vars.PLAYWRIGHT_BASE_URL || 'http://localhost:3000' }}
+          PLAYWRIGHT_API_BASE_URL: ${{ vars.PLAYWRIGHT_API_BASE_URL || 'http://localhost:8080' }}
+        run: pnpm --filter @carbon-point/h5 test:e2e
+        working-directory: ./saas-frontend
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: h5-e2e-results
+          path: saas-frontend/h5/e2e/reports/
+          retention-days: 14
+
+  # ---------------------------------------------------------------------------
+  # Enterprise Frontend E2E Tests
+  # ---------------------------------------------------------------------------
+  enterprise-e2e:
+    name: Enterprise E2E
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: ./saas-frontend
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium
+        working-directory: ./saas-frontend/enterprise-frontend
+
+      - name: Run Enterprise E2E tests
+        env:
+          CI: 'true'
+          PLAYWRIGHT_BASE_URL: ${{ vars.PLAYWRIGHT_BASE_URL || 'http://localhost:3000' }}
+          PLAYWRIGHT_API_BASE_URL: ${{ vars.PLAYWRIGHT_API_BASE_URL || 'http://localhost:8080' }}
+        run: pnpm --filter @carbon-point/enterprise-frontend test:e2e
+        working-directory: ./saas-frontend
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: enterprise-e2e-results
+          path: saas-frontend/enterprise-frontend/e2e/reports/
+          retention-days: 14
+
+  # ---------------------------------------------------------------------------
+  # Platform Frontend E2E Tests
+  # ---------------------------------------------------------------------------
+  platform-e2e:
+    name: Platform E2E
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: ./saas-frontend
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium
+        working-directory: ./saas-frontend/platform-frontend
+
+      - name: Run Platform E2E tests
+        env:
+          CI: 'true'
+          PLAYWRIGHT_BASE_URL: ${{ vars.PLAYWRIGHT_BASE_URL || 'http://localhost:3001' }}
+          PLAYWRIGHT_API_BASE_URL: ${{ vars.PLAYWRIGHT_API_BASE_URL || 'http://localhost:8080' }}
+        run: pnpm --filter @carbon-point/platform-frontend test:e2e
+        working-directory: ./saas-frontend
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: platform-e2e-results
+          path: saas-frontend/platform-frontend/e2e/reports/
+          retention-days: 14
+
+  # ---------------------------------------------------------------------------
+  # Shared API E2E Tests (run from root tests/e2e/)
+  # ---------------------------------------------------------------------------
+  api-e2e:
+    name: API E2E
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install root dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: .
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run API E2E tests
+        env:
+          CI: 'true'
+          PLAYWRIGHT_API_BASE_URL: ${{ vars.PLAYWRIGHT_API_BASE_URL || 'http://localhost:8080' }}
+        run: pnpm exec playwright test --config tests/e2e/playwright.config.ts --project=api
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: api-e2e-results
+          path: reports/
+          retention-days: 14
