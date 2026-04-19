@@ -2,10 +2,10 @@ package com.carbonpoint.app.integration;
 
 import com.carbonpoint.system.entity.User;
 import com.carbonpoint.system.mapper.UserMapper;
-import com.carbonpoint.checkin.entity.CheckInRecordEntity;
-import com.carbonpoint.checkin.entity.TimeSlotRule;
-import com.carbonpoint.checkin.mapper.CheckInRecordMapper;
-import com.carbonpoint.checkin.mapper.TimeSlotRuleMapper;
+import com.carbonpoint.stair.entity.CheckInRecordEntity;
+import com.carbonpoint.stair.entity.TimeSlotRule;
+import com.carbonpoint.stair.mapper.CheckInRecordMapper;
+import com.carbonpoint.stair.mapper.TimeSlotRuleMapper;
 import com.carbonpoint.points.entity.PointRule;
 import com.carbonpoint.points.mapper.PointRuleMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;

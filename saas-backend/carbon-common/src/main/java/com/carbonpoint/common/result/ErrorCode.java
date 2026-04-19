@@ -128,7 +128,12 @@ public enum ErrorCode {
     PACKAGE_NOT_FOUND("SYSTEM060", "套餐不存在"),
     PACKAGE_CODE_DUPLICATE("SYSTEM061", "套餐编码已存在"),
     PACKAGE_HAS_TENANTS("SYSTEM062", "该套餐已被企业绑定，无法删除"),
-    PACKAGE_IN_USE("SYSTEM063", "该套餐正在使用中，无法删除");
+    PACKAGE_IN_USE("SYSTEM063", "该套餐正在使用中，无法删除"),
+
+    // ── Walking  (11001–11100) ──────────────────────────────────────────────────
+    WALKING_ALREADY_CLAIMED("WALKING001", "今日步数已领取积分"),
+    WALKING_NO_STEP_DATA("WALKING002", "无法获取步数数据"),
+    WALKING_BELOW_THRESHOLD("WALKING003", "步数未达到领取门槛");
 
     private final String code;
     private final String message;

@@ -27,6 +27,12 @@ public class PointTransactionEntity {
     /** Business reference: check-in record id, order id, etc. */
     private String referenceId;
 
+    /** Product code: stair_climbing, walking, etc. */
+    private String productCode;
+
+    /** Source type: check_in, step_claim, streak_bonus, exchange, etc. */
+    private String sourceType;
+
     /** Available balance after this transaction */
     private Integer balanceAfter;
 

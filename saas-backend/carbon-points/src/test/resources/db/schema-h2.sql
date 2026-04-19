@@ -54,6 +54,8 @@ CREATE TABLE IF NOT EXISTS point_transactions (
     amount INT NOT NULL,
     type VARCHAR(30) NOT NULL,
     reference_id VARCHAR(64),
+    product_code VARCHAR(30),
+    source_type VARCHAR(30),
     balance_after INT NOT NULL,
     frozen_after INT NOT NULL DEFAULT 0,
     remark VARCHAR(200),

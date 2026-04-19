@@ -48,8 +48,9 @@ public class PointsController {
     public Result<Page<PointTransactionDTO>> getMyTransactions(
             @AuthenticationPrincipal JwtUserPrincipal principal,
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        return Result.success(pointAccountService.getTransactionList(principal.getUserId(), page, size));
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String productCode) {
+        return Result.success(pointAccountService.getTransactionList(principal.getUserId(), productCode, page, size));
     }
 
     // --- Admin endpoints (permission-based) ---
@@ -80,8 +81,9 @@ public class PointsController {
     public Result<Page<PointTransactionDTO>> getUserTransactions(
             @RequestParam Long userId,
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        return Result.success(pointAccountService.getTransactionList(userId, page, size));
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String productCode) {
+        return Result.success(pointAccountService.getTransactionList(userId, productCode, page, size));
     }
 
     /**

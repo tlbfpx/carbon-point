@@ -1,9 +1,9 @@
 package com.carbonpoint.app.integration;
 
-import com.carbonpoint.checkin.entity.CheckInRecordEntity;
-import com.carbonpoint.checkin.entity.TimeSlotRule;
-import com.carbonpoint.checkin.mapper.CheckInRecordMapper;
-import com.carbonpoint.checkin.mapper.TimeSlotRuleMapper;
+import com.carbonpoint.stair.entity.CheckInRecordEntity;
+import com.carbonpoint.stair.entity.TimeSlotRule;
+import com.carbonpoint.stair.mapper.CheckInRecordMapper;
+import com.carbonpoint.stair.mapper.TimeSlotRuleMapper;
 import com.carbonpoint.common.entity.PointTransactionEntity;
 import com.carbonpoint.common.mapper.PointTransactionMapper;
 import com.carbonpoint.points.LevelConstants;

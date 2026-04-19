@@ -16,10 +16,13 @@
         <module>carbon-common</module>
         <module>carbon-system</module>
         <module>carbon-checkin</module>
+        <module>carbon-stair</module>
         <module>carbon-points</module>
         <module>carbon-mall</module>
         <module>carbon-report</module>
         <module>carbon-honor</module>
+        <module>carbon-platform</module>
+        <module>carbon-walking</module>
         <module>carbon-app</module>
     </modules>
 
@@ -152,6 +155,11 @@
             </dependency>
             <dependency>
                 <groupId>com.carbonpoint</groupId>
+                <artifactId>carbon-stair</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.carbonpoint</groupId>
                 <artifactId>carbon-points</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -168,6 +176,16 @@
             <dependency>
                 <groupId>com.carbonpoint</groupId>
                 <artifactId>carbon-honor</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.carbonpoint</groupId>
+                <artifactId>carbon-platform</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.carbonpoint</groupId>
+                <artifactId>carbon-walking</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>
