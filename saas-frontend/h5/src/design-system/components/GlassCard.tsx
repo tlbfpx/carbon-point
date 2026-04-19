@@ -4,11 +4,9 @@
  */
 
 import React, { useMemo } from 'react';
-import { Card, CardProps } from 'antd';
 import { CSSProperties } from 'react';
-import { liquidGlassBase, liquidGlassHover, gradientBorder, noiseTexture } from '../theme/liquid-glass';
 
-export interface GlassCardProps extends Omit<CardProps, 'styles'> {
+export interface GlassCardProps {
   /**
    * 是否启用渐变边框
    */
@@ -54,7 +52,6 @@ export const GlassCard: React.FC<GlassCardProps> = ({
   style,
   className,
   children,
-  ...cardProps
 }) => {
   // 动态样式计算
   const glassStyles = useMemo(() => {
@@ -163,17 +160,13 @@ export const GlassCard: React.FC<GlassCardProps> = ({
   };
 
   return (
-    <Card
-      {...cardProps}
+    <div
       style={mergedStyles}
       className={className}
-      styles={{
-        body: contentStyle,
-      }}
     >
       {enableNoise && <div className="cp-noise" />}
-      {children}
-    </Card>
+      <div style={contentStyle}>{children}</div>
+    </div>
   );
 };
 

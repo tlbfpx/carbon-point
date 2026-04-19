@@ -16,7 +16,7 @@ import RegisterPage from '@/pages/RegisterPage';
 import NotificationPage from '@/pages/NotificationPage';
 import { useAuthStore } from '@/store/authStore';
 import ErrorBoundary from '@/components/ErrorBoundary';
-import { routeLogger } from '@carbon-point/utils';
+import { routeLogger } from '@/utils/logger';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);

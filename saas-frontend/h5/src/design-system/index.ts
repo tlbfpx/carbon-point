@@ -44,24 +44,8 @@ export { hexToRgb } from './theme/liquid-glass';
 export { GlassCard, GlassCardColumn, GlassCardStat } from './components/GlassCard';
 export type { GlassCardProps, GlassCardStatProps } from './components/GlassCard';
 
-// AIAssistant - AI 助手浮窗
-export { AIAssistant } from './components/AIAssistant';
-export type { AIAssistantProps, AIMessage, AIAction } from './components/AIAssistant';
-
-// InsightBanner - 智能洞察横幅
-export { InsightBanner, useInsightBanner } from './components/InsightBanner';
-export type { InsightBannerProps, InsightData } from './components/InsightBanner';
-
-// NaturalLanguageQuery - 自然语言查询
-export { NaturalLanguageQuery } from './components/NaturalLanguageQuery';
-export type { NaturalLanguageQueryProps, QueryResult } from './components/NaturalLanguageQuery';
-
-// ============================================================
-// Layouts / 布局系统
-// ============================================================
-
-export { EnterpriseLayout, LayoutFooter, PageHeader, BentoGrid, BentoItem } from './layouts/EnterpriseLayout';
-export type { EnterpriseLayoutProps, NavItem } from './layouts/EnterpriseLayout';
+// Note: AIAssistant, InsightBanner, NaturalLanguageQuery, EnterpriseLayout
+// are desktop-only components (antd-based) — not included in h5 (antd-mobile)
 
 // ============================================================
 // 设计系统配置

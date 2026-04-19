@@ -1,5 +1,5 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
-import { componentLogger } from '@carbon-point/utils';
+import { componentLogger } from '@/utils/logger';
 
 interface Props {
   children: ReactNode;
