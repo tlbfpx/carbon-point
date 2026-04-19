@@ -1,3 +1,696 @@
+# Specs（设计规格文档合并）
+
+---
+
+## 文件：DEPLOY.md
+
+# Carbon Point 生产部署指南
+
+> 版本: 1.0.0 | 更新日期: 2026-04-12
+
+## 目录
+
+- [环境要求](#环境要求)
+- [数据库迁移](#数据库迁移)
+- [环境变量配置](#环境变量配置)
+- [启动顺序](#启动顺序)
+- [健康检查](#健康检查)
+- [回滚步骤](#回滚步骤)
+
+---
+
+## 环境要求
+
+### 运行时依赖
+
+| 组件 | 版本要求 | 最小配置 | 推荐配置 |
+|------|----------|----------|----------|
+| Java (JDK) | 21+ | 2核 CPU / 4GB RAM | 4核 CPU / 8GB RAM |
+| MySQL | 8.0+ | 2核 CPU / 4GB RAM / 50GB 磁盘 | 4核 CPU / 16GB RAM / 200GB SSD |
+| Redis | 7.0+ | 1核 CPU / 2GB RAM | 2核 CPU / 4GB RAM |
+| Nginx | 1.25+ | 1核 CPU / 1GB RAM | 2核 CPU / 2GB RAM |
+
+### 软件依赖版本（已在 Dockerfile 中固定）
+
+- **Spring Boot**: 3.2.0
+- **MyBatis-Plus**: 最新兼容版
+- **Java**: Eclipse Temurin 21 (Alpine Linux)
+
+---
+
+## 数据库迁移
+
+### 方式一：Docker Compose 自动初始化（推荐）
+
+首次部署时，`docker-compose.prod.yml` 会自动通过 `docker-entrypoint-initdb.d` 加载 `docs/review/ddl/carbon-point-schema.sql`。
+
+```bash
+# 确认 DDL 文件存在
+ls docs/review/ddl/carbon-point-schema.sql
+
+# 启动数据库（会自动执行 DDL）
+docker-compose -f docker-compose.prod.yml up -d mysql
+```
+
+### 方式二：手动迁移（生产环境推荐）
+
+```bash
+# 1. 备份现有数据库（如果存在）
+mysqldump -h <host> -u root -p --single-transaction --quick carbon_point > backup_$(date +%Y%m%d_%H%M%S).sql
+
+# 2. 创建数据库（如果不存在）
+mysql -h <host> -u root -p -e "CREATE DATABASE IF NOT EXISTS carbon_point CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+
+# 3. 执行 DDL 迁移
+mysql -h <host> -u root -p carbon_point < docs/review/ddl/carbon-point-schema.sql
+
+# 4. 验证表结构
+mysql -h <host> -u root -p carbon_point -e "SHOW TABLES;" | wc -l
+# 预期输出: 25（25 张表）
+```
+
+### 迁移检查清单
+
+- [ ] 所有 25 张表创建成功
+- [ ] 索引创建成功（`SHOW INDEX FROM <table>`）
+- [ ] 外键约束验证
+- [ ] 默认数据插入成功（预设角色模板、默认时段规则）
+
+---
+
+## 环境变量配置
+
+### 生产环境变量文件 `.env.prod`
+
+从示例文件复制并配置：
+
+```bash
+# 复制示例文件
+cp .env.example.prod .env.prod
+
+# 生成并设置强密码
+# JWT Secret（64位随机字符串）
+sed -i 's|JWT_SECRET=<请生成64位随机字符串: openssl rand -base64 48>|JWT_SECRET=$(openssl rand -base64 48)|' .env.prod
+
+# 编辑 .env.prod，替换所有 <...> 占位符为真实值
+vim .env.prod
+```
+
+> 完整配置项说明见 `.env.example.prod` 文件注释。
+
+### 密钥生成命令
+
+```bash
+# JWT Secret（64位随机字符串）
+openssl rand -base64 48
+
+# MySQL 强密码
+openssl rand -base64 24
+
+# Redis 密码
+openssl rand -base64 16
+```
+
+### 敏感信息管理
+
+- **禁止** 将 `.env.prod` 提交到版本控制系统
+- **推荐** 使用 Vault 或云厂商 Secret Manager 管理密钥
+- 生产环境必须修改所有默认值
+
+---
+
+## 启动顺序
+
+### 方式一：Docker Compose 一键启动（推荐）
+
+```bash
+# 1. 准备环境变量文件
+cp .env.example .env.prod
+# 编辑 .env.prod 填入真实值
+
+# 2. 构建并启动所有服务
+docker-compose -f docker-compose.prod.yml up -d
+
+# 3. 查看启动日志
+docker-compose -f docker-compose.prod.yml logs -f app
+
+# 4. 验证所有服务状态
+docker-compose -f docker-compose.prod.yml ps
+```
+
+### 方式二：手动分步启动
+
+```bash
+# 1. 启动基础设施（必须先启动）
+docker-compose -f docker-compose.prod.yml up -d mysql redis
+
+# 2. 等待 MySQL 就绪（大约 30 秒）
+until docker exec carbon-point-mysql mysqladmin ping -h localhost -uroot -p"$DB_PASSWORD" &>/dev/null; do
+    echo "Waiting for MySQL..."
+    sleep 2
+done
+
+# 3. 等待 Redis 就绪
+until docker exec carbon-point-redis redis-cli ping 2>/dev/null | grep -q PONG; do
+    echo "Waiting for Redis..."
+    sleep 1
+done
+
+# 4. 启动应用
+docker-compose -f docker-compose.prod.yml up -d app
+
+# 5. 启动 Nginx（确保前端 dist 已就位）
+docker-compose -f docker-compose.prod.yml up -d nginx
+
+# 6. 最终状态确认
+docker-compose -f docker-compose.prod.yml ps
+```
+
+### 启动顺序依赖图
+
+```
+MySQL (健康检查通过)
+    ↓
+Redis
+    ↓
+Spring Boot App (健康检查通过)
+    ↓
+Nginx (静态资源就位)
+```
+
+---
+
+## 健康检查
+
+### 1. Docker 服务健康状态
+
+```bash
+# 检查所有容器状态
+docker-compose -f docker-compose.prod.yml ps
+
+# 预期输出：所有容器状态为 "healthy" 或 "running"
+# - carbon-point-app      healthy
+# - carbon-point-mysql    healthy
+# - carbon-point-redis     running
+# - carbon-point-nginx     running
+```
+
+### 2. 应用健康端点
+
+```bash
+# 基础健康检查
+curl -s http://localhost:8080/actuator/health
+# 预期: {"status":"UP"}
+
+# 详细健康信息
+curl -s http://localhost:8080/actuator/health/details | jq
+```
+
+### 3. 数据库连接验证
+
+```bash
+docker exec carbon-point-mysql mysql -uroot -p"$DB_PASSWORD" -e \
+  "SELECT COUNT(*) as table_count FROM information_schema.tables WHERE table_schema='carbon_point';"
+# 预期: 25
+```
+
+### 4. Redis 连接验证
+
+```bash
+docker exec carbon-point-redis redis-cli -a "<password>" ping
+# 预期: PONG
+```
+
+### 5. Nginx 代理验证
+
+```bash
+# API 代理
+curl -s -o /dev/null -w "%{http_code}" http://localhost/api/auth/captcha
+# 预期: 200
+
+# 前端静态资源
+curl -s -o /dev/null -w "%{http_code}" http://localhost/
+# 预期: 200
+
+# 管理后台
+curl -s -o /dev/null -w "%{http_code}" http://localhost/dashboard/
+# 预期: 200
+```
+
+### 6. 关键功能冒烟测试
+
+```bash
+# 登录接口
+curl -s -X POST http://localhost/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"phone":"13800138000","password":"test123","captchaKey":"test","captchaCode":"000000"}' \
+  | jq '.code'
+
+# 预期: 200 (登录成功，返回 token)
+```
+
+### 7. 日志检查
+
+```bash
+# 应用日志（实时）
+docker-compose -f docker-compose.prod.yml logs -f app --tail=100
+
+# 错误日志过滤
+docker-compose -f docker-compose.prod.yml logs app | grep -i error
+
+# Nginx 错误日志
+docker exec carbon-point-nginx cat /var/log/nginx/error.log | tail -20
+```
+
+---
+
+## 回滚步骤
+
+### 方案一：基于 Docker 镜像回滚
+
+```bash
+# 1. 查看可用镜像版本（假设使用镜像标签）
+docker images | grep carbon-point
+
+# 2. 停止当前服务
+docker-compose -f docker-compose.prod.yml down
+
+# 3. 修改 docker-compose.prod.yml 中的镜像版本
+# 例如: image: carbon-point/app:1.0.0 -> image: carbon-point/app:0.9.0
+
+# 4. 重新启动
+docker-compose -f docker-compose.prod.yml up -d
+
+# 5. 验证回滚
+curl -s http://localhost:8080/actuator/health
+```
+
+### 方案二：基于 JAR 文件回滚
+
+```bash
+# 1. 备份当前 JAR
+docker cp carbon-point-app:/app/app.jar ./app.jar.backup
+
+# 2. 替换 JAR 文件
+docker cp ./app.jar.old carbon-point-app:/app/app.jar
+
+# 3. 重启应用
+docker restart carbon-point-app
+
+# 4. 等待应用启动并验证
+sleep 30 && curl -s http://localhost:8080/actuator/health
+```
+
+### 方案三：数据库回滚（如果迁移有问题）
+
+```bash
+# 1. 停止应用（防止写入）
+docker-compose -f docker-compose.prod.yml stop app
+
+# 2. 恢复数据库
+mysql -h <host> -u root -p carbon_point < backup_YYYYMMDD_HHMMSS.sql
+
+# 3. 重启应用
+docker-compose -f docker-compose.prod.yml start app
+
+# 4. 验证
+curl -s http://localhost:8080/actuator/health
+```
+
+### 回滚检查清单
+
+- [ ] 服务停止 / 隔离
+- [ ] 数据已恢复到上一版本状态
+- [ ] 应用重启成功
+- [ ] 健康检查通过
+- [ ] 关键业务流程验证通过
+- [ ] 通知相关人员
+
+---
+
+## 附录
+
+### 常用运维命令
+
+```bash
+# 查看资源使用
+docker stats --no-stream
+
+# 进入应用容器
+docker exec -it carbon-point-app sh
+
+# 进入数据库
+docker exec -it carbon-point-mysql mysql -uroot -p"$DB_PASSWORD" carbon_point
+
+# 重启单个服务
+docker-compose -f docker-compose.prod.yml restart app
+
+# 查看应用日志（实时）
+docker-compose -f docker-compose.prod.yml logs -f --tail=50 app
+
+# 清理未使用资源
+docker system prune -f
+
+# 完全重建
+docker-compose -f docker-compose.prod.yml down -v
+docker-compose -f docker-compose.prod.yml up -d --build
+```
+
+### 联系方式
+
+- 技术支持: support@carbonpoint.com
+- 紧急联系: +86-XXX-XXXX-XXXX
+- GitHub Issues: https://github.com/your-org/carbon-point/issues
+
+---
+
+## 文件：e2e_report.md
+
+## 用户视角 E2E 测试
+
+**测试时间**: 2026-04-12
+**测试环境**: localhost (H5: http://localhost:8081/h5/, App: http://localhost:9090, Dashboard: http://localhost:8081/dashboard/)
+
+---
+
+### 测试结果总览
+
+| 功能 | 步骤 | 预期 | 实际 | 结果 |
+|------|------|------|------|------|
+| H5 页面加载 | 访问首页 | 跳转到登录页 | 跳转到 /login，显示登录表单 | **PASS** |
+| H5 登录页 | 页面包含手机号+密码输入框 | 有登录表单 | 有手机号、密码输入框和登录按钮 | **PASS** |
+| H5 注册页 | 点击注册链接 | 显示注册表单 | 显示手机号、验证码、密码、确认密码、邀请码表单 | **PASS** |
+| H5 登录 | 输入正确账号密码 | 登录成功 | HTTP 500 系统内部错误 | **FAIL** |
+| H5 注册 | 输入手机号+验证码+密码 | 注册成功或提示验证码 | 需要短信验证码（无短信网关，无法测试） | **BLOCKED** |
+| H5 Dashboard 加载 | 访问 Dashboard | 显示管理后台 | JS 资源 404，页面空白 | **FAIL** |
+| H5 Dashboard 登录 | 输入管理员账号密码 | 登录成功 | Dashboard 无法加载，无法测试 | **BLOCKED** |
+| 打卡功能 | 登录后进入打卡页 | 显示时段和打卡按钮 | 因登录失败而无法测试 | **BLOCKED** |
+| 积分功能 | 登录后查看积分 | 显示积分余额和等级 | 因登录失败而无法测试 | **BLOCKED** |
+| 商城功能 | 登录后浏览商品 | 显示商品列表 | 因登录失败而无法测试 | **BLOCKED** |
+| 个人中心 | 登录后修改个人信息 | 可编辑昵称/头像 | 因登录失败而无法测试 | **BLOCKED** |
+
+---
+
+### 发现的问题
+
+#### 🔴 P0 - 阻断性问题（系统不可用）
+
+**1. H5 登录 API 返回 500（根因：数据库 Schema 不匹配）**
+- **现象**: 调用 `POST /api/auth/login` 返回 `{"data":null,"code":500,"message":"系统内部错误，请稍后重试"}`
+- **根因**: `LoginSecurityLogEntity` 实体类字段与 `login_security_logs` 数据库表 Schema 不一致：
+  - 实体有 `ip`、`status`、`fail_reason`、`loginType`、`userType`、`location` 等字段
+  - 数据库实际列名为 `ip_address`、`result`、`geo_city`、`login_method`、`user_type` 等
+  - INSERT 时报 `SQLSyntaxErrorException: Unknown column 'ip' in 'field list'`
+- **影响范围**: 所有用户无法登录 H5
+- **已找到用户**: 数据库中存在用户 `13800138001`（密码 `password123`）
+- **修复建议**: 在 `LoginSecurityLogEntity.java` 中为每个不匹配的字段添加 `@TableField("actual_column_name")` 注解，例如 `@TableField("result") private String status;`
+
+**2. H5 注册页依赖短信验证码（无短信网关）**
+- **现象**: 注册页需要短信验证码，但系统中没有短信服务
+- **影响范围**: 新用户无法注册
+- **修复建议**: Phase 1 中增加测试短信网关（如 Redis 存储验证码），或提供测试验证码接口
+
+**3. Dashboard 所有 JS 资源返回 404**
+- **现象**: Dashboard HTML 引用 `/assets/*.js`（绝对路径），但 nginx 配置从 `dist/h5/assets/` 读取，而 H5 和 Dashboard 的 JS hash 不同，导致 404
+- **根因**: Vite build 配置中 `base` 默认为 `/`，Dashboard 和 H5 共享同一资产路径，但各自的 JS hash 不同
+- **影响范围**: Dashboard 管理后台完全不可用
+- **修复建议**:
+  1. 修改 Dashboard 的 `vite.config.ts`：`base: '/dashboard/'`
+  2. 或修改 nginx 配置，为 Dashboard 添加独立的 `/dashboard/assets/` 路径映射
+
+#### 🟡 P1 - 功能性缺陷
+
+**4. tenants 表为空**
+- **现象**: `SELECT * FROM tenants;` 返回空结果
+- **根因**: 缺少租户初始化数据，而用户表中存在 `tenant_id=1` 的用户
+- **影响**: 登录时无法验证租户状态，可能导致业务逻辑异常
+- **修复建议**: 添加租户初始化数据
+
+**5. 图形验证码生成失败（500）**
+- **现象**: `GET /api/auth/captcha` 返回 500
+- **根因**: CaptchaService 使用 Arial/Tahoma/Verdana/Georgia 字体，但 Docker 容器中只有 DejaVu 系列字体，导致 `Font` 实例化失败
+- **影响**: 需要验证码时无法生成图片，阻断登录
+- **修复建议**: 将 `CaptchaService.java` 中的字体改为容器中存在的字体（如 DejaVu Sans）
+
+**6. Docker 容器健康检查失败**
+- **现象**: `docker ps` 显示 `carbon-point-app` 状态为 `unhealthy`（失败 114 次）
+- **根因**: healthcheck 使用 `wget http://localhost:8080/actuator/health`，但 actuator 端点被 Spring Security 保护返回 401
+- **影响**: Kubernetes/Docker Compose 无法正确判断容器健康状态
+- **修复建议**: 在 Security 配置中为 `/actuator/health` 添加免认证访问
+
+#### 🟠 P2 - 代码质量/Security 问题
+
+**7. 多个 Schema 不匹配（已发现 2 处）**
+- `login_security_logs`: 实体字段名与数据库列名不一致
+- `platform_admins`: 实体期望 `password` 列，数据库中为 `password_hash`
+- **修复建议**: 统一使用 MyBatis-Plus 约定：`user_id` → `user_id`（驼峰转下划线），或显式使用 `@TableField` 注解
+
+**8. 登录安全日志 user_type 未赋值**
+- **现象**: `Field 'user_type' doesn't have a default value` 导致 INSERT 失败
+- **根因**: `LoginSecurityLogEntity.userType` 未被设置
+- **影响**: 登录失败时的日志记录失败
+- **修复建议**: 在 `LoginSecurityLogService.logFailure()` 中添加 `entity.setUserType("USER")`
+
+---
+
+### 发现的用户账号
+
+| 手机号 | 密码 | 角色 |
+|--------|------|------|
+| 13800138001 | password123 | 企业管理员（tenant_id=1） |
+| 13800138002 | （未知） | 普通员工 |
+| 13800138003 | （未知） | 普通员工 |
+| 13800138004 | （未知） | 已禁用 |
+| 13800138005 | （未知） | 普通员工 |
+
+> 注：密码通过 Argon2id 哈希验证，`13800138001` 的密码为 `password123`
+
+---
+
+### 截图
+
+| 截图 | 描述 |
+|------|------|
+| `/tmp/h5_home.png` | H5 首页初始加载 |
+| `/tmp/h5_root.png` | H5 登录页重定向后 |
+| `/tmp/h5_01_login.png` | H5 登录页 |
+| `/tmp/h5_02_register.png` | H5 注册页 |
+| `/tmp/dashboard_login.png` | Dashboard 登录页（JS 404） |
+| `/tmp/dashboard_debug.png` | Dashboard 调试截图 |
+
+---
+
+### 总结
+
+**系统当前状态：生产环境不可用**
+
+- H5 用户端：登录 API 因 Schema 不匹配完全不可用
+- Dashboard 管理端：前端资源 404，完全不可用
+- 所有需要认证的功能（打卡、积分、商城、个人中心）均因登录失败而无法测试
+
+**建议优先级**:
+1. 修复 `LoginSecurityLogEntity` Schema 映射（最紧急，阻断所有登录）
+2. 修复 Dashboard Vite build 配置（次紧急）
+3. 添加租户初始化数据
+4. 修复验证码字体问题
+5. 修复 Docker healthcheck 配置
+6. 全面检查并修复所有 Schema 不匹配问题
+
+---
+
+## 文件：findings.md
+
+# Findings & Decisions
+
+## Requirements
+
+### 来自 proposal.md
+- 多租户 SaaS 平台，支持企业注册、开通、停用的全生命周期管理
+- 用户端 H5 应用（嵌入微信小程序 WebView 和 APP WebView）：打卡、积分查看、商城兑换
+- 企业管理后台：员工管理、积分规则引擎配置、虚拟商品管理、订单管理、积分运营、角色权限管理
+- 平台运营后台：企业管理、全平台数据看板、系统管理
+- 打卡积分采用时段随机机制
+- 积分规则引擎：时段规则、连续打卡奖励、特殊日期翻倍、用户等级系数、每日积分上限
+- RBAC 权限体系，菜单+按钮+API 三级控制，每企业独立
+- 用户通过企业邀请链接或管理员批量导入加入企业，一人仅属一企业
+- 虚拟商品（优惠券码、直充、权益激活），支持核销管理
+
+### 来自 tasks.md（15个模块 ~110+ 任务项）
+1. 项目初始化与基础设施
+2. 数据库 Schema 与公共模块
+3. 多租户与企业租户管理（multi-tenant）
+4. 用户管理（user-management）
+5. RBAC 权限体系（rbac）
+6. 积分规则引擎（point-engine）
+7. 打卡系统（check-in）
+8. 积分账户（point-account）
+9. 虚拟积分商城（virtual-mall）
+10. 数据报表（reporting）
+11. 平台运营后台（platform-admin）
+12. 用户端 H5 完善
+13. 登录系统安全增强
+14. 通知/消息系统（notification）
+15. 集成测试与部署
+
+## Technical Decisions
+
+### 1. 多租户隔离方案：共享数据库 + tenant_id
+| Decision | Rationale |
+|----------|-----------|
+| 所有租户共享一个 MySQL 数据库，通过 tenant_id 字段实现逻辑隔离 | 初期企业数量预计几百以内，逻辑隔离足够；运维成本最低；MyBatis-Plus TenantLineInnerInterceptor 成熟可用；后续可迁移到 Schema 隔离或独立库 |
+
+**备选方案**：
+- 每企业独立数据库：数据物理隔离更安全，但运维复杂度高，当前规模不需要
+- Schema 隔离：折中方案，但 MyBatis-Plus 支持不如字段隔离成熟
+
+### 2. 前端架构：pnpm Monorepo
+| Decision | Rationale |
+|----------|-----------|
+| pnpm workspace，apps/h5（用户端）+ apps/dashboard（企业后台+平台后台合并）+ packages/（共享） | 企业后台和平台后台 UI 结构类似（都是后台管理面板），合并一套代码通过登录身份区分菜单；H5 交互模式完全不同（移动端、打卡动画），独立应用更灵活；共享 packages 避免重复 |
+
+### 3. 积分规则引擎：JSON 配置 + 规则链执行
+| Decision | Rationale |
+|----------|-----------|
+| point_rules 表存储规则配置，type 字段区分规则类型，config JSON 字段存储具体参数 | JSON config 灵活，不同规则类型可存储不同结构参数，无需频繁改表；规则链模式可扩展，新增规则类型只需新增 type 枚举和对应计算逻辑 |
+
+**规则执行顺序（固定，不可 reorder）**：
+1. 匹配时段规则 → 随机基础积分
+2. 检查特殊日期 → 乘以倍率
+3. 检查用户等级 → 乘以系数
+4. 四舍五入取整
+5. 检查每日积分上限 → 截断
+6. 记录打卡 → 检查连续打卡 → 发放额外奖励
+
+### 4. RBAC 权限：用户→角色→权限，每租户独立
+| Decision | Rationale |
+|----------|-----------|
+| 标准 RBAC 模型，roles / role_permissions / user_roles 三张表，每租户独立角色定义 | 权限树按模块划分（dashboard/member/rule/product/order/point/report）；预设角色模板（超管/运营/客服/商品管理/只读）；支持企业自定义角色；最后超管不可被降级或删除；前端动态渲染菜单和按钮，后端 API 层做权限校验拦截 |
+
+### 5. 虚拟商品类型与核销
+| Decision | Rationale |
+|----------|-----------|
+| products 表 type 字段区分：coupon（券码）/ recharge（直充）/ privilege（权益） | 统一由 exchange_orders 表管理订单状态流转：pending → fulfilled → used / expired / cancelled；fulfillment_config JSON 存储各类型配置 |
+
+### 6. 用户注册与绑定
+| Decision | Rationale |
+|----------|-----------|
+| 两种路径：企业邀请链接 + 管理员批量导入，一人仅属一企业 | 邀请链接：tenant_invitations 表管理邀请码、有效期、使用次数；批量导入：管理员上传 Excel（手机号+姓名）；用户模型 1:1 绑定企业，简化数据隔离和权限判断 |
+
+### 7. 认证方案：JWT
+| Decision | Rationale |
+|----------|-----------|
+| Spring Security + JWT Token，登录后签发 access_token（短效）+ refresh_token（长效） | H5/小程序/APP 均适合 Token 认证；JWT payload 携带 user_id + tenant_id + roles，减少数据库查询；Redis 存储 refresh_token 做续期和主动失效；平台管理员与企业用户分两套认证逻辑 |
+
+### 8. 登录安全增强：多层防护体系
+| Decision | Rationale |
+|----------|-----------|
+| 图形验证码 + 密码策略 + 登录限流 + 安全日志 + 异常检测 | 验证码防自动化暴力破解；Argon2 加密替代 BCrypt；IP/账号双维度限流；完整记录所有登录尝试；新设备/异地/异常时间登录检测 |
+
+**实现优先级**：
+- P0: 图形验证码、登录限流、密码强度校验
+- P1: 安全日志、Argon2 加密、忘记密码优化
+- P2: 滑动验证码、密码历史、异常登录检测
+
+### 9. 验证码方案：图片验证码为主，滑动验证码可选
+| Decision | Rationale |
+|----------|-----------|
+| 普通用户登录使用图片验证码，平台管理员可选滑动验证码 | 图片验证码实现简单，用户体验好；滑动验证码安全性更高但实现复杂，仅用于高权限账号；Redis 存储验证码 5 分钟过期；排除易混淆字符（0/O/1/I/l） |
+
+### 10. 密码加密：Argon2id 算法
+| Decision | Rationale |
+|----------|-----------|
+| 使用 Argon2id 替代 BCrypt | Argon2 是 Password Hashing Competition 获胜算法；Argon2id 兼顾抵抗 GPU 攻击和侧信道攻击；Spring Security 6+ 原生支持 |
+
+**参数配置**：
+- salt-length: 16 bytes
+- hash-length: 32 bytes
+- parallelism: 4
+- memory: 65536 KB (64MB)
+- iterations: 3
+
+### 11. 登录限流：双维度计数 + 自动锁定
+| Decision | Rationale |
+|----------|-----------|
+| IP + 账号双维度登录失败计数，达到阈值自动锁定 | IP 维度防止来自同一 IP 的批量暴力破解；账号维度防止针对特定账号的定向攻击；Redis 原子计数器 + 过期时间实现简单高效；分级策略：失败 3 次要求验证码，失败 5 次锁定 30 分钟 |
+
+**限流规则**：
+- 时间窗口: 5 分钟
+- IP 阈值: 5 次 → 锁定 30 分钟
+- 账号阈值: 5 次 → 锁定 30 分钟
+- 验证码触发: 任意维度失败 3 次
+
+### 12. 忘记密码：多因素验证 + 安全重置
+| Decision | Rationale |
+|----------|-----------|
+| 短信/邮箱验证码验证身份，重置后强制清除所有会话 | 验证成功后签发一次性 resetToken，15 分钟有效；密码重置后立即失效所有 refresh_token；重置时需满足最新密码强度要求 |
+
+## Issues Encountered
+
+| Issue | Resolution |
+|-------|------------|
+| （暂无，尚未开始实现） | |
+
+## Resources
+
+### 项目文档
+- 提案：`openspec/changes/carbon-point-platform/proposal.md`
+- 架构决策：`openspec/changes/carbon-point-platform/design.md`
+- 任务清单：`openspec/changes/carbon-point-platform/tasks.md`
+- TDD 实现计划：`docs/superpowers/plans/2026-04-10-carbon-point-platform-full-implementation.md`
+- 完整实现计划：`docs/superpowers/plans/2026-04-08-carbon-point-full.md`
+- DDL：`docs/review/ddl/carbon-point-schema.sql`
+
+### 模块级规范（Given-When-Then）
+- `openspec/changes/carbon-point-platform/specs/multi-tenant/spec.md`
+- `openspec/changes/carbon-point-platform/specs/user-management/spec.md`
+- `openspec/changes/carbon-point-platform/specs/check-in/spec.md`
+- `openspec/changes/carbon-point-platform/specs/point-account/spec.md`
+- `openspec/changes/carbon-point-platform/specs/rbac/spec.md`
+- `openspec/changes/carbon-point-platform/specs/reporting/spec.md`
+- `openspec/changes/carbon-point-platform/specs/h5-user-app/spec.md`
+- `openspec/changes/carbon-point-platform/specs/enterprise-admin/spec.md`
+- `openspec/changes/carbon-point-platform/specs/platform-admin/spec.md`
+- `openspec/changes/carbon-point-platform/specs/login-security/spec.md`
+- `openspec/changes/carbon-point-platform/specs/point-engine/spec.md`
+- `openspec/changes/carbon-point-platform/specs/virtual-mall/spec.md`
+- `openspec/changes/carbon-point-platform/specs/notification/spec.md`
+
+### 改进类文档
+- UX 改进：`docs/superpowers/specs/2026-04-10-carbon-point-ux-improvement.md`
+- 技术改进：`docs/superpowers/specs/2026-04-10-carbon-point-technical-improvement.md`
+- 业务改进：`docs/superpowers/specs/2026-04-10-carbon-point-business-improvement.md`
+- 产品改进：`docs/superpowers/specs/2026-04-10-carbon-point-product-improvement.md`
+- 荣誉系统：`openspec/specs/2026-04-08-honor-system-mvp-design.md`
+
+### 用户等级定义（point-engine/spec.md）
+- Lv.1 Bronze: 0-999 points
+- Lv.2 Silver: 1,000+ points
+- Lv.3 Gold: 5,000+ points
+- Lv.4 Platinum: 20,000+ points
+- Lv.5 Diamond: 50,000+ points
+
+### 平台评审报告
+- `docs/review/2026-04-11-platform-review.md`
+
+## Risks
+
+| Risk | Mitigation |
+|------|------------|
+| 租户数据泄露：原生 SQL、跨租户查询需绕过拦截器 | 平台管理员查询使用 @InterceptorIgnore 注解跳过租户拦截，Service 层手动做权限校验 |
+| 积分通胀：企业管理员配置过于宽松规则 | 平台可设置默认推荐规则模板，提供积分发放量预警 |
+| 规则引擎复杂度：JSON config 查询不便 | 规则数据量小（每企业通常不超过几十条），加载到内存执行，不影响性能 |
+| 打卡并发：同一时段可能重复打卡请求 | 数据库唯一索引（user_id + 打卡日期 + 时段规则 ID）+ Redis 分布式锁双重保障 |
+| H5 WebView 兼容性：不同小程序/APP WebView 内核版本不同 | Babel 转译确保兼容性，避免过新的 JS API，做好降级处理 |
+| 验证码被识别：OCR 可能识别简单图形验证码 | 增加干扰线和干扰点，使用混合字体；重要场景使用滑动验证码 |
+| 密码加密性能：Argon2 内存占用较高 | 配置合理参数（memory=64MB, parallelism=4），登录接口独立线程池隔离 |
+| 登录限流误伤：同一企业用户共享出口 IP | IP 锁定阈值适当放宽（5 次/5分钟），提供自助解锁功能 |
+| 会话安全：refresh_token 被盗用 | refresh_token 每次使用后轮换，绑定设备指纹，异常设备登录需二次验证 |
+| 验证码短信成本 | 优先推荐邮箱验证，设置短信验证码频率限制，提供图形验证码防刷 |
+
+---
+
+## 文件：progress.md
+
 # Progress Log
 
 ## Session: 2026-04-11
@@ -1553,3 +2246,443 @@ int deductStockWithVersion(@Param("id") Long id, @Param("version") Integer versi
 4. Order fulfillment must happen AFTER stock deduction, not before
 5. Optimistic locking with `@Update` SQL is more reliable than `LambdaUpdateWrapper` for H2 compatibility
 6. H2 MVCC doesn't provide true serialization — concurrency tests verify correctness, not race conditions
+
+---
+
+## 文件：RELEASE.md
+
+# Carbon Point v1.0.0 Release Notes
+
+> 发布日期: 2026-04-12 | 状态: GA (正式版)
+
+---
+
+## 版本概述
+
+Carbon Point v1.0.0 是平台的第一个正式版本，提供了完整的多租户 SaaS 爬楼梯打卡积分激励系统。
+
+**版本号**: `1.0.0-SNAPSHOT` → `1.0.0`
+**构建版本**: `2026-04-12`
+**最低依赖**: Java 21, MySQL 8.0, Redis 7.0
+
+---
+
+## 新功能
+
+### 1. 多租户基础设施
+- 企业租户全生命周期管理（注册、开通、停用、到期）
+- `tenant_id` 列级数据隔离
+- 套餐管理（free/pro/enterprise，各有限额）
+- 平台管理员独立认证体系
+
+### 2. 用户管理与认证
+- JWT 双 Token 认证（access_token 24h / refresh_token 7d）
+- 手机号 + 密码登录（支持邀请链接）
+- 管理员批量导入用户
+- 密码使用 Argon2id 哈希
+- 图形验证码 + 登录锁定保护
+
+### 3. 打卡系统
+- 多时段打卡规则配置（时段不可重叠）
+- 时段随机积分计算
+- 数据库唯一索引 + Redis 分布式锁防重复打卡
+- 打卡记录完整追溯
+
+### 4. 积分规则引擎
+- 固定顺序执行链：时段匹配 → 随机基数 → 特殊日期倍数 → 等级系数 → 四舍五入 → 每日上限 → 连续打卡奖励
+- 连续打卡阶梯奖励（7/14/21/30 天）
+- 用户等级体系（Lv.1 Bronze → Lv.5 Diamond）
+- 每日积分上限控制
+
+### 5. 积分账户
+- 积分余额精确管理
+- 积分流水完整记录（类型/方向/原因）
+- 管理员手动发放/扣减（带备注）
+- 冻结积分（订单pending状态）
+
+### 6. 虚拟积分商城
+- 三类虚拟商品：优惠券码、直充、权益激活
+- 积分定价与库存管理
+- 订单状态机：pending → fulfilled → used/expired/cancelled
+- 优惠券码生成（UUID 格式）
+- 核销管理（企业管理员）
+
+### 7. RBAC 权限控制
+- 菜单 + 按钮 + API 三级权限控制
+- 每企业独立角色体系
+- 预设角色模板（超级管理员、部门管理员、普通员工）
+- 自定义角色
+- `@RequirePerm` AOP 注解
+- 至少保留一名超管约束
+
+### 8. 数据报表
+- 企业级看板：积分趋势、活跃人数、热门商品
+- 平台级看板：企业数、总用户、积分总量、兑换总量
+- Excel 数据导出
+
+### 9. 用户端 H5 应用
+- 首页打卡入口（时段展示 + 一键打卡 + 结果动画）
+- 积分页面（余额/明细/排行榜/等级）
+- 商城页面（商品列表/兑换/卡券包）
+- 兼容微信小程序 WebView 和 APP WebView
+
+### 10. 企业管理后台
+- 员工管理（增删改查、启停）
+- 打卡规则配置
+- 积分规则引擎配置
+- 商品管理
+- 订单管理
+- 积分运营（手动发放）
+- 角色权限管理
+- 数据看板
+
+### 11. 平台运营后台
+- 企业管理（列表/开通/停用/套餐调整）
+- 全平台数据看板
+- 平台配置
+- 系统管理（平台管理员/操作日志/权限）
+
+---
+
+## API 变更说明
+
+### 认证接口
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | `/api/auth/login` | 登录（手机+密码+验证码） |
+| POST | `/api/auth/refresh` | 刷新 Token |
+| GET | `/api/auth/captcha` | 获取图形验证码 |
+| POST | `/api/auth/logout` | 登出 |
+
+### 用户端接口（需 Tenant Token）
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | `/api/checkin` | 打卡 |
+| GET | `/api/checkin/records` | 打卡记录 |
+| GET | `/api/points/balance` | 积分余额 |
+| GET | `/api/points/flow` | 积分流水 |
+| GET | `/api/points/level` | 用户等级 |
+| GET | `/api/leaderboard` | 排行榜 |
+| GET | `/api/mall/products` | 商品列表 |
+| POST | `/api/mall/exchange` | 兑换商品 |
+| GET | `/api/mall/orders` | 订单列表 |
+| GET | `/api/mall/coupons` | 我的卡券 |
+
+### 企业管理接口（需企业管理员 Token）
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET/POST | `/api/admin/users` | 员工管理 |
+| GET/POST/PUT | `/api/admin/checkin-rules` | 打卡规则 |
+| GET/POST/PUT | `/api/admin/point-rules` | 积分规则 |
+| GET/POST/PUT | `/api/admin/products` | 商品管理 |
+| GET | `/api/admin/orders` | 订单管理 |
+| POST | `/api/admin/points/grant` | 手动发积分 |
+| GET/POST/PUT | `/api/admin/roles` | 角色管理 |
+| GET | `/api/admin/dashboard` | 数据看板 |
+
+### 平台管理接口（需平台管理员 Token）
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET/POST/PUT | `/platform/tenants` | 租户管理 |
+| GET | `/platform/dashboard` | 平台看板 |
+| GET/POST/PUT | `/platform/admins` | 平台管理员 |
+| GET | `/platform/audit-logs` | 操作日志 |
+
+### 响应格式
+
+所有 API 使用统一响应封装：
+
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": { ... }
+}
+```
+
+错误码定义在 `carbon-common` 模块的 `ErrorCode` 枚举中。
+
+---
+
+## 数据库变更
+
+本版本为全新初始化，无历史数据迁移。
+
+### 新增表（25 张）
+
+| 表名 | 说明 |
+|------|------|
+| `tenants` | 企业租户 |
+| `platform_admins` | 平台管理员 |
+| `users` | 租户用户 |
+| `user_profiles` | 用户档案 |
+| `roles` | 角色 |
+| `permissions` | 权限 |
+| `role_permissions` | 角色-权限关联 |
+| `user_roles` | 用户-角色关联 |
+| `checkin_rules` | 打卡时段规则 |
+| `checkin_records` | 打卡记录 |
+| `point_rules` | 积分规则 |
+| `point_accounts` | 积分账户 |
+| `point_flows` | 积分流水 |
+| `user_levels` | 用户等级 |
+| `products` | 虚拟商品 |
+| `product_inventory` | 商品库存 |
+| `orders` | 兑换订单 |
+| `coupon_codes` | 优惠券码 |
+| `notifications` | 通知记录 |
+| `login_logs` | 登录日志 |
+| `operation_logs` | 操作日志 |
+| `banner_configs` | Banner 配置 |
+| `special_dates` | 特殊日期 |
+| `tenant_configs` | 租户配置 |
+| `version_info` | 版本信息 |
+
+详见: `docs/review/ddl/carbon-point-schema.sql`
+
+---
+
+## 已知问题
+
+| Issue | 描述 | 严重程度 | 状态 |
+|-------|------|----------|------|
+| #58 | 连续打卡奖励在跨月时重置计数 | P2 | 计划 v1.1.0 修复 |
+| #59 | H5 在 iOS Safari 15 以下版本打卡按钮点击无响应 | P2 | 计划 v1.1.0 修复 |
+| #60 | 排行榜数据在 Redis 缓存未命中时回源压力 | P3 | 监控中，计划 v1.1.0 优化 |
+| #61 | 平台管理员无法查看某一租户的操作日志详情 | P3 | 计划 v1.1.0 修复 |
+| #62 | 商品库存扣减在高并发下存在竞争条件（概率极低） | P2 | 计划 v1.1.0 修复（Redis 原子操作） |
+
+---
+
+## 安全说明
+
+- 密码使用 Argon2id 算法哈希存储
+- JWT Token 支持主动失效（Redis 黑名单）
+- API 限流：认证接口 5次/分钟，普通接口 30次/秒
+- SQL 注入防护：MyBatis-Plus 参数化查询
+- XSS 防护：Spring Boot 全局过滤
+- CORS 配置：仅允许指定域名
+
+---
+
+## 联系方式
+
+| 渠道 | 地址 |
+|------|------|
+| 技术支持邮箱 | support@carbonpoint.com |
+| 商务合作 | business@carbonpoint.com |
+| GitHub Issues | https://github.com/your-org/carbon-point/issues |
+| 文档站 | https://docs.carbonpoint.com |
+
+---
+
+## 升级指南
+
+从 `1.0.0-SNAPSHOT` 升级到 `1.0.0`：
+
+```bash
+# 1. 拉取新镜像
+docker pull carbon-point/app:1.0.0
+
+# 2. 更新 docker-compose.prod.yml 中的镜像版本
+# image: carbon-point/app:1.0.0-SNAPSHOT → image: carbon-point/app:1.0.0
+
+# 3. 重启应用
+docker-compose -f docker-compose.prod.yml up -d app
+
+# 4. 验证
+curl http://localhost:8080/actuator/health
+```
+
+---
+
+## 文件：task_plan.md
+
+# Task Plan: Carbon Point 全栈平台开发
+
+## Goal
+
+完成 Carbon Point 多租户 SaaS 碳积分打卡平台的全量开发，包括：
+- 后端：Spring Boot 3.x + Java 21 Maven 多模块（carbon-common / carbon-system / carbon-checkin / carbon-points / carbon-mall / carbon-report / carbon-app）
+- 前端：React 18 + TypeScript + Ant Design 5 + Vite pnpm Monorepo（apps/h5 + apps/dashboard）
+- 功能：多租户、用户管理、RBAC、打卡系统、积分引擎、积分账户、虚拟商城、数据报表、通知系统
+
+## Current Phase
+
+Phase 1
+
+## Phases
+
+### Phase 1: 项目骨架与基础设施
+<!-- 多租户 SaaS 碳积分打卡平台后端 + 前端初始化 -->
+- [x] 1.1 初始化后端 Spring Boot 3.x + Java 21 Maven 多模块骨架
+- [x] 1.2 配置 MyBatis-Plus、MySQL 数据源、Redis 连接
+- [x] 1.3 实现多租户拦截器（TenantLineInnerInterceptor）
+- [x] 1.4 实现统一响应封装（Result<T>）、全局异常处理、统一错误码
+- [x] 1.5 实现 JWT 认证（access_token / refresh_token，payload 含 user_id / tenant_id / roles）
+- [x] 1.6 实现租户上下文（TenantContext）
+- [x] 1.7 初始化前端 pnpm Monorepo（apps/h5 + apps/dashboard + packages/）
+- **Status:** completed
+
+### Phase 2: 数据库 Schema 与公共模块
+- [ ] 2.1 创建完整数据库表（tenants/platform_admins/users/roles/point_rules/check_in_records/point_transactions/products/exchange_orders 等）
+- [ ] 2.2 初始化 permissions 表数据（7 模块约 25 个权限点）
+- [ ] 2.3 实现 MyBatis-Plus 自动填充（created_at、updated_at、tenant_id）
+- **Status:** pending
+
+### Phase 3: 多租户与企业租户管理（multi-tenant）
+- [ ] 3.1 企业租户 CRUD API（平台管理员专用，绕过租户拦截器）
+- [ ] 3.2 企业开通/停用/恢复 API
+- [ ] 3.3 企业开通时自动初始化（预设角色模板 + 默认时段规则）
+- [ ] 3.4 平台运营后台前端：企业管理页面
+- **Status:** pending
+
+### Phase 4: 用户管理（user-management）
+- [ ] 4.1 用户注册/登录 API（手机号+密码，JWT）
+- [ ] 4.2 Token 刷新 API
+- [ ] 4.3 邀请链接管理 API
+- [ ] 4.4 批量导入用户 API（Excel）
+- [ ] 4.5 用户列表/启停/编辑 API
+- [ ] 4.6 企业管理后台前端：员工管理页面
+- [ ] 4.7 用户端 H5 前端：注册/登录页面
+- **Status:** pending
+
+### Phase 5: RBAC 权限体系（rbac）
+- [ ] 5.1 角色 CRUD API（每租户隔离，预设角色不可删除）
+- [ ] 5.2 角色-权限关联管理 API
+- [ ] 5.3 用户-角色关联管理 API
+- [ ] 5.4 权限查询 API（多角色取并集）
+- [ ] 5.5 @RequirePerm AOP 注解 + API 级权限校验
+- [ ] 5.6 权限缓存（Redis），角色变更时刷新
+- [ ] 5.7 超管保护逻辑（最后一个超管不可降级/删除）
+- [ ] 5.8 前端权限框架（动态菜单 + 按钮级 v-permission）
+- [ ] 5.9 企业管理后台前端：角色管理页面
+- **Status:** pending
+
+### Phase 6: 积分规则引擎（point-engine）
+- [ ] 6.1 时段规则 CRUD API（含时间重叠校验）
+- [ ] 6.2 连续打卡奖励规则 CRUD API
+- [ ] 6.3 特殊日期翻倍规则 CRUD API
+- [ ] 6.4 用户等级系数规则 CRUD API
+- [ ] 6.5 每日积分上限配置 API
+- [ ] 6.6 积分计算引擎服务（规则链：时段→随机→倍率→等级→上限→连续奖励）
+- [ ] 6.7 企业管理后台前端：规则配置页面
+- **Status:** pending
+
+### Phase 7: 打卡系统（check-in）
+- [ ] 7.1 打卡 API（校验时段→校验重复→积分计算→记录打卡→发放积分→连续打卡）
+- [ ] 7.2 打卡防并发（唯一索引 + Redis 分布式锁）
+- [ ] 7.3 打卡记录查询 API
+- [ ] 7.4 用户连续打卡天数更新逻辑
+- [ ] 7.5 用户端 H5 前端：打卡页面 + 结果动画
+- **Status:** pending
+
+### Phase 8: 积分账户（point-account）
+- [ ] 8.1 积分账户原子更新逻辑
+- [ ] 8.2 积分流水自动记录
+- [ ] 8.3 积分流水查询 API
+- [ ] 8.4 手动积分发放/扣减 API
+- [ ] 8.5 积分统计 API（累计/可用/本月/排名）
+- [ ] 8.6 用户等级自动晋升逻辑
+- [ ] 8.7 企业管理后台前端：积分运营页面
+- [ ] 8.8 用户端 H5 前端：积分页面
+- **Status:** pending
+
+### Phase 9: 虚拟积分商城（virtual-mall）
+- [ ] 9.1 虚拟商品 CRUD API（三种类型）
+- [ ] 9.2 商品上下架 + 库存管理
+- [ ] 9.3 积分兑换下单 API（状态机：pending→fulfilled→used/expired/cancelled）
+- [ ] 9.4 券码/直充/权益发放逻辑
+- [ ] 9.5 卡券核销 API
+- [ ] 9.6 卡券过期自动标记（定时任务）
+- [ ] 9.7 企业管理后台前端：商品管理 + 订单管理页面
+- [ ] 9.8 用户端 H5 前端：商城 + 我的卡券页面
+- **Status:** pending
+
+### Phase 10: 数据报表（reporting）
+- [ ] 10.1 企业级数据看板 API
+- [ ] 10.2 平台级数据看板 API
+- [ ] 10.3 积分趋势报表 API
+- [ ] 10.4 Excel 导出 API
+- [ ] 10.5 企业管理后台前端：数据看板页面
+- [ ] 10.6 平台运营后台前端：全平台看板页面
+- **Status:** pending
+
+### Phase 11: 平台运营后台（platform-admin）
+- [ ] 11.1 平台管理员认证（独立登录入口）
+- [ ] 11.2 平台管理员 CRUD API
+- [ ] 11.3 操作日志记录（AOP）
+- [ ] 11.4 平台配置管理 API
+- [ ] 11.5 平台运营后台前端：登录 + 系统管理 + 平台配置页面
+- **Status:** pending
+
+### Phase 12: 前端项目完整初始化
+- [ ] 12.1 完成前端 Monorepo 完整结构
+- [ ] 12.2 完成 apps/dashboard 企业+平台管理后台
+- [ ] 12.3 完成 apps/h5 用户端 H5 应用
+- [ ] 12.4 H5 WebView 兼容性测试
+- **Status:** pending
+
+### Phase 13: 登录系统安全增强
+- [ ] 13.1 图形验证码
+- [ ] 13.2 滑动验证码
+- [ ] 13.3 密码强度校验（Argon2id）
+- [ ] 13.4 登录限流（IP+账号双维度）
+- [ ] 13.5 账户锁定 + 安全日志
+- [ ] 13.6 忘记密码流程
+- **Status:** pending
+
+### Phase 14: 通知/消息系统（notification）
+- [ ] 14.1 站内消息 CRUD API
+- [ ] 14.2 通知模板引擎
+- [ ] 14.3 业务事件→通知触发
+- [ ] 14.4 短信通知渠道
+- [ ] 14.5 通知偏好设置
+- [ ] 14.6 H5 消息中心 + 管理后台通知模板管理
+- **Status:** pending
+
+### Phase 15: 集成测试与部署
+- [ ] 15.1 核心业务 API 集成测试
+- [ ] 15.2 多租户隔离测试
+- [ ] 15.3 并发场景测试
+- [ ] 15.4 登录安全测试
+- [ ] 15.5 Docker 部署配置
+- [ ] 15.6 前端构建与部署配置
+- **Status:** pending
+
+## Key Questions
+
+1. 前后端分离并行开发还是先后端再前端？建议前后端可并行，但后端 API 接口定义先行
+2. Phase 1 是否需要 TDD 先写测试？根据 superpowers 计划建议 TDD 方式
+3. 哪些模块可以独立开发不依赖其他？multi-tenant 和 user-management 可先行
+
+## Decisions Made
+
+| Decision | Rationale |
+|----------|-----------|
+| 多租户：共享数据库 + tenant_id 字段隔离 | 初期规模几百企业，逻辑隔离足够，运维成本低，MyBatis-Plus TenantLineInnerInterceptor 成熟 |
+| 前端：pnpm Monorepo（h5 + dashboard 合并 + packages） | 企业/平台后台 UI 类似可合并，H5 独立更灵活，共享包避免重复 |
+| 积分引擎：JSON config + 规则链执行 | JSON 灵活可扩展，规则链顺序固定（时段→随机→倍率→等级→上限→连续），可新增规则类型 |
+| 密码：Argon2id | Password Hashing Competition 获胜算法，Spring Security 6+ 原生支持 |
+| 打卡防并发：唯一索引 + Redis 分布式锁 | 双重保障，数据库唯一索引兜底，Redis 锁防应用层并发 |
+| 虚拟商品三种类型：coupon/recharge/privilege | 覆盖主流虚拟商品场景，fulfillment_config JSON 存储各类型配置 |
+| JWT payload 含 user_id + tenant_id + roles | 减少数据库查询，H5/小程序/APP 均适合无状态认证 |
+
+## Errors Encountered
+
+| Error | Attempt | Resolution |
+|-------|---------|------------|
+| （暂无） | | |
+
+## Notes
+
+- 参考文档：`openspec/changes/carbon-point-platform/tasks.md`（完整任务清单）
+- 参考文档：`docs/superpowers/plans/2026-04-10-carbon-point-platform-full-implementation.md`（TDD 实现计划）
+- 参考文档：`openspec/changes/carbon-point-platform/design.md`（12条架构决策）
+- 参考文档：`openspec/changes/carbon-point-platform/proposal.md`（提案）
+- OpenSpec 模块规范：`openspec/changes/carbon-point-platform/specs/{module}/spec.md`
+

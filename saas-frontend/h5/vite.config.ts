@@ -42,7 +42,7 @@ export default defineConfig({
     minify: 'esbuild',
   },
   optimizeDeps: {
-    include: ['@ant-design/icons', '@ant-design/cssinjs', 'antd', 'react', 'react-dom'],
+    include: ['react', 'react-dom', 'antd-mobile'],
   },
   test: {
     globals: true,

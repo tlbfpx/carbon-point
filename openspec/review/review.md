@@ -1,3 +1,9 @@
+# Review（审查报告合并）
+
+---
+
+## 文件：./2026-04-11-platform-review.md
+
 # Carbon Point 平台规格四维审查报告
 
 **审查日期:** 2026-04-11
@@ -682,3 +688,4 @@ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 ---
 
 *报告完毕。各专家可在后续会议上就具体问题进行深入讨论。*
+
