@@ -179,7 +179,8 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./dist/h5:/usr/share/nginx/html/h5:ro
-      - ./dist/dashboard:/usr/share/nginx/html/dashboard:ro
+      - ./dist/enterprise:/usr/share/nginx/html/enterprise:ro
+      - ./dist/platform:/usr/share/nginx/html/platform:ro
       - ./certs:/etc/nginx/certs:ro
       - nginx_logs:/var/log/nginx
     depends_on:
