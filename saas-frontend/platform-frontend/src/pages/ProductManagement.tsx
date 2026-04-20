@@ -21,7 +21,9 @@ import {
   Timeline,
   Steps,
   Alert,
+  Typography,
 } from 'antd';
+const { Text } = Typography;
 import { GlassCard } from '@carbon-point/design-system';
 import {
   PlusOutlined,
@@ -55,6 +57,7 @@ import {
   FeatureInfo,
 } from '@/api/platform';
 import { extractArray } from '@/utils';
+import { EXTENSION_GUIDANCE } from '@/constants/feature-menu-map';
 
 const CATEGORY_OPTIONS = [
   { value: 'stairs_climbing', label: '爬楼积分', color: 'blue' },
@@ -428,6 +431,13 @@ const ProductManagement: React.FC = () => {
     { title: '排序', dataIndex: 'sortOrder', width: 60 },
     { title: '创建时间', dataIndex: 'createTime', width: 110, render: (t: string) => t ? dayjs(t).format('YYYY-MM-DD') : '-' },
     {
+      title: '关联套餐',
+      width: 120,
+      render: (_: unknown, record: Product) => (
+        <Text type="secondary">—</Text>
+      ),
+    },
+    {
       title: '操作',
       width: 280,
       render: (_: unknown, record: Product) => (
@@ -465,7 +475,7 @@ const ProductManagement: React.FC = () => {
         <Space>
           <Button icon={<ReloadOutlined />} onClick={() => refetch()}>刷新</Button>
           <Button type="primary" icon={<PlusOutlined />} onClick={openWizard}>
-            新建产品向导
+            配置产品
           </Button>
           <Button icon={<PlusOutlined />} onClick={openCreateModal}>
             快速创建
@@ -505,13 +515,20 @@ const ProductManagement: React.FC = () => {
 
       {/* Product Creation Wizard */}
       <Modal
-        title="新建产品向导"
+        title="配置产品"
         open={wizardOpen}
         onCancel={() => setWizardOpen(false)}
         width={720}
         footer={null}
         destroyOnClose
       >
+        <Alert
+          type="info"
+          showIcon
+          message="本向导基于已注册的产品模块配置产品实例"
+          description="如需全新产品类型，请联系开发团队扩展积木组件库。"
+          style={{ marginBottom: 16 }}
+        />
         <Steps
           current={wizardStep}
           style={{ marginBottom: 24 }}
@@ -612,6 +629,13 @@ const ProductManagement: React.FC = () => {
                 <Empty description="暂无可用的触发器" image={Empty.PRESENTED_IMAGE_SIMPLE} />
               )}
             </div>
+            <Alert
+              type="info"
+              showIcon
+              message={EXTENSION_GUIDANCE.title}
+              description={EXTENSION_GUIDANCE.description}
+              style={{ marginTop: 16 }}
+            />
           </div>
         )}
 
@@ -725,6 +749,13 @@ const ProductManagement: React.FC = () => {
                   ))}
               </div>
             </div>
+            <Alert
+              type="info"
+              showIcon
+              message={EXTENSION_GUIDANCE.title}
+              description={EXTENSION_GUIDANCE.description}
+              style={{ marginTop: 12 }}
+            />
           </div>
         )}
 
@@ -776,6 +807,13 @@ const ProductManagement: React.FC = () => {
                 );
               })
             )}
+            <Alert
+              type="info"
+              showIcon
+              message={EXTENSION_GUIDANCE.title}
+              description={EXTENSION_GUIDANCE.description}
+              style={{ marginTop: 16 }}
+            />
           </div>
         )}
 
