@@ -38,6 +38,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
                 type = FilterType.ASSIGNABLE_TYPE,
                 classes = {
                         com.carbonpoint.system.controller.ProductController.class,
+                        com.carbonpoint.system.controller.PlatformRegistryController.class,
                         com.carbonpoint.system.service.impl.MockEmailServiceImpl.class
                 }
         )
