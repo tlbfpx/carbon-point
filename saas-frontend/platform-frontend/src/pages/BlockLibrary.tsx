@@ -8,6 +8,7 @@ import {
   Descriptions,
   Badge,
   Typography,
+  Alert,
 } from 'antd';
 import {
   ThunderboltOutlined,
@@ -15,6 +16,7 @@ import {
   AppstoreOutlined,
 } from '@ant-design/icons';
 import { GlassCard } from '@carbon-point/design-system';
+import { EXTENSION_GUIDANCE } from '@/constants/feature-menu-map';
 import { useQuery } from '@tanstack/react-query';
 import {
   getRegistryTriggers,
@@ -263,21 +265,30 @@ const BlockLibrary: React.FC = () => {
                 </span>
               ),
               children: (
-                <Table
-                  columns={triggerColumns}
-                  dataSource={triggers}
-                  rowKey="type"
-                  loading={triggersLoading}
-                  pagination={false}
-                  locale={{
-                    emptyText: (
-                      <Empty
-                        description="暂无已注册的触发器"
-                        image={Empty.PRESENTED_IMAGE_SIMPLE}
-                      />
-                    ),
-                  }}
-                />
+                <>
+                  <Table
+                    columns={triggerColumns}
+                    dataSource={triggers}
+                    rowKey="type"
+                    loading={triggersLoading}
+                    pagination={false}
+                    locale={{
+                      emptyText: (
+                        <Empty
+                          description="暂无已注册的触发器。请联系开发团队添加新的触发器类型。"
+                          image={Empty.PRESENTED_IMAGE_SIMPLE}
+                        />
+                      ),
+                    }}
+                  />
+                  <Alert
+                    type="info"
+                    showIcon
+                    message={EXTENSION_GUIDANCE.title}
+                    description={EXTENSION_GUIDANCE.description}
+                    style={{ marginTop: 16 }}
+                  />
+                </>
               ),
             },
             {
@@ -289,21 +300,30 @@ const BlockLibrary: React.FC = () => {
                 </span>
               ),
               children: (
-                <Table
-                  columns={ruleNodeColumns}
-                  dataSource={ruleNodes}
-                  rowKey="name"
-                  loading={ruleNodesLoading}
-                  pagination={false}
-                  locale={{
-                    emptyText: (
-                      <Empty
-                        description="暂无已注册的规则节点"
-                        image={Empty.PRESENTED_IMAGE_SIMPLE}
-                      />
-                    ),
-                  }}
-                />
+                <>
+                  <Table
+                    columns={ruleNodeColumns}
+                    dataSource={ruleNodes}
+                    rowKey="name"
+                    loading={ruleNodesLoading}
+                    pagination={false}
+                    locale={{
+                      emptyText: (
+                        <Empty
+                          description="暂无已注册的规则节点。请联系开发团队添加新的规则节点类型。"
+                          image={Empty.PRESENTED_IMAGE_SIMPLE}
+                        />
+                      ),
+                    }}
+                  />
+                  <Alert
+                    type="info"
+                    showIcon
+                    message={EXTENSION_GUIDANCE.title}
+                    description={EXTENSION_GUIDANCE.description}
+                    style={{ marginTop: 16 }}
+                  />
+                </>
               ),
             },
             {
@@ -315,21 +335,30 @@ const BlockLibrary: React.FC = () => {
                 </span>
               ),
               children: (
-                <Table
-                  columns={featureColumns}
-                  dataSource={features}
-                  rowKey="type"
-                  loading={featuresLoading}
-                  pagination={false}
-                  locale={{
-                    emptyText: (
-                      <Empty
-                        description="暂无已注册的功能点模板"
-                        image={Empty.PRESENTED_IMAGE_SIMPLE}
-                      />
-                    ),
-                  }}
-                />
+                <>
+                  <Table
+                    columns={featureColumns}
+                    dataSource={features}
+                    rowKey="type"
+                    loading={featuresLoading}
+                    pagination={false}
+                    locale={{
+                      emptyText: (
+                        <Empty
+                          description="暂无已注册的功能点模板。请联系开发团队添加新的功能点类型。"
+                          image={Empty.PRESENTED_IMAGE_SIMPLE}
+                        />
+                      ),
+                    }}
+                  />
+                  <Alert
+                    type="info"
+                    showIcon
+                    message={EXTENSION_GUIDANCE.title}
+                    description={EXTENSION_GUIDANCE.description}
+                    style={{ marginTop: 16 }}
+                  />
+                </>
               ),
             },
           ]}

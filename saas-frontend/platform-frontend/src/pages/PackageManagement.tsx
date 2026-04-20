@@ -15,8 +15,8 @@ import {
   Tooltip,
   Empty,
   Alert,
+  Collapse,
 } from 'antd';
-import { GlassCard } from '@carbon-point/design-system';
 import {
   PlusOutlined,
   DeleteOutlined,
@@ -29,7 +29,7 @@ import {
 } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
-import type { PermissionPackage, Product, Feature, ProductFeature } from '@/api/platform';
+import type { PermissionPackage, Product, Feature, ProductFeature, PackageProduct } from '@/api/platform';
 import {
   getPackages,
   createPackage,
@@ -382,187 +382,172 @@ const PackageManagement: React.FC = () => {
         width={800}
       >
         <div style={{ marginBottom: 16 }}>
-          <GlassCard size="small" type="inner" title="选择产品">
-            {allProducts.length === 0 ? (
-              <Empty description="暂无可用产品" image={Empty.PRESENTED_IMAGE_SIMPLE} />
-            ) : (
-              allProducts.map((product: Product) => {
-                const isSelected = selectedProducts.includes(product.id);
-                const isExpanded = expandedProducts.includes(product.id);
-                const features = packageProductFeatures[product.id] || {};
-                const featureList = Object.values(features) as ProductFeature[];
-                const requiredCount = featureList.filter((pf) => pf.isRequired).length;
-                const optionalCount = featureList.filter((pf) => !pf.isRequired).length;
+          <h4 style={{ marginBottom: 8 }}>选择产品</h4>
+          {allProducts.length === 0 ? (
+            <Empty description="暂无可用产品" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+          ) : (
+            <Space wrap>
+              {allProducts.map((product: Product) => (
+                <Checkbox
+                  key={product.id}
+                  checked={selectedProducts.includes(product.id)}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setSelectedProducts([...selectedProducts, product.id]);
+                      setExpandedProducts([...expandedProducts, product.id]);
+                    } else {
+                      setSelectedProducts(selectedProducts.filter((id) => id !== product.id));
+                      setExpandedProducts(expandedProducts.filter((id) => id !== product.id));
+                      const newFeatures = { ...packageProductFeatures };
+                      delete newFeatures[product.id];
+                      setPackageProductFeatures(newFeatures);
+                    }
+                  }}
+                >
+                  {product.name}
+                  <Tag color={product.category === 'stairs_climbing' ? 'blue' : 'green'} style={{ marginLeft: 4 }}>
+                    {product.category === 'stairs_climbing' ? '爬楼积分' : '走路积分'}
+                  </Tag>
+                </Checkbox>
+              ))}
+            </Space>
+          )}
+        </div>
+        <Collapse
+          activeKey={expandedProducts}
+          onChange={(keys) => setExpandedProducts(keys as string[])}
+          style={{ background: 'transparent' }}
+          items={allProducts
+            .filter((product: Product) => selectedProducts.includes(product.id))
+            .map((product: Product) => {
+              const features = packageProductFeatures[product.id] || {};
+              const featureList = Object.values(features) as ProductFeature[];
+              const enabledCount = featureList.filter((pf) => pf.isEnabled).length;
 
-                return (
-                  <div key={product.id} style={{ padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
-                    <Space style={{ width: '100%', justifyContent: 'space-between' }}>
-                      <Checkbox
-                        checked={isSelected}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setSelectedProducts([...selectedProducts, product.id]);
-                            setExpandedProducts([...expandedProducts, product.id]);
-                          } else {
-                            setSelectedProducts(selectedProducts.filter((id) => id !== product.id));
-                            setExpandedProducts(expandedProducts.filter((id) => id !== product.id));
-                            const newFeatures = { ...packageProductFeatures };
-                            delete newFeatures[product.id];
-                            setPackageProductFeatures(newFeatures);
-                          }
+              return {
+                key: product.id,
+                label: (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <strong>{product.name}</strong>
+                    <Tag color={product.category === 'stairs_climbing' ? 'blue' : 'green'}>
+                      {product.category === 'stairs_climbing' ? '爬楼积分' : '走路积分'}
+                    </Tag>
+                    <span style={{ fontSize: 12, color: '#666' }}>
+                      {enabledCount}/{featureList.length} 功能点已启用
+                    </span>
+                  </div>
+                ),
+                children: (
+                  <div>
+                    <Alert
+                      type="info"
+                      showIcon
+                      icon={<LockOutlined />}
+                      message="必需功能点不可关闭，可选功能点可自由开关"
+                      style={{ marginBottom: 8, padding: '4px 12px' }}
+                      banner
+                    />
+                    {featureList.map((pf) => (
+                      <div
+                        key={pf.featureId}
+                        style={{
+                          padding: '6px 0',
+                          borderBottom: '1px solid #f0f0f0',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
                         }}
                       >
-                        <strong>{product.name}</strong>
-                        <Tag color={product.category === 'stairs_climbing' ? 'blue' : 'green'} style={{ marginLeft: 4 }}>
-                          {product.category === 'stairs_climbing' ? '爬楼积分' : '走路积分'}
-                        </Tag>
-                        {isSelected && featureList.length > 0 && (
-                          <span style={{ marginLeft: 4, fontSize: 12, color: '#666' }}>
-                            ({requiredCount} 必需, {optionalCount} 可选)
-                          </span>
-                        )}
-                      </Checkbox>
-                      {isSelected && featureList.length > 0 && (
-                        <Button
-                          type="link"
-                          size="small"
-                          onClick={() => {
-                            if (isExpanded) {
-                              setExpandedProducts(expandedProducts.filter((id) => id !== product.id));
-                            } else {
-                              setExpandedProducts([...expandedProducts, product.id]);
-                            }
-                          }}
-                        >
-                          {isExpanded ? '收起功能' : '展开功能'}
-                        </Button>
-                      )}
-                    </Space>
-                    {product.description && (
-                      <div style={{ marginLeft: 24, marginTop: 4, color: '#666', fontSize: 13 }}>{product.description}</div>
-                    )}
-
-                    {/* Expanded feature sub-section */}
-                    {isSelected && isExpanded && featureList.length > 0 && (
-                      <div style={{
-                        marginLeft: 24,
-                        marginTop: 8,
-                        padding: '8px 12px',
-                        background: '#fafafa',
-                        borderRadius: 6,
-                        border: '1px solid #f0f0f0',
-                      }}>
-                        <Alert
-                          type="info"
-                          showIcon
-                          icon={<LockOutlined />}
-                          message="必需功能点不可关闭，可选功能点可自由开关"
-                          style={{ marginBottom: 8, padding: '4px 12px' }}
-                          banner
-                        />
-                        {featureList.map((pf) => (
-                          <div
-                            key={pf.featureId}
-                            style={{
-                              padding: '6px 0',
-                              borderBottom: '1px solid #f0f0f0',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'space-between',
+                        <Space>
+                          <Switch
+                            size="small"
+                            checked={pf.isEnabled}
+                            disabled={pf.isRequired}
+                            onChange={(checked) => {
+                              setPackageProductFeatures((prev) => ({
+                                ...prev,
+                                [product.id]: {
+                                  ...prev[product.id],
+                                  [pf.featureId]: { ...pf, isEnabled: checked },
+                                },
+                              }));
                             }}
-                          >
-                            <Space>
+                          />
+                          <Text strong>{pf.feature?.name || pf.featureId}</Text>
+                          <Tag color={pf.feature?.type === 'permission' ? 'blue' : 'orange'}>
+                            {pf.feature?.type === 'permission' ? '权限' : '配置'}
+                          </Tag>
+                          {pf.isRequired ? (
+                            <Tag color="red" icon={<LockOutlined />}>必需</Tag>
+                          ) : (
+                            <Tag color="default">可选</Tag>
+                          )}
+                        </Space>
+                        {pf.feature?.type === 'config' && pf.isEnabled && !pf.isRequired && (
+                          <div style={{ minWidth: 160 }}>
+                            {pf.feature.valueType === 'boolean' ? (
                               <Switch
                                 size="small"
-                                checked={pf.isEnabled}
-                                disabled={pf.isRequired}
+                                checked={pf.configValue === 'true' || pf.configValue === '1'}
                                 onChange={(checked) => {
                                   setPackageProductFeatures((prev) => ({
                                     ...prev,
                                     [product.id]: {
                                       ...prev[product.id],
-                                      [pf.featureId]: { ...pf, isEnabled: checked },
+                                      [pf.featureId]: { ...pf, configValue: String(checked) },
+                                    },
+                                  }));
+                                }}
+                                checkedChildren="开"
+                                unCheckedChildren="关"
+                              />
+                            ) : (
+                              <Input
+                                size="small"
+                                value={pf.configValue || ''}
+                                placeholder={pf.feature?.defaultValue || '配置值'}
+                                onChange={(e) => {
+                                  setPackageProductFeatures((prev) => ({
+                                    ...prev,
+                                    [product.id]: {
+                                      ...prev[product.id],
+                                      [pf.featureId]: { ...pf, configValue: e.target.value },
                                     },
                                   }));
                                 }}
                               />
-                              <Text strong>{pf.feature?.name || pf.featureId}</Text>
-                              <Tag color={pf.feature?.type === 'permission' ? 'blue' : 'orange'}>
-                                {pf.feature?.type === 'permission' ? '权限' : '配置'}
-                              </Tag>
-                              {pf.isRequired ? (
-                                <Tag color="red" icon={<LockOutlined />}>必需</Tag>
-                              ) : (
-                                <Tag color="default">可选</Tag>
-                              )}
-                            </Space>
-                            {pf.feature?.type === 'config' && pf.isEnabled && !pf.isRequired && (
-                              <div style={{ minWidth: 160 }}>
-                                {pf.feature.valueType === 'boolean' ? (
-                                  <Switch
-                                    size="small"
-                                    checked={pf.configValue === 'true' || pf.configValue === '1'}
-                                    onChange={(checked) => {
-                                      setPackageProductFeatures((prev) => ({
-                                        ...prev,
-                                        [product.id]: {
-                                          ...prev[product.id],
-                                          [pf.featureId]: { ...pf, configValue: String(checked) },
-                                        },
-                                      }));
-                                    }}
-                                    checkedChildren="开"
-                                    unCheckedChildren="关"
-                                  />
-                                ) : (
-                                  <Input
-                                    size="small"
-                                    value={pf.configValue || ''}
-                                    placeholder={pf.feature?.defaultValue || '配置值'}
-                                    onChange={(e) => {
-                                      setPackageProductFeatures((prev) => ({
-                                        ...prev,
-                                        [product.id]: {
-                                          ...prev[product.id],
-                                          [pf.featureId]: { ...pf, configValue: e.target.value },
-                                        },
-                                      }));
-                                    }}
-                                  />
-                                )}
-                              </div>
                             )}
                           </div>
-                        ))}
-                        <Button
-                          type="primary"
-                          size="small"
-                          style={{ marginTop: 8 }}
-                          icon={<CheckCircleOutlined />}
-                          onClick={() => {
-                            const features = Object.values(packageProductFeatures[product.id] || {}).map((pf: ProductFeature) => ({
-                              featureId: pf.featureId,
-                              configValue: pf.configValue,
-                              isEnabled: pf.isEnabled,
-                            }));
-                            updateProductFeaturesMutation.mutate({
-                              packageId: selectedPackage?.id,
-                              productId: product.id,
-                              features,
-                            });
-                          }}
-                          loading={updateProductFeaturesMutation.isPending}
-                        >
-                          保存该产品功能点
-                        </Button>
+                        )}
                       </div>
-                    )}
+                    ))}
+                    <Button
+                      type="primary"
+                      size="small"
+                      style={{ marginTop: 8 }}
+                      icon={<CheckCircleOutlined />}
+                      onClick={() => {
+                        const features = Object.values(packageProductFeatures[product.id] || {}).map((pf: ProductFeature) => ({
+                          featureId: pf.featureId,
+                          configValue: pf.configValue,
+                          isEnabled: pf.isEnabled,
+                        }));
+                        updateProductFeaturesMutation.mutate({
+                          packageId: selectedPackage?.id,
+                          productId: product.id,
+                          features,
+                        });
+                      }}
+                      loading={updateProductFeaturesMutation.isPending}
+                    >
+                      保存该产品功能点
+                    </Button>
                   </div>
-                );
-              })
-            )}
-          </GlassCard>
-        </div>
+                ),
+              };
+            })
+          }
+        />
       </Modal>
     </div>
   );
