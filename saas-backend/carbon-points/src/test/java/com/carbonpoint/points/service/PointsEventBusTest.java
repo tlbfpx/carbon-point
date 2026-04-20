@@ -154,4 +154,64 @@ class PointsEventBusTest extends BaseIntegrationTest {
         // Level should be promoted from 1 to 2 (Silver at 1000+)
         assertEquals(2, updated.getLevel(), "User should be promoted to Lv.2 Silver");
     }
+
+    @Test
+    void publish_multiProductEvents_createIndependentTransactions() {
+        Tenant tenant = createTestTenant("eventBus_multiProd");
+        User user = createTestUser(tenant.getId(), "13800900501", "Test@123");
+        user.setTotalPoints(0);
+        user.setAvailablePoints(0);
+        userMapper.updateById(user);
+
+        // Stair climbing event
+        PointsEvent stairEvent = new PointsEvent(
+                tenant.getId(), user.getId(), "stair_climbing", "check_in", 30, "stair_001", "爬楼打卡");
+        // Walking event
+        PointsEvent walkingEvent = new PointsEvent(
+                tenant.getId(), user.getId(), "walking", "step_claim", 50, "walk_001", "步数领取");
+
+        pointsEventBus.publish(stairEvent);
+        pointsEventBus.publish(walkingEvent);
+
+        User updated = userMapper.selectById(user.getId());
+        assertNotNull(updated);
+        assertEquals(80, updated.getTotalPoints(), "Total should be 30 + 50 = 80");
+        assertEquals(80, updated.getAvailablePoints());
+
+        // Verify separate transactions with correct product codes
+        List<PointTransactionEntity> txs = transactionMapper.selectList(
+                new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<PointTransactionEntity>()
+                        .eq(PointTransactionEntity::getUserId, user.getId())
+                        .orderByAsc(PointTransactionEntity::getCreatedAt));
+
+        assertEquals(2, txs.size(), "Should have 2 transactions");
+
+        PointTransactionEntity stairTx = txs.get(0);
+        assertEquals(30, stairTx.getAmount());
+        assertEquals("stair_climbing", stairTx.getProductCode());
+        assertEquals("check_in", stairTx.getSourceType());
+
+        PointTransactionEntity walkingTx = txs.get(1);
+        assertEquals(50, walkingTx.getAmount());
+        assertEquals("walking", walkingTx.getProductCode());
+        assertEquals("step_claim", walkingTx.getSourceType());
+    }
+
+    @Test
+    void publish_negativePoints_deductsBalance() {
+        Tenant tenant = createTestTenant("eventBus_deduct");
+        User user = createTestUser(tenant.getId(), "13800900601", "Test@123");
+        user.setTotalPoints(100);
+        user.setAvailablePoints(100);
+        userMapper.updateById(user);
+
+        PointsEvent deductEvent = new PointsEvent(
+                tenant.getId(), user.getId(), "stair_climbing", "exchange", -40, "order_001", "兑换商品");
+
+        pointsEventBus.publish(deductEvent);
+
+        User updated = userMapper.selectById(user.getId());
+        assertNotNull(updated);
+        assertEquals(60, updated.getAvailablePoints(), "Should deduct 40 points");
+    }
 }

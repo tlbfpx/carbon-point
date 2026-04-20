@@ -155,6 +155,59 @@ class WalkingServiceTest {
         assertEquals(60, status.getClaimablePoints());
     }
 
+    @Test
+    void testClaimE2E_updatesUserPointBalance() {
+        // E2E: claim → calculate → insert record → awardPoints → user balance updated
+        Long tenantId = 105L;
+        Long userId = createTestUser(tenantId);
+        TenantContext.setTenantId(tenantId);
+
+        stubHealthApiClient.setFixedStepCount(5000);
+
+        WalkingClaimResponseDTO result = walkingService.claim(userId, "device");
+
+        assertTrue(result.isSuccess());
+        // floor(5000 * 0.01) = 50
+        assertEquals(50, result.getPointsAwarded());
+        assertEquals(50, result.getAvailablePoints());
+        assertEquals(50, result.getTotalPoints());
+
+        // Verify user record in DB reflects updated balance
+        User updated = userMapper.selectById(userId);
+        assertNotNull(updated);
+        assertEquals(50, updated.getAvailablePoints(), "Available points should be 50");
+        assertEquals(50, updated.getTotalPoints(), "Total points should be 50");
+    }
+
+    @Test
+    void testClaimE2E_belowThreshold_noPointsAwarded() {
+        Long tenantId = 106L;
+        Long userId = createTestUser(tenantId);
+        TenantContext.setTenantId(tenantId);
+
+        stubHealthApiClient.setFixedStepCount(999); // Below 1000 threshold
+
+        WalkingClaimResponseDTO result = walkingService.claim(userId, "device");
+
+        assertTrue(result.isSuccess());
+        assertEquals(0, result.getPointsAwarded());
+        assertEquals(0, result.getAvailablePoints());
+        assertEquals(0, result.getTotalPoints());
+
+        User updated = userMapper.selectById(userId);
+        assertNotNull(updated);
+        assertEquals(0, updated.getAvailablePoints());
+    }
+
+    @Test
+    void testClaimE2E_userNotFound_throwsException() {
+        TenantContext.setTenantId(999L);
+
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> walkingService.claim(999999L, "werun"));
+        assertEquals(ErrorCode.USER_NOT_FOUND.getCode(), ex.getCode());
+    }
+
     /**
      * Helper to create a test user directly in DB.
      */
