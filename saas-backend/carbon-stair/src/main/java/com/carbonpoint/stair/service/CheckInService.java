@@ -71,20 +71,20 @@ public class CheckInService {
     @Transactional
     public CheckInResponseDTO checkIn(Long userId, CheckInRequestDTO request) {
         Long tenantId = TenantContext.getTenantId();
-        LocalDate today = LocalDate.now();
         LocalDateTime now = LocalDateTime.now();
-        String todayStr = today.format(DATE_FMT);
+        LocalDate effectiveDate = getEffectiveCheckinDate(now);
+        String todayStr = effectiveDate.format(DATE_FMT);
         Long ruleId = request.getRuleId();
 
         // 1. Try Redis distributed lock first (with graceful fallback to DB path)
         String lockKey = DistributedLock.checkInLockKey(userId, todayStr, ruleId);
         CheckInResponseDTO result = distributedLock.tryExecuteWithLock(lockKey,
-                () -> doCheckIn(userId, ruleId, tenantId, today, now));
+                () -> doCheckIn(userId, ruleId, tenantId, effectiveDate, now));
         if (result != null) {
             return result;
         }
         // Path 2: Redis unavailable — fall back to DB-only path (DB unique index guards against duplicates)
-        return doCheckIn(userId, ruleId, tenantId, today, now);
+        return doCheckIn(userId, ruleId, tenantId, effectiveDate, now);
     }
 
     private CheckInResponseDTO doCheckIn(Long userId, Long ruleId, Long tenantId,
@@ -382,6 +382,20 @@ public class CheckInService {
 
             return dto;
              }).toList();
+     }
+
+     /**
+      * Calculate the effective check-in date based on the cross-day timezone rule.
+      * 22:00-23:59 → attributed to NEXT day
+      * 00:00-21:59 → attributed to CURRENT day
+      * Spec: openspec/changes/carbon-point-platform/specs/point-engine/spec.md "连续打卡天数时区边界规则"
+      */
+     private LocalDate getEffectiveCheckinDate(LocalDateTime checkinTime) {
+         LocalTime time = checkinTime.toLocalTime();
+         if (!time.isBefore(LocalTime.of(22, 0))) {
+             return checkinTime.toLocalDate().plusDays(1);
+         }
+         return checkinTime.toLocalDate();
      }
 
      /**

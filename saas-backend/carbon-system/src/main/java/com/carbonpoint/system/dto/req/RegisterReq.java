@@ -8,4 +8,5 @@ public class RegisterReq {
     private String password;
     private String nickname;
     private String inviteCode;
+    private String smsCode; // SMS verification code
 }

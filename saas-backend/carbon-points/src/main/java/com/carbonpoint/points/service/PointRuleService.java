@@ -198,7 +198,16 @@ public class PointRuleService {
                         // OK
                     } else if (node.has("recurring")) {
                         validateField(node, "recurring", true);
-                        validateField(node, "dayOfMonth", true);
+                        String recurring = node.get("recurring").asText();
+                        if ("MONTHLY".equals(recurring)) {
+                            validateField(node, "dayOfMonth", true);
+                        } else if ("WEEKLY".equals(recurring)) {
+                            validateField(node, "dayOfWeek", true);
+                            int dow = node.get("dayOfWeek").asInt();
+                            if (dow < 1 || dow > 7) {
+                                throw new BusinessException(ErrorCode.PARAM_INVALID, "dayOfWeek must be 1-7 (Monday-Sunday)");
+                            }
+                        }
                     } else {
                         throw new BusinessException(ErrorCode.PARAM_INVALID,
                                 "特殊日期规则必须包含 dates 数组或 recurring + dayOfMonth");

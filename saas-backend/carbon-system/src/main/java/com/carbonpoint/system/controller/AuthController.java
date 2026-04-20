@@ -32,6 +32,12 @@ public class AuthController {
         return Result.success(authService.register(req));
     }
 
+    @PostMapping("/send-sms-code")
+    public Result<Void> sendSmsCode(@RequestParam String phone) {
+        authService.sendSmsCode(phone);
+        return Result.success();
+    }
+
     @PostMapping("/refresh")
     public Result<AuthRes> refresh(@RequestBody RefreshTokenReq req, HttpServletRequest httpReq) {
         String clientIp = getClientIp(httpReq);

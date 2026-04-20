@@ -6,6 +6,8 @@ import com.carbonpoint.common.result.Result;
 import com.carbonpoint.common.security.JwtUserPrincipal;
 import com.carbonpoint.points.dto.*;
 import com.carbonpoint.points.service.PointAccountService;
+import com.carbonpoint.points.service.PointExpirationService;
+import com.carbonpoint.common.tenant.TenantContext;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 public class PointsController {
 
     private final PointAccountService pointAccountService;
+    private final PointExpirationService expirationService;
 
     // --- User-facing endpoints (JWT auth) ---
 
@@ -117,5 +120,55 @@ public class PointsController {
                 remark + " | 操作人: " + principal.getUserId(),
                 principal.getUserId());
         return Result.success("积分扣减成功，当前余额: " + newBalance);
+    }
+
+    // --- Expiration endpoints ---
+
+    /**
+     * Get current user's expiration status.
+     */
+    @GetMapping("/expiration/status")
+    public Result<PointExpirationService.ExpirationStatus> getExpirationStatus(
+            @AuthenticationPrincipal JwtUserPrincipal principal) {
+        return Result.success(expirationService.getExpirationStatus(principal.getUserId()));
+    }
+
+    /**
+     * User requests a one-time extension.
+     */
+    @PostMapping("/expiration/extend")
+    public Result<String> extendExpiration(
+            @AuthenticationPrincipal JwtUserPrincipal principal) {
+        expirationService.extendExpiration(principal.getUserId());
+        return Result.success("积分延期成功");
+    }
+
+    /**
+     * Admin gets expiration config for current tenant.
+     */
+    @GetMapping("/expiration/config")
+    @RequirePerm("enterprise:point:query")
+    public Result<PointExpirationService.ExpirationStatus> getExpirationConfig() {
+        Long tenantId = TenantContext.getTenantId();
+        // Return config as part of a simple wrapper
+        return Result.success(expirationService.getExpirationStatus(null));
+    }
+
+    /**
+     * Admin updates expiration config.
+     */
+    @PutMapping("/expiration/config")
+    @RequirePerm("enterprise:point:add")
+    public Result<String> updateExpirationConfig(
+            @RequestParam boolean enabled,
+            @RequestParam(defaultValue = "12") int expirationMonths,
+            @RequestParam(defaultValue = "30") int preNoticeDays,
+            @RequestParam(defaultValue = "false") boolean manualExtensionEnabled,
+            @RequestParam(defaultValue = "3") int extensionMonths,
+            @RequestParam(defaultValue = "forfeit") String handling) {
+        Long tenantId = TenantContext.getTenantId();
+        expirationService.updateConfig(tenantId, enabled, expirationMonths, preNoticeDays,
+                manualExtensionEnabled, extensionMonths, handling);
+        return Result.success("过期配置更新成功");
     }
 }

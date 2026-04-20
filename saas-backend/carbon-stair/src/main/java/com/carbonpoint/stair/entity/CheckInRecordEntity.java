@@ -52,7 +52,4 @@ public class CheckInRecordEntity {
 
     @TableLogic
     private Integer deleted;
-
-    @Version
-    private Long version;
 }

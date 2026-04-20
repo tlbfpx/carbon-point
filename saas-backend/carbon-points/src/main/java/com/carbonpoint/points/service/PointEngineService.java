@@ -219,11 +219,18 @@ public class PointEngineService {
                     }
                 } else if (config.has("recurring")) {
                     String recurring = config.get("recurring").asText();
-                    int dayOfMonth = config.get("dayOfMonth").asInt();
                     double multiplier = config.get("multiplier").asDouble();
 
-                    if ("MONTHLY".equals(recurring) && today.getDayOfMonth() == dayOfMonth) {
-                        return String.valueOf(multiplier);
+                    if ("MONTHLY".equals(recurring)) {
+                        int dayOfMonth = config.get("dayOfMonth").asInt();
+                        if (today.getDayOfMonth() == dayOfMonth) {
+                            return String.valueOf(multiplier);
+                        }
+                    } else if ("WEEKLY".equals(recurring)) {
+                        int dayOfWeek = config.get("dayOfWeek").asInt(); // 1=Mon to 7=Sun (ISO)
+                        if (today.getDayOfWeek().getValue() == dayOfWeek) {
+                            return String.valueOf(multiplier);
+                        }
                     }
                 }
             } catch (Exception e) {

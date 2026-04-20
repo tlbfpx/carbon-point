@@ -17,12 +17,15 @@ import com.carbonpoint.system.security.captcha.CaptchaService;
 import com.carbonpoint.system.service.InvitationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.Random;
 
 @Slf4j
 @Service
@@ -42,6 +45,7 @@ public class AuthServiceImpl implements com.carbonpoint.system.service.AuthServi
     private final AccountLockService accountLockService;
     private final CaptchaService captchaService;
     private final LoginSecurityLogService loginSecurityLogService;
+    private final StringRedisTemplate redisTemplate;
 
     @Override
     public AuthRes login(LoginReq req, String clientIp) {
@@ -110,6 +114,14 @@ public class AuthServiceImpl implements com.carbonpoint.system.service.AuthServi
     @Override
     @Transactional
     public AuthRes register(RegisterReq req) {
+        // Verify SMS verification code
+        if (req.getSmsCode() == null || !verifySmsCode(req.getPhone(), req.getSmsCode())) {
+            throw new BusinessException(ErrorCode.PARAM_INVALID, "短信验证码错误");
+        }
+
+        // Clear SMS code after successful verification
+        clearSmsCode(req.getPhone());
+
         if (req.getInviteCode() == null || !invitationService.validateCode(req.getInviteCode())) {
             throw new BusinessException(ErrorCode.INVITE_CODE_INVALID);
         }
@@ -118,9 +130,9 @@ public class AuthServiceImpl implements com.carbonpoint.system.service.AuthServi
         TenantInvitation invitation = invitationMapper.selectByInviteCode(req.getInviteCode());
         Long tenantId = invitation.getTenantId();
 
-        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(User::getPhone, req.getPhone());
-        if (userMapper.selectCount(wrapper) > 0) {
+        // Check phone uniqueness (global check since phone is globally unique)
+        User existingUser = userMapper.selectByPhone(req.getPhone());
+        if (existingUser != null) {
             throw new BusinessException(ErrorCode.USER_PHONE_DUPLICATE);
         }
 
@@ -259,5 +271,48 @@ public class AuthServiceImpl implements com.carbonpoint.system.service.AuthServi
         String newHash = passwordEncoder.encode(rawPassword);
         userMapper.updatePasswordHash(userId, newHash);
         log.info("Upgraded password from BCrypt to Argon2id for userId={}", userId);
+    }
+
+    /**
+     * Generate and store SMS verification code in Redis.
+     */
+    public void sendSmsCode(String phone) {
+        // Check rate limit: max 3 codes per 5 minutes
+        String key = "sms:rate:" + phone;
+        String count = redisTemplate.opsForValue().get(key);
+        if (count == null) {
+            redisTemplate.opsForValue().set(key, "1", 5, TimeUnit.MINUTES);
+        } else if (Integer.parseInt(count) >= 3) {
+            throw new BusinessException(ErrorCode.SYSTEM_RATE_LIMIT_EXCEEDED, "发送过于频繁，请5分钟后再试");
+        } else {
+            redisTemplate.opsForValue().increment(key);
+        }
+
+        // Generate 6-digit code
+        String code = String.format("%06d", new Random().nextInt(1000000));
+        String codeKey = "sms:code:" + phone;
+
+        // Store with 5 minute expiration
+        redisTemplate.opsForValue().set(codeKey, code, 5, TimeUnit.MINUTES);
+
+        log.info("SMS verification code for {}: {}", phone, code);
+        // TODO: Integrate with actual SMS service in production
+    }
+
+    /**
+     * Verify SMS code.
+     */
+    private boolean verifySmsCode(String phone, String code) {
+        String codeKey = "sms:code:" + phone;
+        String storedCode = redisTemplate.opsForValue().get(codeKey);
+        return storedCode != null && storedCode.equals(code);
+    }
+
+    /**
+     * Clear SMS code after use.
+     */
+    private void clearSmsCode(String phone) {
+        String codeKey = "sms:code:" + phone;
+        redisTemplate.delete(codeKey);
     }
 }

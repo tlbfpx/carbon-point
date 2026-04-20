@@ -111,4 +111,13 @@ public interface PointsUserMapper {
             java.time.LocalDate lastCheckinDate,
             String levelMode
     ) {}
+
+    /**
+     * Select all active users in a tenant for expiration processing.
+     */
+    @InterceptorIgnore(tenantLine = "1")
+    @Select("SELECT id, tenant_id, phone, email, nickname, level, total_points, available_points, " +
+            "frozen_points, consecutive_days, last_checkin_date, version " +
+            "FROM users WHERE tenant_id = #{tenantId} AND status = 'active'")
+    java.util.List<User> selectListByTenantId(@Param("tenantId") Long tenantId);
 }

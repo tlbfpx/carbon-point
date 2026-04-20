@@ -8,4 +8,5 @@ public interface AuthService {
     AuthRes register(RegisterReq req);
     AuthRes refreshToken(String refreshToken, String deviceFingerprint, String clientIp);
     void logout(String refreshToken);
+    void sendSmsCode(String phone);
 }
