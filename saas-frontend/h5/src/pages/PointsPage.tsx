@@ -95,6 +95,22 @@ const PointsPage: React.FC = () => {
             <span style={{ fontSize: 12, color: '#999' }}>Lv.{currentLevel.level} {currentLevel.name}</span>
             {nextLevel && <span style={{ fontSize: 12, color: '#999' }}>Lv.{nextLevel.level} {nextLevel.name}</span>}
           </div>
+          <div
+            style={{
+              marginTop: 12,
+              padding: '8px 12px',
+              background: '#fff7e6',
+              borderRadius: 8,
+              cursor: 'pointer',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+            onClick={() => navigate('/points/expiration')}
+          >
+            <span style={{ fontSize: 13, color: '#d46b08' }}>查看积分过期状态</span>
+            <span style={{ fontSize: 14, color: '#d46b08' }}>&rarr;</span>
+          </div>
         </GlassCard>
 
         <GlassCard style={{ marginBottom: 16 }} title="积分明细">

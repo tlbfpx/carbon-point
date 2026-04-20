@@ -16,6 +16,7 @@ import RegisterPage from '@/pages/RegisterPage';
 import NotificationPage from '@/pages/NotificationPage';
 import WalkingPage from '@/pages/WalkingPage';
 import WalkingHistoryPage from '@/pages/WalkingHistoryPage';
+import PointExpirationPage from '@/pages/PointExpirationPage';
 import { useAuthStore } from '@/store/authStore';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { routeLogger } from '@/utils/logger';
@@ -78,6 +79,14 @@ const App: React.FC = () => {
             element={
               <ProtectedRoute>
                 <PointsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/points/expiration"
+            element={
+              <ProtectedRoute>
+                <PointExpirationPage />
               </ProtectedRoute>
             }
           />

@@ -60,3 +60,25 @@ export const getLeaderboardContext = async (): Promise<{ data: LeaderboardContex
   const res = await apiClient.get('/v1/leaderboard/context');
   return res.data;
 };
+
+// --- Point Expiration ---
+
+export interface ExpirationStatus {
+  enabled: boolean;
+  availablePoints: number;
+  expirationMonths: number;
+  lastActivityDate: string | null;
+  expirationDate: string | null;
+  canExtend: boolean;
+  alreadyExtended: boolean;
+}
+
+export const getExpirationStatus = async (): Promise<{ data: ExpirationStatus }> => {
+  const res = await apiClient.get('/points/expiration/status');
+  return res.data;
+};
+
+export const extendExpiration = async (): Promise<{ code: string; data: string }> => {
+  const res = await apiClient.post('/points/expiration/extend');
+  return res.data;
+};

@@ -23,6 +23,7 @@ import {
     WomanOutlined,
     SwapOutlined,
     SmileOutlined,
+    ClockCircleOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 
@@ -40,6 +41,7 @@ import DictManagement from '@/pages/DictManagement';
 import LoginPage from '@/pages/LoginPage';
 import OperationLog from '@/pages/OperationLog';
 import WalkingManagement from '@/pages/walking/WalkingManagement';
+import PointExpiration from '@/pages/PointExpiration';
 
 import { useAuthStore } from '@/store/authStore';
 import { useBranding } from '@/components/BrandingProvider';
@@ -67,6 +69,7 @@ const ENTERPRISE_PERMISSION_MAP: Record<string, string | undefined> = {
   '/walking': 'enterprise:walking:view',
   '/walking/step-config': 'enterprise:walking:config',
   '/walking/fun-equiv': 'enterprise:walking:config',
+  '/point-expiration': 'enterprise:point:query',
 };
 
 const EnterpriseMenuItems: MenuProps['items'] = [
@@ -92,6 +95,7 @@ const EnterpriseMenuItems: MenuProps['items'] = [
   { key: '/products', icon: <ShopOutlined />, label: '产品管理' },
   { key: '/orders', icon: <ShoppingOutlined />, label: '订单管理' },
   { key: '/points', icon: <TrophyOutlined />, label: '积分运营' },
+  { key: '/point-expiration', icon: <ClockCircleOutlined />, label: '积分过期配置' },
   { key: '/reports', icon: <BarChartOutlined />, label: '数据报表' },
   { key: '/roles', icon: <SafetyOutlined />, label: '角色管理' },
   { key: '/feature-matrix', icon: <AppstoreOutlined />, label: '功能点阵' },
@@ -424,6 +428,7 @@ const EnterpriseContent: React.FC = () => {
             <Route path="/products" element={<Products />} />
             <Route path="/orders" element={<Orders />} />
             <Route path="/points" element={<Points />} />
+            <Route path="/point-expiration" element={<PointExpiration />} />
             <Route path="/reports" element={<Reports />} />
             <Route path="/roles" element={<Roles />} />
             <Route path="/feature-matrix" element={<FeatureMatrix />} />

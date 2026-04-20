@@ -15,6 +15,7 @@ apps/dashboard/e2e/reports/
 apps/dashboard/e2e/.auth/
 apps/dashboard/test-results/
 saas-frontend/platform-frontend/e2e/reports/data/
+saas-frontend/platform-frontend/e2e/reports/trace/
 saas-frontend/platform-frontend/e2e/.auth/
 saas-frontend/platform-frontend/test-results/
 

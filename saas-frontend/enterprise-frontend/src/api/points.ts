@@ -74,3 +74,31 @@ export const getPointsStats = async (tenantId: string) => {
   const res = await apiClient.get('/points/stats', { params: { tenantId } });
   return res.data;
 };
+
+// --- Point Expiration Config ---
+
+export interface ExpirationConfig {
+  enabled: boolean;
+  expirationMonths: number;
+  preNoticeDays: number;
+  manualExtensionEnabled: boolean;
+  extensionMonths: number;
+  handling: string;
+}
+
+export const getExpirationConfig = async () => {
+  const res = await apiClient.get('/points/expiration/config');
+  return res.data as ExpirationConfig;
+};
+
+export const updateExpirationConfig = async (params: {
+  enabled: boolean;
+  expirationMonths: number;
+  preNoticeDays: number;
+  manualExtensionEnabled: boolean;
+  extensionMonths: number;
+  handling: string;
+}) => {
+  const res = await apiClient.put('/points/expiration/config', null, { params });
+  return res.data;
+};
