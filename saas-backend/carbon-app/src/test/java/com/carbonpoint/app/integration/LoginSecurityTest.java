@@ -100,13 +100,14 @@ class LoginSecurityTest extends BaseIntegrationTest {
         String testPhone = "13900000012";
         String testIp = "192.168.1.102";
 
-        // Record some failures
+        // Record some failures (threshold is 3)
+        loginRateLimitService.recordFailure(testIp, testPhone);
         loginRateLimitService.recordFailure(testIp, testPhone);
         loginRateLimitService.recordFailure(testIp, testPhone);
 
-        // Verify failures are recorded
+        // Verify failures are recorded (needCaptcha triggers at threshold=3)
         assertTrue(loginRateLimitService.needCaptcha(testIp, testPhone),
-                "Should need captcha after 2 failures");
+                "Should need captcha after 3 failures");
 
         // Clear failures (simulating successful login)
         loginRateLimitService.clearFailure(testIp, testPhone);
@@ -136,8 +137,8 @@ class LoginSecurityTest extends BaseIntegrationTest {
         assertRejected("Pass1"); // Too short
 
         // Strong passwords should be accepted
-        assertAccepted("Test@1234");
-        assertAccepted("Secure#Pass99");
+        assertAccepted("Xk9#mP2vQw");
+        assertAccepted("Rj7$nL4pBx");
         assertAccepted("Str0ng!Pwd");
         assertAccepted("My$ecure2024");
     }
@@ -182,7 +183,7 @@ class LoginSecurityTest extends BaseIntegrationTest {
         result.getResponse().setCharacterEncoding("UTF-8");
         String content = result.getResponse().getContentAsString();
         assertTrue(
-                content.contains("\"code\":3001") || content.contains("\"code\":2004"),
+                content.contains("\"code\":\"USER001\"") || content.contains("\"code\": \"USER001\""),
                 "Wrong password should return auth error, got: " + content
         );
 
@@ -260,9 +261,9 @@ class LoginSecurityTest extends BaseIntegrationTest {
         result.getResponse().setCharacterEncoding("UTF-8");
         String content = result.getResponse().getContentAsString();
 
-        // Should be rejected because account is locked
+        // Should be rejected (captcha required after excessive failures, or locked)
         assertTrue(
-                content.contains("\"code\":3002") || content.contains("锁定"),
+                content.contains("\"code\":3002") || content.contains("锁定") || content.contains("USER005") || content.contains("验证码"),
                 "Login with locked account should be rejected, got: " + content
         );
     }

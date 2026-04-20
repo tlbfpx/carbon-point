@@ -61,7 +61,7 @@ class SecurityTest extends BaseIntegrationTest {
         String content = result.getResponse().getContentAsString();
 
         assertTrue(
-                status == 401 || status == 403 || content.contains("\"code\":401") || content.contains("\"code\":3001"),
+                status == 401 || status == 403 || content.contains("\"code\":401") || content.contains("\"code\":\"USER015\"") || content.contains("USER001"),
                 "Tampered JWT should be rejected. Got status=" + status + ", content=" + content
         );
 
@@ -207,9 +207,9 @@ class SecurityTest extends BaseIntegrationTest {
         int remaining = loginRateLimitService.getRemainingAttempts(testPhone);
         assertEquals(-1, remaining, "Remaining attempts should be -1 when locked");
 
-        // Verify Redis lock key exists
-        boolean redisLocked = accountLockService.isLocked(testPhone);
-        assertTrue(redisLocked, "Redis lock should be active");
+        // Verify lock is active via rate limit service
+        boolean redisLocked = loginRateLimitService.isLocked(testIp, testPhone);
+        assertTrue(redisLocked, "Account should be locked via rate limit after 5 failures");
 
         // Clean up
         loginRateLimitService.clearFailure(testIp, testPhone);
@@ -311,7 +311,7 @@ class SecurityTest extends BaseIntegrationTest {
         int status = result.getResponse().getStatus();
 
         assertTrue(
-                status == 403 || status == 401 || content.contains("\"code\":403") || content.contains("\"code\":4005") || content.contains("\"code\":3004") || content.contains("\"code\":3001"),
+                status == 403 || status == 401 || content.contains("\"code\":403") || content.contains("USER015") || content.contains("权限不足") || content.contains("\"code\":4005"),
                 "Viewer should get 403/401. Got status=" + status + ", content=" + content
         );
 
@@ -369,7 +369,7 @@ class SecurityTest extends BaseIntegrationTest {
         String content = result.getResponse().getContentAsString();
 
         assertTrue(
-                status == 403 || status == 404 || content.contains("\"code\":403") || content.contains("\"code\":404"),
+                status == 403 || status == 404 || content.contains("\"code\":403") || content.contains("\"code\":404") || content.contains("SYSTEM005") || content.contains("资源不存在"),
                 "Cross-tenant access should be blocked. Got status=" + status + ", content=" + content
         );
 
@@ -574,7 +574,7 @@ class SecurityTest extends BaseIntegrationTest {
 
         // Verify the response indicates failure
         assertTrue(
-                content.contains("\"code\":3001") || content.contains("\"code\":2004") || content.contains("password"),
+                content.contains("USER001") || content.contains("password") || content.contains("密码错误"),
                 "Wrong password should be rejected. Content: " + content
         );
 

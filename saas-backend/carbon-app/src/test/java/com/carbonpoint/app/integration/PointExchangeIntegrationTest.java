@@ -150,9 +150,10 @@ class PointExchangeIntegrationTest extends BaseIntegrationTest {
         result.getResponse().setCharacterEncoding("UTF-8");
         String content = result.getResponse().getContentAsString();
 
-        // Should be rejected with POINT_INSUFFICIENT (10201) or EXCHANGE_POINT_NOT_ENOUGH (10407)
+        // Should be rejected with insufficient points error
         assertTrue(
-                content.contains("\"code\":10201") || content.contains("\"code\":10407") || content.contains("积分不足"),
+                content.contains("\"code\":10201") || content.contains("\"code\":10407")
+                || content.contains("ORDER007") || content.contains("积分不够") || content.contains("积分不足"),
                 "Insufficient points should be rejected, got: " + content
         );
 

@@ -214,7 +214,8 @@ class MultiTenantIsolationTest extends BaseIntegrationTest {
         String content = result.getResponse().getContentAsString();
         int status = result.getResponse().getStatus();
         assertTrue(
-                status == 403 || status == 404 || content.contains("\"code\":403") || content.contains("\"code\":404"),
+                status == 403 || status == 404 || content.contains("\"code\":403") || content.contains("\"code\":404")
+                || content.contains("SYSTEM005") || content.contains("资源不存在"),
                 "Cross-tenant access should be rejected (got status " + status + ", content: " + content + ")"
         );
     }
