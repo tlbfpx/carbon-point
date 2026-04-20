@@ -18,6 +18,7 @@ import {
   Empty,
   Spin,
   Typography,
+  Collapse,
 } from 'antd';
 import { GlassCard } from '@carbon-point/design-system';
 import {
@@ -40,10 +41,14 @@ import {
   assignSuperAdmin,
   getPlatformStats,
   getTenantProducts,
+  getPackageDetail,
   Enterprise,
   EnterpriseUser,
   TenantProductInfo,
+  PackageProduct,
+  PackageProductFeature,
 } from '@/api/platform';
+import { FEATURE_MENU_MAP } from '@/constants/feature-menu-map';
 import { extractArray } from '@/utils';
 
 const { Text } = Typography;
@@ -96,7 +101,14 @@ const EnterpriseManagement: React.FC = () => {
   const { data: tenantProductsData, isLoading: tenantProductsLoading } = useQuery({
     queryKey: ['tenant-products', editingEnterprise?.id],
     queryFn: () => getTenantProducts(editingEnterprise!.id),
-    enabled: !!editingEnterprise?.id && detailModalOpen && detailActiveTab === 'products',
+    enabled: !!editingEnterprise?.id && detailModalOpen && (detailActiveTab === 'products' || detailActiveTab === 'permissions'),
+    retry: false,
+  });
+
+  const { data: packageDetailData, isLoading: packageDetailLoading } = useQuery({
+    queryKey: ['package-detail-for-permission', editingEnterprise?.packageId],
+    queryFn: () => getPackageDetail(editingEnterprise!.packageId!),
+    enabled: !!editingEnterprise?.packageId && detailModalOpen && detailActiveTab === 'permissions',
     retry: false,
   });
 
@@ -455,6 +467,193 @@ const EnterpriseManagement: React.FC = () => {
     );
   };
 
+  const renderPermissionOverview = () => {
+    if (!editingEnterprise?.packageId) {
+      return (
+        <Empty
+          description="该企业尚未绑定套餐，无法查看权限信息"
+          image={Empty.PRESENTED_IMAGE_SIMPLE}
+        />
+      );
+    }
+
+    if (packageDetailLoading || tenantProductsLoading) {
+      return (
+        <div style={{ textAlign: 'center', padding: 32 }}>
+          <Spin tip="加载中..." />
+        </div>
+      );
+    }
+
+    const products = tenantProductsData?.data || [];
+    const packageDetail = packageDetailData?.data;
+    const packageProducts = packageDetail?.products || [];
+
+    // Calculate stats
+    let enabledFeatures = 0;
+    let totalMenus = 0;
+
+    products.forEach((product: TenantProductInfo) => {
+      const pkgProduct = packageProducts.find(
+        (pp: PackageProduct) => pp.productId === product.productId
+      );
+      const features = pkgProduct?.features || [];
+      features.forEach((f: PackageProductFeature) => {
+        if (f.isEnabled) {
+          enabledFeatures++;
+          const menus = FEATURE_MENU_MAP[f.featureId];
+          if (menus) totalMenus++;
+        }
+      });
+    });
+
+    // Chain visualization items
+    const chainItems = [
+      {
+        label: '套餐',
+        value: editingEnterprise.packageName || '—',
+        color: '#ddf4ff',
+        borderColor: '#0969da',
+        textColor: '#0969da',
+      },
+      {
+        label: '包含产品',
+        value: `${products.length} 个`,
+        color: '#dafbe1',
+        borderColor: '#1a7f37',
+        textColor: '#1a7f37',
+      },
+      {
+        label: '启用功能点',
+        value: `${enabledFeatures} 个`,
+        color: '#fff8c5',
+        borderColor: '#bf8700',
+        textColor: '#9a6700',
+      },
+      {
+        label: '企业菜单',
+        value: `${totalMenus} 个`,
+        color: '#f1e8ff',
+        borderColor: '#8250df',
+        textColor: '#8250df',
+      },
+    ];
+
+    // Build collapse panels
+    const collapseItems = products.map((product: TenantProductInfo) => {
+      const pkgProduct = packageProducts.find(
+        (pp: PackageProduct) => pp.productId === product.productId
+      );
+      const features = pkgProduct?.features || [];
+      const enabledCount = features.filter((f: PackageProductFeature) => f.isEnabled).length;
+
+      return {
+        key: product.productId || product.productCode,
+        label: (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontWeight: 600 }}>{product.productName}</span>
+            <Tag color={CATEGORY_COLOR_MAP[product.category] || 'default'}>
+              {CATEGORY_LABEL_MAP[product.category] || product.category}
+            </Tag>
+            <span style={{ fontSize: 12, color: '#666' }}>
+              {enabledCount}/{features.length} 已启用
+            </span>
+          </div>
+        ),
+        children: features.length === 0 ? (
+          <Empty description="暂无功能点配置" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+        ) : (
+          <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ borderBottom: '2px solid #f0f0f0' }}>
+                <th style={{ padding: '6px 8px', textAlign: 'left', width: 60 }}>类型</th>
+                <th style={{ padding: '6px 8px', textAlign: 'left' }}>功能点</th>
+                <th style={{ padding: '6px 8px', textAlign: 'center', width: 60 }}>状态</th>
+                <th style={{ padding: '6px 8px', textAlign: 'left' }}>对应企业菜单</th>
+              </tr>
+            </thead>
+            <tbody>
+              {features.map((f: PackageProductFeature) => {
+                const menus = FEATURE_MENU_MAP[f.featureId];
+                return (
+                  <tr key={f.featureId} style={{ borderBottom: '1px solid #f0f0f0' }}>
+                    <td style={{ padding: '6px 8px' }}>
+                      <Tag style={{ fontSize: 11 }}>
+                        {f.feature?.type === 'permission' ? '权限' : '配置'}
+                      </Tag>
+                    </td>
+                    <td style={{ padding: '6px 8px' }}>
+                      {f.feature?.name || f.featureId}
+                    </td>
+                    <td style={{ padding: '6px 8px', textAlign: 'center' }}>
+                      {f.isEnabled ? (
+                        <span style={{ color: '#1a7f37' }}>●</span>
+                      ) : (
+                        <span style={{ color: '#8b949e' }}>○</span>
+                      )}
+                    </td>
+                    <td style={{ padding: '6px 8px' }}>
+                      {f.isEnabled && menus ? (
+                        <span style={{ color: '#656d76' }}>{menus.join(' / ')}</span>
+                      ) : (
+                        <span style={{ color: '#8b949e', fontStyle: 'italic' }}>
+                          {f.isEnabled ? '— 菜单映射未定义' : '— 未启用，无菜单'}
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        ),
+      };
+    });
+
+    return (
+      <div>
+        {/* Chain visualization */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 0,
+          marginBottom: 24,
+          padding: '16px 0',
+        }}>
+          {chainItems.map((item, index) => (
+            <React.Fragment key={item.label}>
+              <div style={{
+                background: item.color,
+                border: `1px solid ${item.borderColor}`,
+                borderRadius: index === 0 ? '8px 0 0 8px' : index === chainItems.length - 1 ? '0 8px 8px 0' : '0',
+                padding: '12px 20px',
+                textAlign: 'center',
+                minWidth: 120,
+              }}>
+                <div style={{ fontSize: 11, color: '#656d76' }}>{item.label}</div>
+                <div style={{ fontWeight: 'bold', color: item.textColor }}>{item.value}</div>
+              </div>
+              {index < chainItems.length - 1 && (
+                <span style={{ color: '#d0d7de', fontSize: 20, margin: '0 4px' }}>→</span>
+              )}
+            </React.Fragment>
+          ))}
+        </div>
+
+        {/* Product permission detail panels */}
+        {products.length === 0 ? (
+          <Empty
+            description="该企业尚未启用任何产品"
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+          />
+        ) : (
+          <Collapse items={collapseItems} defaultActiveKey={products.map((p: TenantProductInfo) => p.productId || p.productCode)} />
+        )}
+      </div>
+    );
+  };
+
   const total = data?.data?.total || 0;
   const records = data?.data?.records || [];
 
@@ -646,6 +845,11 @@ const EnterpriseManagement: React.FC = () => {
               { key: 'info', label: '基本信息', children: renderDetailInfo() },
               { key: 'users', label: '用户管理', children: renderDetailUsers() },
               { key: 'products', label: '已启用产品', children: renderDetailProducts() },
+              {
+                key: 'permissions',
+                label: '权限总览',
+                children: renderPermissionOverview(),
+              },
             ]}
           />
         )}
