@@ -335,6 +335,13 @@ export interface PackageDetail extends PermissionPackage {
   products?: PackageProduct[];
 }
 
+export interface PackageSummary {
+  id: string;
+  code: string;
+  name: string;
+  status: number;
+}
+
 // Product APIs
 export const getProducts = async (params?: { page?: number; size?: number; category?: string; status?: number; keyword?: string }) => {
   const res = await platformApiClient.get('/products', { params });
@@ -368,6 +375,12 @@ export const updateProduct = async (
 
 export const deleteProduct = async (id: string) => {
   const res = await platformApiClient.delete(`/products/${id}`);
+  return res.data;
+};
+
+/** Get packages that include a specific product */
+export const getProductPackages = async (productId: string) => {
+  const res = await platformApiClient.get(`/products/${productId}/packages`);
   return res.data;
 };
 
