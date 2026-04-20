@@ -5,7 +5,7 @@ import { loginAsPlatformAdmin, uniqueId } from '../../helpers';
 test.describe('平台后台 - 功能点库', () => {
   test.beforeEach(async ({ page }) => {
     await loginAsPlatformAdmin(page, BASE_URL);
-    await page.goto(`${BASE_URL}/platform/features/features`);
+    await page.goto(`${BASE_URL}/features/blocks`);
     await page.waitForLoadState('networkidle');
   });
 

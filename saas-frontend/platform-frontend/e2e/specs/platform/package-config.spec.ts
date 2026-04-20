@@ -5,7 +5,7 @@ import { loginAsPlatformAdmin, uniqueId } from '../../helpers';
 test.describe('平台后台 - 套餐配置', () => {
   test.beforeEach(async ({ page }) => {
     await loginAsPlatformAdmin(page, BASE_URL);
-    await page.goto(`${BASE_URL}/platform/packages`);
+    await page.goto(`${BASE_URL}/packages`);
     await page.waitForLoadState('networkidle');
   });
 

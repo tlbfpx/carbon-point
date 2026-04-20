@@ -5,7 +5,7 @@ import { loginAsPlatformAdmin, uniqueId } from '../../helpers';
 test.describe('平台后台 - 产品管理', () => {
   test.beforeEach(async ({ page }) => {
     await loginAsPlatformAdmin(page, BASE_URL);
-    await page.goto(`${BASE_URL}/platform/features/products`);
+    await page.goto(`${BASE_URL}/features/products`);
     await page.waitForLoadState('networkidle');
   });
 
