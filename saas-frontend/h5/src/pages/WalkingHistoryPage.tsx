@@ -60,7 +60,7 @@ const WalkingHistoryPage: React.FC = () => {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                     <div>
                       <p style={{ margin: 0, fontWeight: 500 }}>
-                        {record.source === 'manual' ? '手动领取' : '自动领取'}
+                        {record.source === 'manual' ? '手动领取' : record.source ? '自动领取' : '领取'}
                       </p>
                       <p style={{ margin: '4px 0 0', fontSize: 12, color: '#999' }}>
                         {formatDate(record.date)}

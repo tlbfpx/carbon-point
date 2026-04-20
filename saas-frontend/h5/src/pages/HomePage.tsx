@@ -5,6 +5,7 @@ import { GlassCard } from '@carbon-point/design-system';
 import { useQuery } from '@tanstack/react-query';
 import { getTodayCheckInStatus } from '@/api/checkin';
 import { getLeaderboardHistory, getLeaderboardContext, type LeaderboardEntry } from '@/api/points';
+import { getTenantProducts, type TenantProduct } from '@/api/products';
 import { useAuthStore } from '@/store/authStore';
 
 const greeting = () => {
@@ -22,6 +23,43 @@ const HomePage: React.FC = () => {
     queryKey: ['checkInStatus'],
     queryFn: getTodayCheckInStatus,
   });
+
+  const { data: tenantProducts } = useQuery({
+    queryKey: ['tenantProducts'],
+    queryFn: getTenantProducts,
+  });
+
+  // 系统功能入口（非产品类）
+  const systemEntries = [
+    { name: '积分', icon: '💰', route: '/points' },
+    { name: '商城', icon: '🛒', route: '/mall' },
+    { name: '消息', icon: '🔔', route: '/notifications' },
+  ];
+
+  // 产品代码到路由和图标的映射
+  const productConfig: Record<string, { icon: string; route: string; name: string }> = {
+    stair_climbing: { icon: '🏃', route: '/checkin', name: '打卡' },
+    stair_basic: { icon: '🏃', route: '/checkin', name: '打卡' },
+    stairs: { icon: '🏃', route: '/checkin', name: '打卡' },
+    walking: { icon: '🚶', route: '/walking', name: '走路' },
+    walking_pro: { icon: '🚶', route: '/walking', name: '走路' },
+  };
+
+  // 获取租户可用的产品入口
+  const productEntries = (tenantProducts?.data || [])
+    .map((product: TenantProduct) => {
+      const config = productConfig[product.productCode];
+      if (!config) return null;
+      return {
+        name: product.productName || config.name,
+        icon: config.icon,
+        route: config.route,
+      };
+    })
+    .filter((e): e is NonNullable<typeof e> => e !== null);
+
+  // 合并产品入口和系统入口
+  const quickEntries = [...productEntries, ...systemEntries];
 
   const { data: leaderboardData, isLoading: leaderboardLoading } = useQuery({
     queryKey: ['leaderboardHistory'],
@@ -83,28 +121,28 @@ const HomePage: React.FC = () => {
       </GlassCard>
 
       <GlassCard style={{ marginBottom: 16 }} title="快捷入口">
-        <div style={{ display: 'flex', justifyContent: 'space-around' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer' }} onClick={() => navigate('/checkin')}>
-            <div style={{ fontSize: 28 }}>🏃</div>
-            <span style={{ fontSize: 12, marginTop: 4 }}>打卡</span>
+        {quickEntries.length === 0 ? (
+          <p style={{ textAlign: 'center', color: '#999', padding: '8px 0' }}>暂无可用功能</p>
+        ) : (
+          <div style={{ display: 'flex', justifyContent: quickEntries.length > 4 ? 'flex-start' : 'space-around', flexWrap: 'wrap', gap: '12px 16px' }}>
+            {quickEntries.map((entry) => (
+              <div
+                key={entry.route}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  cursor: 'pointer',
+                  minWidth: 50,
+                }}
+                onClick={() => navigate(entry.route)}
+              >
+                <div style={{ fontSize: 28 }}>{entry.icon}</div>
+                <span style={{ fontSize: 12, marginTop: 4 }}>{entry.name}</span>
+              </div>
+            ))}
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer' }} onClick={() => navigate('/points')}>
-            <div style={{ fontSize: 28 }}>💰</div>
-            <span style={{ fontSize: 12, marginTop: 4 }}>积分</span>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer' }} onClick={() => navigate('/mall')}>
-            <div style={{ fontSize: 28 }}>🛒</div>
-            <span style={{ fontSize: 12, marginTop: 4 }}>商城</span>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer' }} onClick={() => navigate('/notifications')}>
-            <div style={{ fontSize: 28 }}>🔔</div>
-            <span style={{ fontSize: 12, marginTop: 4 }}>消息</span>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer' }} onClick={() => navigate('/walking')}>
-            <div style={{ fontSize: 28 }}>🚶</div>
-            <span style={{ fontSize: 12, marginTop: 4 }}>走路</span>
-          </div>
-        </div>
+        )}
       </GlassCard>
 
       <GlassCard

@@ -19,6 +19,10 @@ import {
   AreaChart,
   XAxis,
   YAxis,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
 } from 'recharts';
 import { useAuthStore } from '@/store/authStore';
 import {
@@ -26,10 +30,14 @@ import {
   getCheckInTrend,
   getPointsTrend,
   getHotProducts,
+  getCrossProductOverview,
+  getProductStats,
   DashboardStats,
   CheckInTrend,
   PointsTrend,
   HotProduct,
+  CrossProductOverview,
+  ProductStats,
 } from '@/api/reports';
 import {
   GlassCard,
@@ -41,7 +49,7 @@ import {
   PageHeader,
 } from '@carbon-point/design-system';
 import type { InsightData, QueryResult } from '@carbon-point/design-system';
-import { BRAND_PALETTE, darkThemeTokens } from '@carbon-point/design-system';
+import { BRAND_PALETTE } from '@carbon-point/design-system';
 import { extractArray } from '@/utils';
 
 const { Text } = Typography;
@@ -199,6 +207,19 @@ const EnterpriseDashboard: React.FC = () => {
     enabled: !!tenantId,
   });
 
+  // Multi-product dashboard data
+  const { data: productOverviewData } = useQuery({
+    queryKey: ['product-overview', tenantId],
+    queryFn: () => getCrossProductOverview(),
+    enabled: !!tenantId,
+  });
+
+  const { data: productStatsData } = useQuery({
+    queryKey: ['product-stats', tenantId],
+    queryFn: () => getProductStats(),
+    enabled: !!tenantId,
+  });
+
   const stats: DashboardStats = (statsData as DashboardStats) || {
     todayCheckInCount: 0,
     todayPointsGranted: 0,
@@ -209,6 +230,48 @@ const EnterpriseDashboard: React.FC = () => {
   const checkInTrend: CheckInTrend[] = extractArray<CheckInTrend>(checkInTrendData);
   const pointsTrend: PointsTrend[] = extractArray<PointsTrend>(pointsTrendData);
   const hotProducts: HotProduct[] = extractArray<HotProduct>(hotProductsData);
+
+  // Multi-product data extraction
+  const productOverview: CrossProductOverview = (productOverviewData as CrossProductOverview) || {
+    slices: [],
+    totalPoints: 0,
+    participationRates: {},
+    overallParticipationRate: 0,
+  };
+
+  const productList: ProductStats[] = (productStatsData as ProductStats[]) || [];
+
+  // Build stacked trend data from productStats dailyStats
+  // Merge all products' daily stats into a unified date-keyed structure
+  const dateMap = new Map<string, Record<string, number>>();
+  const allProductNames = Array.from(new Set(productList.map((p) => p.productName)));
+
+  for (const product of productList) {
+    for (const daily of product.dailyStats) {
+      if (!dateMap.has(daily.date)) {
+        dateMap.set(daily.date, {});
+      }
+      dateMap.get(daily.date)![product.productName] = daily.points;
+    }
+  }
+
+  const stackedTrendData = Array.from(dateMap.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([date, values]) => ({ date, ...values }));
+
+  // Product colors for multi-product charts
+  const PRODUCT_COLORS = [
+    BRAND_PALETTE.primary,   // 爬楼梯
+    BRAND_PALETTE.success,   // 走路
+    BRAND_PALETTE.warning,   // 其他产品 1
+    BRAND_PALETTE.accent,    // 其他产品 2
+  ];
+
+  const getProductColor = (productName: string, index: number): string => {
+    if (productName.includes('爬') || productName.includes('楼')) return PRODUCT_COLORS[0];
+    if (productName.includes('走') || productName.includes('步')) return PRODUCT_COLORS[1];
+    return PRODUCT_COLORS[index % PRODUCT_COLORS.length];
+  };
 
   // 统计数据
   const statValues = [
@@ -311,6 +374,259 @@ const EnterpriseDashboard: React.FC = () => {
             color={config.color}
           />
         ))}
+      </BentoGrid>
+
+      {/* 多产品维度统计卡片 */}
+      {productOverview.slices.length > 0 && (
+        <BentoGrid cols={Math.min(productOverview.slices.length + 1, 4)} gap={16} style={{ marginBottom: 24 }}>
+          {/* 整体参与率 */}
+          <GlassCardStat
+            label="整体参与率"
+            value={`${productOverview.overallParticipationRate}%`}
+            subValue={`共 ${productOverview.totalPoints.toLocaleString()} 积分`}
+            icon={
+              <div
+                style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: 14,
+                  background: `linear-gradient(135deg, ${BRAND_PALETTE.primary}33, ${BRAND_PALETTE.primary}11)`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 22,
+                  color: BRAND_PALETTE.primary,
+                }}
+              >
+                <TeamOutlined />
+              </div>
+            }
+            color={BRAND_PALETTE.primary}
+          />
+          {/* 各产品统计 */}
+          {productOverview.slices.map((slice, index) => (
+            <GlassCardStat
+              key={slice.productCode}
+              label={slice.productName}
+              value={`${slice.points.toLocaleString()} 积分`}
+              subValue={`参与率 ${slice.participationRate}% · ${slice.activeUsers} 人`}
+              icon={
+                <div
+                  style={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: 14,
+                    background: `linear-gradient(135deg, ${getProductColor(slice.productName, index)}33, ${getProductColor(slice.productName, index)}11)`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 22,
+                    color: getProductColor(slice.productName, index),
+                  }}
+                >
+                  <TrophyOutlined />
+                </div>
+              }
+              trend={{ value: slice.percentage, isPositive: true }}
+              color={getProductColor(slice.productName, index)}
+            />
+          ))}
+        </BentoGrid>
+      )}
+
+      {/* 多产品图表区域 */}
+      <BentoGrid cols={2} gap={16} style={{ marginBottom: 24 }}>
+        {/* 产品积分分布饼图 */}
+        <BentoItem>
+          <GlassCard hoverable style={{ height: '100%' }}>
+            <Flex justify="space-between" align="center" style={{ marginBottom: 20 }}>
+              <Flex align="center" gap={12}>
+                <div
+                  style={{
+                    width: 4,
+                    height: 24,
+                    background: `linear-gradient(180deg, ${BRAND_PALETTE.primary}, ${BRAND_PALETTE.secondary})`,
+                    borderRadius: 2,
+                  }}
+                />
+                <h3
+                  style={{
+                    fontSize: 16,
+                    fontWeight: 600,
+                    margin: 0,
+                    color: '#fff',
+                  }}
+                >
+                  产品积分分布
+                </h3>
+                <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>本月</Text>
+              </Flex>
+            </Flex>
+
+            <ResponsiveContainer width="100%" height={240}>
+              {productOverview.slices.length > 0 ? (
+                <PieChart>
+                  <Pie
+                    data={productOverview.slices}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={90}
+                    paddingAngle={4}
+                    dataKey="points"
+                    nameKey="productName"
+                    label={({ productName, percentage }) => `${productName} ${percentage}%`}
+                    labelLine={false}
+                    style={{ fontSize: 12 }}
+                  >
+                    {productOverview.slices.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={getProductColor(entry.productName, index)}
+                        stroke="rgba(255,255,255,0.1)"
+                        strokeWidth={1}
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'rgba(26, 26, 36, 0.95)',
+                      backdropFilter: 'blur(12px)',
+                      border: '1px solid rgba(255, 255, 255, 0.12)',
+                      borderRadius: 12,
+                      padding: '12px 16px',
+                      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+                      fontFamily: "'Inter', sans-serif",
+                    }}
+                    formatter={(value: number, name: string, props: any) => [
+                      `${value.toLocaleString()} 积分 (${props.payload.percentage}%)`,
+                      name,
+                    ]}
+                  />
+                </PieChart>
+              ) : (
+                <Empty description="暂无产品分布数据" />
+              )}
+            </ResponsiveContainer>
+
+            {/* 产品积分分布图例 + 参与率 */}
+            {productOverview.slices.length > 0 && (
+              <Flex wrap="wrap" gap={16} justify="center" style={{ marginTop: 16 }}>
+                {productOverview.slices.map((item, index) => (
+                  <Flex key={item.productCode} align="center" gap={8}>
+                    <div
+                      style={{
+                        width: 12,
+                        height: 12,
+                        borderRadius: '50%',
+                        background: getProductColor(item.productName, index),
+                      }}
+                    />
+                    <Text style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>
+                      {item.productName}: {item.percentage}% (参与率 {item.participationRate}%)
+                    </Text>
+                  </Flex>
+                ))}
+              </Flex>
+            )}
+          </GlassCard>
+        </BentoItem>
+
+        {/* 产品积分趋势堆叠面积图 */}
+        <BentoItem>
+          <GlassCard hoverable style={{ height: '100%' }}>
+            <Flex justify="space-between" align="center" style={{ marginBottom: 20 }}>
+              <Flex align="center" gap={12}>
+                <div
+                  style={{
+                    width: 4,
+                    height: 24,
+                    background: `linear-gradient(180deg, ${BRAND_PALETTE.success}, '#34D399')`,
+                    borderRadius: 2,
+                  }}
+                />
+                <h3
+                  style={{
+                    fontSize: 16,
+                    fontWeight: 600,
+                    margin: 0,
+                    color: '#fff',
+                  }}
+                >
+                  产品积分趋势
+                </h3>
+                <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>近30天</Text>
+              </Flex>
+            </Flex>
+
+            <ResponsiveContainer width="100%" height={240}>
+              {stackedTrendData.length > 0 && allProductNames.length > 0 ? (
+                <AreaChart data={stackedTrendData}>
+                  <defs>
+                    {allProductNames.map((name, index) => (
+                      <linearGradient
+                        key={`gradient-${name}`}
+                        id={`gradient-${name}`}
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop offset="0%" stopColor={getProductColor(name, index)} stopOpacity={0.5} />
+                        <stop offset="100%" stopColor={getProductColor(name, index)} stopOpacity={0} />
+                      </linearGradient>
+                    ))}
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                  <XAxis
+                    dataKey="date"
+                    style={{ fontFamily: "'Inter', sans-serif", fontSize: 11 }}
+                    stroke="rgba(255,255,255,0.3)"
+                    tickFormatter={(value) => value.slice(5)}
+                  />
+                  <YAxis
+                    style={{ fontFamily: "'Inter', sans-serif", fontSize: 11 }}
+                    stroke="rgba(255,255,255,0.3)"
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'rgba(26, 26, 36, 0.95)',
+                      backdropFilter: 'blur(12px)',
+                      border: '1px solid rgba(255, 255, 255, 0.12)',
+                      borderRadius: 12,
+                      padding: '12px 16px',
+                      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+                      fontFamily: "'Inter', sans-serif",
+                    }}
+                    labelFormatter={(label) => label}
+                    formatter={(value: number, name: string) => [
+                      value.toLocaleString(),
+                      name,
+                    ]}
+                  />
+                  <Legend
+                    wrapperStyle={{ fontSize: 12, paddingTop: 8 }}
+                    iconType="circle"
+                  />
+                  {allProductNames.map((name, index) => (
+                    <Area
+                      key={name}
+                      type="monotone"
+                      dataKey={name}
+                      stackId="product"
+                      stroke={getProductColor(name, index)}
+                      fill={`url(#gradient-${name})`}
+                      strokeWidth={1.5}
+                      name={name}
+                    />
+                  ))}
+                </AreaChart>
+              ) : (
+                <Empty description="暂无产品趋势数据" />
+              )}
+            </ResponsiveContainer>
+          </GlassCard>
+        </BentoItem>
       </BentoGrid>
 
       {/* 图表区域 - 使用 BentoGrid 实现不对称布局 */}

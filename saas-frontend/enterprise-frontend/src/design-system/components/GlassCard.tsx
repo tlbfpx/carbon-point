@@ -212,9 +212,10 @@ export interface GlassCardStatProps {
     isPositive: boolean;
   };
   color?: string;
+  subValue?: string | number;
 }
 
-export const GlassCardStat: React.FC<GlassCardStatProps> = ({ label, value, icon, trend, color }) => (
+export const GlassCardStat: React.FC<GlassCardStatProps> = ({ label, value, icon, trend, color, subValue }) => (
   <GlassCard hoverable gradientBorder brandColor={color}>
     <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
       <div
@@ -234,12 +235,15 @@ export const GlassCardStat: React.FC<GlassCardStatProps> = ({ label, value, icon
       <div style={{ flex: 1 }}>
         <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 4 }}>{label}</div>
         <div style={{ fontSize: 28, fontWeight: 600, color: '#fff', fontFamily: "'Inter', sans-serif" }}>{value}</div>
+        {subValue && (
+          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginTop: 2 }}>{subValue}</div>
+        )}
         {trend && (
           <div
             style={{
               fontSize: 12,
               color: trend.isPositive ? '#10B981' : '#EF4444',
-              marginTop: 4,
+              marginTop: subValue ? 2 : 4,
             }}
           >
             {trend.isPositive ? '↑' : '↓'} {Math.abs(trend.value)}%

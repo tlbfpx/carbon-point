@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { Layout, Menu, Avatar, Dropdown, Button, Image, ConfigProvider } from 'antd';
 import { designSystemConfig } from '@carbon-point/design-system';
@@ -21,6 +21,8 @@ import {
     BookOutlined,
     FileTextOutlined,
     WomanOutlined,
+    SwapOutlined,
+    SmileOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 
@@ -43,6 +45,8 @@ import { useAuthStore } from '@/store/authStore';
 import { useBranding } from '@/components/BrandingProvider';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { routeLogger } from '@/utils';
+import { getTenantProducts } from '@/api/tenantProducts';
+import { useQuery } from '@tanstack/react-query';
 
 const { Header, Sider, Content } = Layout;
 
@@ -68,7 +72,23 @@ const ENTERPRISE_PERMISSION_MAP: Record<string, string | undefined> = {
 const EnterpriseMenuItems: MenuProps['items'] = [
   { key: '/dashboard', icon: <DashboardOutlined />, label: '数据看板' },
   { key: '/members', icon: <TeamOutlined />, label: '员工管理' },
-  { key: '/rules', icon: <SettingOutlined />, label: '规则配置' },
+  {
+    key: 'stair-group',
+    icon: <SettingOutlined />,
+    label: '爬楼积分管理',
+    children: [
+      { key: '/rules', label: '规则配置' },
+    ],
+  },
+  {
+    key: 'walking-group',
+    icon: <WomanOutlined />,
+    label: '走路积分管理',
+    children: [
+      { key: '/walking/step-config', icon: <SwapOutlined />, label: '步数换算' },
+      { key: '/walking/fun-equiv', icon: <SmileOutlined />, label: '趣味等价物' },
+    ],
+  },
   { key: '/products', icon: <ShopOutlined />, label: '产品管理' },
   { key: '/orders', icon: <ShoppingOutlined />, label: '订单管理' },
   { key: '/points', icon: <TrophyOutlined />, label: '积分运营' },
@@ -78,7 +98,6 @@ const EnterpriseMenuItems: MenuProps['items'] = [
   { key: '/dict-management', icon: <BookOutlined />, label: '字典管理' },
   { key: '/branding', icon: <SkinOutlined />, label: '品牌配置' },
   { key: '/operation-log', icon: <FileTextOutlined />, label: '操作日志' },
-  { key: '/walking', icon: <WomanOutlined />, label: '走路管理' },
 ];
 
 // Dark gradient sidebar colors
@@ -94,8 +113,24 @@ const EnterpriseContent: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const { branding, primaryColor } = useBranding();
 
+  // Fetch tenant products to determine which menus to show
+  const { data: tenantProducts, isLoading: productsLoading } = useQuery({
+    queryKey: ['tenant-products'],
+    queryFn: getTenantProducts,
+    enabled: isAuthenticated,
+    retry: 1,
+  });
+
+  // Check if walking product is available for this tenant
+  const hasWalkingProduct = useMemo(() => {
+    if (!tenantProducts) return false;
+    return tenantProducts.some(
+      (p) => p.productCode === 'walking' || p.category === 'walking'
+    );
+  }, [tenantProducts]);
+
   // Debug logging
-  console.log('[EnterpriseContent render] isAuthenticated:', isAuthenticated, 'user:', !!user, 'location:', location.pathname);
+  console.log('[EnterpriseContent render] isAuthenticated:', isAuthenticated, 'user:', !!user, 'location:', location.pathname, 'hasWalkingProduct:', hasWalkingProduct);
 
   useEffect(() => {
     useAuthStore.getState().hydrate();
@@ -107,13 +142,29 @@ const EnterpriseContent: React.FC = () => {
 
   const menuItems = EnterpriseMenuItems
     .filter(item => {
-      if (permissionsLoading) return true;
       const key = String((item as any).key);
+
+      // Hide walking group if tenant doesn't have walking product
+      if (key === 'walking-group' && !hasWalkingProduct) {
+        return false;
+      }
+
+      // Check permissions for leaf items
+      if (permissionsLoading || productsLoading) return true;
       const perm = ENTERPRISE_PERMISSION_MAP[key];
       return !perm || permissions.includes(perm);
     })
     .map(item => {
       const i = item as any;
+      if (i.children) {
+        return {
+          ...item,
+          children: i.children.map((child: any) => ({
+            ...child,
+            onClick: () => { if (child.key) navigate(String(child.key)); },
+          })),
+        };
+      }
       return {
         ...item,
         onClick: () => { if (i?.key) navigate(String(i.key)); },
@@ -237,6 +288,7 @@ const EnterpriseContent: React.FC = () => {
           theme="dark"
           mode="inline"
           selectedKeys={[location.pathname]}
+          defaultOpenKeys={['stair-group', 'walking-group']}
           items={customMenuItems}
           style={{
             flex: 1,

@@ -23,7 +23,7 @@ import SystemManagement from '@/pages/SystemManagement';
 import PlatformConfig from '@/pages/PlatformConfig';
 import PackageManagement from '@/pages/PackageManagement';
 import ProductManagement from '@/pages/ProductManagement';
-import FeatureLibrary from '@/pages/FeatureLibrary';
+import BlockLibrary from '@/pages/BlockLibrary';
 import SystemUsers from '@/pages/SystemUsers';
 import SystemRoles from '@/pages/SystemRoles';
 import OperationLogs from '@/pages/OperationLogs';
@@ -53,7 +53,7 @@ const PLATFORM_PERMISSION_MAP: Record<string, string> = {
   '/system/logs': 'platform:system:log:query',
   '/system/dict': 'platform:system:dict:view',
   '/features/products': 'platform:product:list',
-  '/features/features': 'platform:feature:list',
+  '/features/blocks': 'platform:block:list',
   '/packages': 'platform:package:list',
   '/config': 'platform:config:view',
 };
@@ -68,7 +68,7 @@ const PLATFORM_MENU_ROLES: Record<string, PlatformRole[]> = {
   '/system/dict': [PLATFORM_ROLES.SUPER_ADMIN],
   '/features': [PLATFORM_ROLES.SUPER_ADMIN, PLATFORM_ROLES.ADMIN],
   '/features/products': [PLATFORM_ROLES.SUPER_ADMIN, PLATFORM_ROLES.ADMIN],
-  '/features/features': [PLATFORM_ROLES.SUPER_ADMIN, PLATFORM_ROLES.ADMIN],
+  '/features/blocks': [PLATFORM_ROLES.SUPER_ADMIN, PLATFORM_ROLES.ADMIN],
   '/packages': [PLATFORM_ROLES.SUPER_ADMIN, PLATFORM_ROLES.ADMIN, PLATFORM_ROLES.VIEWER],
   '/config': [PLATFORM_ROLES.SUPER_ADMIN, PLATFORM_ROLES.ADMIN, PLATFORM_ROLES.VIEWER],
 };
@@ -93,7 +93,7 @@ const PlatformMenuItems: MenuProps['items'] = [
     label: '功能配置',
     children: [
       { key: '/features/products', label: '产品管理' },
-      { key: '/features/features', label: '功能点库' },
+      { key: '/features/blocks', label: '积木组件库' },
     ],
   },
   { key: '/packages', icon: <ShopOutlined />, label: '套餐管理' },
@@ -210,7 +210,7 @@ const PlatformContent: React.FC = () => {
                   <Route path="/system/dict" element={<DictManagement />} />
                   <Route path="/config" element={<PlatformConfig />} />
                   <Route path="/features/products" element={<ProductManagement />} />
-                  <Route path="/features/features" element={<FeatureLibrary />} />
+                  <Route path="/features/blocks" element={<BlockLibrary />} />
                   <Route path="/packages" element={<PackageManagement />} />
                   <Route path="*" element={<Navigate to="/dashboard" replace />} />
                 </>

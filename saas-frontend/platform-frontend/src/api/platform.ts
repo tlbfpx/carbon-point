@@ -566,3 +566,60 @@ export const updatePlatformRolePermissions = async (id: string, permissionCodes:
   const res = await platformApiClient.put(`/roles/${id}/permissions`, { permissionCodes });
   return res.data;
 };
+
+// Registry APIs - SPI component discovery
+export interface TriggerInfo {
+  type: string;
+  name: string;
+  productCode: string;
+  description: string;
+}
+
+export interface RuleNodeInfo {
+  name: string;
+  description: string;
+  sortOrder: number;
+}
+
+export interface FeatureInfo {
+  type: string;
+  name: string;
+  required: boolean;
+  defaultConfig: Record<string, unknown>;
+}
+
+export interface RegistryModule {
+  code: string;
+  name: string;
+  triggerType: string;
+  ruleChain: string[];
+  features: string[];
+  trigger: TriggerInfo;
+  ruleNodes: RuleNodeInfo[];
+  featureDetails: FeatureInfo[];
+}
+
+export const getRegistryModules = async () => {
+  const res = await platformApiClient.get('/registry/modules');
+  return res.data;
+};
+
+export const getRegistryModule = async (code: string) => {
+  const res = await platformApiClient.get(`/registry/modules/${code}`);
+  return res.data;
+};
+
+export const getRegistryTriggers = async () => {
+  const res = await platformApiClient.get('/registry/triggers');
+  return res.data;
+};
+
+export const getRegistryRuleNodes = async () => {
+  const res = await platformApiClient.get('/registry/rule-nodes');
+  return res.data;
+};
+
+export const getRegistryFeatures = async () => {
+  const res = await platformApiClient.get('/registry/features');
+  return res.data;
+};

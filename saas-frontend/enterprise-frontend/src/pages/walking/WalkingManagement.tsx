@@ -1,17 +1,52 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useBranding } from '@/components/BrandingProvider';
 import StepCalcConfig from './StepCalcConfig';
 import FunEquivalenceConfig from './FunEquivalenceConfig';
 import { SettingOutlined, SmileOutlined } from '@ant-design/icons';
+import { getTenantProducts } from '@/api/tenantProducts';
+import { useQuery } from '@tanstack/react-query';
 
 const WalkingManagement: React.FC = () => {
   const { primaryColor } = useBranding();
   const [activeTab, setActiveTab] = useState<'step-config' | 'fun-equiv'>('step-config');
 
-  const tabs = [
-    { key: 'step-config' as const, label: '步数积分配置', icon: <SettingOutlined /> },
-    { key: 'fun-equiv' as const, label: '趣味换算', icon: <SmileOutlined /> },
-  ];
+  // Fetch tenant products to check enabled features
+  const { data: tenantProducts } = useQuery({
+    queryKey: ['tenant-products'],
+    queryFn: getTenantProducts,
+  });
+
+  // Check if fun_equivalence feature is enabled
+  const isFunEquivalenceEnabled = useMemo(() => {
+    if (!tenantProducts) return false;
+    const walkingProduct = tenantProducts.find(
+      (p) => p.productCode === 'walking' || p.category === 'walking'
+    );
+    if (!walkingProduct) return false;
+    // Check if fun_equivalence feature is enabled in featureConfig
+    return walkingProduct.featureConfig?.['fun_equivalence'] === 'true' ||
+           walkingProduct.featureConfig?.['fun_equivalence'] === '1' ||
+           walkingProduct.featureConfig?.['fun_equivalence'] === 'enabled';
+  }, [tenantProducts]);
+
+  const tabs = useMemo(() => {
+    const baseTabs = [
+      { key: 'step-config' as const, label: '步数积分配置', icon: <SettingOutlined /> },
+    ];
+    if (isFunEquivalenceEnabled) {
+      baseTabs.push({
+        key: 'fun-equiv' as const,
+        label: '趣味换算',
+        icon: <SmileOutlined />,
+      });
+    }
+    return baseTabs;
+  }, [isFunEquivalenceEnabled]);
+
+  // If active tab is fun-equiv and it becomes disabled, switch to step-config
+  if (activeTab === 'fun-equiv' && !isFunEquivalenceEnabled) {
+    setActiveTab('step-config');
+  }
 
   return (
     <div style={{ padding: '0 0 24px', fontFamily: 'var(--font-body, "Noto Sans SC", sans-serif)' }}>

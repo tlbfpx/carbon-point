@@ -18,5 +18,6 @@ public class WalkingRecordDTO {
     private LocalDate date;
     private Integer steps;
     private Integer pointsEarned;
+    private String source;
     private LocalDateTime createdAt;
 }

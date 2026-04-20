@@ -173,6 +173,7 @@ public class WalkingService {
                         .date(r.getRecordDate())
                         .steps(r.getStepCount())
                         .pointsEarned(r.getPointsAwarded())
+                        .source(r.getSource())
                         .createdAt(r.getCreatedAt())
                         .build()
         ).toList());

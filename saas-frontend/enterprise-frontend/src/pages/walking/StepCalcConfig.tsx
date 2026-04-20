@@ -1,71 +1,40 @@
 import React, { useEffect } from 'react';
 import { Form, InputNumber, Button, message, Spin } from 'antd';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '@/api/request';
+import { getWalkingConfig, updateWalkingConfig, WalkingConfig } from '@/api/walking';
 import { useBranding } from '@/components/BrandingProvider';
 import { GlassCard } from '@carbon-point/design-system';
-
-interface StepCalcConfigData {
-  stepsThreshold: number;
-  pointsCoefficient: number;
-  dailyCap: number;
-}
 
 const StepCalcConfig: React.FC = () => {
   const { primaryColor } = useBranding();
   const queryClient = useQueryClient();
   const [form] = Form.useForm();
 
-  // Fetch existing step_calc rule
+  // Fetch walking config
   const { data, isLoading } = useQuery({
-    queryKey: ['walking-step-calc'],
-    queryFn: async (): Promise<StepCalcConfigData> => {
-      const res = await apiClient.get('/point-rules/list', { params: { type: 'step_calc' } });
-      const rules = (res as any)?.data || (res as any) || [];
-      const rule = Array.isArray(rules) ? rules.find((r: any) => r.type === 'step_calc') : null;
-      if (rule) {
-        let config: any = {};
-        try { config = JSON.parse(rule.config || '{}'); } catch {}
-        return {
-          stepsThreshold: config.stepsThreshold || 0,
-          pointsCoefficient: config.pointsCoefficient || 0,
-          dailyCap: config.dailyCap || 0,
-        };
-      }
-      return { stepsThreshold: 0, pointsCoefficient: 0, dailyCap: 0 };
-    },
+    queryKey: ['walking-config'],
+    queryFn: getWalkingConfig,
   });
 
   // Populate form when data arrives
   useEffect(() => {
     if (data) {
-      form.setFieldsValue(data);
+      // Convert integer coefficient to decimal for display
+      const displayData = {
+        ...data,
+        pointsCoefficient: (data.pointsCoefficient || 1) / 100,
+      };
+      form.setFieldsValue(displayData);
     }
   }, [data, form]);
 
   const saveMutation = useMutation({
-    mutationFn: async (values: StepCalcConfigData) => {
-      // Try to find existing rule to update
-      const listRes = await apiClient.get('/point-rules/list', { params: { type: 'step_calc' } });
-      const rules = (listRes as any)?.data || (listRes as any) || [];
-      const existing = Array.isArray(rules) ? rules.find((r: any) => r.type === 'step_calc') : null;
-
-      const payload = {
-        type: 'step_calc',
-        name: '步数积分配置',
-        config: JSON.stringify(values),
-        enabled: true,
-        sortOrder: 0,
-      };
-
-      if (existing) {
-        return apiClient.put('/point-rules', { id: Number(existing.id), ...payload });
-      }
-      return apiClient.post('/point-rules', payload);
+    mutationFn: async (values: WalkingConfig) => {
+      return updateWalkingConfig(values);
     },
     onSuccess: () => {
       message.success('步数积分配置已保存');
-      queryClient.invalidateQueries({ queryKey: ['walking-step-calc'] });
+      queryClient.invalidateQueries({ queryKey: ['walking-config'] });
     },
     onError: () => {
       message.error('保存失败，请重试');
@@ -85,7 +54,14 @@ const StepCalcConfig: React.FC = () => {
       <Form
         form={form}
         layout="vertical"
-        onFinish={(values) => saveMutation.mutate(values as StepCalcConfigData)}
+        onFinish={(values) => {
+          // Convert pointsCoefficient to integer (e.g., 0.01 -> 1)
+          const formattedValues = {
+            ...values,
+            pointsCoefficient: Math.round((values.pointsCoefficient || 0.01) * 100),
+          };
+          saveMutation.mutate(formattedValues as WalkingConfig);
+        }}
         initialValues={{ stepsThreshold: 1000, pointsCoefficient: 0.01, dailyCap: 50 }}
       >
         <Form.Item
@@ -106,11 +82,20 @@ const StepCalcConfig: React.FC = () => {
           label="积分系数"
           rules={[{ required: true, message: '请输入积分系数' }]}
           extra="每步可获得的积分数（例如 0.01 表示每步 0.01 积分）"
+          normalize={(value) => {
+            // Convert from integer (backend) to decimal (display)
+            if (value === undefined || value === null) return 0.01;
+            if (typeof value === 'number' && value >= 1) {
+              return value / 100;
+            }
+            return value;
+          }}
         >
           <InputNumber
             min={0.001}
             max={1}
             step={0.001}
+            precision={3}
             style={{ width: '100%', borderRadius: 12, border: '1px solid rgba(255,255,255,0.1)' }}
             placeholder="例如: 0.01"
           />

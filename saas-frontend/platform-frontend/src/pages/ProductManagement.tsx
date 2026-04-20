@@ -19,9 +19,22 @@ import {
   Descriptions,
   Badge,
   Timeline,
+  Steps,
+  Alert,
 } from 'antd';
 import { GlassCard } from '@carbon-point/design-system';
-import { PlusOutlined, EditOutlined, DeleteOutlined, SettingOutlined, ReloadOutlined, CheckCircleOutlined, EyeOutlined } from '@ant-design/icons';
+import {
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  SettingOutlined,
+  ReloadOutlined,
+  CheckCircleOutlined,
+  EyeOutlined,
+  HolderOutlined,
+  ArrowUpOutlined,
+  ArrowDownOutlined,
+} from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import {
@@ -32,8 +45,14 @@ import {
   getProductFeatures,
   updateProductFeatures,
   getFeatures,
+  getRegistryModules,
+  getRegistryRuleNodes,
+  getRegistryFeatures,
   Product,
   Feature,
+  RegistryModule,
+  RuleNodeInfo,
+  FeatureInfo,
 } from '@/api/platform';
 import { extractArray } from '@/utils';
 
@@ -45,6 +64,29 @@ const CATEGORY_OPTIONS = [
 const TRIGGER_TYPE_MAP: Record<string, { label: string; color: string }> = {
   stairs_climbing: { label: '爬楼打卡', color: 'blue' },
   walking: { label: '走路计步', color: 'green' },
+};
+
+// Rule node display names
+const RULE_NODE_LABELS: Record<string, string> = {
+  timeSlotMatch: '时段匹配',
+  randomBase: '随机基数',
+  specialDateMultiplier: '特殊日期倍率',
+  levelCoefficient: '等级系数',
+  round: '数值取整',
+  dailyCap: '每日上限',
+  thresholdFilter: '步数阈值过滤',
+  formulaCalc: '步数公式换算',
+};
+
+// Feature display names
+const FEATURE_LABELS: Record<string, string> = {
+  consecutive_reward: '连续打卡奖励',
+  special_date: '特殊日期',
+  fun_equivalence: '趣味等价物',
+  points_exchange: '积分兑换',
+  time_slot: '时段规则',
+  daily_cap: '每日上限',
+  holiday_bonus: '节假日加成',
 };
 
 const ProductManagement: React.FC = () => {
@@ -60,6 +102,27 @@ const ProductManagement: React.FC = () => {
   const [drawerProduct, setDrawerProduct] = useState<Product | null>(null);
   const [selectedFeatures, setSelectedFeatures] = useState<Record<string, { enabled: boolean; required: boolean; configValue?: string }>>({});
   const [form] = Form.useForm();
+
+  // Wizard state
+  const [wizardOpen, setWizardOpen] = useState(false);
+  const [wizardStep, setWizardStep] = useState(0);
+  const [wizardData, setWizardData] = useState<{
+    code: string;
+    name: string;
+    category: string;
+    description: string;
+    triggerType: string;
+    ruleChain: string[];
+    features: string[];
+  }>({
+    code: '',
+    name: '',
+    category: '',
+    description: '',
+    triggerType: '',
+    ruleChain: [],
+    features: [],
+  });
 
   const { data: productsData, isLoading, refetch } = useQuery({
     queryKey: ['products', page, pageSize, categoryFilter],
@@ -78,6 +141,28 @@ const ProductManagement: React.FC = () => {
     queryKey: ['product-features-detail', drawerProduct?.id],
     queryFn: () => getProductFeatures(drawerProduct!.id),
     enabled: !!drawerProduct?.id && drawerOpen,
+    retry: false,
+  });
+
+  // Registry data for wizard
+  const { data: registryModulesData } = useQuery({
+    queryKey: ['registry-modules'],
+    queryFn: getRegistryModules,
+    enabled: wizardOpen,
+    retry: false,
+  });
+
+  const { data: registryRuleNodesData } = useQuery({
+    queryKey: ['registry-rule-nodes'],
+    queryFn: getRegistryRuleNodes,
+    enabled: wizardOpen,
+    retry: false,
+  });
+
+  const { data: registryFeaturesData } = useQuery({
+    queryKey: ['registry-features'],
+    queryFn: getRegistryFeatures,
+    enabled: wizardOpen,
     retry: false,
   });
 
@@ -193,6 +278,91 @@ const ProductManagement: React.FC = () => {
     setDrawerOpen(true);
   };
 
+  // Wizard helpers
+  const openWizard = () => {
+    setWizardStep(0);
+    setWizardData({
+      code: '',
+      name: '',
+      category: '',
+      description: '',
+      triggerType: '',
+      ruleChain: [],
+      features: [],
+    });
+    setWizardOpen(true);
+  };
+
+  const wizardModules: RegistryModule[] = registryModulesData?.data || [];
+  const wizardRuleNodes: RuleNodeInfo[] = registryRuleNodesData?.data || [];
+  const wizardFeatures: FeatureInfo[] = registryFeaturesData?.data || [];
+
+  const handleWizardNext = () => {
+    // Validate current step
+    if (wizardStep === 0) {
+      if (!wizardData.code || !wizardData.name || !wizardData.category) {
+        message.warning('请填写产品编码、名称和分类');
+        return;
+      }
+    }
+    if (wizardStep === 1 && !wizardData.triggerType) {
+      message.warning('请选择触发器类型');
+      return;
+    }
+    setWizardStep(wizardStep + 1);
+  };
+
+  const handleWizardPrev = () => {
+    setWizardStep(wizardStep - 1);
+  };
+
+  const handleWizardFinish = () => {
+    createMutation.mutate({
+      code: wizardData.code,
+      name: wizardData.name,
+      category: wizardData.category,
+      description: wizardData.description,
+      status: 1,
+      sortOrder: 0,
+    });
+    setWizardOpen(false);
+  };
+
+  // When category changes in wizard, try to auto-select trigger from matching module
+  const handleWizardCategoryChange = (category: string) => {
+    const moduleCodeMap: Record<string, string> = {
+      stairs_climbing: 'stair_climbing',
+      walking: 'walking',
+    };
+    const moduleCode = moduleCodeMap[category];
+    const matchingModule = wizardModules.find((m) => m.code === moduleCode);
+    if (matchingModule) {
+      setWizardData((prev) => ({
+        ...prev,
+        category,
+        triggerType: matchingModule.triggerType,
+        ruleChain: matchingModule.ruleChain || [],
+        features: matchingModule.features || [],
+      }));
+    } else {
+      setWizardData((prev) => ({
+        ...prev,
+        category,
+        triggerType: '',
+        ruleChain: [],
+        features: [],
+      }));
+    }
+  };
+
+  const moveRuleChainItem = (index: number, direction: 'up' | 'down') => {
+    const newChain = [...wizardData.ruleChain];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= newChain.length) return;
+    [newChain[index], newChain[targetIndex]] = [newChain[targetIndex], newChain[index]];
+    setWizardData((prev) => ({ ...prev, ruleChain: newChain }));
+  };
+
   const handleFormFinish = (values: { code?: string; name: string; description?: string; status: number; sortOrder: number; category?: string }) => {
     if (editingProduct) {
       updateMutation.mutate({ id: editingProduct.id, data: values });
@@ -259,7 +429,7 @@ const ProductManagement: React.FC = () => {
     { title: '创建时间', dataIndex: 'createTime', width: 110, render: (t: string) => t ? dayjs(t).format('YYYY-MM-DD') : '-' },
     {
       title: '操作',
-      width: 240,
+      width: 280,
       render: (_: unknown, record: Product) => (
         <Space size="small">
           <Button type="link" size="small" icon={<EyeOutlined />} onClick={() => openDetailDrawer(record)}>
@@ -294,7 +464,12 @@ const ProductManagement: React.FC = () => {
         <h2 style={{ margin: 0 }}>产品管理</h2>
         <Space>
           <Button icon={<ReloadOutlined />} onClick={() => refetch()}>刷新</Button>
-          <Button type="primary" icon={<PlusOutlined />} onClick={openCreateModal}>新增产品</Button>
+          <Button type="primary" icon={<PlusOutlined />} onClick={openWizard}>
+            新建产品向导
+          </Button>
+          <Button icon={<PlusOutlined />} onClick={openCreateModal}>
+            快速创建
+          </Button>
         </Space>
       </div>
 
@@ -328,9 +503,308 @@ const ProductManagement: React.FC = () => {
         }}
       />
 
-      {/* Create/Edit Product Modal */}
+      {/* Product Creation Wizard */}
       <Modal
-        title={editingProduct ? '编辑产品' : '新增产品'}
+        title="新建产品向导"
+        open={wizardOpen}
+        onCancel={() => setWizardOpen(false)}
+        width={720}
+        footer={null}
+        destroyOnClose
+      >
+        <Steps
+          current={wizardStep}
+          style={{ marginBottom: 24 }}
+          items={[
+            { title: '基本信息' },
+            { title: '选择触发器' },
+            { title: '组装规则链' },
+            { title: '选择功能点' },
+          ]}
+        />
+
+        {/* Step 0: Basic Info */}
+        {wizardStep === 0 && (
+          <Form layout="vertical">
+            <Form.Item label="产品编码" required>
+              <Input
+                placeholder="如: stairs_basic"
+                value={wizardData.code}
+                onChange={(e) => setWizardData((prev) => ({ ...prev, code: e.target.value }))}
+              />
+            </Form.Item>
+            <Form.Item label="产品名称" required>
+              <Input
+                placeholder="请输入产品名称"
+                value={wizardData.name}
+                onChange={(e) => setWizardData((prev) => ({ ...prev, name: e.target.value }))}
+              />
+            </Form.Item>
+            <Form.Item label="产品分类" required>
+              <Select
+                placeholder="请选择产品分类"
+                value={wizardData.category || undefined}
+                onChange={handleWizardCategoryChange}
+              >
+                {CATEGORY_OPTIONS.map((opt) => (
+                  <Select.Option key={opt.value} value={opt.value}>{opt.label}</Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+            <Form.Item label="描述">
+              <Input.TextArea
+                rows={3}
+                placeholder="描述（选填）"
+                value={wizardData.description}
+                onChange={(e) => setWizardData((prev) => ({ ...prev, description: e.target.value }))}
+              />
+            </Form.Item>
+          </Form>
+        )}
+
+        {/* Step 1: Select Trigger */}
+        {wizardStep === 1 && (
+          <div>
+            <Alert
+              type="info"
+              message="选择触发器"
+              description="触发器决定了用户如何产生积分事件。每种产品类型对应特定的触发器。"
+              style={{ marginBottom: 16 }}
+              showIcon
+            />
+            <div style={{ display: 'grid', gap: 12 }}>
+              {wizardModules.map((module) => {
+                const isSelected = wizardData.triggerType === module.triggerType;
+                return (
+                  <GlassCard
+                    key={module.code}
+                    size="small"
+                    hoverable
+                    style={{
+                      border: isSelected ? '2px solid #1890ff' : '1px solid #f0f0f0',
+                      cursor: 'pointer',
+                    }}
+                    onClick={() => {
+                      setWizardData((prev) => ({
+                        ...prev,
+                        triggerType: module.triggerType,
+                        ruleChain: module.ruleChain || [],
+                        features: module.features || [],
+                      }));
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <Space>
+                          <Text strong>{module.trigger?.name || module.triggerType}</Text>
+                          <Tag color="geekblue">{module.name}</Tag>
+                        </Space>
+                        <div style={{ color: '#666', fontSize: 13, marginTop: 4 }}>
+                          {module.trigger?.description || `触发类型: ${module.triggerType}`}
+                        </div>
+                      </div>
+                      {isSelected && <CheckCircleOutlined style={{ color: '#1890ff', fontSize: 20 }} />}
+                    </div>
+                  </GlassCard>
+                );
+              })}
+              {wizardModules.length === 0 && (
+                <Empty description="暂无可用的触发器" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Step 2: Assemble Rule Chain */}
+        {wizardStep === 2 && (
+          <div>
+            <Alert
+              type="info"
+              message="组装规则链"
+              description="规则链决定了积分计算的流程。可以调整执行顺序，或从可用节点中添加/移除节点。"
+              style={{ marginBottom: 16 }}
+              showIcon
+            />
+            <div style={{ display: 'flex', gap: 16 }}>
+              {/* Current rule chain */}
+              <div style={{ flex: 1 }}>
+                <h4 style={{ marginBottom: 12 }}>当前规则链</h4>
+                {wizardData.ruleChain.length === 0 ? (
+                  <Empty description="规则链为空" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                ) : (
+                  <div>
+                    {wizardData.ruleChain.map((nodeName, index) => (
+                      <div
+                        key={`${nodeName}-${index}`}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          padding: '8px 12px',
+                          marginBottom: 4,
+                          background: '#fafafa',
+                          borderRadius: 6,
+                          border: '1px solid #f0f0f0',
+                        }}
+                      >
+                        <HolderOutlined style={{ color: '#999', marginRight: 8, cursor: 'grab' }} />
+                        <Badge count={index + 1} style={{ backgroundColor: '#722ed1', marginRight: 8 }} />
+                        <Tag color="purple" style={{ flex: 1 }}>
+                          {RULE_NODE_LABELS[nodeName] || nodeName}
+                        </Tag>
+                        <Space size={2}>
+                          <Button
+                            type="text"
+                            size="small"
+                            icon={<ArrowUpOutlined />}
+                            disabled={index === 0}
+                            onClick={() => moveRuleChainItem(index, 'up')}
+                          />
+                          <Button
+                            type="text"
+                            size="small"
+                            icon={<ArrowDownOutlined />}
+                            disabled={index === wizardData.ruleChain.length - 1}
+                            onClick={() => moveRuleChainItem(index, 'down')}
+                          />
+                          <Button
+                            type="text"
+                            size="small"
+                            danger
+                            onClick={() => {
+                              setWizardData((prev) => ({
+                                ...prev,
+                                ruleChain: prev.ruleChain.filter((_, i) => i !== index),
+                              }));
+                            }}
+                          >
+                            移除
+                          </Button>
+                        </Space>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Available rule nodes */}
+              <div style={{ flex: 1 }}>
+                <h4 style={{ marginBottom: 12 }}>可用规则节点</h4>
+                {wizardRuleNodes
+                  .filter((node) => !wizardData.ruleChain.includes(node.name))
+                  .map((node) => (
+                    <div
+                      key={node.name}
+                      style={{
+                        padding: '8px 12px',
+                        marginBottom: 4,
+                        background: '#fff',
+                        borderRadius: 6,
+                        border: '1px dashed #d9d9d9',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <div>
+                        <Tag color="purple">{RULE_NODE_LABELS[node.name] || node.name}</Tag>
+                        <div style={{ color: '#999', fontSize: 12, marginTop: 2 }}>{node.description}</div>
+                      </div>
+                      <Button
+                        type="link"
+                        size="small"
+                        onClick={() => {
+                          setWizardData((prev) => ({
+                            ...prev,
+                            ruleChain: [...prev.ruleChain, node.name],
+                          }));
+                        }}
+                      >
+                        添加
+                      </Button>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Step 3: Select Features */}
+        {wizardStep === 3 && (
+          <div>
+            <Alert
+              type="info"
+              message="选择功能点"
+              description="功能点是产品的可选附加能力。启用后，企业管理后台会显示对应的配置菜单。"
+              style={{ marginBottom: 16 }}
+              showIcon
+            />
+            {wizardFeatures.length === 0 ? (
+              <Empty description="暂无可用功能点" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+            ) : (
+              wizardFeatures.map((feature) => {
+                const isSelected = wizardData.features.includes(feature.type);
+                return (
+                  <div
+                    key={feature.type}
+                    style={{
+                      padding: '12px 16px',
+                      marginBottom: 8,
+                      background: isSelected ? '#f6ffed' : '#fafafa',
+                      borderRadius: 6,
+                      border: isSelected ? '1px solid #b7eb8f' : '1px solid #f0f0f0',
+                      cursor: 'pointer',
+                    }}
+                    onClick={() => {
+                      setWizardData((prev) => ({
+                        ...prev,
+                        features: isSelected
+                          ? prev.features.filter((f) => f !== feature.type)
+                          : [...prev.features, feature.type],
+                      }));
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Space>
+                        <Checkbox checked={isSelected} />
+                        <Text strong>{FEATURE_LABELS[feature.type] || feature.name}</Text>
+                        <Tag color="orange">{feature.type}</Tag>
+                        {feature.required && <Tag color="red">必需</Tag>}
+                      </Space>
+                      {isSelected && <CheckCircleOutlined style={{ color: '#52c41a' }} />}
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        )}
+
+        {/* Wizard footer */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 24 }}>
+          <Button
+            onClick={() => setWizardStep(wizardStep - 1)}
+            disabled={wizardStep === 0}
+          >
+            上一步
+          </Button>
+          <Space>
+            <Button onClick={() => setWizardOpen(false)}>取消</Button>
+            {wizardStep < 3 ? (
+              <Button type="primary" onClick={handleWizardNext}>
+                下一步
+              </Button>
+            ) : (
+              <Button type="primary" onClick={handleWizardFinish} loading={createMutation.isPending}>
+                确认创建
+              </Button>
+            )}
+          </Space>
+        </div>
+      </Modal>
+
+      {/* Quick Create/Edit Product Modal */}
+      <Modal
+        title={editingProduct ? '编辑产品' : '快速创建产品'}
         open={modalOpen}
         onCancel={() => { setModalOpen(false); setEditingProduct(null); form.resetFields(); }}
         footer={null}
@@ -434,15 +908,32 @@ const ProductManagement: React.FC = () => {
             <h4 style={{ marginBottom: 12 }}>规则链预览</h4>
             <Timeline
               style={{ marginBottom: 24, marginTop: 8 }}
-              items={[
-                { color: drawerProduct.category === 'stairs_climbing' ? 'blue' : 'green', children: '触发类型匹配' },
-                { color: 'gray', children: '基础积分计算' },
-                { color: 'gray', children: '特殊日期加成' },
-                { color: 'gray', children: '等级系数应用' },
-                { color: 'gray', children: '数值取整处理' },
-                { color: 'gray', children: '每日上限检查' },
-                { color: 'gray', children: '连续打卡奖励' },
-              ]}
+              items={(() => {
+                const matchedModule = wizardModules.find((m) => {
+                  const codeMap: Record<string, string> = {
+                    stairs_climbing: 'stair_climbing',
+                    walking: 'walking',
+                  };
+                  return m.code === codeMap[drawerProduct.category];
+                });
+                const chain = matchedModule?.ruleChain || [];
+                if (chain.length === 0) {
+                  return [
+                    { color: 'gray', children: '暂无规则链数据' },
+                  ];
+                }
+                return chain.map((node, i) => ({
+                  color: i === 0 ? 'blue' : 'gray',
+                  children: (
+                    <Space>
+                      <Tag color="purple">{node}</Tag>
+                      <span style={{ color: '#666', fontSize: 12 }}>
+                        {RULE_NODE_LABELS[node] || ''}
+                      </span>
+                    </Space>
+                  ),
+                }));
+              })()}
             />
 
             <h4 style={{ marginBottom: 12 }}>功能点列表</h4>

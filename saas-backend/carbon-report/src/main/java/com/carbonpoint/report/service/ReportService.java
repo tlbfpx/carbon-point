@@ -18,6 +18,7 @@ import com.carbonpoint.report.dto.EnterpriseDashboardDTO;
 import com.carbonpoint.report.dto.PlatformDashboardDTO;
 import com.carbonpoint.report.dto.PointTrendDTO;
 import com.carbonpoint.report.dto.ProductPointStatsDTO;
+import com.carbonpoint.report.dto.ProductTrendDTO;
 import com.carbonpoint.report.dto.WalkingStatsDTO;
 import com.carbonpoint.system.entity.Tenant;
 import com.carbonpoint.system.entity.User;
@@ -60,7 +61,7 @@ public class ReportService {
         EnterpriseDashboardDTO dto = new EnterpriseDashboardDTO();
         LocalDate today = LocalDate.now();
         LocalDate weekStart = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
-        
+
         // Today check-in count
         LocalDateTime todayStart = today.atStartOfDay();
         LocalDateTime todayEnd = today.atTime(LocalTime.MAX);
@@ -78,10 +79,62 @@ public class ReportService {
                  .eq(PointTransactionEntity::getTenantId, tenantId)
                  .ge(PointTransactionEntity::getCreatedAt, todayStart)
                  .le(PointTransactionEntity::getCreatedAt, todayEnd)
-                 .in(PointTransactionEntity::getType, Arrays.asList("check_in", "streak_bonus"))
+                 .gt(PointTransactionEntity::getAmount, 0)
          );
          int todayPoints = todayTxs.stream().filter(tx -> tx.getAmount() != null && tx.getAmount() > 0).mapToInt(tx -> (int) tx.getAmount()).sum();
          dto.setTodayPointsIssued(todayPoints);
+
+        // Multi-product dimension: Today stats per product
+        Map<String, EnterpriseDashboardDTO.ProductTodayStats> productTodayStatsMap = new LinkedHashMap<>();
+        for (PointTransactionEntity tx : todayTxs) {
+            String productCode = tx.getProductCode() != null ? tx.getProductCode() : "stair_climbing";
+            EnterpriseDashboardDTO.ProductTodayStats stats = productTodayStatsMap.computeIfAbsent(productCode,
+                code -> {
+                    EnterpriseDashboardDTO.ProductTodayStats s = new EnterpriseDashboardDTO.ProductTodayStats();
+                    s.setProductCode(code);
+                    s.setProductName(deriveProductName(code));
+                    s.setTodayUserCount(0);
+                    s.setTodayPointsIssued(0);
+                    return s;
+                });
+            stats.setTodayUserCount(stats.getTodayUserCount() + 1);
+            if (tx.getAmount() != null) {
+                stats.setTodayPointsIssued(stats.getTodayPointsIssued() + tx.getAmount());
+            }
+        }
+        dto.setProductTodayStats(productTodayStatsMap);
+
+        // Multi-product dimension: Points distribution (current month)
+        LocalDate monthStart = today.withDayOfMonth(1);
+        List<PointTransactionEntity> monthTxs = pointTransactionMapper.selectList(
+            new LambdaQueryWrapper<PointTransactionEntity>()
+                .eq(PointTransactionEntity::getTenantId, tenantId)
+                .ge(PointTransactionEntity::getCreatedAt, monthStart.atStartOfDay())
+                .le(PointTransactionEntity::getCreatedAt, todayEnd)
+                .gt(PointTransactionEntity::getAmount, 0)
+        );
+
+        Map<String, Long> productMonthPoints = monthTxs.stream()
+            .collect(Collectors.groupingBy(
+                tx -> tx.getProductCode() != null ? tx.getProductCode() : "stair_climbing",
+                Collectors.summingLong(tx -> tx.getAmount().longValue())));
+
+        long totalMonthPoints = productMonthPoints.values().stream().mapToLong(Long::longValue).sum();
+        List<EnterpriseDashboardDTO.ProductPointSlice> distribution = productMonthPoints.entrySet().stream()
+            .map(entry -> {
+                double percentage = totalMonthPoints > 0
+                    ? Math.round(entry.getValue() * 10000.0 / totalMonthPoints) / 100.0
+                    : 0.0;
+                EnterpriseDashboardDTO.ProductPointSlice slice = new EnterpriseDashboardDTO.ProductPointSlice();
+                slice.setProductCode(entry.getKey());
+                slice.setProductName(deriveProductName(entry.getKey()));
+                slice.setPoints(entry.getValue());
+                slice.setPercentage(percentage);
+                return slice;
+            })
+            .sorted((a, b) -> Long.compare(b.getPoints(), a.getPoints()))
+            .collect(Collectors.toList());
+        dto.setProductPointsDistribution(distribution);
 
         // Week trend
         List<EnterpriseDashboardDTO.DailyTrend> weekTrend = new ArrayList<>();
@@ -101,7 +154,7 @@ public class ReportService {
                     .eq(PointTransactionEntity::getTenantId, tenantId)
                     .ge(PointTransactionEntity::getCreatedAt, dayStart)
                     .le(PointTransactionEntity::getCreatedAt, dayEnd)
-                    .in(PointTransactionEntity::getType, Arrays.asList("check_in", "streak_bonus"))
+                    .gt(PointTransactionEntity::getAmount, 0)
             );
              int dayPoints = dayTxs.stream().filter(tx -> tx.getAmount() != null && tx.getAmount() > 0).mapToInt(tx -> (int) tx.getAmount()).sum();
 
@@ -123,7 +176,6 @@ public class ReportService {
         dto.setActiveUsersWeek((int) activeWeek);
 
         // Active users this month
-        LocalDate monthStart = today.withDayOfMonth(1);
         List<CheckInRecordEntity> monthRecords = checkInRecordMapper.selectList(
             new LambdaQueryWrapper<CheckInRecordEntity>()
                 .eq(CheckInRecordEntity::getTenantId, tenantId)
@@ -138,15 +190,15 @@ public class ReportService {
                 .eq(ExchangeOrder::getTenantId, tenantId)
                 .eq(ExchangeOrder::getOrderStatus, "fulfilled")
         );
-        
+
         Map<Long, Long> productCount = fulfilledOrders.stream()
             .collect(Collectors.groupingBy(ExchangeOrder::getProductId, Collectors.counting()));
-        
+
         List<Map.Entry<Long, Long>> sorted = productCount.entrySet().stream()
             .sorted(Map.Entry.<Long, Long>comparingByValue().reversed())
             .limit(10)
             .collect(Collectors.toList());
-        
+
         List<EnterpriseDashboardDTO.ProductExchangeDTO> topProducts = new ArrayList<>();
         for (Map.Entry<Long, Long> entry : sorted) {
             EnterpriseDashboardDTO.ProductExchangeDTO pd = new EnterpriseDashboardDTO.ProductExchangeDTO();
@@ -662,7 +714,7 @@ public class ReportService {
 
         List<PointTransactionEntity> txs = pointTransactionMapper.selectList(
             new LambdaQueryWrapper<PointTransactionEntity>()
-                .eq(PointTransactionEntity::getTenantId, tenantId)
+                .eq(tenantId != null, PointTransactionEntity::getTenantId, tenantId)
                 .ge(PointTransactionEntity::getCreatedAt, startDateTime)
                 .le(PointTransactionEntity::getCreatedAt, endDateTime)
                 .gt(PointTransactionEntity::getAmount, 0)
@@ -671,28 +723,68 @@ public class ReportService {
         Map<String, Long> byProduct = txs.stream()
             .collect(Collectors.groupingBy(
                 tx -> tx.getProductCode() != null ? tx.getProductCode() : "stair_climbing",
-                Collectors.summingLong(PointTransactionEntity::getAmount)));
+                Collectors.summingLong(tx -> tx.getAmount().longValue())));
 
         long totalPoints = byProduct.values().stream().mapToLong(Long::longValue).sum();
 
+        // Calculate per-product unique users
+        Map<String, Set<Long>> usersByProduct = txs.stream()
+            .collect(Collectors.groupingBy(
+                tx -> tx.getProductCode() != null ? tx.getProductCode() : "stair_climbing",
+                Collectors.mapping(PointTransactionEntity::getUserId, Collectors.toSet())));
+
+        // Get total users in the tenant
+        Long totalUsers;
+        if (tenantId != null) {
+            totalUsers = userMapper.selectCount(
+                new LambdaQueryWrapper<User>().eq(User::getTenantId, tenantId));
+        } else {
+            totalUsers = userMapper.selectCount(null);
+        }
+
+        Set<Long> usersWithAnyActivity = new HashSet<>();
+        for (Set<Long> s : usersByProduct.values()) {
+            usersWithAnyActivity.addAll(s);
+        }
+
+        // Build slices with participation data
         List<CrossProductOverviewDTO.ProductSlice> slices = byProduct.entrySet().stream()
             .map(entry -> {
                 double percentage = totalPoints > 0
                     ? Math.round(entry.getValue() * 10000.0 / totalPoints) / 100.0
+                    : 0.0;
+                Set<Long> productUsers = usersByProduct.getOrDefault(entry.getKey(), Collections.emptySet());
+                double participationRate = totalUsers != null && totalUsers > 0
+                    ? Math.round(productUsers.size() * 10000.0 / totalUsers) / 100.0
                     : 0.0;
                 return CrossProductOverviewDTO.ProductSlice.builder()
                     .productCode(entry.getKey())
                     .productName(deriveProductName(entry.getKey()))
                     .points(entry.getValue())
                     .percentage(percentage)
+                    .participationRate(participationRate)
+                    .activeUsers(productUsers.size())
                     .build();
             })
             .sorted((a, b) -> Long.compare(b.getPoints(), a.getPoints()))
             .collect(Collectors.toList());
 
+        // Build participationRates map for backward compat
+        Map<String, Double> participationRates = new LinkedHashMap<>();
+        for (CrossProductOverviewDTO.ProductSlice slice : slices) {
+            participationRates.put(slice.getProductCode(), slice.getParticipationRate());
+        }
+
+        // Overall participation rate
+        double overallRate = totalUsers != null && totalUsers > 0
+            ? Math.round(usersWithAnyActivity.size() * 10000.0 / totalUsers) / 100.0
+            : 0.0;
+
         return CrossProductOverviewDTO.builder()
             .slices(slices)
             .totalPoints(totalPoints)
+            .participationRates(participationRates)
+            .overallParticipationRate(overallRate)
             .build();
     }
 
@@ -817,5 +909,176 @@ public class ReportService {
                 return item;
             })
             .collect(Collectors.toList());
+    }
+
+    /**
+     * Platform-level product trend with stacked area chart data.
+     * Aggregates per-product point totals across all tenants.
+     */
+    public ProductTrendDTO getPlatformProductTrend(String dimension, int limit) {
+        return getProductTrendInternal(null, dimension, LocalDate.now().minusDays(limit), LocalDate.now());
+    }
+
+    /**
+     * Enterprise-level product trend with stacked area chart data.
+     * Aggregates per-product point totals for a specific tenant.
+     */
+    public ProductTrendDTO getEnterpriseProductTrend(Long tenantId, String dimension, int limit) {
+        return getProductTrendInternal(tenantId, dimension, LocalDate.now().minusDays(limit), LocalDate.now());
+    }
+
+    /**
+     * Internal implementation for product trend (stacked area chart by product).
+     */
+    private ProductTrendDTO getProductTrendInternal(Long tenantId, String dimension, LocalDate start, LocalDate end) {
+        ProductTrendDTO dto = ProductTrendDTO.builder()
+            .dimension(dimension)
+            .build();
+
+        LocalDateTime startDateTime = start.atStartOfDay();
+        LocalDateTime endDateTime = end.atTime(LocalTime.MAX);
+
+        // Fetch all positive point transactions in the period
+        List<PointTransactionEntity> txs = pointTransactionMapper.selectList(
+            new LambdaQueryWrapper<PointTransactionEntity>()
+                .eq(tenantId != null, PointTransactionEntity::getTenantId, tenantId)
+                .ge(PointTransactionEntity::getCreatedAt, startDateTime)
+                .le(PointTransactionEntity::getCreatedAt, endDateTime)
+                .gt(PointTransactionEntity::getAmount, 0)
+        );
+
+        // Build map: date -> (productCode -> points)
+        Map<LocalDate, Map<String, Long>> dailyProductMap = new LinkedHashMap<>();
+        Set<String> allProducts = new LinkedHashSet<>();
+
+        for (PointTransactionEntity tx : txs) {
+            LocalDate date = tx.getCreatedAt().toLocalDate();
+            String productCode = tx.getProductCode() != null ? tx.getProductCode() : "stair_climbing";
+            allProducts.add(productCode);
+
+            Map<String, Long> productMap = dailyProductMap.computeIfAbsent(date, k -> new LinkedHashMap<>());
+            productMap.merge(productCode, tx.getAmount().longValue(), Long::sum);
+        }
+
+        // Get product names for all products
+        Map<String, String> productNames = new LinkedHashMap<>();
+        for (String productCode : allProducts) {
+            productNames.put(productCode, deriveProductName(productCode));
+        }
+
+        // Generate trend points based on dimension
+        List<ProductTrendDTO.TrendPoint> points = new ArrayList<>();
+        LocalDate current = start;
+
+        while (!current.isAfter(end)) {
+            LocalDate periodStart;
+            LocalDate periodEnd;
+            String periodLabel;
+
+            switch (dimension) {
+                case "week":
+                    periodStart = current;
+                    periodEnd = current.plusDays(6);
+                    DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                    periodLabel = current.format(fmt) + " ~ " + periodEnd.format(fmt);
+                    break;
+                case "month":
+                    periodStart = current.withDayOfMonth(1);
+                    periodEnd = current.with(TemporalAdjusters.lastDayOfMonth());
+                    periodLabel = current.format(DateTimeFormatter.ofPattern("yyyy-MM"));
+                    break;
+                default: // day
+                    periodStart = current;
+                    periodEnd = current;
+                    periodLabel = current.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            }
+
+            // Aggregate product values for this period
+            Map<String, Long> periodProductPoints = new LinkedHashMap<>();
+            for (String productCode : allProducts) {
+                periodProductPoints.put(productCode, 0L);
+            }
+
+            for (LocalDate d = periodStart; !d.isAfter(periodEnd); d = d.plusDays(1)) {
+                Map<String, Long> dayMap = dailyProductMap.get(d);
+                if (dayMap != null) {
+                    for (Map.Entry<String, Long> entry : dayMap.entrySet()) {
+                        periodProductPoints.merge(entry.getKey(), entry.getValue(), Long::sum);
+                    }
+                }
+            }
+
+            // Build product values list
+            List<ProductTrendDTO.ProductValue> productValues = new ArrayList<>();
+            long totalPoints = 0;
+            for (String productCode : allProducts) {
+                long productPoints = periodProductPoints.get(productCode);
+                totalPoints += productPoints;
+                productValues.add(ProductTrendDTO.ProductValue.builder()
+                    .productCode(productCode)
+                    .productName(productNames.get(productCode))
+                    .points(productPoints)
+                    .build());
+            }
+
+            points.add(ProductTrendDTO.TrendPoint.builder()
+                .period(periodLabel)
+                .productValues(productValues)
+                .totalPoints(totalPoints)
+                .build());
+
+            // Advance to next period
+            switch (dimension) {
+                case "week" -> current = current.plusWeeks(1);
+                case "month" -> current = current.plusMonths(1);
+                default -> current = current.plusDays(1);
+            }
+        }
+
+        dto.setPoints(points);
+        return dto;
+    }
+
+    /**
+     * Platform-level cross-product overview.
+     * Aggregates per-product point totals across all tenants.
+     */
+    public CrossProductOverviewDTO getPlatformProductOverview(LocalDate start, LocalDate end) {
+        LocalDateTime startDateTime = start.atStartOfDay();
+        LocalDateTime endDateTime = end.atTime(LocalTime.MAX);
+
+        List<PointTransactionEntity> txs = pointTransactionMapper.selectList(
+            new LambdaQueryWrapper<PointTransactionEntity>()
+                .ge(PointTransactionEntity::getCreatedAt, startDateTime)
+                .le(PointTransactionEntity::getCreatedAt, endDateTime)
+                .gt(PointTransactionEntity::getAmount, 0)
+        );
+
+        Map<String, Long> byProduct = txs.stream()
+            .collect(Collectors.groupingBy(
+                tx -> tx.getProductCode() != null ? tx.getProductCode() : "stair_climbing",
+                Collectors.summingLong(tx -> tx.getAmount().longValue())));
+
+        long totalPoints = byProduct.values().stream().mapToLong(Long::longValue).sum();
+
+        List<CrossProductOverviewDTO.ProductSlice> slices = byProduct.entrySet().stream()
+            .map(entry -> {
+                double percentage = totalPoints > 0
+                    ? Math.round(entry.getValue() * 10000.0 / totalPoints) / 100.0
+                    : 0.0;
+                return CrossProductOverviewDTO.ProductSlice.builder()
+                    .productCode(entry.getKey())
+                    .productName(deriveProductName(entry.getKey()))
+                    .points(entry.getValue())
+                    .percentage(percentage)
+                    .build();
+            })
+            .sorted((a, b) -> Long.compare(b.getPoints(), a.getPoints()))
+            .collect(Collectors.toList());
+
+        return CrossProductOverviewDTO.builder()
+            .slices(slices)
+            .totalPoints(totalPoints)
+            .build();
     }
 }

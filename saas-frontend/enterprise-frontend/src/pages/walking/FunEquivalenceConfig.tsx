@@ -2,35 +2,19 @@ import React, { useEffect } from 'react';
 import { Form, Input, InputNumber, Button, Space, message, Spin, Popconfirm } from 'antd';
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '@/api/request';
+import { getEquivalenceTemplates, updateEquivalenceTemplates, FunEquivalenceTemplate } from '@/api/walking';
 import { useBranding } from '@/components/BrandingProvider';
 import { GlassCard } from '@carbon-point/design-system';
-
-interface FunEquivItem {
-  name: string;
-  stepsPer: number;
-  icon: string;
-}
 
 const FunEquivalenceConfig: React.FC = () => {
   const { primaryColor } = useBranding();
   const queryClient = useQueryClient();
   const [form] = Form.useForm();
 
-  // Fetch existing walking_fun_equiv rule
+  // Fetch existing fun equivalence templates
   const { data, isLoading } = useQuery({
     queryKey: ['walking-fun-equiv'],
-    queryFn: async (): Promise<FunEquivItem[]> => {
-      const res = await apiClient.get('/point-rules/list', { params: { type: 'walking_fun_equiv' } });
-      const rules = (res as any)?.data || (res as any) || [];
-      const rule = Array.isArray(rules) ? rules.find((r: any) => r.type === 'walking_fun_equiv') : null;
-      if (rule) {
-        let config: any = {};
-        try { config = JSON.parse(rule.config || '{}'); } catch {}
-        return config.items || [];
-      }
-      return [];
-    },
+    queryFn: getEquivalenceTemplates,
   });
 
   // Populate form when data arrives
@@ -43,27 +27,10 @@ const FunEquivalenceConfig: React.FC = () => {
   }, [data, form]);
 
   const saveMutation = useMutation({
-    mutationFn: async (values: { items: FunEquivItem[] }) => {
+    mutationFn: async (values: { items: FunEquivalenceTemplate[] }) => {
       // Filter out empty items
       const items = values.items.filter((item) => item.name && item.stepsPer > 0);
-
-      // Try to find existing rule to update
-      const listRes = await apiClient.get('/point-rules/list', { params: { type: 'walking_fun_equiv' } });
-      const rules = (listRes as any)?.data || (listRes as any) || [];
-      const existing = Array.isArray(rules) ? rules.find((r: any) => r.type === 'walking_fun_equiv') : null;
-
-      const payload = {
-        type: 'walking_fun_equiv',
-        name: '趣味换算配置',
-        config: JSON.stringify({ items }),
-        enabled: true,
-        sortOrder: 0,
-      };
-
-      if (existing) {
-        return apiClient.put('/point-rules', { id: Number(existing.id), ...payload });
-      }
-      return apiClient.post('/point-rules', payload);
+      return updateEquivalenceTemplates(items);
     },
     onSuccess: () => {
       message.success('趣味换算配置已保存');

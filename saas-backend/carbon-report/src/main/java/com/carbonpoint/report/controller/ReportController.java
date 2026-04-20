@@ -8,6 +8,7 @@ import com.carbonpoint.report.dto.EnterpriseDashboardDTO;
 import com.carbonpoint.report.dto.PlatformDashboardDTO;
 import com.carbonpoint.report.dto.PointTrendDTO;
 import com.carbonpoint.report.dto.ProductPointStatsDTO;
+import com.carbonpoint.report.dto.ProductTrendDTO;
 import com.carbonpoint.report.dto.WalkingStatsDTO;
 import com.carbonpoint.report.service.ReportService;
 import lombok.RequiredArgsConstructor;
@@ -131,6 +132,48 @@ public class ReportController {
         if (start == null) start = LocalDate.now().minusDays(30);
         if (end == null) end = LocalDate.now();
         return Result.success(reportService.getWalkingStats(principal.getTenantId(), start, end));
+    }
+
+    /**
+     * Platform-level product trend API.
+     * GET /api/reports/platform/product-trend?dimension=day|week|month&limit=30
+     * Returns stacked area chart data: date + per-product point totals (across all tenants).
+     */
+    @GetMapping("/platform/product-trend")
+    @RequirePerm("platform:report:view")
+    public Result<ProductTrendDTO> getPlatformProductTrend(
+            @RequestParam(defaultValue = "day") String dimension,
+            @RequestParam(defaultValue = "30") int limit) {
+        return Result.success(reportService.getPlatformProductTrend(dimension, limit));
+    }
+
+    /**
+     * Platform-level cross-product overview API.
+     * GET /api/reports/platform/product-overview
+     * Returns per-product point totals aggregated across all tenants.
+     */
+    @GetMapping("/platform/product-overview")
+    @RequirePerm("platform:report:view")
+    public Result<CrossProductOverviewDTO> getPlatformProductOverview(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
+        if (start == null) start = LocalDate.now().minusDays(30);
+        if (end == null) end = LocalDate.now();
+        return Result.success(reportService.getPlatformProductOverview(start, end));
+    }
+
+    /**
+     * Enterprise-level product trend API.
+     * GET /api/reports/enterprise/product-trend?dimension=day|week|month&limit=30
+     * Returns stacked area chart data: date + per-product point totals (tenant-scoped).
+     */
+    @GetMapping("/enterprise/product-trend")
+    @RequirePerm("enterprise:report:view")
+    public Result<ProductTrendDTO> getEnterpriseProductTrend(
+            @AuthenticationPrincipal JwtUserPrincipal principal,
+            @RequestParam(defaultValue = "day") String dimension,
+            @RequestParam(defaultValue = "30") int limit) {
+        return Result.success(reportService.getEnterpriseProductTrend(principal.getTenantId(), dimension, limit));
     }
 
     @GetMapping("/export")
