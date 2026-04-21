@@ -62,3 +62,4 @@ test-results/
 /carbon-report/
 /carbon-system/
 /apps/
+.worktrees/
