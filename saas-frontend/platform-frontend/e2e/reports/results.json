@@ -10,18 +10,14 @@
     "grep": {},
     "grepInvert": null,
     "maxFailures": 0,
-    "metadata": {
-      "actualWorkers": 3
-    },
+    "metadata": {},
     "preserveOutput": "always",
     "projects": [
       {
         "outputDir": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/test-results",
         "repeatEach": 1,
         "retries": 1,
-        "metadata": {
-          "actualWorkers": 3
-        },
+        "metadata": {},
         "id": "chromium",
         "name": "chromium",
         "testDir": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e",
@@ -71,6 +67,3502 @@
   },
   "suites": [
     {
+      "title": "specs/platform/dashboard.spec.ts",
+      "file": "specs/platform/dashboard.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "平台后台 - 平台看板 (20 tests)",
+          "file": "specs/platform/dashboard.spec.ts",
+          "line": 6,
+          "column": 6,
+          "specs": [
+            {
+              "title": "PD-001: 平台看板页面可访问",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c20963167e1158dd63e3-3aad97aca1e3966f5b40",
+              "file": "specs/platform/dashboard.spec.ts",
+              "line": 16,
+              "column": 3
+            },
+            {
+              "title": "PD-002: 侧边栏菜单完整",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c20963167e1158dd63e3-f31fccb0b28b163f48ca",
+              "file": "specs/platform/dashboard.spec.ts",
+              "line": 23,
+              "column": 3
+            },
+            {
+              "title": "PD-003: 统计卡片可见 (至少3个)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c20963167e1158dd63e3-c7dace3c003cb4c778a5",
+              "file": "specs/platform/dashboard.spec.ts",
+              "line": 30,
+              "column": 3
+            },
+            {
+              "title": "PD-004: 统计卡片显示数值",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c20963167e1158dd63e3-bce41f0dae797defe423",
+              "file": "specs/platform/dashboard.spec.ts",
+              "line": 38,
+              "column": 3
+            },
+            {
+              "title": "PD-005: 维度切换控件可见且包含3个选项",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c20963167e1158dd63e3-1615cd5769a2fa38d699",
+              "file": "specs/platform/dashboard.spec.ts",
+              "line": 46,
+              "column": 3
+            },
+            {
+              "title": "PD-006: 切换维度为按日",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c20963167e1158dd63e3-546c7c040bed88fef559",
+              "file": "specs/platform/dashboard.spec.ts",
+              "line": 54,
+              "column": 3
+            },
+            {
+              "title": "PD-007: 切换维度为按周",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c20963167e1158dd63e3-b20ade3e0f72e9652065",
+              "file": "specs/platform/dashboard.spec.ts",
+              "line": 60,
+              "column": 3
+            },
+            {
+              "title": "PD-008: 切换维度为按月",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c20963167e1158dd63e3-a4f30515405977d9275a",
+              "file": "specs/platform/dashboard.spec.ts",
+              "line": 66,
+              "column": 3
+            },
+            {
+              "title": "PD-009: 导出报表按钮可见",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c20963167e1158dd63e3-5eb665fa6a48e4ca0bd8",
+              "file": "specs/platform/dashboard.spec.ts",
+              "line": 72,
+              "column": 3
+            },
+            {
+              "title": "PD-010: 积分发放与消耗趋势图可见 (AreaChart)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c20963167e1158dd63e3-3b2451d533eb651b55ec",
+              "file": "specs/platform/dashboard.spec.ts",
+              "line": 76,
+              "column": 3
+            },
+            {
+              "title": "PD-011: 用户与兑换量趋势图可见 (LineChart)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c20963167e1158dd63e3-575d8bfa39f9e2aca008",
+              "file": "specs/platform/dashboard.spec.ts",
+              "line": 82,
+              "column": 3
+            },
+            {
+              "title": "PD-012: 企业积分排行图可见 (BarChart)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c20963167e1158dd63e3-28754ce618803c11106d",
+              "file": "specs/platform/dashboard.spec.ts",
+              "line": 88,
+              "column": 3
+            },
+            {
+              "title": "PD-013: 企业排行详情表格可见",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c20963167e1158dd63e3-7b39d5ccf9e6cb416173",
+              "file": "specs/platform/dashboard.spec.ts",
+              "line": 95,
+              "column": 3
+            },
+            {
+              "title": "PD-014: 切换维度后图表数据更新",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c20963167e1158dd63e3-8b5d6ee7749d13cf98ce",
+              "file": "specs/platform/dashboard.spec.ts",
+              "line": 101,
+              "column": 3
+            },
+            {
+              "title": "PD-015: 表格显示排行数据",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c20963167e1158dd63e3-f87a963b773cce0d1bac",
+              "file": "specs/platform/dashboard.spec.ts",
+              "line": 107,
+              "column": 3
+            },
+            {
+              "title": "PD-016: 表格不显示分页（数据少于一页）",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c20963167e1158dd63e3-dea720bca2f0e90c4aa2",
+              "file": "specs/platform/dashboard.spec.ts",
+              "line": 112,
+              "column": 3
+            },
+            {
+              "title": "PD-017: 排行表格显示企业名称列",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c20963167e1158dd63e3-0e3bc14837af3bbf26d3",
+              "file": "specs/platform/dashboard.spec.ts",
+              "line": 118,
+              "column": 3
+            },
+            {
+              "title": "PD-018: 图表包含标题或图例",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c20963167e1158dd63e3-780c5a194c8e5189669e",
+              "file": "specs/platform/dashboard.spec.ts",
+              "line": 126,
+              "column": 3
+            },
+            {
+              "title": "PD-019: 页面布局完整无遮挡",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c20963167e1158dd63e3-966eeafab5cd50b00849",
+              "file": "specs/platform/dashboard.spec.ts",
+              "line": 131,
+              "column": 3
+            },
+            {
+              "title": "PD-020: 导出按钮可点击",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c20963167e1158dd63e3-3f18f6464b768b8fa48c",
+              "file": "specs/platform/dashboard.spec.ts",
+              "line": 135,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "specs/platform/enterprise-management.spec.ts",
+      "file": "specs/platform/enterprise-management.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "平台后台 - 企业管理",
+          "file": "specs/platform/enterprise-management.spec.ts",
+          "line": 6,
+          "column": 6,
+          "specs": [
+            {
+              "title": "EM-001: 企业管理页面可访问",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "6e782f8c435b2c063e22-cd5d9a350e7adeaebee9",
+              "file": "specs/platform/enterprise-management.spec.ts",
+              "line": 18,
+              "column": 3
+            },
+            {
+              "title": "EM-002: 开通企业按钮可见",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "6e782f8c435b2c063e22-e932c5b9e8eb865787d4",
+              "file": "specs/platform/enterprise-management.spec.ts",
+              "line": 23,
+              "column": 3
+            },
+            {
+              "title": "EM-003: 企业列表包含正确的表头列",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "6e782f8c435b2c063e22-509291e998b1acbeaa9c",
+              "file": "specs/platform/enterprise-management.spec.ts",
+              "line": 27,
+              "column": 3
+            },
+            {
+              "title": "EM-004: 企业列表正确显示数据行",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "6e782f8c435b2c063e22-1938e68a479811fe1756",
+              "file": "specs/platform/enterprise-management.spec.ts",
+              "line": 34,
+              "column": 3
+            },
+            {
+              "title": "EM-005: 按企业名称搜索",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "6e782f8c435b2c063e22-64d0a4c27c7482916312",
+              "file": "specs/platform/enterprise-management.spec.ts",
+              "line": 39,
+              "column": 3
+            },
+            {
+              "title": "EM-006: 清空搜索条件恢复完整列表",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "6e782f8c435b2c063e22-62a221fb3cdf572ea6ea",
+              "file": "specs/platform/enterprise-management.spec.ts",
+              "line": 56,
+              "column": 3
+            },
+            {
+              "title": "EM-007: 搜索无结果时显示空状态",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "6e782f8c435b2c063e22-ca9eb13ef90feb244e92",
+              "file": "specs/platform/enterprise-management.spec.ts",
+              "line": 71,
+              "column": 3
+            },
+            {
+              "title": "EM-008: 开通新企业 - 完整流程",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "6e782f8c435b2c063e22-54f0d98b830d7329e237",
+              "file": "specs/platform/enterprise-management.spec.ts",
+              "line": 78,
+              "column": 3
+            },
+            {
+              "title": "EM-009: 开通企业时必填字段验证",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "6e782f8c435b2c063e22-0ebb0f260a1ef4f6431d",
+              "file": "specs/platform/enterprise-management.spec.ts",
+              "line": 110,
+              "column": 3
+            },
+            {
+              "title": "EM-010: 查看企业详情",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "6e782f8c435b2c063e22-c8f362fe31d896abd7dc",
+              "file": "specs/platform/enterprise-management.spec.ts",
+              "line": 120,
+              "column": 3
+            },
+            {
+              "title": "EM-011: 企业列表状态标签显示正确",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "6e782f8c435b2c063e22-0c484731bf125cb5ba94",
+              "file": "specs/platform/enterprise-management.spec.ts",
+              "line": 133,
+              "column": 3
+            },
+            {
+              "title": "EM-012: 停用企业",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "6e782f8c435b2c063e22-6a4f6d7fee9723027cfc",
+              "file": "specs/platform/enterprise-management.spec.ts",
+              "line": 149,
+              "column": 3
+            },
+            {
+              "title": "EM-013: 开通已停用的企业",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "6e782f8c435b2c063e22-8841635f2dbfbc931fd1",
+              "file": "specs/platform/enterprise-management.spec.ts",
+              "line": 190,
+              "column": 3
+            },
+            {
+              "title": "EM-014: 企业列表分页控件存在",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "6e782f8c435b2c063e22-76627c4fdce54361c5b1",
+              "file": "specs/platform/enterprise-management.spec.ts",
+              "line": 213,
+              "column": 3
+            },
+            {
+              "title": "EM-015: 上一页和下一页分页导航",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "6e782f8c435b2c063e22-3ddc5a8fced873fc14b0",
+              "file": "specs/platform/enterprise-management.spec.ts",
+              "line": 221,
+              "column": 3
+            },
+            {
+              "title": "EM-016: 开通企业弹窗表单字段验证",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "6e782f8c435b2c063e22-c4d5ac010c1d523977ad",
+              "file": "specs/platform/enterprise-management.spec.ts",
+              "line": 230,
+              "column": 3
+            },
+            {
+              "title": "EM-017: 开通企业 - 企业名称必填",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "6e782f8c435b2c063e22-c4706ce6e707288e7e61",
+              "file": "specs/platform/enterprise-management.spec.ts",
+              "line": 239,
+              "column": 3
+            },
+            {
+              "title": "EM-018: 开通企业 - 联系人必填",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "6e782f8c435b2c063e22-94e0a873b4145846eebe",
+              "file": "specs/platform/enterprise-management.spec.ts",
+              "line": 252,
+              "column": 3
+            },
+            {
+              "title": "EM-019: 开通企业 - 联系电话格式验证",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "6e782f8c435b2c063e22-5d60eeee9425f6b8fc42",
+              "file": "specs/platform/enterprise-management.spec.ts",
+              "line": 263,
+              "column": 3
+            },
+            {
+              "title": "EM-020: 列表每行包含操作按钮",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "6e782f8c435b2c063e22-cb26186bad51bd250bcd",
+              "file": "specs/platform/enterprise-management.spec.ts",
+              "line": 275,
+              "column": 3
+            },
+            {
+              "title": "EM-021: 企业列表包含所有关键列",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "6e782f8c435b2c063e22-12393f63c09b57a28988",
+              "file": "specs/platform/enterprise-management.spec.ts",
+              "line": 299,
+              "column": 3
+            },
+            {
+              "title": "EM-022: 查看企业详情包含必要信息",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "6e782f8c435b2c063e22-d7205766774a37c1ba10",
+              "file": "specs/platform/enterprise-management.spec.ts",
+              "line": 309,
+              "column": 3
+            },
+            {
+              "title": "EM-023: 开通企业弹窗可正常关闭",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "6e782f8c435b2c063e22-0b3cb8d7e48f583f544c",
+              "file": "specs/platform/enterprise-management.spec.ts",
+              "line": 323,
+              "column": 3
+            },
+            {
+              "title": "EM-024: 开通企业 - 重复企业名称提示",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "6e782f8c435b2c063e22-876633d22ac83263c201",
+              "file": "specs/platform/enterprise-management.spec.ts",
+              "line": 332,
+              "column": 3
+            },
+            {
+              "title": "EM-025: 表格数据为空时显示空状态",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "6e782f8c435b2c063e22-380aa9c71991f0977662",
+              "file": "specs/platform/enterprise-management.spec.ts",
+              "line": 352,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "specs/platform/feature-library.spec.ts",
+      "file": "specs/platform/feature-library.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "平台后台 - 功能点库",
+          "file": "specs/platform/feature-library.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "FL-001: 积木组件库页面可访问",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "9ce349da18b80d7519fc-a7a3d1107f9b3dbd72af",
+              "file": "specs/platform/feature-library.spec.ts",
+              "line": 12,
+              "column": 3
+            },
+            {
+              "title": "FL-002: 组件库 Tab 切换",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "9ce349da18b80d7519fc-c92c9c974794533cce08",
+              "file": "specs/platform/feature-library.spec.ts",
+              "line": 17,
+              "column": 3
+            },
+            {
+              "title": "FL-003: 功能点列表筛选",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "9ce349da18b80d7519fc-86f5a59460e989781dac",
+              "file": "specs/platform/feature-library.spec.ts",
+              "line": 27,
+              "column": 3
+            },
+            {
+              "title": "FL-004: 编辑功能点",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "9ce349da18b80d7519fc-2c4a1aaf2153d7c19047",
+              "file": "specs/platform/feature-library.spec.ts",
+              "line": 35,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "specs/platform/full-audit.spec.ts",
+      "file": "specs/platform/full-audit.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Dashboard Overlay Bug",
+          "file": "specs/platform/full-audit.spec.ts",
+          "line": 63,
+          "column": 6,
+          "specs": [
+            {
+              "title": "OVERLAY-001: No blocking overlay covers dashboard buttons",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "708a66e453218beea685-fb34a54cc5220ac2c749",
+              "file": "specs/platform/full-audit.spec.ts",
+              "line": 64,
+              "column": 3
+            },
+            {
+              "title": "OVERLAY-002: Dashboard export button is clickable",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "708a66e453218beea685-534e95b854a133d7efee",
+              "file": "specs/platform/full-audit.spec.ts",
+              "line": 113,
+              "column": 3
+            },
+            {
+              "title": "OVERLAY-003: Dashboard segmented control is clickable",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "708a66e453218beea685-b64c66c7a1c6671cb215",
+              "file": "specs/platform/full-audit.spec.ts",
+              "line": 141,
+              "column": 3
+            },
+            {
+              "title": "OVERLAY-004: All interactive dashboard elements are unblocked",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "708a66e453218beea685-fd64e6bc54eea80a02c9",
+              "file": "specs/platform/full-audit.spec.ts",
+              "line": 167,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "Menu Completeness",
+          "file": "specs/platform/full-audit.spec.ts",
+          "line": 200,
+          "column": 6,
+          "specs": [
+            {
+              "title": "MENU-001: All required menu items exist in sidebar",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "708a66e453218beea685-17a9c43f9e44111aceef",
+              "file": "specs/platform/full-audit.spec.ts",
+              "line": 201,
+              "column": 3
+            },
+            {
+              "title": "MENU-002: System management submenu items exist",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "708a66e453218beea685-f82fa4a90accdb1e4a1e",
+              "file": "specs/platform/full-audit.spec.ts",
+              "line": 217,
+              "column": 3
+            },
+            {
+              "title": "MENU-003: Feature config submenu items exist",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "708a66e453218beea685-f7524950832fe0e8f92f",
+              "file": "specs/platform/full-audit.spec.ts",
+              "line": 234,
+              "column": 3
+            },
+            {
+              "title": "MENU-004: Menu navigation works for all pages",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "708a66e453218beea685-4f4560dfa8aefde3a8c1",
+              "file": "specs/platform/full-audit.spec.ts",
+              "line": 250,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "BlockLibrary Page",
+          "file": "specs/platform/full-audit.spec.ts",
+          "line": 271,
+          "column": 6,
+          "specs": [
+            {
+              "title": "BL-001: Block library page loads correctly",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "708a66e453218beea685-6e102f764f8ea75ce6a1",
+              "file": "specs/platform/full-audit.spec.ts",
+              "line": 272,
+              "column": 3
+            },
+            {
+              "title": "BL-002: Three tabs exist (触发器, 规则节点, 功能点模板)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "708a66e453218beea685-e07bb091d329cd7d14b4",
+              "file": "specs/platform/full-audit.spec.ts",
+              "line": 277,
+              "column": 3
+            },
+            {
+              "title": "BL-003: Extension guidance alert visible on each tab",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "708a66e453218beea685-48f85188a92f58b87f90",
+              "file": "specs/platform/full-audit.spec.ts",
+              "line": 286,
+              "column": 3
+            },
+            {
+              "title": "BL-004: Tab switching works and each tab has table",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "708a66e453218beea685-2a53ea733c1fd2c43845",
+              "file": "specs/platform/full-audit.spec.ts",
+              "line": 296,
+              "column": 3
+            },
+            {
+              "title": "BL-005: Extension guidance alert content is correct",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "708a66e453218beea685-841ade72880420b5e78d",
+              "file": "specs/platform/full-audit.spec.ts",
+              "line": 305,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "ProductManagement Page",
+          "file": "specs/platform/full-audit.spec.ts",
+          "line": 316,
+          "column": 6,
+          "specs": [
+            {
+              "title": "PROD-001: Product management page loads",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "708a66e453218beea685-0b25d8ffad2af1a6cb07",
+              "file": "specs/platform/full-audit.spec.ts",
+              "line": 317,
+              "column": 3
+            },
+            {
+              "title": "PROD-002: \"配置产品\" button exists (not \"新建产品向导\")",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "708a66e453218beea685-ebc0b58d7203c5ae2b40",
+              "file": "specs/platform/full-audit.spec.ts",
+              "line": 322,
+              "column": 3
+            },
+            {
+              "title": "PROD-003: Product table has expected columns",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "708a66e453218beea685-41a027ba56bdd73666ad",
+              "file": "specs/platform/full-audit.spec.ts",
+              "line": 331,
+              "column": 3
+            },
+            {
+              "title": "PROD-004: \"关联套餐\" column exists in product table",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "708a66e453218beea685-c3d27fb1923a0d0835f6",
+              "file": "specs/platform/full-audit.spec.ts",
+              "line": 340,
+              "column": 3
+            },
+            {
+              "title": "PROD-005: Opening config wizard shows modal",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "708a66e453218beea685-567dbc9f9f7eb7f27211",
+              "file": "specs/platform/full-audit.spec.ts",
+              "line": 347,
+              "column": 3
+            },
+            {
+              "title": "PROD-006: Product table renders data rows",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "708a66e453218beea685-d6b3f440c72b90063e18",
+              "file": "specs/platform/full-audit.spec.ts",
+              "line": 355,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "PackageManagement Page",
+          "file": "specs/platform/full-audit.spec.ts",
+          "line": 367,
+          "column": 6,
+          "specs": [
+            {
+              "title": "PKG-001: Package management page loads",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "708a66e453218beea685-61eea5d5280df39395cb",
+              "file": "specs/platform/full-audit.spec.ts",
+              "line": 368,
+              "column": 3
+            },
+            {
+              "title": "PKG-002: Package table visible with data",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "708a66e453218beea685-8c701a437b00c633389e",
+              "file": "specs/platform/full-audit.spec.ts",
+              "line": 373,
+              "column": 3
+            },
+            {
+              "title": "PKG-003: \"配置产品\" button exists in package table",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "708a66e453218beea685-bfe7d54468f4e7a2460b",
+              "file": "specs/platform/full-audit.spec.ts",
+              "line": 378,
+              "column": 3
+            },
+            {
+              "title": "PKG-004: Package config modal uses Collapse panels for products",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "708a66e453218beea685-40ef3c1a12e13d9b6d2d",
+              "file": "specs/platform/full-audit.spec.ts",
+              "line": 393,
+              "column": 3
+            },
+            {
+              "title": "PKG-005: Create package button visible",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "708a66e453218beea685-965b921eededd34ed3df",
+              "file": "specs/platform/full-audit.spec.ts",
+              "line": 408,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "EnterpriseManagement Page",
+          "file": "specs/platform/full-audit.spec.ts",
+          "line": 420,
+          "column": 6,
+          "specs": [
+            {
+              "title": "ENT-001: Enterprise management page loads",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "708a66e453218beea685-b86b48755a7ee99483de",
+              "file": "specs/platform/full-audit.spec.ts",
+              "line": 421,
+              "column": 3
+            },
+            {
+              "title": "ENT-002: Enterprise table has data rows",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "708a66e453218beea685-d72b63d7a24413bf3b78",
+              "file": "specs/platform/full-audit.spec.ts",
+              "line": 426,
+              "column": 3
+            },
+            {
+              "title": "ENT-003: Enterprise detail modal has permission overview tab",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "708a66e453218beea685-6c0f5f9f3f7d08ebeabe",
+              "file": "specs/platform/full-audit.spec.ts",
+              "line": 433,
+              "column": 3
+            },
+            {
+              "title": "ENT-004: Permission overview tab shows chain visualization",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "708a66e453218beea685-a974f865a5635eb0b3c1",
+              "file": "specs/platform/full-audit.spec.ts",
+              "line": 448,
+              "column": 3
+            },
+            {
+              "title": "ENT-005: Enterprise detail modal has all 4 tabs",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "708a66e453218beea685-8534ca65cc2d8958aa1b",
+              "file": "specs/platform/full-audit.spec.ts",
+              "line": 465,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "Visual Correctness",
+          "file": "specs/platform/full-audit.spec.ts",
+          "line": 482,
+          "column": 6,
+          "specs": [
+            {
+              "title": "VIS-001: Dark theme is applied (dark sidebar background)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "708a66e453218beea685-0f7d8b81714da5e7d63f",
+              "file": "specs/platform/full-audit.spec.ts",
+              "line": 483,
+              "column": 3
+            },
+            {
+              "title": "VIS-002: Page header has correct layout",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "708a66e453218beea685-95934313997ec9e7f015",
+              "file": "specs/platform/full-audit.spec.ts",
+              "line": 492,
+              "column": 3
+            },
+            {
+              "title": "VIS-003: GlassCard stat cards render with content",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "708a66e453218beea685-fa7cb3de68f022217833",
+              "file": "specs/platform/full-audit.spec.ts",
+              "line": 499,
+              "column": 3
+            },
+            {
+              "title": "VIS-004: Charts render without errors",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "708a66e453218beea685-7e433e17156c1b02d13a",
+              "file": "specs/platform/full-audit.spec.ts",
+              "line": 506,
+              "column": 3
+            },
+            {
+              "title": "VIS-005: No console errors on dashboard",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "708a66e453218beea685-fc737d48699220c04cad",
+              "file": "specs/platform/full-audit.spec.ts",
+              "line": 513,
+              "column": 3
+            },
+            {
+              "title": "VIS-006: BlockLibrary page has no console errors",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "708a66e453218beea685-cb6260dae13a805dfd5e",
+              "file": "specs/platform/full-audit.spec.ts",
+              "line": 532,
+              "column": 3
+            },
+            {
+              "title": "VIS-007: ProductManagement page has no console errors",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "708a66e453218beea685-8b658d2d86caba374bde",
+              "file": "specs/platform/full-audit.spec.ts",
+              "line": 547,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "specs/platform/full-package-flow.spec.ts",
+      "file": "specs/platform/full-package-flow.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "平台后台 - 套餐完整创建流程",
+          "file": "specs/platform/full-package-flow.spec.ts",
+          "line": 9,
+          "column": 6,
+          "specs": [
+            {
+              "title": "FP-001: 登录后 Dashboard 页面可访问",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f427c46dfc4cea55dcdc-6912294cb496fce429f8",
+              "file": "specs/platform/full-package-flow.spec.ts",
+              "line": 22,
+              "column": 3
+            },
+            {
+              "title": "FP-002: 侧边栏导航到各功能页面",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f427c46dfc4cea55dcdc-c5d3c57f3396d83cc30a",
+              "file": "specs/platform/full-package-flow.spec.ts",
+              "line": 36,
+              "column": 3
+            },
+            {
+              "title": "FP-010: 积木组件库 - 查看已注册产品模块",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f427c46dfc4cea55dcdc-496fb77cd9577380ae33",
+              "file": "specs/platform/full-package-flow.spec.ts",
+              "line": 64,
+              "column": 3
+            },
+            {
+              "title": "FP-011: 积木组件库 - 触发器 Tab",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f427c46dfc4cea55dcdc-34457fa03987d03a7b6a",
+              "file": "specs/platform/full-package-flow.spec.ts",
+              "line": 75,
+              "column": 3
+            },
+            {
+              "title": "FP-012: 积木组件库 - 规则节点 Tab",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f427c46dfc4cea55dcdc-4f6e21ec7a9ce489f67a",
+              "file": "specs/platform/full-package-flow.spec.ts",
+              "line": 88,
+              "column": 3
+            },
+            {
+              "title": "FP-013: 积木组件库 - 功能点模板 Tab",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f427c46dfc4cea55dcdc-c7c3f6602d0c497f4fb5",
+              "file": "specs/platform/full-package-flow.spec.ts",
+              "line": 107,
+              "column": 3
+            },
+            {
+              "title": "FP-020: 产品管理 - 页面加载与表格",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f427c46dfc4cea55dcdc-f8a5db249baaa2f2d24a",
+              "file": "specs/platform/full-package-flow.spec.ts",
+              "line": 130,
+              "column": 3
+            },
+            {
+              "title": "FP-021: 产品配置向导 - 爬楼产品完整创建流程",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f427c46dfc4cea55dcdc-fdf72d2c74068ca5699a",
+              "file": "specs/platform/full-package-flow.spec.ts",
+              "line": 142,
+              "column": 3
+            },
+            {
+              "title": "FP-022: 快速创建产品 - 走路积分产品",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f427c46dfc4cea55dcdc-0633faec0368f3e58342",
+              "file": "specs/platform/full-package-flow.spec.ts",
+              "line": 240,
+              "column": 3
+            },
+            {
+              "title": "FP-023: 产品管理 - 分类筛选",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f427c46dfc4cea55dcdc-608b840d5d956c816294",
+              "file": "specs/platform/full-package-flow.spec.ts",
+              "line": 262,
+              "column": 3
+            },
+            {
+              "title": "FP-024: 产品详情 Drawer",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f427c46dfc4cea55dcdc-9a94d3750b7b02838c02",
+              "file": "specs/platform/full-package-flow.spec.ts",
+              "line": 280,
+              "column": 3
+            },
+            {
+              "title": "FP-025: 编辑产品",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f427c46dfc4cea55dcdc-08adeb05557efb9ff353",
+              "file": "specs/platform/full-package-flow.spec.ts",
+              "line": 300,
+              "column": 3
+            },
+            {
+              "title": "FP-026: 产品配置向导 - 步骤验证",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f427c46dfc4cea55dcdc-543fb4d49c4be6e9e139",
+              "file": "specs/platform/full-package-flow.spec.ts",
+              "line": 326,
+              "column": 3
+            },
+            {
+              "title": "FP-027: 产品功能点配置",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f427c46dfc4cea55dcdc-c656a2ba5fd33c4b029e",
+              "file": "specs/platform/full-package-flow.spec.ts",
+              "line": 359,
+              "column": 3
+            },
+            {
+              "title": "FP-028: 产品管理 - 刷新列表",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f427c46dfc4cea55dcdc-986f9f8fd9ae3ea54675",
+              "file": "specs/platform/full-package-flow.spec.ts",
+              "line": 398,
+              "column": 3
+            },
+            {
+              "title": "FP-029: 产品管理 - 分页",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f427c46dfc4cea55dcdc-6d5ba38cd40eaad216cc",
+              "file": "specs/platform/full-package-flow.spec.ts",
+              "line": 409,
+              "column": 3
+            },
+            {
+              "title": "FP-030: 套餐管理 - 页面加载",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f427c46dfc4cea55dcdc-945a1bc0745eaba6b023",
+              "file": "specs/platform/full-package-flow.spec.ts",
+              "line": 425,
+              "column": 3
+            },
+            {
+              "title": "FP-031: 创建套餐",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f427c46dfc4cea55dcdc-170e5492850cc7d1377d",
+              "file": "specs/platform/full-package-flow.spec.ts",
+              "line": 435,
+              "column": 3
+            },
+            {
+              "title": "FP-032: 编辑套餐",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f427c46dfc4cea55dcdc-27af284de67980b91940",
+              "file": "specs/platform/full-package-flow.spec.ts",
+              "line": 451,
+              "column": 3
+            },
+            {
+              "title": "FP-033: 配置套餐产品 - 添加产品到套餐",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f427c46dfc4cea55dcdc-0663af0e0078e348eab7",
+              "file": "specs/platform/full-package-flow.spec.ts",
+              "line": 469,
+              "column": 3
+            },
+            {
+              "title": "FP-034: 配置套餐产品功能点",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f427c46dfc4cea55dcdc-0ae2cbcb7ab924c15b77",
+              "file": "specs/platform/full-package-flow.spec.ts",
+              "line": 495,
+              "column": 3
+            },
+            {
+              "title": "FP-035: 套餐启用/禁用切换",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f427c46dfc4cea55dcdc-d5bd95b0810bffa3b7a1",
+              "file": "specs/platform/full-package-flow.spec.ts",
+              "line": 547,
+              "column": 3
+            },
+            {
+              "title": "FP-036: 套餐管理 - 列表分页与刷新",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f427c46dfc4cea55dcdc-2ca9c88a3d6f82a82626",
+              "file": "specs/platform/full-package-flow.spec.ts",
+              "line": 574,
+              "column": 3
+            },
+            {
+              "title": "FP-040: 平台配置 - 页面加载",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f427c46dfc4cea55dcdc-f1ec7f9e71e97385fb7d",
+              "file": "specs/platform/full-package-flow.spec.ts",
+              "line": 595,
+              "column": 3
+            },
+            {
+              "title": "FP-041: 基础配置 - 表单字段",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f427c46dfc4cea55dcdc-3d35f0e962dfad094840",
+              "file": "specs/platform/full-package-flow.spec.ts",
+              "line": 611,
+              "column": 3
+            },
+            {
+              "title": "FP-042: 通知设置 Tab",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f427c46dfc4cea55dcdc-a66bef1c19feb71ad514",
+              "file": "specs/platform/full-package-flow.spec.ts",
+              "line": 630,
+              "column": 3
+            },
+            {
+              "title": "FP-043: 积分规则 Tab",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f427c46dfc4cea55dcdc-04b817432c328fdd7673",
+              "file": "specs/platform/full-package-flow.spec.ts",
+              "line": 654,
+              "column": 3
+            },
+            {
+              "title": "FP-044: 功能开关 Tab",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f427c46dfc4cea55dcdc-5a0e239543e20e4a7fcc",
+              "file": "specs/platform/full-package-flow.spec.ts",
+              "line": 674,
+              "column": 3
+            },
+            {
+              "title": "FP-045: 第三方集成 Tab",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f427c46dfc4cea55dcdc-8c94f73ad8d79f09a5c1",
+              "file": "specs/platform/full-package-flow.spec.ts",
+              "line": 706,
+              "column": 3
+            },
+            {
+              "title": "FP-046: 系统设置 Tab",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f427c46dfc4cea55dcdc-da01da9d05b34e8de8d4",
+              "file": "specs/platform/full-package-flow.spec.ts",
+              "line": 730,
+              "column": 3
+            },
+            {
+              "title": "FP-047: 规则模板 Tab",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f427c46dfc4cea55dcdc-1b4d190d726b2b090cba",
+              "file": "specs/platform/full-package-flow.spec.ts",
+              "line": 750,
+              "column": 3
+            },
+            {
+              "title": "FP-048: 创建规则模板",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f427c46dfc4cea55dcdc-730cdba9f063d2700b14",
+              "file": "specs/platform/full-package-flow.spec.ts",
+              "line": 762,
+              "column": 3
+            },
+            {
+              "title": "FP-049: 编辑规则模板",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f427c46dfc4cea55dcdc-2c647222ac9c64c6d9e7",
+              "file": "specs/platform/full-package-flow.spec.ts",
+              "line": 778,
+              "column": 3
+            },
+            {
+              "title": "FP-050: 表单重置功能",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f427c46dfc4cea55dcdc-9b23c363d7c8c0bf9d60",
+              "file": "specs/platform/full-package-flow.spec.ts",
+              "line": 801,
+              "column": 3
+            },
+            {
+              "title": "FP-060: E2E - 完整套餐创建流程 (产品→规则→功能→套餐→配置)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f427c46dfc4cea55dcdc-37101d9db34039fa09e5",
+              "file": "specs/platform/full-package-flow.spec.ts",
+              "line": 820,
+              "column": 3
+            },
+            {
+              "title": "FP-070: 删除产品 - Popconfirm 确认",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f427c46dfc4cea55dcdc-b8bc3f77cfa0183a8368",
+              "file": "specs/platform/full-package-flow.spec.ts",
+              "line": 965,
+              "column": 3
+            },
+            {
+              "title": "FP-071: 删除套餐 - Popconfirm 确认",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f427c46dfc4cea55dcdc-3410866084f5c4f18f4b",
+              "file": "specs/platform/full-package-flow.spec.ts",
+              "line": 995,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "specs/platform/package-config.spec.ts",
+      "file": "specs/platform/package-config.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "平台后台 - 套餐配置",
+          "file": "specs/platform/package-config.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "PC-001: 套餐管理页面可访问",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ebba1c67d24bffd7e110-d1747b9d8a67503f6efa",
+              "file": "specs/platform/package-config.spec.ts",
+              "line": 12,
+              "column": 3
+            },
+            {
+              "title": "PC-002: 创建套餐",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ebba1c67d24bffd7e110-e701450b2831bd509d5d",
+              "file": "specs/platform/package-config.spec.ts",
+              "line": 17,
+              "column": 3
+            },
+            {
+              "title": "PC-003: 配置套餐产品",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ebba1c67d24bffd7e110-cbfa3999185694b05478",
+              "file": "specs/platform/package-config.spec.ts",
+              "line": 31,
+              "column": 3
+            },
+            {
+              "title": "PC-004: 配置产品功能点",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ebba1c67d24bffd7e110-44fe227583ac5f004e79",
+              "file": "specs/platform/package-config.spec.ts",
+              "line": 49,
+              "column": 3
+            },
+            {
+              "title": "PC-005: 编辑套餐",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ebba1c67d24bffd7e110-4972ad9f2a80662ff9a2",
+              "file": "specs/platform/package-config.spec.ts",
+              "line": 84,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "specs/platform/package-full-flow.spec.ts",
+      "file": "specs/platform/package-full-flow.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "套餐完整创建全流程",
+          "file": "specs/platform/package-full-flow.spec.ts",
+          "line": 25,
+          "column": 15,
+          "specs": [
+            {
+              "title": "PKF-010: 积木组件库 - 验证组件注册状态",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "7bee5b31ba309823700b-66a4ad811a29ef3e0182",
+              "file": "specs/platform/package-full-flow.spec.ts",
+              "line": 26,
+              "column": 3
+            },
+            {
+              "title": "PKF-020: 创建产品（向导优先，回退快速创建）",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "7bee5b31ba309823700b-4fa07ca0531143a8b868",
+              "file": "specs/platform/package-full-flow.spec.ts",
+              "line": 45,
+              "column": 3
+            },
+            {
+              "title": "PKF-030: 产品详情 Drawer 和功能点配置",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "7bee5b31ba309823700b-b9471488ebfa3a794089",
+              "file": "specs/platform/package-full-flow.spec.ts",
+              "line": 167,
+              "column": 3
+            },
+            {
+              "title": "PKF-040: 创建套餐",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "7bee5b31ba309823700b-f87dc20825ffb777fbb8",
+              "file": "specs/platform/package-full-flow.spec.ts",
+              "line": 207,
+              "column": 3
+            },
+            {
+              "title": "PKF-050: 配置套餐产品 - 添加产品到套餐",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "7bee5b31ba309823700b-d2a4ea65d6e28352e8ba",
+              "file": "specs/platform/package-full-flow.spec.ts",
+              "line": 221,
+              "column": 3
+            },
+            {
+              "title": "PKF-060: 配置套餐产品功能点开关",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "7bee5b31ba309823700b-c7efd5c523606ede49d6",
+              "file": "specs/platform/package-full-flow.spec.ts",
+              "line": 245,
+              "column": 3
+            },
+            {
+              "title": "PKF-070: 验证套餐最终状态",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "7bee5b31ba309823700b-3641e599e29544119aab",
+              "file": "specs/platform/package-full-flow.spec.ts",
+              "line": 294,
+              "column": 3
+            },
+            {
+              "title": "PKF-080: 清理测试数据",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "7bee5b31ba309823700b-c99a0f55de1c60d76b34",
+              "file": "specs/platform/package-full-flow.spec.ts",
+              "line": 321,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "specs/platform/platform-config.spec.ts",
+      "file": "specs/platform/platform-config.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "平台后台 - 平台配置",
+          "file": "specs/platform/platform-config.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "PC-001: 平台配置页面可访问",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f49a47df6d1091c0812c-5fc2f31c67d0ca144188",
+              "file": "specs/platform/platform-config.spec.ts",
+              "line": 13,
+              "column": 3
+            },
+            {
+              "title": "PC-002: 保存按钮可见",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f49a47df6d1091c0812c-519fc128ba76a6cf6e34",
+              "file": "specs/platform/platform-config.spec.ts",
+              "line": 18,
+              "column": 3
+            },
+            {
+              "title": "PC-003: 基础配置表单可编辑",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f49a47df6d1091c0812c-d5c2d4f92715bad8354e",
+              "file": "specs/platform/platform-config.spec.ts",
+              "line": 22,
+              "column": 3
+            },
+            {
+              "title": "PC-004: 切换到通知设置Tab",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f49a47df6d1091c0812c-fd15c1468955ec8568fb",
+              "file": "specs/platform/platform-config.spec.ts",
+              "line": 31,
+              "column": 3
+            },
+            {
+              "title": "PC-005: 切换到积分规则Tab",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f49a47df6d1091c0812c-dfa79bb35dbabd0ed52b",
+              "file": "specs/platform/platform-config.spec.ts",
+              "line": 37,
+              "column": 3
+            },
+            {
+              "title": "PC-006: 切换到功能开关Tab",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f49a47df6d1091c0812c-6226223ca4d9d8b280e0",
+              "file": "specs/platform/platform-config.spec.ts",
+              "line": 43,
+              "column": 3
+            },
+            {
+              "title": "PC-007: 切换到第三方集成Tab",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f49a47df6d1091c0812c-d4098957c757d971198b",
+              "file": "specs/platform/platform-config.spec.ts",
+              "line": 51,
+              "column": 3
+            },
+            {
+              "title": "PC-008: 切换到系统设置Tab",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f49a47df6d1091c0812c-e842d3c6ea7f22991519",
+              "file": "specs/platform/platform-config.spec.ts",
+              "line": 57,
+              "column": 3
+            },
+            {
+              "title": "PC-009: 必填字段验证 - 留空提交",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f49a47df6d1091c0812c-c3e17ee98caf16b53160",
+              "file": "specs/platform/platform-config.spec.ts",
+              "line": 63,
+              "column": 3
+            },
+            {
+              "title": "PC-010: 邮箱格式验证",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f49a47df6d1091c0812c-370b893bfa445e6aa80f",
+              "file": "specs/platform/platform-config.spec.ts",
+              "line": 73,
+              "column": 3
+            },
+            {
+              "title": "PC-011: URL格式验证",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f49a47df6d1091c0812c-56e66e2ba6c03486d09a",
+              "file": "specs/platform/platform-config.spec.ts",
+              "line": 81,
+              "column": 3
+            },
+            {
+              "title": "PC-012: 数字字段边界值验证",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f49a47df6d1091c0812c-590d4408afc1a178bcde",
+              "file": "specs/platform/platform-config.spec.ts",
+              "line": 89,
+              "column": 3
+            },
+            {
+              "title": "PC-013: 功能开关切换",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f49a47df6d1091c0812c-61b4add73651cf7d27d1",
+              "file": "specs/platform/platform-config.spec.ts",
+              "line": 101,
+              "column": 3
+            },
+            {
+              "title": "PC-014: 保存成功提示",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "location": {
+                        "file": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/specs/platform/platform-config.spec.ts",
+                        "line": 111,
+                        "column": 8
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f49a47df6d1091c0812c-a48e16e03c7a64b80db0",
+              "file": "specs/platform/platform-config.spec.ts",
+              "line": 111,
+              "column": 8
+            },
+            {
+              "title": "PC-015: 保存后数据持久化",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "location": {
+                        "file": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/specs/platform/platform-config.spec.ts",
+                        "line": 122,
+                        "column": 8
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f49a47df6d1091c0812c-e29f3bda69ffef08bf02",
+              "file": "specs/platform/platform-config.spec.ts",
+              "line": 122,
+              "column": 8
+            },
+            {
+              "title": "PC-016: 表单重置功能",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f49a47df6d1091c0812c-0e91737b5a1283a0d6a7",
+              "file": "specs/platform/platform-config.spec.ts",
+              "line": 141,
+              "column": 3
+            },
+            {
+              "title": "PC-017: 下拉选择框可展开",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f49a47df6d1091c0812c-8f5b99ffdf7a1180ea96",
+              "file": "specs/platform/platform-config.spec.ts",
+              "line": 154,
+              "column": 3
+            },
+            {
+              "title": "PC-018: 日期选择器可打开",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f49a47df6d1091c0812c-f7f132f06245d0ba4767",
+              "file": "specs/platform/platform-config.spec.ts",
+              "line": 161,
+              "column": 3
+            },
+            {
+              "title": "PC-019: 多行文本框可编辑",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f49a47df6d1091c0812c-c6cd5b488d317474709d",
+              "file": "specs/platform/platform-config.spec.ts",
+              "line": 168,
+              "column": 3
+            },
+            {
+              "title": "PC-020: 页面加载时显示loading状态",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f49a47df6d1091c0812c-d21b3c445f1ea6c8e3cf",
+              "file": "specs/platform/platform-config.spec.ts",
+              "line": 176,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "specs/platform/product-management.spec.ts",
+      "file": "specs/platform/product-management.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "平台后台 - 产品管理",
+          "file": "specs/platform/product-management.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "PM-001: 产品管理页面可访问",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "da2bdc19a4b514cadfc7-9fc3b379b7722889e696",
+              "file": "specs/platform/product-management.spec.ts",
+              "line": 12,
+              "column": 3
+            },
+            {
+              "title": "PM-002: 创建产品",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "da2bdc19a4b514cadfc7-03683c77de4e151c4526",
+              "file": "specs/platform/product-management.spec.ts",
+              "line": 17,
+              "column": 3
+            },
+            {
+              "title": "PM-003: 产品列表筛选",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "da2bdc19a4b514cadfc7-aeb2a2dc169c15801d11",
+              "file": "specs/platform/product-management.spec.ts",
+              "line": 31,
+              "column": 3
+            },
+            {
+              "title": "PM-004: 编辑产品",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "da2bdc19a4b514cadfc7-5d16e3b114744c92a119",
+              "file": "specs/platform/product-management.spec.ts",
+              "line": 39,
+              "column": 3
+            },
+            {
+              "title": "PM-005: 配置产品功能点",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "da2bdc19a4b514cadfc7-e33cee5b78fe016360fa",
+              "file": "specs/platform/product-management.spec.ts",
+              "line": 50,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "specs/platform/product-wizard.spec.ts",
+      "file": "specs/platform/product-wizard.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "平台后台 - 产品配置向导全流程",
+          "file": "specs/platform/product-wizard.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "PW-001: 产品配置向导 - 完整流程测试",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "8294e6131b50cfde99b3-abab493dce89ce9952ea",
+              "file": "specs/platform/product-wizard.spec.ts",
+              "line": 12,
+              "column": 3
+            },
+            {
+              "title": "PW-002: 产品创建成功后快捷操作",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "8294e6131b50cfde99b3-f5e7dd0a476ab1bd2e3c",
+              "file": "specs/platform/product-wizard.spec.ts",
+              "line": 101,
+              "column": 3
+            },
+            {
+              "title": "PW-003: 向导步骤验证和回退",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "8294e6131b50cfde99b3-09d9ad8395d99768d47f",
+              "file": "specs/platform/product-wizard.spec.ts",
+              "line": 139,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
       "title": "specs/platform/system-management.spec.ts",
       "file": "specs/platform/system-management.spec.ts",
       "column": 0,
@@ -82,17 +3574,618 @@
           "file": "specs/platform/system-management.spec.ts",
           "line": 6,
           "column": 6,
-          "specs": [],
+          "specs": [
+            {
+              "title": "SM-001: 系统管理页面可访问",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ec6a88167b287661af66-20702903277a91ba3e40",
+              "file": "specs/platform/system-management.spec.ts",
+              "line": 15,
+              "column": 3
+            },
+            {
+              "title": "SM-002: 默认显示平台管理员Tab",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ec6a88167b287661af66-558cbd0cda362165f3e4",
+              "file": "specs/platform/system-management.spec.ts",
+              "line": 20,
+              "column": 3
+            },
+            {
+              "title": "SM-003: Tab切换到操作日志",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ec6a88167b287661af66-e843bc6ceccbc6b9cfd4",
+              "file": "specs/platform/system-management.spec.ts",
+              "line": 25,
+              "column": 3
+            },
+            {
+              "title": "SM-004: 平台管理员表格渲染",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ec6a88167b287661af66-78bf25630fe20948b8af",
+              "file": "specs/platform/system-management.spec.ts",
+              "line": 30,
+              "column": 3
+            },
+            {
+              "title": "SM-005: 创建管理员按钮可点击",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ec6a88167b287661af66-78af5fe23644b1a6d686",
+              "file": "specs/platform/system-management.spec.ts",
+              "line": 35,
+              "column": 3
+            },
+            {
+              "title": "SM-006: 创建管理员弹窗表单元素完整",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ec6a88167b287661af66-e2ae9166c7f254bb3e4f",
+              "file": "specs/platform/system-management.spec.ts",
+              "line": 42,
+              "column": 3
+            },
+            {
+              "title": "SM-007: 创建管理员-必填字段验证",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ec6a88167b287661af66-835f43180820cafcd3b5",
+              "file": "specs/platform/system-management.spec.ts",
+              "line": 52,
+              "column": 3
+            },
+            {
+              "title": "SM-008: 创建管理员成功（无角色）",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ec6a88167b287661af66-01953251ad89db19f631",
+              "file": "specs/platform/system-management.spec.ts",
+              "line": 58,
+              "column": 3
+            },
+            {
+              "title": "SM-009: 操作日志Tab切换后表格可见",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ec6a88167b287661af66-0b5f5c500536ed919de7",
+              "file": "specs/platform/system-management.spec.ts",
+              "line": 72,
+              "column": 3
+            },
+            {
+              "title": "SM-010: 操作日志表头正确",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ec6a88167b287661af66-33cf22ebfd4d5cc570f8",
+              "file": "specs/platform/system-management.spec.ts",
+              "line": 77,
+              "column": 3
+            },
+            {
+              "title": "SM-011: 操作日志搜索框可见",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ec6a88167b287661af66-b68435782ea466d718e0",
+              "file": "specs/platform/system-management.spec.ts",
+              "line": 86,
+              "column": 3
+            },
+            {
+              "title": "SM-012: 操作日志查询按钮可见",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ec6a88167b287661af66-01c6f68698fbbd5899ff",
+              "file": "specs/platform/system-management.spec.ts",
+              "line": 91,
+              "column": 3
+            },
+            {
+              "title": "SM-013: 操作日志刷新按钮可见",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ec6a88167b287661af66-c903ae2747fcf8a8d7d4",
+              "file": "specs/platform/system-management.spec.ts",
+              "line": 96,
+              "column": 3
+            },
+            {
+              "title": "SM-014: 平台管理员分页控件可见",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ec6a88167b287661af66-382391cce2ca89f6bfc1",
+              "file": "specs/platform/system-management.spec.ts",
+              "line": 101,
+              "column": 3
+            },
+            {
+              "title": "SM-015: 操作日志分页控件存在",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ec6a88167b287661af66-0cd2479dfe456aa519e4",
+              "file": "specs/platform/system-management.spec.ts",
+              "line": 105,
+              "column": 3
+            },
+            {
+              "title": "SM-016: 管理员表单手机号格式验证",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ec6a88167b287661af66-da3a2a48cf7ecb80541a",
+              "file": "specs/platform/system-management.spec.ts",
+              "line": 112,
+              "column": 3
+            },
+            {
+              "title": "SM-017: 管理员表单密码必填验证",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ec6a88167b287661af66-2058105bb8fdd105a629",
+              "file": "specs/platform/system-management.spec.ts",
+              "line": 124,
+              "column": 3
+            },
+            {
+              "title": "SM-018: 创建管理员弹窗有正确的标题",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ec6a88167b287661af66-f99276e733e736ca839e",
+              "file": "specs/platform/system-management.spec.ts",
+              "line": 136,
+              "column": 3
+            },
+            {
+              "title": "SM-019: 平台管理员Tab切换保持状态",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ec6a88167b287661af66-356538f3542368ae21f1",
+              "file": "specs/platform/system-management.spec.ts",
+              "line": 141,
+              "column": 3
+            },
+            {
+              "title": "SM-020: 操作日志Tab切换保持状态",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ec6a88167b287661af66-978b534c5965faacb981",
+              "file": "specs/platform/system-management.spec.ts",
+              "line": 147,
+              "column": 3
+            },
+            {
+              "title": "SM-021: 平台管理员表格有数据行",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ec6a88167b287661af66-f00de8cdd555106a1d89",
+              "file": "specs/platform/system-management.spec.ts",
+              "line": 152,
+              "column": 3
+            },
+            {
+              "title": "SM-022: 操作日志表格可滚动加载",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ec6a88167b287661af66-97ebe0e63d625b71d477",
+              "file": "specs/platform/system-management.spec.ts",
+              "line": 157,
+              "column": 3
+            },
+            {
+              "title": "SM-023: 创建管理员弹窗可关闭",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ec6a88167b287661af66-dc0c6483d49272b16d39",
+              "file": "specs/platform/system-management.spec.ts",
+              "line": 168,
+              "column": 3
+            },
+            {
+              "title": "SM-024: 系统管理页面包含Tab组件",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ec6a88167b287661af66-d9bc3506f63cb82b4879",
+              "file": "specs/platform/system-management.spec.ts",
+              "line": 175,
+              "column": 3
+            },
+            {
+              "title": "SM-025: 平台管理员Tab包含正确内容",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ec6a88167b287661af66-c6417a1f82430a3909f3",
+              "file": "specs/platform/system-management.spec.ts",
+              "line": 180,
+              "column": 3
+            },
+            {
+              "title": "SM-026: 操作日志Tab包含正确内容",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ec6a88167b287661af66-f8da459c3c6f753d852e",
+              "file": "specs/platform/system-management.spec.ts",
+              "line": 185,
+              "column": 3
+            },
+            {
+              "title": "SM-027: 平台管理员内容区域可见",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ec6a88167b287661af66-6b47749d97f109c83c41",
+              "file": "specs/platform/system-management.spec.ts",
+              "line": 190,
+              "column": 3
+            },
+            {
+              "title": "SM-028: 创建管理员表单提交按钮可点击",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ec6a88167b287661af66-3c43996063a0afafcad6",
+              "file": "specs/platform/system-management.spec.ts",
+              "line": 194,
+              "column": 3
+            },
+            {
+              "title": "SM-029: 操作日志表格存在",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ec6a88167b287661af66-cb7f89b487fec6f35934",
+              "file": "specs/platform/system-management.spec.ts",
+              "line": 201,
+              "column": 3
+            },
+            {
+              "title": "SM-030: 系统管理页面Tab可交互",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ec6a88167b287661af66-cc4d3f0499baef58c709",
+              "file": "specs/platform/system-management.spec.ts",
+              "line": 207,
+              "column": 3
+            }
+          ],
           "suites": [
             {
-              "title": "PC-021 to PC-030: CRUD, Bulk Ops, Form Validation, Sorting",
+              "title": "PC-001 to PC-010: User List and Search Tests",
               "file": "specs/platform/system-management.spec.ts",
-              "line": 392,
+              "line": 217,
               "column": 8,
               "specs": [
                 {
-                  "title": "PC-022: 编辑管理员邮箱信息",
-                  "ok": false,
+                  "title": "PC-001: 平台管理员列表显示用户数据",
+                  "ok": true,
                   "tags": [],
                   "tests": [
                     {
@@ -101,112 +4194,444 @@
                       "expectedStatus": "passed",
                       "projectId": "chromium",
                       "projectName": "chromium",
-                      "results": [
-                        {
-                          "workerIndex": 0,
-                          "parallelIndex": 0,
-                          "status": "failed",
-                          "duration": 28431,
-                          "error": {
-                            "message": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.ant-tabs') to be visible\u001b[22m\n",
-                            "stack": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.ant-tabs') to be visible\u001b[22m\n\n    at SystemManagementPage.goto (/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/pages/platform/SystemManagementPage.ts:163:21)\n    at /Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/specs/platform/system-management.spec.ts:12:5",
-                            "location": {
-                              "file": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/pages/platform/SystemManagementPage.ts",
-                              "column": 21,
-                              "line": 163
-                            },
-                            "snippet": "\u001b[90m   at \u001b[39mpages/platform/SystemManagementPage.ts:163\n\n  161 |     }\n  162 |     await this.page.waitForLoadState('networkidle');\n> 163 |     await this.page.waitForSelector('.ant-tabs', { timeout: 15000 });\n      |                     ^\n  164 |   }\n  165 |\n  166 |   async switchToTab(tabName: string) {"
-                          },
-                          "errors": [
-                            {
-                              "location": {
-                                "file": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/pages/platform/SystemManagementPage.ts",
-                                "column": 21,
-                                "line": 163
-                              },
-                              "message": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.ant-tabs') to be visible\u001b[22m\n\n\n   at pages/platform/SystemManagementPage.ts:163\n\n  161 |     }\n  162 |     await this.page.waitForLoadState('networkidle');\n> 163 |     await this.page.waitForSelector('.ant-tabs', { timeout: 15000 });\n      |                     ^\n  164 |   }\n  165 |\n  166 |   async switchToTab(tabName: string) {\n    at SystemManagementPage.goto (/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/pages/platform/SystemManagementPage.ts:163:21)\n    at /Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/specs/platform/system-management.spec.ts:12:5"
-                            }
-                          ],
-                          "stdout": [],
-                          "stderr": [],
-                          "retry": 0,
-                          "startTime": "2026-04-21T02:40:31.756Z",
-                          "annotations": [],
-                          "attachments": [
-                            {
-                              "name": "screenshot",
-                              "contentType": "image/png",
-                              "path": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/test-results/specs-platform-system-mana-a80aa-on-Sorting-PC-022-编辑管理员邮箱信息-chromium/test-failed-1.png"
-                            },
-                            {
-                              "name": "video",
-                              "contentType": "video/webm",
-                              "path": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/test-results/specs-platform-system-mana-a80aa-on-Sorting-PC-022-编辑管理员邮箱信息-chromium/video.webm"
-                            },
-                            {
-                              "name": "error-context",
-                              "contentType": "text/markdown",
-                              "path": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/test-results/specs-platform-system-mana-a80aa-on-Sorting-PC-022-编辑管理员邮箱信息-chromium/error-context.md"
-                            }
-                          ],
-                          "errorLocation": {
-                            "file": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/pages/platform/SystemManagementPage.ts",
-                            "column": 21,
-                            "line": 163
-                          }
-                        },
-                        {
-                          "workerIndex": 5,
-                          "parallelIndex": 0,
-                          "status": "timedOut",
-                          "duration": 31472,
-                          "error": {
-                            "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
-                            "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
-                          },
-                          "errors": [
-                            {
-                              "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
-                            },
-                            {
-                              "location": {
-                                "file": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/pages/platform/SystemManagementPage.ts",
-                                "column": 34,
-                                "line": 175
-                              },
-                              "message": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('button').filter({ hasText: '创建管理员' })\u001b[22m\n\n\n   at pages/platform/SystemManagementPage.ts:175\n\n  173 |\n  174 |   async openCreateAdminModal() {\n> 175 |     await this.createAdminButton.click();\n      |                                  ^\n  176 |     await this.modal.waitFor({ state: 'visible', timeout: 5000 });\n  177 |   }\n  178 |\n    at SystemManagementPage.openCreateAdminModal (/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/pages/platform/SystemManagementPage.ts:175:34)\n    at /Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/specs/platform/system-management.spec.ts:411:24"
-                            }
-                          ],
-                          "stdout": [],
-                          "stderr": [],
-                          "retry": 1,
-                          "startTime": "2026-04-21T02:41:02.081Z",
-                          "annotations": [],
-                          "attachments": [
-                            {
-                              "name": "screenshot",
-                              "contentType": "image/png",
-                              "path": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/test-results/specs-platform-system-mana-a80aa-on-Sorting-PC-022-编辑管理员邮箱信息-chromium-retry1/test-failed-1.png"
-                            },
-                            {
-                              "name": "video",
-                              "contentType": "video/webm",
-                              "path": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/test-results/specs-platform-system-mana-a80aa-on-Sorting-PC-022-编辑管理员邮箱信息-chromium-retry1/video.webm"
-                            },
-                            {
-                              "name": "error-context",
-                              "contentType": "text/markdown",
-                              "path": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/test-results/specs-platform-system-mana-a80aa-on-Sorting-PC-022-编辑管理员邮箱信息-chromium-retry1/error-context.md"
-                            },
-                            {
-                              "name": "trace",
-                              "contentType": "application/zip",
-                              "path": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/test-results/specs-platform-system-mana-a80aa-on-Sorting-PC-022-编辑管理员邮箱信息-chromium-retry1/trace.zip"
-                            }
-                          ]
-                        }
-                      ],
-                      "status": "unexpected"
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "ec6a88167b287661af66-bccfe2bbab28d92ea949",
+                  "file": "specs/platform/system-management.spec.ts",
+                  "line": 218,
+                  "column": 5
+                },
+                {
+                  "title": "PC-002: 平台管理员创建按钮可点击并打开弹窗",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "ec6a88167b287661af66-fc4e21e81e644c07866c",
+                  "file": "specs/platform/system-management.spec.ts",
+                  "line": 223,
+                  "column": 5
+                },
+                {
+                  "title": "PC-003: 创建管理员弹窗可关闭",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "ec6a88167b287661af66-8bca826fa165ffad67b0",
+                  "file": "specs/platform/system-management.spec.ts",
+                  "line": 231,
+                  "column": 5
+                },
+                {
+                  "title": "PC-004: 创建管理员弹窗表单可填写",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "ec6a88167b287661af66-58cae77b97c5906dc7d1",
+                  "file": "specs/platform/system-management.spec.ts",
+                  "line": 239,
+                  "column": 5
+                },
+                {
+                  "title": "PC-005: 平台管理员编辑弹窗可打开",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "ec6a88167b287661af66-392b4a32e49c90bc3cfb",
+                  "file": "specs/platform/system-management.spec.ts",
+                  "line": 252,
+                  "column": 5
+                },
+                {
+                  "title": "PC-006: 平台管理员编辑弹窗可关闭",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "ec6a88167b287661af66-6bba5339a3547fcb62a5",
+                  "file": "specs/platform/system-management.spec.ts",
+                  "line": 262,
+                  "column": 5
+                },
+                {
+                  "title": "PC-007: 平台管理员表格表头包含预期列",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "ec6a88167b287661af66-319d81c69b84fec8836c",
+                  "file": "specs/platform/system-management.spec.ts",
+                  "line": 272,
+                  "column": 5
+                },
+                {
+                  "title": "PC-008: 平台管理员分页控件包含页码",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "ec6a88167b287661af66-0a682eeebb851a85b8ad",
+                  "file": "specs/platform/system-management.spec.ts",
+                  "line": 278,
+                  "column": 5
+                },
+                {
+                  "title": "PC-009: 平台管理员创建按钮有正确的文本",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "ec6a88167b287661af66-158153e9c2dc3eb5897d",
+                  "file": "specs/platform/system-management.spec.ts",
+                  "line": 284,
+                  "column": 5
+                },
+                {
+                  "title": "PC-010: 平台管理员表格行包含操作按钮",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "ec6a88167b287661af66-16fe3dfbe1ca455ff72d",
+                  "file": "specs/platform/system-management.spec.ts",
+                  "line": 290,
+                  "column": 5
+                }
+              ]
+            },
+            {
+              "title": "PC-011 to PC-020: Extended System Management Tests",
+              "file": "specs/platform/system-management.spec.ts",
+              "line": 301,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "PC-011: 平台管理员列表可按用户名搜索",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "ec6a88167b287661af66-b1e35b5e83193135be56",
+                  "file": "specs/platform/system-management.spec.ts",
+                  "line": 302,
+                  "column": 5
+                },
+                {
+                  "title": "PC-012: 平台管理员表格数据显示正常",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "ec6a88167b287661af66-5e1e30cfd8076a703730",
+                  "file": "specs/platform/system-management.spec.ts",
+                  "line": 320,
+                  "column": 5
+                },
+                {
+                  "title": "PC-013: 操作日志可按操作人搜索",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "ec6a88167b287661af66-e473408b0766a7d814f5",
+                  "file": "specs/platform/system-management.spec.ts",
+                  "line": 327,
+                  "column": 5
+                },
+                {
+                  "title": "PC-014: 操作日志搜索区域存在",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "ec6a88167b287661af66-a2f5a9a9b8b69812a91a",
+                  "file": "specs/platform/system-management.spec.ts",
+                  "line": 335,
+                  "column": 5
+                },
+                {
+                  "title": "PC-015: 操作日志刷新按钮可点击",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "ec6a88167b287661af66-b4f5693eafeb37b0d202",
+                  "file": "specs/platform/system-management.spec.ts",
+                  "line": 341,
+                  "column": 5
+                },
+                {
+                  "title": "PC-016: 操作日志查询按钮可点击",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "ec6a88167b287661af66-b1d675f6cae508b00ffa",
+                  "file": "specs/platform/system-management.spec.ts",
+                  "line": 351,
+                  "column": 5
+                },
+                {
+                  "title": "PC-017: 平台管理员列表有分页信息显示",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "ec6a88167b287661af66-524f54b35b426ec16b6b",
+                  "file": "specs/platform/system-management.spec.ts",
+                  "line": 358,
+                  "column": 5
+                },
+                {
+                  "title": "PC-018: 平台管理员表格操作列存在",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "ec6a88167b287661af66-86cb1437e285e334c207",
+                  "file": "specs/platform/system-management.spec.ts",
+                  "line": 366,
+                  "column": 5
+                },
+                {
+                  "title": "PC-019: 创建管理员弹窗关闭按钮可用",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "ec6a88167b287661af66-72e25b93d382cc4c912c",
+                  "file": "specs/platform/system-management.spec.ts",
+                  "line": 373,
+                  "column": 5
+                },
+                {
+                  "title": "PC-020: 操作日志表有正确的列标题",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "ec6a88167b287661af66-88886d43a51ee52a9960",
+                  "file": "specs/platform/system-management.spec.ts",
+                  "line": 382,
+                  "column": 5
+                }
+              ]
+            },
+            {
+              "title": "PC-021 to PC-030: CRUD, Bulk Ops, Form Validation, Sorting",
+              "file": "specs/platform/system-management.spec.ts",
+              "line": 392,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "PC-021: 创建管理员成功且显示在表格中",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "ec6a88167b287661af66-c758b6740fa07bf7be94",
+                  "file": "specs/platform/system-management.spec.ts",
+                  "line": 393,
+                  "column": 5
+                },
+                {
+                  "title": "PC-022: 编辑管理员邮箱信息",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
                     }
                   ],
                   "id": "ec6a88167b287661af66-6da72bd7b6cf348c64ab",
@@ -216,7 +4641,7 @@
                 },
                 {
                   "title": "PC-023: 删除管理员确认流程",
-                  "ok": false,
+                  "ok": true,
                   "tags": [],
                   "tests": [
                     {
@@ -225,112 +4650,8 @@
                       "expectedStatus": "passed",
                       "projectId": "chromium",
                       "projectName": "chromium",
-                      "results": [
-                        {
-                          "workerIndex": 1,
-                          "parallelIndex": 1,
-                          "status": "failed",
-                          "duration": 28354,
-                          "error": {
-                            "message": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('button').filter({ hasText: '创建管理员' })\u001b[22m\n\u001b[2m    - locator resolved to <button type=\"button\" class=\"ant-btn css-dev-only-do-not-override-mncuj7 ant-btn-primary ant-btn-color-primary ant-btn-variant-solid\">…</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m  - element was detached from the DOM, retrying\u001b[22m\n",
-                            "stack": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('button').filter({ hasText: '创建管理员' })\u001b[22m\n\u001b[2m    - locator resolved to <button type=\"button\" class=\"ant-btn css-dev-only-do-not-override-mncuj7 ant-btn-primary ant-btn-color-primary ant-btn-variant-solid\">…</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m  - element was detached from the DOM, retrying\u001b[22m\n\n    at SystemManagementPage.openCreateAdminModal (/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/pages/platform/SystemManagementPage.ts:175:34)\n    at SystemManagementPage.createAdmin (/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/pages/platform/SystemManagementPage.ts:240:16)\n    at /Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/specs/platform/system-management.spec.ts:431:24",
-                            "location": {
-                              "file": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/pages/platform/SystemManagementPage.ts",
-                              "column": 34,
-                              "line": 175
-                            },
-                            "snippet": "\u001b[90m   at \u001b[39mpages/platform/SystemManagementPage.ts:175\n\n  173 |\n  174 |   async openCreateAdminModal() {\n> 175 |     await this.createAdminButton.click();\n      |                                  ^\n  176 |     await this.modal.waitFor({ state: 'visible', timeout: 5000 });\n  177 |   }\n  178 |"
-                          },
-                          "errors": [
-                            {
-                              "location": {
-                                "file": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/pages/platform/SystemManagementPage.ts",
-                                "column": 34,
-                                "line": 175
-                              },
-                              "message": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('button').filter({ hasText: '创建管理员' })\u001b[22m\n\u001b[2m    - locator resolved to <button type=\"button\" class=\"ant-btn css-dev-only-do-not-override-mncuj7 ant-btn-primary ant-btn-color-primary ant-btn-variant-solid\">…</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m  - element was detached from the DOM, retrying\u001b[22m\n\n\n   at pages/platform/SystemManagementPage.ts:175\n\n  173 |\n  174 |   async openCreateAdminModal() {\n> 175 |     await this.createAdminButton.click();\n      |                                  ^\n  176 |     await this.modal.waitFor({ state: 'visible', timeout: 5000 });\n  177 |   }\n  178 |\n    at SystemManagementPage.openCreateAdminModal (/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/pages/platform/SystemManagementPage.ts:175:34)\n    at SystemManagementPage.createAdmin (/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/pages/platform/SystemManagementPage.ts:240:16)\n    at /Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/specs/platform/system-management.spec.ts:431:24"
-                            }
-                          ],
-                          "stdout": [],
-                          "stderr": [],
-                          "retry": 0,
-                          "startTime": "2026-04-21T02:40:31.756Z",
-                          "annotations": [],
-                          "attachments": [
-                            {
-                              "name": "screenshot",
-                              "contentType": "image/png",
-                              "path": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/test-results/specs-platform-system-mana-5c19e-on-Sorting-PC-023-删除管理员确认流程-chromium/test-failed-1.png"
-                            },
-                            {
-                              "name": "video",
-                              "contentType": "video/webm",
-                              "path": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/test-results/specs-platform-system-mana-5c19e-on-Sorting-PC-023-删除管理员确认流程-chromium/video.webm"
-                            },
-                            {
-                              "name": "error-context",
-                              "contentType": "text/markdown",
-                              "path": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/test-results/specs-platform-system-mana-5c19e-on-Sorting-PC-023-删除管理员确认流程-chromium/error-context.md"
-                            }
-                          ],
-                          "errorLocation": {
-                            "file": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/pages/platform/SystemManagementPage.ts",
-                            "column": 34,
-                            "line": 175
-                          }
-                        },
-                        {
-                          "workerIndex": 4,
-                          "parallelIndex": 1,
-                          "status": "timedOut",
-                          "duration": 31497,
-                          "error": {
-                            "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
-                            "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
-                          },
-                          "errors": [
-                            {
-                              "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
-                            },
-                            {
-                              "location": {
-                                "file": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/pages/platform/SystemManagementPage.ts",
-                                "column": 34,
-                                "line": 175
-                              },
-                              "message": "Error: locator.click: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('button').filter({ hasText: '创建管理员' })\u001b[22m\n\n\n   at pages/platform/SystemManagementPage.ts:175\n\n  173 |\n  174 |   async openCreateAdminModal() {\n> 175 |     await this.createAdminButton.click();\n      |                                  ^\n  176 |     await this.modal.waitFor({ state: 'visible', timeout: 5000 });\n  177 |   }\n  178 |\n    at SystemManagementPage.openCreateAdminModal (/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/pages/platform/SystemManagementPage.ts:175:34)\n    at SystemManagementPage.createAdmin (/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/pages/platform/SystemManagementPage.ts:240:16)\n    at /Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/specs/platform/system-management.spec.ts:431:24"
-                            }
-                          ],
-                          "stdout": [],
-                          "stderr": [],
-                          "retry": 1,
-                          "startTime": "2026-04-21T02:41:01.924Z",
-                          "annotations": [],
-                          "attachments": [
-                            {
-                              "name": "screenshot",
-                              "contentType": "image/png",
-                              "path": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/test-results/specs-platform-system-mana-5c19e-on-Sorting-PC-023-删除管理员确认流程-chromium-retry1/test-failed-1.png"
-                            },
-                            {
-                              "name": "video",
-                              "contentType": "video/webm",
-                              "path": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/test-results/specs-platform-system-mana-5c19e-on-Sorting-PC-023-删除管理员确认流程-chromium-retry1/video.webm"
-                            },
-                            {
-                              "name": "error-context",
-                              "contentType": "text/markdown",
-                              "path": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/test-results/specs-platform-system-mana-5c19e-on-Sorting-PC-023-删除管理员确认流程-chromium-retry1/error-context.md"
-                            },
-                            {
-                              "name": "trace",
-                              "contentType": "application/zip",
-                              "path": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/test-results/specs-platform-system-mana-5c19e-on-Sorting-PC-023-删除管理员确认流程-chromium-retry1/trace.zip"
-                            }
-                          ]
-                        }
-                      ],
-                      "status": "unexpected"
+                      "results": [],
+                      "status": "skipped"
                     }
                   ],
                   "id": "ec6a88167b287661af66-7e3cd35a2722d90c7278",
@@ -339,8 +4660,8 @@
                   "column": 5
                 },
                 {
-                  "title": "PC-026: 创建管理员表单邮箱格式验证",
-                  "ok": false,
+                  "title": "PC-024: 创建管理员弹窗取消按钮可关闭弹窗",
+                  "ok": true,
                   "tags": [],
                   "tests": [
                     {
@@ -349,133 +4670,133 @@
                       "expectedStatus": "passed",
                       "projectId": "chromium",
                       "projectName": "chromium",
-                      "results": [
-                        {
-                          "workerIndex": 2,
-                          "parallelIndex": 2,
-                          "status": "failed",
-                          "duration": 27849,
-                          "error": {
-                            "message": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('button').filter({ hasText: '创建管理员' })\u001b[22m\n",
-                            "stack": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('button').filter({ hasText: '创建管理员' })\u001b[22m\n\n    at SystemManagementPage.openCreateAdminModal (/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/pages/platform/SystemManagementPage.ts:175:34)\n    at /Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/specs/platform/system-management.spec.ts:461:24",
-                            "location": {
-                              "file": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/pages/platform/SystemManagementPage.ts",
-                              "column": 34,
-                              "line": 175
-                            },
-                            "snippet": "\u001b[90m   at \u001b[39mpages/platform/SystemManagementPage.ts:175\n\n  173 |\n  174 |   async openCreateAdminModal() {\n> 175 |     await this.createAdminButton.click();\n      |                                  ^\n  176 |     await this.modal.waitFor({ state: 'visible', timeout: 5000 });\n  177 |   }\n  178 |"
-                          },
-                          "errors": [
-                            {
-                              "location": {
-                                "file": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/pages/platform/SystemManagementPage.ts",
-                                "column": 34,
-                                "line": 175
-                              },
-                              "message": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('button').filter({ hasText: '创建管理员' })\u001b[22m\n\n\n   at pages/platform/SystemManagementPage.ts:175\n\n  173 |\n  174 |   async openCreateAdminModal() {\n> 175 |     await this.createAdminButton.click();\n      |                                  ^\n  176 |     await this.modal.waitFor({ state: 'visible', timeout: 5000 });\n  177 |   }\n  178 |\n    at SystemManagementPage.openCreateAdminModal (/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/pages/platform/SystemManagementPage.ts:175:34)\n    at /Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/specs/platform/system-management.spec.ts:461:24"
-                            }
-                          ],
-                          "stdout": [],
-                          "stderr": [],
-                          "retry": 0,
-                          "startTime": "2026-04-21T02:40:31.767Z",
-                          "annotations": [],
-                          "attachments": [
-                            {
-                              "name": "screenshot",
-                              "contentType": "image/png",
-                              "path": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/test-results/specs-platform-system-mana-ee48b-orting-PC-026-创建管理员表单邮箱格式验证-chromium/test-failed-1.png"
-                            },
-                            {
-                              "name": "video",
-                              "contentType": "video/webm",
-                              "path": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/test-results/specs-platform-system-mana-ee48b-orting-PC-026-创建管理员表单邮箱格式验证-chromium/video.webm"
-                            },
-                            {
-                              "name": "error-context",
-                              "contentType": "text/markdown",
-                              "path": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/test-results/specs-platform-system-mana-ee48b-orting-PC-026-创建管理员表单邮箱格式验证-chromium/error-context.md"
-                            }
-                          ],
-                          "errorLocation": {
-                            "file": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/pages/platform/SystemManagementPage.ts",
-                            "column": 34,
-                            "line": 175
-                          }
-                        },
-                        {
-                          "workerIndex": 3,
-                          "parallelIndex": 2,
-                          "status": "timedOut",
-                          "duration": 31346,
-                          "error": {
-                            "message": "\u001b[31mTest timeout of 30000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
-                            "stack": "\u001b[31mTest timeout of 30000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/specs/platform/system-management.spec.ts:9:8",
-                            "location": {
-                              "file": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/specs/platform/system-management.spec.ts",
-                              "column": 8,
-                              "line": 9
-                            },
-                            "snippet": "   7 |   let systemPage: SystemManagementPage;\n   8 |\n>  9 |   test.beforeEach(async ({ page }) => {\n     |        ^\n  10 |     systemPage = new SystemManagementPage(page);\n  11 |     await loginAsPlatformAdmin(page, BASE_URL);\n  12 |     await systemPage.goto();"
-                          },
-                          "errors": [
-                            {
-                              "location": {
-                                "file": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/specs/platform/system-management.spec.ts",
-                                "column": 8,
-                                "line": 9
-                              },
-                              "message": "\u001b[31mTest timeout of 30000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n\n   7 |   let systemPage: SystemManagementPage;\n   8 |\n>  9 |   test.beforeEach(async ({ page }) => {\n     |        ^\n  10 |     systemPage = new SystemManagementPage(page);\n  11 |     await loginAsPlatformAdmin(page, BASE_URL);\n  12 |     await systemPage.goto();\n    at /Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/specs/platform/system-management.spec.ts:9:8"
-                            },
-                            {
-                              "location": {
-                                "file": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/pages/platform/SystemManagementPage.ts",
-                                "column": 21,
-                                "line": 163
-                              },
-                              "message": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.ant-tabs') to be visible\u001b[22m\n\n\n   at pages/platform/SystemManagementPage.ts:163\n\n  161 |     }\n  162 |     await this.page.waitForLoadState('networkidle');\n> 163 |     await this.page.waitForSelector('.ant-tabs', { timeout: 15000 });\n      |                     ^\n  164 |   }\n  165 |\n  166 |   async switchToTab(tabName: string) {\n    at SystemManagementPage.goto (/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/pages/platform/SystemManagementPage.ts:163:21)\n    at /Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/specs/platform/system-management.spec.ts:12:5"
-                            }
-                          ],
-                          "stdout": [],
-                          "stderr": [],
-                          "retry": 1,
-                          "startTime": "2026-04-21T02:41:01.561Z",
-                          "annotations": [],
-                          "attachments": [
-                            {
-                              "name": "screenshot",
-                              "contentType": "image/png",
-                              "path": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/test-results/specs-platform-system-mana-ee48b-orting-PC-026-创建管理员表单邮箱格式验证-chromium-retry1/test-failed-1.png"
-                            },
-                            {
-                              "name": "video",
-                              "contentType": "video/webm",
-                              "path": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/test-results/specs-platform-system-mana-ee48b-orting-PC-026-创建管理员表单邮箱格式验证-chromium-retry1/video.webm"
-                            },
-                            {
-                              "name": "error-context",
-                              "contentType": "text/markdown",
-                              "path": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/test-results/specs-platform-system-mana-ee48b-orting-PC-026-创建管理员表单邮箱格式验证-chromium-retry1/error-context.md"
-                            },
-                            {
-                              "name": "trace",
-                              "contentType": "application/zip",
-                              "path": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/test-results/specs-platform-system-mana-ee48b-orting-PC-026-创建管理员表单邮箱格式验证-chromium-retry1/trace.zip"
-                            }
-                          ],
-                          "errorLocation": {
-                            "file": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/specs/platform/system-management.spec.ts",
-                            "column": 8,
-                            "line": 9
-                          }
-                        }
-                      ],
-                      "status": "unexpected"
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "ec6a88167b287661af66-81e8fd7c402a649fad26",
+                  "file": "specs/platform/system-management.spec.ts",
+                  "line": 445,
+                  "column": 5
+                },
+                {
+                  "title": "PC-025: 创建管理员弹窗可通过ESC关闭",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "ec6a88167b287661af66-4b57916cf682a11f9ff2",
+                  "file": "specs/platform/system-management.spec.ts",
+                  "line": 453,
+                  "column": 5
+                },
+                {
+                  "title": "PC-026: 创建管理员表单邮箱格式验证",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
                     }
                   ],
                   "id": "ec6a88167b287661af66-cd72c9fbd36c2027a1eb",
                   "file": "specs/platform/system-management.spec.ts",
                   "line": 460,
+                  "column": 5
+                },
+                {
+                  "title": "PC-027: 创建管理员表单密码必填验证",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "ec6a88167b287661af66-73157502066acd9dff89",
+                  "file": "specs/platform/system-management.spec.ts",
+                  "line": 473,
+                  "column": 5
+                },
+                {
+                  "title": "PC-028: 操作日志按操作人搜索",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "ec6a88167b287661af66-44bbd4c8267438a249ea",
+                  "file": "specs/platform/system-management.spec.ts",
+                  "line": 485,
+                  "column": 5
+                },
+                {
+                  "title": "PC-029: 操作日志刷新按钮功能",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "ec6a88167b287661af66-43b1f8018b20749b6833",
+                  "file": "specs/platform/system-management.spec.ts",
+                  "line": 493,
+                  "column": 5
+                },
+                {
+                  "title": "PC-030: 平台管理员表格排序功能",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "ec6a88167b287661af66-eae69352851407321e38",
+                  "file": "specs/platform/system-management.spec.ts",
+                  "line": 500,
                   "column": 5
                 }
               ]
@@ -487,11 +4808,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-04-21T02:40:28.630Z",
-    "duration": 65768.68,
+    "startTime": "2026-04-21T15:38:23.561Z",
+    "duration": 255.09000000000015,
     "expected": 0,
-    "skipped": 0,
-    "unexpected": 3,
+    "skipped": 223,
+    "unexpected": 0,
     "flaky": 0
   }
 }
