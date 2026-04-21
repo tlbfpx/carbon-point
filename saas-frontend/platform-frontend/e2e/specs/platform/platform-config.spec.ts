@@ -6,7 +6,8 @@ test.describe('平台后台 - 平台配置', () => {
   test.beforeEach(async ({ page }) => {
     await loginAsPlatformAdmin(page, BASE_URL);
     await page.click('text=平台配置');
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState('networkidle');
+    await page.locator('.ant-form').waitFor({ state: 'visible', timeout: 5000 });
   });
 
   test('PC-001: 平台配置页面可访问', async ({ page }) => {
@@ -29,138 +30,82 @@ test.describe('平台后台 - 平台配置', () => {
 
   test('PC-004: 切换到通知设置Tab', async ({ page }) => {
     const notificationTab = page.locator('.ant-tabs-tab').filter({ hasText: '通知设置' });
-    if (await notificationTab.isVisible()) {
-      await notificationTab.click();
-      await page.waitForTimeout(500);
-      await expect(page.locator('.ant-form').filter({ hasText: /通知|notification/i })).toBeVisible();
-    } else {
-      // If no tabs, skip - form may have notification fields directly
-      test.skip('No notification tab found, skipping');
-    }
+    await notificationTab.click();
+    await expect(page.locator('.ant-form')).toBeVisible();
   });
 
   test('PC-005: 切换到积分规则Tab', async ({ page }) => {
     const pointsTab = page.locator('.ant-tabs-tab').filter({ hasText: '积分规则' });
-    if (await pointsTab.isVisible()) {
-      await pointsTab.click();
-      await page.waitForTimeout(500);
-      await expect(page.locator('.ant-form')).toBeVisible();
-    } else {
-      test.skip('No points rule tab found, skipping');
-    }
+    await pointsTab.click();
+    await expect(page.locator('.ant-form')).toBeVisible();
   });
 
   test('PC-006: 切换到功能开关Tab', async ({ page }) => {
     const featureTab = page.locator('.ant-tabs-tab').filter({ hasText: '功能开关' });
-    if (await featureTab.isVisible()) {
-      await featureTab.click();
-      await page.waitForTimeout(500);
-      // Check for toggle switches
-      const switches = page.locator('.ant-switch');
-      expect(await switches.count()).toBeGreaterThan(0);
-    } else {
-      test.skip('No feature flags tab found, skipping');
-    }
+    await featureTab.click();
+    // Check for toggle switches
+    const switches = page.locator('.ant-switch');
+    expect(await switches.count()).toBeGreaterThan(0);
   });
 
   test('PC-007: 切换到第三方集成Tab', async ({ page }) => {
     const integrationTab = page.locator('.ant-tabs-tab').filter({ hasText: '第三方集成' });
-    if (await integrationTab.isVisible()) {
-      await integrationTab.click();
-      await page.waitForTimeout(500);
-      await expect(page.locator('.ant-form')).toBeVisible();
-    } else {
-      test.skip('No integration tab found, skipping');
-    }
+    await integrationTab.click();
+    await expect(page.locator('.ant-form')).toBeVisible();
   });
 
   test('PC-008: 切换到系统设置Tab', async ({ page }) => {
     const systemTab = page.locator('.ant-tabs-tab').filter({ hasText: '系统设置' });
-    if (await systemTab.isVisible()) {
-      await systemTab.click();
-      await page.waitForTimeout(500);
-      await expect(page.locator('.ant-form')).toBeVisible();
-    } else {
-      test.skip('No system settings tab found, skipping');
-    }
+    await systemTab.click();
+    await expect(page.locator('.ant-form')).toBeVisible();
   });
 
   test('PC-009: 必填字段验证 - 留空提交', async ({ page }) => {
     // Clear a required field and attempt to save
     const requiredInput = page.locator('.ant-form-item-required input').first();
-    if (await requiredInput.isVisible()) {
-      await requiredInput.clear();
-      await page.locator('button').filter({ hasText: '保存' }).first().click();
-      await page.waitForTimeout(500);
-      // Should show validation error
-      const errorMsg = page.locator('.ant-form-item-explain-error');
-      await expect(errorMsg.first()).toBeVisible({ timeout: 3000 });
-    } else {
-      test.skip('No required fields found to test validation');
-    }
+    await requiredInput.clear();
+    await page.locator('button').filter({ hasText: '保存' }).first().click();
+    // Should show validation error
+    const errorMsg = page.locator('.ant-form-item-explain-error');
+    await expect(errorMsg.first()).toBeVisible({ timeout: 3000 });
   });
 
   test('PC-010: 邮箱格式验证', async ({ page }) => {
     const emailField = page.locator('.ant-form-item').filter({ hasText: /邮箱|email/i }).locator('input');
-    if (await emailField.isVisible()) {
-      await emailField.fill('invalid-email');
-      await page.locator('button').filter({ hasText: '保存' }).first().click();
-      await page.waitForTimeout(500);
-      const errorMsg = page.locator('.ant-form-item-explain-error');
-      await expect(errorMsg.first()).toBeVisible({ timeout: 3000 });
-    } else {
-      test.skip('No email field found');
-    }
+    await emailField.fill('invalid-email');
+    await page.locator('button').filter({ hasText: '保存' }).first().click();
+    const errorMsg = page.locator('.ant-form-item-explain-error');
+    await expect(errorMsg.first()).toBeVisible({ timeout: 3000 });
   });
 
   test('PC-011: URL格式验证', async ({ page }) => {
     const urlField = page.locator('.ant-form-item').filter({ hasText: /URL|链接|地址/i }).locator('input').first();
-    if (await urlField.isVisible()) {
-      await urlField.fill('not-a-valid-url');
-      await page.locator('button').filter({ hasText: '保存' }).first().click();
-      await page.waitForTimeout(500);
-      const errorMsg = page.locator('.ant-form-item-explain-error');
-      await expect(errorMsg.first()).toBeVisible({ timeout: 3000 });
-    } else {
-      test.skip('No URL field found');
-    }
+    await urlField.fill('not-a-valid-url');
+    await page.locator('button').filter({ hasText: '保存' }).first().click();
+    const errorMsg = page.locator('.ant-form-item-explain-error');
+    await expect(errorMsg.first()).toBeVisible({ timeout: 3000 });
   });
 
   test('PC-012: 数字字段边界值验证', async ({ page }) => {
     const numberField = page.locator('.ant-form-item').filter({ hasText: /数量|上限|最大/i }).locator('input').first();
-    if (await numberField.isVisible()) {
-      await numberField.fill('999999999999');
-      await page.locator('button').filter({ hasText: '保存' }).first().click();
-      await page.waitForTimeout(500);
-      // Should either save successfully or show range error
-      const errorOrSuccess = await Promise.race([
-        page.locator('.ant-form-item-explain-error').first().isVisible({ timeout: 2000 }).then(() => 'error'),
-        page.locator('.ant-message-success').isVisible({ timeout: 2000 }).then(() => 'success'),
-      ]);
-      expect(['error', 'success']).toContain(errorOrSuccess);
-    } else {
-      test.skip('No number field found for boundary test');
-    }
+    await numberField.fill('999999999999');
+    await page.locator('button').filter({ hasText: '保存' }).first().click();
+    // Should either save successfully or show range error
+    const errorOrSuccess = await Promise.race([
+      page.locator('.ant-form-item-explain-error').first().isVisible({ timeout: 2000 }).then(() => 'error'),
+      page.locator('.ant-message-success').isVisible({ timeout: 2000 }).then(() => 'success'),
+    ]);
+    expect(['error', 'success']).toContain(errorOrSuccess);
   });
 
   test('PC-013: 功能开关切换', async ({ page }) => {
     const featureTab = page.locator('.ant-tabs-tab').filter({ hasText: '功能开关' });
-    if (await featureTab.isVisible()) {
-      await featureTab.click();
-      await page.waitForTimeout(500);
-      const firstSwitch = page.locator('.ant-switch').first();
-      if (await firstSwitch.isVisible()) {
-        const isChecked = await firstSwitch.getAttribute('class');
-        await firstSwitch.click();
-        await page.waitForTimeout(300);
-        const newClass = await firstSwitch.getAttribute('class');
-        expect(newClass).not.toBe(isChecked);
-      } else {
-        test.skip('No switches found');
-      }
-    } else {
-      test.skip('No feature flags tab');
-    }
+    await featureTab.click();
+    const firstSwitch = page.locator('.ant-switch').first();
+    const isChecked = await firstSwitch.getAttribute('class');
+    await firstSwitch.click();
+    const newClass = await firstSwitch.getAttribute('class');
+    expect(newClass).not.toBe(isChecked);
   });
 
   test.skip('PC-014: 保存成功提示', async ({ page }) => {
@@ -186,9 +131,7 @@ test.describe('平台后台 - 平台配置', () => {
     const systemTab = page.locator('.ant-tabs-tab').filter({ hasText: '系统设置' }).first();
     if (await systemTab.isVisible()) {
       await systemTab.click();
-      await page.waitForTimeout(500);
       await page.locator('.ant-tabs-tab').filter({ hasText: '基础配置' }).first().click();
-      await page.waitForTimeout(1000);
     }
     // Verify the value is still in the field
     const newInput = page.locator('.ant-form input').first();
@@ -197,63 +140,42 @@ test.describe('平台后台 - 平台配置', () => {
 
   test('PC-016: 表单重置功能', async ({ page }) => {
     const resetButton = page.locator('button').filter({ hasText: /重置|取消/i }).first();
-    if (await resetButton.isVisible()) {
-      // Make some changes
-      const input = page.locator('.ant-form input').first();
-      await input.fill('some_test_value');
-      await resetButton.click();
-      await page.waitForTimeout(500);
-      // Form should either reset or show confirmation
-      const modal = page.locator('.ant-modal');
-      if (await modal.isVisible()) {
-        await page.locator('.ant-btn-primary').filter({ hasText: /确定|确认/i }).click();
-        await page.waitForTimeout(300);
-      }
-    } else {
-      test.skip('No reset button found');
+    // Make some changes
+    const input = page.locator('.ant-form input').first();
+    await input.fill('some_test_value');
+    await resetButton.click();
+    // Form should either reset or show confirmation
+    const modal = page.locator('.ant-modal');
+    if (await modal.isVisible()) {
+      await page.locator('.ant-btn-primary').filter({ hasText: /确定|确认/i }).click();
     }
   });
 
   test('PC-017: 下拉选择框可展开', async ({ page }) => {
     const select = page.locator('.ant-select').first();
-    if (await select.isVisible()) {
-      await select.click();
-      await page.waitForTimeout(300);
-      const dropdown = page.locator('.ant-select-dropdown');
-      await expect(dropdown).toBeVisible();
-    } else {
-      test.skip('No select dropdown found');
-    }
+    await select.click();
+    const dropdown = page.locator('.ant-select-dropdown');
+    await expect(dropdown).toBeVisible();
   });
 
   test('PC-018: 日期选择器可打开', async ({ page }) => {
     const datePicker = page.locator('.ant-picker').first();
-    if (await datePicker.isVisible()) {
-      await datePicker.click();
-      await page.waitForTimeout(300);
-      const pickerPanel = page.locator('.ant-picker-panel');
-      await expect(pickerPanel).toBeVisible();
-    } else {
-      test.skip('No date picker found');
-    }
+    await datePicker.click();
+    const pickerPanel = page.locator('.ant-picker-panel');
+    await expect(pickerPanel).toBeVisible();
   });
 
   test('PC-019: 多行文本框可编辑', async ({ page }) => {
     const textarea = page.locator('.ant-input-textarea textarea');
-    if (await textarea.isVisible()) {
-      const testText = `Test description ${Date.now()}`;
-      await textarea.fill(testText);
-      const value = await textarea.inputValue();
-      expect(value).toBe(testText);
-    } else {
-      test.skip('No textarea found');
-    }
+    const testText = `Test description ${Date.now()}`;
+    await textarea.fill(testText);
+    const value = await textarea.inputValue();
+    expect(value).toBe(testText);
   });
 
   test('PC-020: 页面加载时显示loading状态', async ({ page }) => {
     // Navigate using the menu which is already logged in
     await page.click('text=平台配置');
-    await page.waitForTimeout(2000);
     // Check for loading spinner during load
     const loading = page.locator('.ant-spin');
     const hasLoading = await loading.isVisible({ timeout: 3000 }).catch(() => false);

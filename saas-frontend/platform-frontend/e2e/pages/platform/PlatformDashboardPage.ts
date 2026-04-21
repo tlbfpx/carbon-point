@@ -33,7 +33,7 @@ export class PlatformDashboardPage {
     await expect(this.sidebar).toBeVisible();
     await this.page.waitForLoadState('networkidle');
     // Wait for dashboard content to load
-    await this.page.waitForTimeout(1000);
+    await this.statCards.first().waitFor({ state: 'visible', timeout: 5000 });
   }
 
   async switchDimension(dim: 'day' | 'week' | 'month') {
@@ -43,6 +43,7 @@ export class PlatformDashboardPage {
       month: '按月'
     };
     await this.segmented.locator(`text=${labels[dim]}`).click();
-    await this.page.waitForTimeout(1000);
+    // Wait for chart to update
+    await this.areaChart.waitFor({ state: 'visible', timeout: 5000 });
   }
 }

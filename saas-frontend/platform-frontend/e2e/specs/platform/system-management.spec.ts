@@ -71,13 +71,13 @@ test.describe('平台后台 - 系统管理', () => {
 
   test('SM-009: 操作日志Tab切换后表格可见', async ({ page }) => {
     await systemPage.switchToTab('操作日志');
-    await page.waitForTimeout(1500);
     await expect(page.locator('.ant-table').nth(1)).toBeVisible();
   });
 
   test('SM-010: 操作日志表头正确', async ({ page }) => {
     await systemPage.switchToTab('操作日志');
-    await page.waitForTimeout(1500);
+    // Wait for log table to be visible
+    await page.locator('.ant-table').nth(1).waitFor({ state: 'visible', timeout: 5000 });
     // Table containers may be hidden if no data, just check the count
     const tableCount = await page.locator('.ant-table-container').count();
     expect(tableCount).toBeGreaterThanOrEqual(2);
@@ -85,19 +85,16 @@ test.describe('平台后台 - 系统管理', () => {
 
   test('SM-011: 操作日志搜索框可见', async ({ page }) => {
     await systemPage.switchToTab('操作日志');
-    await page.waitForTimeout(1500);
     await expect(page.locator('input[placeholder*="操作人"]')).toBeVisible();
   });
 
   test('SM-012: 操作日志查询按钮可见', async ({ page }) => {
     await systemPage.switchToTab('操作日志');
-    await page.waitForTimeout(1500);
     await expect(page.locator('button').filter({ hasText: '查询' })).toBeVisible();
   });
 
   test('SM-013: 操作日志刷新按钮可见', async ({ page }) => {
     await systemPage.switchToTab('操作日志');
-    await page.waitForTimeout(1500);
     await expect(page.locator('button').filter({ hasText: '刷新' })).toBeVisible();
   });
 
@@ -107,7 +104,6 @@ test.describe('平台后台 - 系统管理', () => {
 
   test('SM-015: 操作日志分页控件存在', async ({ page }) => {
     await systemPage.switchToTab('操作日志');
-    await page.waitForTimeout(1500);
     // Pagination may be hidden if less than one page of data, just check element exists
     const paginationCount = await page.locator('.ant-pagination').count();
     expect(paginationCount).toBeGreaterThanOrEqual(0);
@@ -144,39 +140,36 @@ test.describe('平台后台 - 系统管理', () => {
 
   test('SM-019: 平台管理员Tab切换保持状态', async ({ page }) => {
     await systemPage.switchToTab('操作日志');
-    await page.waitForTimeout(500);
     await systemPage.switchToTab('平台管理员');
-    await page.waitForTimeout(500);
     await expect(page.locator('.ant-tabs-tab-active')).toContainText('平台管理员');
   });
 
   test('SM-020: 操作日志Tab切换保持状态', async ({ page }) => {
     await systemPage.switchToTab('操作日志');
-    await page.waitForTimeout(500);
     await expect(page.locator('.ant-tabs-tab-active')).toContainText('操作日志');
   });
 
   test('SM-021: 平台管理员表格有数据行', async ({ page }) => {
-    await page.waitForTimeout(1000);
     const rows = await systemPage.table.first().locator('.ant-table-tbody tr').all();
     expect(rows.length).toBeGreaterThan(0);
   });
 
   test('SM-022: 操作日志表格可滚动加载', async ({ page }) => {
     await systemPage.switchToTab('操作日志');
-    await page.waitForTimeout(1500);
+    await page.locator('.ant-table').nth(1).waitFor({ state: 'visible', timeout: 5000 });
     await page.evaluate(() => {
       const tableBody = document.querySelectorAll('.ant-table-tbody')[1];
       if (tableBody) tableBody.scrollTop = tableBody.scrollHeight;
     });
-    await page.waitForTimeout(1000);
+    // Just verify the table still exists after scroll
+    await expect(page.locator('.ant-table').nth(1)).toBeVisible();
   });
 
   test('SM-023: 创建管理员弹窗可关闭', async ({ page }) => {
     await systemPage.clickCreateAdmin();
     await expect(page.locator('.ant-modal')).toBeVisible();
     await page.locator('.ant-modal-close').click();
-    await page.waitForTimeout(500);
+    await expect(page.locator('.ant-modal')).not.toBeVisible();
   });
 
   test('SM-024: 系统管理页面包含Tab组件', async ({ page }) => {
@@ -207,7 +200,6 @@ test.describe('平台后台 - 系统管理', () => {
 
   test('SM-029: 操作日志表格存在', async ({ page }) => {
     await systemPage.switchToTab('操作日志');
-    await page.waitForTimeout(1500);
     // Just verify the table container exists
     await expect(page.locator('.ant-table-wrapper').nth(1)).toBeVisible();
   });
@@ -218,14 +210,12 @@ test.describe('平台后台 - 系统管理', () => {
     await expect(adminTab).toBeVisible();
     await expect(logTab).toBeVisible();
     await adminTab.click();
-    await page.waitForTimeout(500);
     await expect(page.locator('.ant-tabs-tab-active')).toContainText('平台管理员');
   });
 
   // PC-001 to PC-010: User list and search tests
   test.describe('PC-001 to PC-010: User List and Search Tests', () => {
     test('PC-001: 平台管理员列表显示用户数据', async ({ page }) => {
-      await page.waitForTimeout(1500);
       const rows = await systemPage.adminTableRows.all();
       expect(rows.length).toBeGreaterThan(0);
     });
@@ -260,38 +250,32 @@ test.describe('平台后台 - 系统管理', () => {
     });
 
     test('PC-005: 平台管理员编辑弹窗可打开', async ({ page }) => {
-      await page.waitForTimeout(1500);
       // Wait for at least one row to be visible
       await systemPage.adminTableRows.first().waitFor({ state: 'visible', timeout: 10000 });
       const firstRow = systemPage.adminTableRows.first();
       // Edit button is icon-only; use .ant-btn-icon-only
       const editBtn = firstRow.locator('.ant-btn-icon-only').first();
       await editBtn.click();
-      await page.waitForTimeout(1000);
       await systemPage.assertModalVisible();
     });
 
     test('PC-006: 平台管理员编辑弹窗可关闭', async ({ page }) => {
-      await page.waitForTimeout(1500);
       await systemPage.adminTableRows.first().waitFor({ state: 'visible', timeout: 10000 });
       const firstRow = systemPage.adminTableRows.first();
       const editBtn = firstRow.locator('.ant-btn-icon-only').first();
       await editBtn.click();
-      await page.waitForTimeout(1000);
       await systemPage.assertModalVisible();
       await systemPage.closeModalViaCancel();
       await systemPage.waitForModalGone();
     });
 
     test('PC-007: 平台管理员表格表头包含预期列', async ({ page }) => {
-      await page.waitForTimeout(1000);
       const headers = page.locator('.ant-table-thead th');
       const count = await headers.count();
       expect(count).toBeGreaterThan(0);
     });
 
     test('PC-008: 平台管理员分页控件包含页码', async ({ page }) => {
-      await page.waitForTimeout(1000);
       await expect(systemPage.adminPagination).toBeVisible();
       const pageNumbers = systemPage.adminPagination.locator('.ant-pagination-item');
       expect(await pageNumbers.count()).toBeGreaterThan(0);
@@ -304,7 +288,6 @@ test.describe('平台后台 - 系统管理', () => {
     });
 
     test('PC-010: 平台管理员表格行包含操作按钮', async ({ page }) => {
-      await page.waitForTimeout(1500);
       await systemPage.adminTableRows.first().waitFor({ state: 'visible', timeout: 10000 });
       const firstRow = systemPage.adminTableRows.first();
       // Edit button is icon-only (.ant-btn-icon-only), delete button has .ant-btn-dangerous
@@ -327,8 +310,8 @@ test.describe('平台后台 - 系统管理', () => {
         email: `${username}@test.com`,
       });
       await systemPage.submitAdminForm();
-      // Wait for operation to complete
-      await page.waitForTimeout(2000);
+      // Wait for success message
+      await expect(page.locator('.ant-message-success')).toBeVisible({ timeout: 5000 });
 
       // Search for the created admin - verify table is visible
       await expect(systemPage.table.first()).toBeVisible();
@@ -336,7 +319,6 @@ test.describe('平台后台 - 系统管理', () => {
 
     test('PC-012: 平台管理员表格数据显示正常', async ({ page }) => {
       // Verify table is visible and has data
-      await page.waitForTimeout(1000);
       await expect(systemPage.table.first()).toBeVisible();
       const rows = await systemPage.table.locator('.ant-table-tbody tr').all();
       expect(rows.length).toBeGreaterThan(0);
@@ -344,41 +326,36 @@ test.describe('平台后台 - 系统管理', () => {
 
     test('PC-013: 操作日志可按操作人搜索', async ({ page }) => {
       await systemPage.switchToTab('操作日志');
-      await page.waitForTimeout(1500);
       // Enter an operator to search using direct locator
       await page.locator('input[placeholder*="操作人"]').fill('admin');
-      await page.waitForTimeout(1000);
       // Verify search input has the value
       await expect(page.locator('input[placeholder*="操作人"]')).toHaveValue('admin');
     });
 
     test('PC-014: 操作日志搜索区域存在', async ({ page }) => {
       await systemPage.switchToTab('操作日志');
-      await page.waitForTimeout(2000);
       // Verify search area exists - the input and buttons should be visible
       await expect(systemPage.logOperatorInput).toBeVisible();
     });
 
     test('PC-015: 操作日志刷新按钮可点击', async ({ page }) => {
       await systemPage.switchToTab('操作日志');
-      await page.waitForTimeout(1500);
       const refreshBtn = page.locator('button').filter({ hasText: '刷新' });
       await expect(refreshBtn).toBeVisible();
       await expect(refreshBtn).toBeEnabled();
       await refreshBtn.click();
-      await page.waitForTimeout(1000);
+      // Wait for table to refresh - verify it's still visible
+      await expect(page.locator('.ant-table').nth(1)).toBeVisible();
     });
 
     test('PC-016: 操作日志查询按钮可点击', async ({ page }) => {
       await systemPage.switchToTab('操作日志');
-      await page.waitForTimeout(1500);
       const queryBtn = page.locator('button').filter({ hasText: '查询' });
       await expect(queryBtn).toBeVisible();
       await expect(queryBtn).toBeEnabled();
     });
 
     test('PC-017: 平台管理员列表有分页信息显示', async ({ page }) => {
-      await page.waitForTimeout(1000);
       const pagination = page.locator('.ant-pagination');
       await expect(pagination).toBeVisible();
       // Check for page size selector
@@ -387,8 +364,6 @@ test.describe('平台后台 - 系统管理', () => {
     });
 
     test('PC-018: 平台管理员表格操作列存在', async ({ page }) => {
-      // Wait for table to load
-      await page.waitForTimeout(1000);
       // Verify the table has action column
       await expect(systemPage.adminTable).toBeVisible();
       const rows = await systemPage.adminTableRows.all();
@@ -401,13 +376,11 @@ test.describe('平台后台 - 系统管理', () => {
       const closeBtn = page.locator('.ant-modal-close');
       await expect(closeBtn).toBeVisible();
       await closeBtn.click();
-      await page.waitForTimeout(500);
       await expect(page.locator('.ant-modal')).not.toBeVisible();
     });
 
     test('PC-020: 操作日志表有正确的列标题', async ({ page }) => {
       await systemPage.switchToTab('操作日志');
-      await page.waitForTimeout(1500);
       // Check for operation log table headers
       const tableHeaders = page.locator('.ant-table-thead th');
       const headerCount = await tableHeaders.count();
@@ -431,13 +404,10 @@ test.describe('平台后台 - 系统管理', () => {
       await systemPage.submitAdminForm();
       await expect(page.locator('.ant-message-success')).toBeVisible({ timeout: 5000 });
       // Verify the new admin appears in the table
-      await page.waitForTimeout(2000);
       await systemPage.assertAdminVisible(username);
     });
 
-    test.skip('PC-022: 编辑管理员邮箱信息', async ({ page }) => {
-      // SKIPPED: Backend PlatformAdminRequest only accepts username/password/displayName/role — no email field.
-      // Editing email via the UI sends it to the backend but it's silently ignored. Backend fix needed first.
+    test('PC-022: 编辑管理员邮箱信息', async ({ page }) => {
       await systemPage.openCreateAdminModal();
       const username = `edit_${uniqueId()}`;
       const phone = `138${String(Date.now()).slice(-8)}`;
@@ -449,17 +419,13 @@ test.describe('平台后台 - 系统管理', () => {
       });
       await systemPage.submitAdminForm();
       await expect(page.locator('.ant-message-success')).toBeVisible({ timeout: 5000 });
-      await page.waitForTimeout(2000);
       await systemPage.openEditAdminModal(username);
       await systemPage.fillEditAdminForm({ email: `updated_${uniqueId()}@test.com` });
       await systemPage.submitAdminForm();
       await expect(page.locator('.ant-message-success')).toBeVisible({ timeout: 5000 });
     });
 
-    test.skip('PC-023: 删除管理员确认流程', async ({ page }) => {
-      // SKIPPED: Backend has no DELETE endpoint — only PUT /platform/admins/{id}/disable.
-      // The frontend calls DELETE /platform/admins/{userId} which returns 404.
-      // Backend needs a DELETE endpoint implemented first.
+    test('PC-023: 删除管理员确认流程', async ({ page }) => {
       const username = `delete_${uniqueId()}`;
       const phone = `138${String(Date.now()).slice(-8)}`;
       await systemPage.createAdmin({
@@ -469,7 +435,6 @@ test.describe('平台后台 - 系统管理', () => {
         roles: ['admin'],
       });
       await expect(page.locator('.ant-message-success')).toBeVisible({ timeout: 5000 });
-      await page.waitForTimeout(2000);
       await systemPage.deleteAdmin(username);
       await expect(page.locator('.ant-popover')).toBeVisible();
       await systemPage.confirmDelete();
@@ -480,7 +445,6 @@ test.describe('平台后台 - 系统管理', () => {
     test('PC-024: 创建管理员弹窗取消按钮可关闭弹窗', async ({ page }) => {
       await systemPage.openCreateAdminModal();
       await systemPage.assertModalVisible();
-      await page.waitForTimeout(500);
       // Use Escape key to close (POM's closeModalViaCancel uses Escape)
       await systemPage.closeModal();
       await systemPage.waitForModalGone();
@@ -489,15 +453,11 @@ test.describe('平台后台 - 系统管理', () => {
     test('PC-025: 创建管理员弹窗可通过ESC关闭', async ({ page }) => {
       await systemPage.openCreateAdminModal();
       await systemPage.assertModalVisible();
-      await page.waitForTimeout(500);
       await systemPage.closeModal();
       await systemPage.waitForModalGone();
     });
 
-    test.skip('PC-026: 创建管理员表单邮箱格式验证', async ({ page }) => {
-      // SKIPPED: The email Form.Item in SystemManagement.tsx has no explicit rules={} prop,
-      // so Ant Design does not render .ant-form-item-explain-error on submit.
-      // Browser native email validation applies but does not produce Ant Design error elements.
+    test('PC-026: 创建管理员表单邮箱格式验证', async ({ page }) => {
       await systemPage.openCreateAdminModal();
       await systemPage.fillCreateAdminForm({
         username: 'testuser',
@@ -524,32 +484,25 @@ test.describe('平台后台 - 系统管理', () => {
 
     test('PC-028: 操作日志按操作人搜索', async ({ page }) => {
       await systemPage.switchToTab('操作日志');
-      await page.waitForTimeout(1500);
       // Search for operator 'admin'
       await systemPage.searchLogs('admin');
-      await page.waitForTimeout(1000);
       // Verify search input has the value
       await expect(systemPage.logOperatorInput).toHaveValue('admin');
     });
 
     test('PC-029: 操作日志刷新按钮功能', async ({ page }) => {
       await systemPage.switchToTab('操作日志');
-      await page.waitForTimeout(1500);
       await systemPage.refreshLogs();
-      await page.waitForTimeout(1000);
       // Log table should still be visible after refresh
       await systemPage.assertLogTableVisible();
     });
 
     test('PC-030: 平台管理员表格排序功能', async ({ page }) => {
       // Click on table header to trigger sorting
-      await page.waitForTimeout(1000);
       const firstHeader = page.locator('.ant-table-thead th').first();
       await firstHeader.click();
-      await page.waitForTimeout(500);
       // Sorting should be clickable without error - click again to toggle
       await firstHeader.click();
-      await page.waitForTimeout(500);
       // Table should still have rows after sorting
       const rowCount = await systemPage.getAdminRowCount();
       expect(rowCount).toBeGreaterThanOrEqual(0);

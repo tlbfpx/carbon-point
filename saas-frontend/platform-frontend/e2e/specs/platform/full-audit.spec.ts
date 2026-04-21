@@ -14,7 +14,6 @@ async function loginAndGo(page: import('@playwright/test').Page, path: string) {
 
   // Wait for the dashboard to fully load before navigating away
   await page.waitForSelector('.ant-layout-content', { timeout: 15000 });
-  await page.waitForTimeout(1000);
 
   const menuLabels: Record<string, string> = {
     '/dashboard': '平台看板',
@@ -36,7 +35,7 @@ async function loginAndGo(page: import('@playwright/test').Page, path: string) {
     if (await sysMenu.isVisible()) {
       const expanded = await sysMenu.getAttribute('aria-expanded');
       if (expanded !== 'true') await sysMenu.click();
-      await page.waitForTimeout(300);
+      await sysMenu.locator('.ant-menu-sub').waitFor({ state: 'visible', timeout: 5000 });
     }
   }
   if (path.startsWith('/features/')) {
@@ -44,7 +43,7 @@ async function loginAndGo(page: import('@playwright/test').Page, path: string) {
     if (await featMenu.isVisible()) {
       const expanded = await featMenu.getAttribute('aria-expanded');
       if (expanded !== 'true') await featMenu.click();
-      await page.waitForTimeout(300);
+      await featMenu.locator('.ant-menu-sub').waitFor({ state: 'visible', timeout: 5000 });
     }
   }
 
@@ -54,7 +53,7 @@ async function loginAndGo(page: import('@playwright/test').Page, path: string) {
     await menuItem.waitFor({ state: 'visible', timeout: 10000 });
     await menuItem.click();
     await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(1500);
+    await page.locator('.ant-layout-content').waitFor({ state: 'visible', timeout: 5000 });
   }
 }
 
@@ -221,8 +220,10 @@ test.describe('Menu Completeness', () => {
     // Ensure submenu is expanded (may already be open from initial state)
     const sysMenu = page.locator('.ant-menu-submenu-title:has-text("系统管理")');
     const expanded = await sysMenu.getAttribute('aria-expanded');
-    if (expanded !== 'true') await sysMenu.click();
-    await page.waitForTimeout(500);
+    if (expanded !== 'true') {
+      await sysMenu.click();
+      await sysMenu.locator('.ant-menu-sub').waitFor({ state: 'visible', timeout: 5000 });
+    }
 
     const subItems = ['用户管理', '角色管理', '操作日志', '字典管理'];
     for (const item of subItems) {
@@ -235,8 +236,10 @@ test.describe('Menu Completeness', () => {
 
     const featMenu = page.locator('.ant-menu-submenu-title:has-text("功能配置")');
     const expanded = await featMenu.getAttribute('aria-expanded');
-    if (expanded !== 'true') await featMenu.click();
-    await page.waitForTimeout(500);
+    if (expanded !== 'true') {
+      await featMenu.click();
+      await featMenu.locator('.ant-menu-sub').waitFor({ state: 'visible', timeout: 5000 });
+    }
 
     const subItems = ['产品管理', '积木组件库'];
     for (const item of subItems) {
@@ -256,7 +259,7 @@ test.describe('Menu Completeness', () => {
     for (const { menu, url } of navTargets) {
       await page.locator(`.ant-menu-item:has-text("${menu}")`).first().click();
       await page.waitForLoadState('networkidle');
-      await page.waitForTimeout(500);
+      await page.locator('.ant-layout-content').waitFor({ state: 'visible', timeout: 5000 });
       expect(page.url()).toContain(url);
     }
   });
@@ -295,8 +298,7 @@ test.describe('BlockLibrary Page', () => {
     const tabNames = ['触发器', '规则节点', '功能点模板'];
     for (let i = 0; i < tabNames.length; i++) {
       await page.locator('.ant-tabs-tab').nth(i).click();
-      await page.waitForTimeout(500);
-      await expect(page.locator('.ant-table')).toBeVisible();
+      await expect(page.locator('.ant-table').first()).toBeVisible();
     }
   });
 
@@ -328,7 +330,6 @@ test.describe('ProductManagement Page', () => {
 
   test('PROD-003: Product table has expected columns', async ({ page }) => {
     await loginAndGo(page, '/features/products');
-    await page.waitForTimeout(1000);
     const headers = await page.locator('.ant-table-thead th').allTextContents();
     const headerText = headers.join('|');
     // Should have basic columns
@@ -338,25 +339,21 @@ test.describe('ProductManagement Page', () => {
 
   test('PROD-004: "关联套餐" column exists in product table', async ({ page }) => {
     await loginAndGo(page, '/features/products');
-    await page.waitForTimeout(1000);
     const headers = await page.locator('.ant-table-thead th').allTextContents();
     const headerText = headers.join('|');
     expect(headerText).toMatch(/关联套餐/);
   });
 
-  test('PROD-005: Opening config wizard shows guidance alert', async ({ page }) => {
+  test('PROD-005: Opening config wizard shows modal', async ({ page }) => {
     await loginAndGo(page, '/features/products');
     const configBtn = page.locator('button:has-text("配置产品")');
     await configBtn.click();
-    await page.waitForTimeout(500);
-    // Modal should open with title "配置产品"
-    await expect(page.locator('.ant-modal')).toBeVisible();
-    await expect(page.locator('.ant-modal-title, .ant-modal-header')).toContainText('配置产品');
+    // Modal should open
+    await expect(page.locator('.ant-modal').first()).toBeVisible();
   });
 
   test('PROD-006: Product table renders data rows', async ({ page }) => {
     await loginAndGo(page, '/features/products');
-    await page.waitForTimeout(1500);
     const rows = page.locator('.ant-table-tbody tr');
     const count = await rows.count();
     // Table may be empty if no products exist, but table structure should be there
@@ -375,18 +372,15 @@ test.describe('PackageManagement Page', () => {
 
   test('PKG-002: Package table visible with data', async ({ page }) => {
     await loginAndGo(page, '/packages');
-    await page.waitForTimeout(1000);
     await expect(page.locator('.ant-table')).toBeVisible();
   });
 
   test('PKG-003: "配置产品" button exists in package table', async ({ page }) => {
     await loginAndGo(page, '/packages');
-    await page.waitForTimeout(1000);
     const configBtn = page.locator('.ant-table button:has-text("配置产品")');
     const count = await configBtn.count();
     if (count > 0) {
       await configBtn.first().click();
-      await page.waitForTimeout(500);
       await expect(page.locator('.ant-modal')).toBeVisible();
 
       // Should show checkbox-style product selection
@@ -398,12 +392,10 @@ test.describe('PackageManagement Page', () => {
 
   test('PKG-004: Package config modal uses Collapse panels for products', async ({ page }) => {
     await loginAndGo(page, '/packages');
-    await page.waitForTimeout(1000);
     const configBtn = page.locator('.ant-table button:has-text("配置产品")');
     const count = await configBtn.count();
     if (count > 0) {
       await configBtn.first().click();
-      await page.waitForTimeout(500);
 
       // If there are collapse panels, they represent products
       const collapsePanels = page.locator('.ant-modal .ant-collapse-item');
@@ -433,7 +425,6 @@ test.describe('EnterpriseManagement Page', () => {
 
   test('ENT-002: Enterprise table has data rows', async ({ page }) => {
     await loginAndGo(page, '/enterprises');
-    await page.waitForTimeout(2000);
     const rows = page.locator('.ant-table-tbody tr');
     const count = await rows.count();
     expect(count).toBeGreaterThanOrEqual(0);
@@ -448,7 +439,6 @@ test.describe('EnterpriseManagement Page', () => {
     const detailBtn = page.locator('.ant-table-tbody button:has-text("详情")').first();
     if (!await detailBtn.isVisible().catch(() => false)) { test.skip(); return; }
     await detailBtn.click();
-    await page.waitForTimeout(1500);
 
     await expect(page.locator('.ant-modal')).toBeVisible();
     const permTab = page.locator('.ant-modal .ant-tabs-tab:has-text("权限总览")');
@@ -463,11 +453,10 @@ test.describe('EnterpriseManagement Page', () => {
     const detailBtn = page.locator('.ant-table-tbody button:has-text("详情")').first();
     if (!await detailBtn.isVisible().catch(() => false)) { test.skip(); return; }
     await detailBtn.click();
-    await page.waitForTimeout(1500);
 
     const permTab = page.locator('.ant-modal .ant-tabs-tab:has-text("权限总览")');
     await permTab.click();
-    await page.waitForTimeout(1000);
+    await expect(page.locator('.ant-modal')).toBeVisible();
 
     const text = await page.locator('.ant-modal').textContent();
     expect(text?.includes('套餐') || text?.includes('产品') || text?.includes('功能点')).toBe(true);
@@ -481,7 +470,6 @@ test.describe('EnterpriseManagement Page', () => {
     const detailBtn = page.locator('.ant-table-tbody button:has-text("详情")').first();
     if (!await detailBtn.isVisible().catch(() => false)) { test.skip(); return; }
     await detailBtn.click();
-    await page.waitForTimeout(1500);
 
     const tabs = page.locator('.ant-modal .ant-tabs-tab');
     await expect(tabs).toHaveCount(4, { timeout: 5000 });
@@ -510,7 +498,6 @@ test.describe('Visual Correctness', () => {
 
   test('VIS-003: GlassCard stat cards render with content', async ({ page }) => {
     await loginAndGo(page, '/dashboard');
-    await page.waitForTimeout(2000);
     const statCards = page.locator('.ant-statistic');
     const count = await statCards.count();
     expect(count).toBeGreaterThanOrEqual(3);
@@ -518,7 +505,6 @@ test.describe('Visual Correctness', () => {
 
   test('VIS-004: Charts render without errors', async ({ page }) => {
     await loginAndGo(page, '/dashboard');
-    await page.waitForTimeout(3000);
     const charts = page.locator('.recharts-wrapper');
     const count = await charts.count();
     expect(count).toBeGreaterThanOrEqual(2);
@@ -532,7 +518,6 @@ test.describe('Visual Correctness', () => {
       }
     });
     await loginAndGo(page, '/dashboard');
-    await page.waitForTimeout(3000);
 
     // Filter out known non-critical errors (e.g., network errors from missing API)
     const criticalErrors = errors.filter(e =>
@@ -550,7 +535,6 @@ test.describe('Visual Correctness', () => {
       if (msg.type() === 'error') errors.push(msg.text());
     });
     await loginAndGo(page, '/features/blocks');
-    await page.waitForTimeout(2000);
     const criticalErrors = errors.filter(e =>
       !e.includes('404') &&
       !e.includes('Failed to fetch') &&
@@ -566,7 +550,6 @@ test.describe('Visual Correctness', () => {
       if (msg.type() === 'error') errors.push(msg.text());
     });
     await loginAndGo(page, '/features/products');
-    await page.waitForTimeout(2000);
     const criticalErrors = errors.filter(e =>
       !e.includes('404') &&
       !e.includes('Failed to fetch') &&

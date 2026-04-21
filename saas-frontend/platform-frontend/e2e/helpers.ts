@@ -37,7 +37,8 @@ export async function waitForModal(page: Page, timeout = 5000) {
  */
 export async function closeModal(page: Page) {
   await page.keyboard.press('Escape');
-  await page.waitForTimeout(300);
+  // Wait for modal to be hidden
+  await page.locator('.ant-modal').waitFor({ state: 'hidden', timeout: 5000 });
 }
 
 /**
@@ -140,6 +141,6 @@ export async function loginAsPlatformAdmin(page: Page, baseUrl: string) {
     await page.reload();
     await page.waitForLoadState('networkidle');
     // Navigate to platform dashboard (or let redirect handle it)
-    await page.waitForTimeout(2000);
+    await page.waitForSelector('.ant-layout-content', { timeout: 5000 });
   }
 }

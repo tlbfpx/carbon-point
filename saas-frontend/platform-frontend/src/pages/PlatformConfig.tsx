@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Form, InputNumber, Switch, Button, Space, message, Table, Tag, Modal, Input, Popconfirm } from 'antd';
+import { Form, InputNumber, Switch, Button, Space, message, Table, Tag, Modal, Input, Popconfirm, Tabs, Select, DatePicker, Radio } from 'antd';
 import { GlassCard } from '@carbon-point/design-system';
-import { SaveOutlined, PlusOutlined, EditOutlined, DeleteOutlined, CheckOutlined, CloseOutlined } from '@ant-design/icons';
+import { SaveOutlined, PlusOutlined, EditOutlined, DeleteOutlined, CheckOutlined, CloseOutlined, ReloadOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { getPlatformConfig, updatePlatformConfig, PlatformConfig } from '@/api/platform';
+
+const { TextArea } = Input;
 
 interface RuleTemplate {
   id: string;
@@ -31,7 +33,11 @@ const PlatformConfigPage: React.FC = () => {
   const [ruleTemplateModalOpen, setRuleTemplateModalOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<RuleTemplate | null>(null);
   const [templateForm] = Form.useForm();
-  const [form] = Form.useForm();
+  const [baseForm] = Form.useForm();
+  const [notificationForm] = Form.useForm();
+  const [pointsForm] = Form.useForm();
+  const [integrationForm] = Form.useForm();
+  const [systemForm] = Form.useForm();
   const [isLoading, setIsLoading] = useState(false);
 
   const { data: configData, isLoading: configLoading } = useQuery({
@@ -103,6 +109,63 @@ const PlatformConfigPage: React.FC = () => {
     updateMutation.mutate(configs, {
       onSettled: () => setIsLoading(false),
     });
+  };
+
+  const handleSaveNotification = (values: Record<string, unknown>) => {
+    const configs = [
+      { key: 'notifyEmail', value: values.notifyEmail as string, group: 'notification', description: '通知邮箱' },
+      { key: 'enableSms', value: values.enableSms as boolean, group: 'notification', description: '启用短信通知' },
+      { key: 'enableEmail', value: values.enableEmail as boolean, group: 'notification', description: '启用邮件通知' },
+    ];
+    setIsLoading(true);
+    updateMutation.mutate(configs, {
+      onSuccess: () => message.success('通知设置保存成功'),
+      onSettled: () => setIsLoading(false),
+    });
+  };
+
+  const handleSavePoints = (values: Record<string, unknown>) => {
+    const configs = [
+      { key: 'pointsPerFloor', value: values.pointsPerFloor as number, group: 'points_rule', description: '每层楼积分' },
+      { key: 'pointsPerStep', value: values.pointsPerStep as number, group: 'points_rule', description: '每步积分' },
+      { key: 'maxDailyPoints', value: values.maxDailyPoints as number, group: 'points_rule', description: '每日积分上限' },
+    ];
+    setIsLoading(true);
+    updateMutation.mutate(configs, {
+      onSuccess: () => message.success('积分规则保存成功'),
+      onSettled: () => setIsLoading(false),
+    });
+  };
+
+  const handleSaveIntegration = (values: Record<string, unknown>) => {
+    const configs = [
+      { key: 'wechatAppId', value: values.wechatAppId as string, group: 'integration', description: '微信AppId' },
+      { key: 'wechatSecret', value: values.wechatSecret as string, group: 'integration', description: '微信Secret' },
+      { key: 'apiGatewayUrl', value: values.apiGatewayUrl as string, group: 'integration', description: 'API网关地址' },
+    ];
+    setIsLoading(true);
+    updateMutation.mutate(configs, {
+      onSuccess: () => message.success('第三方集成保存成功'),
+      onSettled: () => setIsLoading(false),
+    });
+  };
+
+  const handleSaveSystem = (values: Record<string, unknown>) => {
+    const configs = [
+      { key: 'systemName', value: values.systemName as string, group: 'system', description: '系统名称' },
+      { key: 'maintenanceMode', value: values.maintenanceMode as boolean, group: 'system', description: '维护模式' },
+      { key: 'logLevel', value: values.logLevel as string, group: 'system', description: '日志级别' },
+    ];
+    setIsLoading(true);
+    updateMutation.mutate(configs, {
+      onSuccess: () => message.success('系统设置保存成功'),
+      onSettled: () => setIsLoading(false),
+    });
+  };
+
+  const handleResetForm = (formInstance: ReturnType<typeof Form.useForm>[0]) => {
+    formInstance.resetFields();
+    message.info('已重置表单');
   };
 
   const handleSaveTemplate = (values: { name: string; description?: string; slots: RuleTemplate['slots'] }) => {
@@ -265,109 +328,341 @@ const PlatformConfigPage: React.FC = () => {
     <div>
       <h2 style={{ marginBottom: 24 }}>平台配置</h2>
 
-      <GlassCard title="功能开关" style={{ marginBottom: 24 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
-          {Object.entries(FLAG_DESCRIPTIONS).map(([key, { label, description }]) => (
-            <div
-              key={key}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '12px 16px',
-                background: '#f5f5f5',
-                borderRadius: 8,
+      <Tabs defaultActiveKey="basic" items={[
+        {
+          key: 'basic',
+          label: '基础配置',
+          children: (
+            <Form
+              layout="vertical"
+              form={baseForm}
+              onFinish={handleSaveParams}
+              initialValues={{
+                defaultDailyCap: 500,
+                defaultLevelCoef: 1.0,
+                tokenExpireMinutes: 30,
+                refreshTokenExpireDays: 7,
               }}
             >
-              <div>
-                <div>{label}</div>
-                <div style={{ fontSize: 12, color: '#999' }}>{description}</div>
+              <Space direction="vertical" style={{ width: '100%' }}>
+                <Space>
+                  <Form.Item name="defaultDailyCap" label="默认每日积分上限">
+                    <InputNumber min={0} max={10000} style={{ width: 160 }} />
+                  </Form.Item>
+                  <Form.Item name="defaultLevelCoef" label="默认等级系数">
+                    <InputNumber min={0.1} max={5} step={0.1} style={{ width: 160 }} />
+                  </Form.Item>
+                </Space>
+                <Space>
+                  <Form.Item name="tokenExpireMinutes" label="AccessToken 有效期（分钟）">
+                    <InputNumber min={5} style={{ width: 160 }} />
+                  </Form.Item>
+                  <Form.Item name="refreshTokenExpireDays" label="RefreshToken 有效期（天）">
+                    <InputNumber min={1} style={{ width: 160 }} />
+                  </Form.Item>
+                </Space>
+                <Space>
+                  <Button
+                    type="primary"
+                    icon={<SaveOutlined />}
+                    onClick={() => baseForm.submit()}
+                    loading={isLoading}
+                  >
+                    保存
+                  </Button>
+                  <Button
+                    icon={<ReloadOutlined />}
+                    onClick={() => handleResetForm(baseForm)}
+                  >
+                    重置
+                  </Button>
+                </Space>
+              </Space>
+            </Form>
+          ),
+        },
+        {
+          key: 'notification',
+          label: '通知设置',
+          children: (
+            <Form
+              layout="vertical"
+              form={notificationForm}
+              onFinish={handleSaveNotification}
+              initialValues={{
+                notifyEmail: '',
+                enableSms: false,
+                enableEmail: true,
+              }}
+            >
+              <Space direction="vertical" style={{ width: '100%' }}>
+                <Form.Item
+                  name="notifyEmail"
+                  label="通知邮箱"
+                  rules={[
+                    { required: true, message: '请输入通知邮箱' },
+                    { type: 'email', message: '请输入有效的邮箱地址' },
+                  ]}
+                >
+                  <Input placeholder="请输入通知邮箱" />
+                </Form.Item>
+                <Form.Item name="enableSms" label="启用短信通知" valuePropName="checked">
+                  <Switch />
+                </Form.Item>
+                <Form.Item name="enableEmail" label="启用邮件通知" valuePropName="checked">
+                  <Switch />
+                </Form.Item>
+                <Space>
+                  <Button
+                    type="primary"
+                    icon={<SaveOutlined />}
+                    onClick={() => notificationForm.submit()}
+                    loading={isLoading}
+                  >
+                    保存
+                  </Button>
+                  <Button
+                    icon={<ReloadOutlined />}
+                    onClick={() => handleResetForm(notificationForm)}
+                  >
+                    重置
+                  </Button>
+                </Space>
+              </Space>
+            </Form>
+          ),
+        },
+        {
+          key: 'points',
+          label: '积分规则',
+          children: (
+            <Form
+              layout="vertical"
+              form={pointsForm}
+              onFinish={handleSavePoints}
+              initialValues={{
+                pointsPerFloor: 10,
+                pointsPerStep: 0.01,
+                maxDailyPoints: 500,
+              }}
+            >
+              <Space direction="vertical" style={{ width: '100%' }}>
+                <Space>
+                  <Form.Item name="pointsPerFloor" label="每层楼积分" rules={[{ required: true }]}>
+                    <InputNumber min={0} style={{ width: 160 }} />
+                  </Form.Item>
+                  <Form.Item name="pointsPerStep" label="每步积分" rules={[{ required: true }]}>
+                    <InputNumber min={0} step={0.01} style={{ width: 160 }} />
+                  </Form.Item>
+                </Space>
+                <Form.Item name="maxDailyPoints" label="每日积分上限" rules={[{ required: true }]}>
+                  <InputNumber min={0} max={10000} style={{ width: 160 }} />
+                </Form.Item>
+                <Space>
+                  <Button
+                    type="primary"
+                    icon={<SaveOutlined />}
+                    onClick={() => pointsForm.submit()}
+                    loading={isLoading}
+                  >
+                    保存
+                  </Button>
+                  <Button
+                    icon={<ReloadOutlined />}
+                    onClick={() => handleResetForm(pointsForm)}
+                  >
+                    重置
+                  </Button>
+                </Space>
+              </Space>
+            </Form>
+          ),
+        },
+        {
+          key: 'feature',
+          label: '功能开关',
+          children: (
+            <div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16, marginBottom: 16 }}>
+                {Object.entries(FLAG_DESCRIPTIONS).map(([key, { label, description }]) => (
+                  <div
+                    key={key}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '12px 16px',
+                      background: '#f5f5f5',
+                      borderRadius: 8,
+                    }}
+                  >
+                    <div>
+                      <div>{label}</div>
+                      <div style={{ fontSize: 12, color: '#999' }}>{description}</div>
+                    </div>
+                    <Switch
+                      checked={featureFlags[key] ?? false}
+                      onChange={(checked) => handleFlagChange(key, checked)}
+                    />
+                  </div>
+                ))}
               </div>
-              <Switch
-                checked={featureFlags[key] ?? false}
-                onChange={(checked) => handleFlagChange(key, checked)}
-              />
+              <Button
+                type="primary"
+                icon={<SaveOutlined />}
+                onClick={handleSaveFlags}
+                loading={isLoading}
+              >
+                保存功能开关
+              </Button>
             </div>
-          ))}
-        </div>
-        <Button
-          type="primary"
-          icon={<SaveOutlined />}
-          style={{ marginTop: 16 }}
-          onClick={handleSaveFlags}
-          loading={isLoading}
-        >
-          保存功能开关
-        </Button>
-      </GlassCard>
-
-      <GlassCard
-        title="默认规则模板"
-        extra={
-          <Button type="primary" icon={<PlusOutlined />} size="small" onClick={openCreateTemplate}>
-            新建模板
-          </Button>
-        }
-        style={{ marginBottom: 24 }}
-      >
-        {templates.length > 0 ? (
-          <Table
-            columns={templateColumns}
-            dataSource={templates}
-            rowKey="id"
-            pagination={false}
-            loading={configLoading}
-          />
-        ) : (
-          <div style={{ textAlign: 'center', padding: '32px 0', color: '#999' }}>
-            暂无规则模板
-          </div>
-        )}
-        <p style={{ color: '#999', fontSize: 12, marginTop: 8 }}>
-          提示：新企业开通时将自动应用选定的规则模板，可创建多个模板供选择
-        </p>
-      </GlassCard>
-
-      <GlassCard title="平台参数">
-        <Form
-          layout="vertical"
-          form={form}
-          onFinish={handleSaveParams}
-          initialValues={{
-            defaultDailyCap: 500,
-            defaultLevelCoef: 1.0,
-            tokenExpireMinutes: 30,
-            refreshTokenExpireDays: 7,
-          }}
-        >
-          <Space direction="vertical">
-            <Space>
-              <Form.Item name="defaultDailyCap" label="默认每日积分上限">
-                <InputNumber min={0} max={10000} style={{ width: 160 }} />
-              </Form.Item>
-              <Form.Item name="defaultLevelCoef" label="默认等级系数">
-                <InputNumber min={0.1} max={5} step={0.1} style={{ width: 160 }} />
-              </Form.Item>
-            </Space>
-            <Space>
-              <Form.Item name="tokenExpireMinutes" label="AccessToken 有效期（分钟）">
-                <InputNumber min={5} style={{ width: 160 }} />
-              </Form.Item>
-              <Form.Item name="refreshTokenExpireDays" label="RefreshToken 有效期（天）">
-                <InputNumber min={1} style={{ width: 160 }} />
-              </Form.Item>
-            </Space>
-          </Space>
-          <Button
-            type="primary"
-            icon={<SaveOutlined />}
-            onClick={() => form.submit()}
-            loading={isLoading}
-          >
-            保存参数
-          </Button>
-        </Form>
-      </GlassCard>
+          ),
+        },
+        {
+          key: 'integration',
+          label: '第三方集成',
+          children: (
+            <Form
+              layout="vertical"
+              form={integrationForm}
+              onFinish={handleSaveIntegration}
+              initialValues={{
+                wechatAppId: '',
+                wechatSecret: '',
+                apiGatewayUrl: '',
+              }}
+            >
+              <Space direction="vertical" style={{ width: '100%' }}>
+                <Space>
+                  <Form.Item name="wechatAppId" label="微信AppId">
+                    <Input placeholder="请输入微信AppId" />
+                  </Form.Item>
+                  <Form.Item name="wechatSecret" label="微信Secret">
+                    <Input.Password placeholder="请输入微信Secret" />
+                  </Form.Item>
+                </Space>
+                <Form.Item
+                  name="apiGatewayUrl"
+                  label="API网关地址"
+                  rules={[{ type: 'url', message: '请输入有效的URL地址' }]}
+                >
+                  <Input placeholder="https://api.example.com" />
+                </Form.Item>
+                <Space>
+                  <Button
+                    type="primary"
+                    icon={<SaveOutlined />}
+                    onClick={() => integrationForm.submit()}
+                    loading={isLoading}
+                  >
+                    保存
+                  </Button>
+                  <Button
+                    icon={<ReloadOutlined />}
+                    onClick={() => handleResetForm(integrationForm)}
+                  >
+                    重置
+                  </Button>
+                </Space>
+              </Space>
+            </Form>
+          ),
+        },
+        {
+          key: 'system',
+          label: '系统设置',
+          children: (
+            <Form
+              layout="vertical"
+              form={systemForm}
+              onFinish={handleSaveSystem}
+              initialValues={{
+                systemName: '碳积分打卡平台',
+                maintenanceMode: false,
+                logLevel: 'INFO',
+                maintenanceStartTime: null,
+                maintenanceEndTime: null,
+                systemDescription: '',
+              }}
+            >
+              <Space direction="vertical" style={{ width: '100%' }}>
+                <Form.Item name="systemName" label="系统名称" rules={[{ required: true }]}>
+                  <Input placeholder="请输入系统名称" />
+                </Form.Item>
+                <Form.Item name="logLevel" label="日志级别">
+                  <Select style={{ width: 160 }}>
+                    <Select.Option value="DEBUG">DEBUG</Select.Option>
+                    <Select.Option value="INFO">INFO</Select.Option>
+                    <Select.Option value="WARN">WARN</Select.Option>
+                    <Select.Option value="ERROR">ERROR</Select.Option>
+                  </Select>
+                </Form.Item>
+                <Space>
+                  <Form.Item name="maintenanceStartTime" label="维护开始时间">
+                    <DatePicker showTime style={{ width: 200 }} />
+                  </Form.Item>
+                  <Form.Item name="maintenanceEndTime" label="维护结束时间">
+                    <DatePicker showTime style={{ width: 200 }} />
+                  </Form.Item>
+                </Space>
+                <Form.Item name="maintenanceMode" label="维护模式" valuePropName="checked">
+                  <Switch />
+                </Form.Item>
+                <Form.Item name="systemDescription" label="系统描述">
+                  <TextArea rows={4} placeholder="请输入系统描述" />
+                </Form.Item>
+                <Space>
+                  <Button
+                    type="primary"
+                    icon={<SaveOutlined />}
+                    onClick={() => systemForm.submit()}
+                    loading={isLoading}
+                  >
+                    保存
+                  </Button>
+                  <Button
+                    icon={<ReloadOutlined />}
+                    onClick={() => handleResetForm(systemForm)}
+                  >
+                    重置
+                  </Button>
+                </Space>
+              </Space>
+            </Form>
+          ),
+        },
+        {
+          key: 'template',
+          label: '规则模板',
+          children: (
+            <GlassCard
+              title="默认规则模板"
+              extra={
+                <Button type="primary" icon={<PlusOutlined />} size="small" onClick={openCreateTemplate}>
+                  新建模板
+                </Button>
+              }
+            >
+              {templates.length > 0 ? (
+                <Table
+                  columns={templateColumns}
+                  dataSource={templates}
+                  rowKey="id"
+                  pagination={false}
+                  loading={configLoading}
+                />
+              ) : (
+                <div style={{ textAlign: 'center', padding: '32px 0', color: '#999' }}>
+                  暂无规则模板
+                </div>
+              )}
+              <p style={{ color: '#999', fontSize: 12, marginTop: 8 }}>
+                提示：新企业开通时将自动应用选定的规则模板，可创建多个模板供选择
+              </p>
+            </GlassCard>
+          ),
+        },
+      ]} />
 
       {/* Rule Template Create/Edit Modal */}
       <Modal

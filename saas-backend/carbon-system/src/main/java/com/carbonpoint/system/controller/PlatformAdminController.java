@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.carbonpoint.common.result.Result;
 import com.carbonpoint.common.security.PlatformAdminContext;
 import com.carbonpoint.system.dto.PlatformAdminRequest;
+import com.carbonpoint.system.dto.PlatformAdminUpdateRequest;
 import com.carbonpoint.system.dto.PlatformAdminVO;
 import com.carbonpoint.system.dto.PageRequest;
 import com.carbonpoint.system.service.PlatformAdminService;
@@ -55,10 +56,11 @@ public class PlatformAdminController {
 
     /**
      * Update platform admin (requires super_admin).
+     * Accepts partial updates - only provided fields will be changed.
      */
     @PutMapping("/{id}")
     public Result<PlatformAdminVO> update(@PathVariable Long id,
-                                          @Valid @RequestBody PlatformAdminRequest request) {
+                                          @Valid @RequestBody PlatformAdminUpdateRequest request) {
         Long operatorId = getCurrentAdminId();
         return Result.success(adminService.update(id, request, operatorId));
     }
@@ -71,6 +73,17 @@ public class PlatformAdminController {
     public Result<Void> disable(@PathVariable Long id) {
         Long operatorId = getCurrentAdminId();
         adminService.disable(id, operatorId);
+        return Result.success();
+    }
+
+    /**
+     * Delete platform admin (soft delete, requires super_admin).
+     * The last super_admin cannot be deleted.
+     */
+    @DeleteMapping("/{id}")
+    public Result<Void> delete(@PathVariable Long id) {
+        Long operatorId = getCurrentAdminId();
+        adminService.delete(id, operatorId);
         return Result.success();
     }
 

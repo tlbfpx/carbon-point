@@ -9,25 +9,19 @@ test.describe('平台后台 - 功能点库', () => {
     await page.waitForLoadState('networkidle');
   });
 
-  test('FL-001: 功能点库页面可访问', async ({ page }) => {
-    await expect(page.locator('h2')).toContainText('功能点库');
+  test('FL-001: 积木组件库页面可访问', async ({ page }) => {
+    await expect(page.locator('h2')).toContainText('积木组件库');
     await expect(page.locator('.ant-table')).toBeVisible();
   });
 
-  test('FL-002: 创建功能点', async ({ page }) => {
-    const featureName = `测试功能点_${uniqueId()}`;
-    const featureCode = `TEST_FEATURE_${Date.now()}`;
-
-    await page.click('button:has-text("创建功能点")');
-    await expect(page.locator('.ant-modal')).toBeVisible();
-
-    await page.fill('input[placeholder*="功能点名称"]', featureName);
-    await page.fill('input[placeholder*="功能点编码"]', featureCode);
-    await page.click('.ant-select:has-text("类型")');
-    await page.click('.ant-select-dropdown li:first-child');
-
-    await page.click('button:has-text("确认创建")');
-    await expect(page.locator('.ant-message')).toContainText('成功');
+  test('FL-002: 组件库 Tab 切换', async ({ page }) => {
+    const tabs = page.locator('.ant-tabs-tab');
+    await expect(tabs.nth(0)).toBeVisible();
+    if (await tabs.count() > 1) {
+      await tabs.nth(1).click();
+      // Wait for tab content to be visible
+      await expect(tabs.nth(1)).toHaveClass(/ant-tabs-tab-active/);
+    }
   });
 
   test('FL-003: 功能点列表筛选', async ({ page }) => {
@@ -39,7 +33,6 @@ test.describe('平台后台 - 功能点库', () => {
   });
 
   test('FL-004: 编辑功能点', async ({ page }) => {
-    await page.waitForTimeout(1000);
     const editBtn = page.locator('.ant-table button').filter({ hasText: '编辑' }).first();
     if (await editBtn.isVisible()) {
       await editBtn.click();

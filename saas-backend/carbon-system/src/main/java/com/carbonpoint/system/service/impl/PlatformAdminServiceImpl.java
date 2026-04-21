@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.carbonpoint.common.exception.BusinessException;
 import com.carbonpoint.common.result.ErrorCode;
 import com.carbonpoint.system.dto.PlatformAdminRequest;
+import com.carbonpoint.system.dto.PlatformAdminUpdateRequest;
 import com.carbonpoint.system.dto.PlatformAdminVO;
 import com.carbonpoint.system.entity.PlatformAdminEntity;
 import com.carbonpoint.system.mapper.PlatformAdminMapper;
@@ -51,6 +52,7 @@ public class PlatformAdminServiceImpl implements PlatformAdminService {
         admin.setUsername(request.getUsername());
         admin.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         admin.setDisplayName(request.getDisplayName());
+        admin.setEmail(request.getEmail());
         admin.setRole(request.getRole());
         admin.setStatus(PlatformAdminEntity.STATUS_ACTIVE);
         admin.setCreatedAt(LocalDateTime.now());
@@ -66,7 +68,7 @@ public class PlatformAdminServiceImpl implements PlatformAdminService {
 
     @Override
     @Transactional
-    public PlatformAdminVO update(Long id, PlatformAdminRequest request, Long operatorId) {
+    public PlatformAdminVO update(Long id, PlatformAdminUpdateRequest request, Long operatorId) {
         validateOperatorRole(operatorId, PlatformAdminEntity.ROLE_SUPER_ADMIN);
 
         PlatformAdminEntity admin = adminMapper.selectById(id);
@@ -81,6 +83,10 @@ public class PlatformAdminServiceImpl implements PlatformAdminService {
 
         if (request.getDisplayName() != null) {
             admin.setDisplayName(request.getDisplayName());
+        }
+        // Email can be set or cleared (null vs empty string)
+        if (request.getEmail() != null) {
+            admin.setEmail(request.getEmail().isBlank() ? null : request.getEmail());
         }
         if (request.getRole() != null) {
             admin.setRole(request.getRole());
@@ -123,6 +129,33 @@ public class PlatformAdminServiceImpl implements PlatformAdminService {
         adminMapper.updateById(admin);
 
         log.info("Platform admin disabled: id={}, by={}", id, operatorId);
+    }
+
+    @Override
+    @Transactional
+    public void delete(Long id, Long operatorId) {
+        validateOperatorRole(operatorId, PlatformAdminEntity.ROLE_SUPER_ADMIN);
+
+        PlatformAdminEntity admin = adminMapper.selectById(id);
+        if (admin == null) {
+            throw new BusinessException(ErrorCode.PLATFORM_ADMIN_NOT_FOUND);
+        }
+
+        // Cannot delete the last super_admin
+        if (PlatformAdminEntity.ROLE_SUPER_ADMIN.equals(admin.getRole())) {
+            long superAdminCount = adminMapper.selectCount(
+                    new LambdaQueryWrapper<PlatformAdminEntity>()
+                            .eq(PlatformAdminEntity::getRole, PlatformAdminEntity.ROLE_SUPER_ADMIN)
+                            .eq(PlatformAdminEntity::getStatus, PlatformAdminEntity.STATUS_ACTIVE)
+            );
+            if (superAdminCount <= 1) {
+                throw new BusinessException(ErrorCode.ROLE_LAST_SUPER_ADMIN, "无法删除最后一个超级管理员");
+            }
+        }
+
+        adminMapper.deleteById(id);
+
+        log.info("Platform admin deleted: id={}, username={}, by={}", id, admin.getUsername(), operatorId);
     }
 
     @Override
@@ -175,8 +208,10 @@ public class PlatformAdminServiceImpl implements PlatformAdminService {
     private PlatformAdminVO toVO(PlatformAdminEntity admin) {
         return PlatformAdminVO.builder()
                 .id(admin.getId())
+                .userId(admin.getId())
                 .username(admin.getUsername())
                 .displayName(admin.getDisplayName())
+                .email(admin.getEmail())
                 .role(admin.getRole())
                 .status(admin.getStatus())
                 .lastLoginAt(admin.getLastLoginAt())

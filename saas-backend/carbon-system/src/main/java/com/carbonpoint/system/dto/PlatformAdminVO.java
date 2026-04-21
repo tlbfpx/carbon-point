@@ -16,8 +16,11 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class PlatformAdminVO {
     private Long id;
+    /** userId field for frontend compatibility (same as id) */
+    private Long userId;
     private String username;
     private String displayName;
+    private String email;
     private String role;
     private String status;
     private LocalDateTime lastLoginAt;

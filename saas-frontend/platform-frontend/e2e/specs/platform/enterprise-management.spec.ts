@@ -28,7 +28,7 @@ test.describe('平台后台 - 企业管理', () => {
     const headers = await page.getTableHeaders();
     expect(headers.length).toBeGreaterThan(0);
     const headerText = headers.join('');
-    expect(headerText).toMatch(/企业/);
+    expect(headerText).toMatch(/企业名称/);
   });
 
   test('EM-004: 企业列表正确显示数据行', async () => {
@@ -45,7 +45,6 @@ test.describe('平台后台 - 企业管理', () => {
     const searchName = names[0].trim();
     await page.searchEnterprise(searchName);
     await p.waitForLoadState('networkidle');
-    await p.waitForTimeout(500);
     const resultNames = await page.getEnterpriseNames();
     if (resultNames.length > 0 && resultNames[0].trim()) {
       for (const name of resultNames) {
@@ -62,18 +61,17 @@ test.describe('平台后台 - 企业管理', () => {
       return;
     }
     await page.searchEnterprise('nonexistent-xyz-123');
-    await p.waitForTimeout(500);
     // Clear search
     await page.clearSearch();
     await p.waitForLoadState('networkidle');
-    await p.waitForTimeout(500);
     const rowsAfter = await page.getTableRowCount();
     expect(rowsAfter).toBeGreaterThan(0);
   });
 
   test('EM-007: 搜索无结果时显示空状态', async ({ page: p }) => {
     await page.searchEnterprise('__nonexistent_enterprise_name_xyz__');
-    await p.waitForTimeout(1500);
+    // Wait for table to update
+    await p.locator('.ant-table-tbody').first().waitFor({ state: 'visible', timeout: 5000 });
     await expect(await page.getEmptyState()).toBeVisible();
   });
 
@@ -86,14 +84,12 @@ test.describe('平台后台 - 企业管理', () => {
     const selectBtn = p.locator('.ant-modal .ant-select').first();
     if (await selectBtn.isVisible()) {
       await selectBtn.click();
-      await p.waitForTimeout(500);
+      await p.locator('.ant-select-dropdown').waitFor({ state: 'visible', timeout: 5000 });
       const opts = await p.locator('.ant-select-dropdown .ant-select-item').count();
       if (opts > 0) {
         await p.locator('.ant-select-dropdown .ant-select-item').first().click();
-        await p.waitForTimeout(300);
       } else {
         await p.keyboard.press('Escape');
-        await p.waitForTimeout(300);
       }
     }
     await page.submitEnterprise();
@@ -102,10 +98,11 @@ test.describe('平台后台 - 企业管理', () => {
     } catch {
       // Modal might close without explicit success message
     }
-    await p.waitForTimeout(2000);
+    // Wait for table to update
+    await p.locator('.ant-table-tbody tr').first().waitFor({ state: 'visible', timeout: 5000 });
     // Verify the new enterprise appears in the list
     await page.searchEnterprise(enterpriseName);
-    await p.waitForTimeout(1000);
+    await p.locator('.ant-table-tbody tr').first().waitFor({ state: 'visible', timeout: 5000 });
     const resultNames = await page.getEnterpriseNames();
     expect(resultNames.some(n => n.includes(enterpriseName))).toBeTruthy();
   });
@@ -116,7 +113,6 @@ test.describe('平台后台 - 企业管理', () => {
     // Try to submit without filling any fields
     const submitBtn = p.locator('.ant-modal button').filter({ hasText: '确认开通' });
     await submitBtn.click();
-    await p.waitForTimeout(500);
     // Modal should still be open (validation blocks submission)
     await expect(p.locator('.ant-modal')).toBeVisible();
   });
@@ -135,7 +131,6 @@ test.describe('平台后台 - 企业管理', () => {
   });
 
   test('EM-011: 企业列表状态标签显示正确', async ({ page: p }) => {
-    await p.waitForTimeout(2000);
     const rowCount = await page.getTableRowCount();
     if (rowCount === 0) {
       await expect(await page.getEmptyState()).toBeVisible();
@@ -177,19 +172,19 @@ test.describe('平台后台 - 企业管理', () => {
     }
     if (!foundToggle) return;
     // Wait for popover confirmation
-    await p.waitForTimeout(500);
     const popover = p.locator('.ant-popover');
+    await popover.waitFor({ state: 'visible', timeout: 5000 });
     if (await popover.isVisible().catch(() => false)) {
       // Button text is "确 定" (with space) in Ant Design popconfirm
       await popover.locator('button').filter({ hasText: '确 定' }).click({ force: true });
-      await p.waitForTimeout(500);
     }
     try {
       await expectAntSuccess(p, 5000);
     } catch {
       // Status toggle may not show explicit success
     }
-    await p.waitForTimeout(1000);
+    // Wait for table to update
+    await p.locator('.ant-table-tbody tr').first().waitFor({ state: 'visible', timeout: 5000 });
   });
 
   test('EM-013: 开通已停用的企业', async ({ page: p }) => {
@@ -209,7 +204,8 @@ test.describe('平台后台 - 企业管理', () => {
     } catch {
       // Status toggle may not show explicit success
     }
-    await p.waitForTimeout(1000);
+    // Wait for table to update
+    await p.locator('.ant-table-tbody tr').first().waitFor({ state: 'visible', timeout: 5000 });
     const newStatus = await page.getStatusBadge(0);
     expect(newStatus).toBeTruthy();
   });
@@ -226,10 +222,8 @@ test.describe('平台后台 - 企业管理', () => {
     await p.waitForLoadState('networkidle');
     // Try clicking prev (should be disabled on first page)
     await page.clickPrevPage();
-    await p.waitForTimeout(500);
     // Try clicking next (may be disabled on single page)
     await page.clickNextPage();
-    await p.waitForTimeout(500);
     await expect(page.table).toBeVisible();
   });
 
@@ -251,7 +245,6 @@ test.describe('平台后台 - 企业管理', () => {
     await inputs.nth(1).fill('联系人');
     await inputs.nth(2).fill('13800001111');
     await page.submitEnterprise();
-    await p.waitForTimeout(500);
     // Modal should still be open (validation blocks)
     await expect(p.locator('.ant-modal')).toBeVisible();
   });
@@ -264,7 +257,6 @@ test.describe('平台后台 - 企业管理', () => {
     await inputs.nth(0).fill('测试企业名');
     await inputs.nth(2).fill('13800001111');
     await page.submitEnterprise();
-    await p.waitForTimeout(500);
     await expect(p.locator('.ant-modal')).toBeVisible();
   });
 
@@ -273,7 +265,6 @@ test.describe('平台后台 - 企业管理', () => {
     await waitForModal(p);
     await page.fillEnterpriseForm('测试企业格式', '测试', '123');
     await page.submitEnterprise();
-    await p.waitForTimeout(1000);
     // Modal should either show validation error or stay open
     const modalStillVisible = await p.locator('.ant-modal').isVisible().catch(() => false);
     if (modalStillVisible) {
@@ -309,7 +300,7 @@ test.describe('平台后台 - 企业管理', () => {
     const headers = await page.getTableHeaders();
     const headerText = headers.join('');
     // Should contain: 企业名称, 联系人, 联系电话, 套餐, 用户数, 状态, 创建时间, 操作
-    expect(headerText).toMatch(/企业/);
+    expect(headerText).toMatch(/企业名称/);
     expect(headerText).toMatch(/联系/);
     expect(headerText).toMatch(/状态/);
     expect(headerText).toMatch(/操作/);
@@ -334,10 +325,8 @@ test.describe('平台后台 - 企业管理', () => {
     await waitForModal(p);
     await expect(p.locator('.ant-modal')).toBeVisible();
     await page.closeModal();
-    await p.waitForTimeout(500);
     // Modal should be closed
-    const modalGone = !(await p.locator('.ant-modal').isVisible().catch(() => false));
-    expect(modalGone).toBeTruthy();
+    await p.locator('.ant-modal').waitFor({ state: 'hidden', timeout: 5000 });
   });
 
   test('EM-024: 开通企业 - 重复企业名称提示', async ({ page: p }) => {
@@ -351,7 +340,8 @@ test.describe('平台后台 - 企业管理', () => {
     await waitForModal(p);
     await page.fillEnterpriseForm(existingName, '测试', '13800009999');
     await page.submitEnterprise();
-    await p.waitForTimeout(2000);
+    // Wait for either error message or modal to close
+    await p.locator('.ant-message').waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
     // Backend may or may not prevent duplicates - verify modal state at least
     const modalVisible = await p.locator('.ant-modal').isVisible().catch(() => false);
     const errorVisible = await p.locator('.ant-message-error').isVisible().catch(() => false);
@@ -362,7 +352,8 @@ test.describe('平台后台 - 企业管理', () => {
   test('EM-025: 表格数据为空时显示空状态', async ({ page: p }) => {
     // Search for a definitely non-existent name
     await page.searchEnterprise('__totally_nonexistent_enterprise_name_abc123xyz__');
-    await p.waitForTimeout(1500);
+    // Wait for table to update
+    await p.locator('.ant-table-tbody').first().waitFor({ state: 'visible', timeout: 5000 });
     // Either the empty state placeholder is visible or the table shows no data
     const emptyVisible = await page.hasEmptyState();
     const rowCount = await page.getTableRowCount();

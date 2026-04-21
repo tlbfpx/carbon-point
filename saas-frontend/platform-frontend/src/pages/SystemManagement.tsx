@@ -27,7 +27,10 @@ import {
   updatePlatformAdmin,
   deletePlatformAdmin,
   PlatformAdmin,
+  getOperationLogs,
+  OperationLog,
 } from '@/api/platform';
+import { SearchOutlined, EyeOutlined, ReloadOutlined, ExportOutlined } from '@ant-design/icons';
 
 const { Text } = Typography;
 
@@ -45,11 +48,66 @@ const SystemManagement: React.FC = () => {
   const [adminPage, setAdminPage] = useState(1);
   const [adminPageSize, setAdminPageSize] = useState(10);
 
+  // Log pagination & search
+  const [logPage, setLogPage] = useState(1);
+  const [logPageSize, setLogPageSize] = useState(10);
+  const [logSearchOperator, setLogSearchOperator] = useState('');
+  const [logDetailOpen, setLogDetailOpen] = useState(false);
+  const [selectedLog, setSelectedLog] = useState<OperationLog | null>(null);
+
   // ---- Admin queries ----
   const { data: adminsData, isLoading: adminsLoading } = useQuery({
     queryKey: ['platform-admins'],
     queryFn: getPlatformAdmins,
   });
+
+  // ---- Log queries ----
+  const { data: logsData, isLoading: logsLoading, refetch: refetchLogs } = useQuery({
+    queryKey: ['operation-logs', logPage, logPageSize, logSearchOperator],
+    queryFn: () => {
+      const params: { page: number; size: number; adminId?: string } = { page: logPage, size: logPageSize };
+      if (logSearchOperator) params.adminId = logSearchOperator;
+      return getOperationLogs(params);
+    },
+    retry: false,
+    refetchOnWindowFocus: false,
+    throwOnError: false,
+  });
+
+  const ACTION_TYPE_MAP: Record<string, { label: string; color: string }> = {
+    CREATE: { label: '创建', color: 'green' },
+    UPDATE: { label: '更新', color: 'blue' },
+    DELETE: { label: '删除', color: 'red' },
+    LOGIN: { label: '登录', color: 'cyan' },
+    LOGOUT: { label: '登出', color: 'default' },
+    EXPORT: { label: '导出', color: 'purple' },
+    IMPORT: { label: '导入', color: 'orange' },
+  };
+
+  const logColumns = [
+    { title: '操作人', dataIndex: 'adminName', width: 120, render: (v: string) => v || '-' },
+    {
+      title: '操作类型', dataIndex: 'operationType', width: 100,
+      render: (type: string) => {
+        const cfg = ACTION_TYPE_MAP[type] || { label: type, color: 'default' };
+        return <Tag color={cfg.color}>{cfg.label}</Tag>;
+      },
+    },
+    { title: '操作对象', dataIndex: 'operationObject', width: 140, ellipsis: true },
+    { title: 'IP地址', dataIndex: 'ipAddress', width: 140 },
+    { title: '操作时间', dataIndex: 'createdAt', width: 170, render: (t: string) => t ? dayjs(t).format('YYYY-MM-DD HH:mm:ss') : '-' },
+    {
+      title: '操作', width: 80,
+      render: (_: unknown, record: OperationLog) => (
+        <Button type="link" size="small" icon={<EyeOutlined />} onClick={() => { setSelectedLog(record); setLogDetailOpen(true); }}>
+          详情
+        </Button>
+      ),
+    },
+  ];
+
+  const logRecords = logsData?.data?.records || logsData?.data || [];
+  const logTotal = logsData?.data?.total || logRecords.length;
 
   // ---- Admin mutations ----
   const createAdminMutation = useMutation({
@@ -286,8 +344,71 @@ const SystemManagement: React.FC = () => {
               </div>
             ),
           },
+          {
+            key: 'logs',
+            label: '操作日志',
+            children: (
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+                  <Space>
+                    <Input
+                      placeholder="操作人ID"
+                      value={logSearchOperator}
+                      onChange={(e) => setLogSearchOperator(e.target.value)}
+                      style={{ width: 150 }}
+                      onPressEnter={() => { setLogPage(1); refetchLogs(); }}
+                    />
+                    <Button type="primary" icon={<SearchOutlined />} onClick={() => { setLogPage(1); refetchLogs(); }}>
+                      查询
+                    </Button>
+                    <Button icon={<ReloadOutlined />} onClick={() => refetchLogs()}>
+                      刷新
+                    </Button>
+                  </Space>
+                </div>
+
+                <Table
+                  columns={logColumns}
+                  dataSource={logRecords}
+                  rowKey="id"
+                  loading={logsLoading}
+                  pagination={{
+                    current: logPage,
+                    pageSize: logPageSize,
+                    total: logTotal,
+                    showSizeChanger: true,
+                    showQuickJumper: true,
+                    showTotal: (total) => `共 ${total} 条`,
+                    onChange: (p, ps) => {
+                      setLogPage(p);
+                      setLogPageSize(ps || 10);
+                    },
+                  }}
+                />
+              </div>
+            ),
+          },
         ]}
       />
+
+      {/* Log Detail Modal */}
+      <Modal
+        title="操作日志详情"
+        open={logDetailOpen}
+        onCancel={() => setLogDetailOpen(false)}
+        footer={[<Button key="close" onClick={() => setLogDetailOpen(false)}>关闭</Button>]}
+        width={600}
+      >
+        {selectedLog && (
+          <div style={{ lineHeight: 2.2 }}>
+            <p><strong>操作人：</strong>{selectedLog.adminName || '-'}</p>
+            <p><strong>操作类型：</strong>{ACTION_TYPE_MAP[selectedLog.operationType]?.label || selectedLog.operationType || '-'}</p>
+            <p><strong>操作对象：</strong>{selectedLog.operationObject || '-'}</p>
+            <p><strong>IP地址：</strong>{selectedLog.ipAddress || '-'}</p>
+            <p><strong>操作时间：</strong>{selectedLog.createdAt ? dayjs(selectedLog.createdAt).format('YYYY-MM-DD HH:mm:ss') : '-'}</p>
+          </div>
+        )}
+      </Modal>
 
       {/* Admin Create / Edit Modal */}
       <Modal
@@ -336,8 +457,8 @@ const SystemManagement: React.FC = () => {
               <Input.Password placeholder="请输入初始密码" />
             </Form.Item>
           )}
-          <Form.Item name="email" label="邮箱">
-            <Input type="email" placeholder="请输入邮箱（选填）" />
+          <Form.Item name="email" label="邮箱" rules={[{ type: 'email', message: '请输入正确的邮箱地址' }]}>
+            <Input placeholder="请输入邮箱（选填）" />
           </Form.Item>
           <Form.Item
             name="roles"

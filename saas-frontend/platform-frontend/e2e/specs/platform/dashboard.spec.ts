@@ -15,7 +15,6 @@ test.describe('平台后台 - 平台看板 (20 tests)', () => {
 
   test('PD-001: 平台看板页面可访问', async ({ page }) => {
     await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
     // Check sidebar and content area are visible (heading may vary)
     await expect(page.locator('.ant-layout-sider')).toBeVisible();
     await expect(page.locator('.ant-layout-content')).toBeVisible();
@@ -101,7 +100,6 @@ test.describe('平台后台 - 平台看板 (20 tests)', () => {
 
   test('PD-014: 切换维度后图表数据更新', async ({ page }) => {
     await dashboardPage.switchDimension('week');
-    await page.waitForTimeout(1500);
     const chartCard = page.locator('.ant-card').filter({ hasText: '积分发放与消耗趋势' });
     await expect(chartCard.locator('.recharts-wrapper')).toBeVisible();
   });

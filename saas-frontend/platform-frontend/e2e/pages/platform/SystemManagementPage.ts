@@ -151,14 +151,22 @@ export class SystemManagementPage {
 
   async goto() {
     await this.page.waitForSelector('.ant-layout-sider', { timeout: 15000 });
-    await this.page.click('text=系统管理', { force: true });
+    // Try clicking menu item first, fallback to direct URL navigation
+    try {
+      await this.page.click('text=系统管理');
+      await this.page.waitForURL('**/system', { timeout: 5000 });
+    } catch {
+      // Fallback: navigate directly using full URL
+      await this.page.goto(`${BASE_URL}/system`);
+    }
     await this.page.waitForLoadState('networkidle');
     await this.page.waitForSelector('.ant-tabs', { timeout: 15000 });
   }
 
   async switchToTab(tabName: string) {
     await this.tabs.filter({ hasText: tabName }).click();
-    await this.page.waitForTimeout(1000);
+    // Wait for tab content to be visible - the table should be visible after tab switch
+    await this.page.locator('.ant-tabs-tab-active').filter({ hasText: tabName }).waitFor({ state: 'visible', timeout: 5000 });
   }
 
   // ==================== Admin Tab ====================
@@ -194,15 +202,13 @@ export class SystemManagementPage {
 
   async selectRoles(roles: string[]) {
     await this.modalRoleSelect.click();
-    await this.page.waitForTimeout(500);
+    await this.page.locator('.ant-select-dropdown').waitFor({ state: 'visible', timeout: 5000 });
     for (const role of roles) {
       const label = this.roleCodeToLabel[role] ?? role;
       await this.modalRoleOption(label).click({ timeout: 3000 });
-      await this.page.waitForTimeout(300);
     }
     // Close dropdown by clicking elsewhere
     await this.modalUsernameInput.click();
-    await this.page.waitForTimeout(300);
   }
 
   /**
@@ -211,18 +217,17 @@ export class SystemManagementPage {
    */
   async selectRole(role: string) {
     await this.modalRoleSelect.click();
-    await this.page.waitForTimeout(500);
+    await this.page.locator('.ant-select-dropdown').waitFor({ state: 'visible', timeout: 5000 });
     const label = this.roleCodeToLabel[role] ?? role;
     await this.modalRoleOption(label).click({ timeout: 3000 });
-    await this.page.waitForTimeout(300);
     // Close dropdown by clicking elsewhere
     await this.modalUsernameInput.click();
-    await this.page.waitForTimeout(300);
   }
 
   async submitAdminForm() {
     await this.modalSubmitButton.click();
-    await this.page.waitForTimeout(2000);
+    // Wait for success message or error to appear
+    await this.page.locator('.ant-message').waitFor({ state: 'visible', timeout: 5000 });
   }
 
   async createAdmin(data: {
@@ -287,12 +292,14 @@ export class SystemManagementPage {
 
   async confirmDelete() {
     await this.page.locator('.ant-popover button').filter({ hasText: '确认删除' }).click();
-    await this.page.waitForTimeout(2000);
+    // Wait for success message
+    await this.page.locator('.ant-message').waitFor({ state: 'visible', timeout: 5000 });
   }
 
   async cancelDelete() {
     await this.page.locator('.ant-popover button').filter({ hasText: '取消' }).click();
-    await this.page.waitForTimeout(500);
+    // Verify popover is gone
+    await this.page.locator('.ant-popover').waitFor({ state: 'hidden', timeout: 5000 });
   }
 
   // ==================== Status Helpers ====================
@@ -332,24 +339,28 @@ export class SystemManagementPage {
     const jumper = this.page.locator('.ant-pagination-options- jumper input');
     await jumper.fill(String(page));
     await this.page.keyboard.press('Enter');
-    await this.page.waitForTimeout(1000);
+    // Wait for table to update
+    await this.page.locator('.ant-table-tbody tr').first().waitFor({ state: 'visible', timeout: 5000 });
   }
 
   async changeAdminPageSize(size: number) {
     await this.adminPageSizeChanger.click();
-    await this.page.waitForTimeout(500);
+    await this.page.locator('.ant-select-dropdown').waitFor({ state: 'visible', timeout: 5000 });
     await this.page.locator(`.ant-select-item-option`).filter({ hasText: String(size) }).click();
-    await this.page.waitForTimeout(1000);
+    // Wait for table to update
+    await this.page.locator('.ant-table-tbody tr').first().waitFor({ state: 'visible', timeout: 5000 });
   }
 
   async nextAdminPage() {
     await this.adminPageNextButton.click();
-    await this.page.waitForTimeout(1000);
+    // Wait for table to update
+    await this.page.locator('.ant-table-tbody tr').first().waitFor({ state: 'visible', timeout: 5000 });
   }
 
   async prevAdminPage() {
     await this.adminPagePrevButton.click();
-    await this.page.waitForTimeout(1000);
+    // Wait for table to update
+    await this.page.locator('.ant-table-tbody tr').first().waitFor({ state: 'visible', timeout: 5000 });
   }
 
   async getAdminTotalCount(): Promise<number> {
@@ -370,28 +381,30 @@ export class SystemManagementPage {
     }
     if (actionType) {
       await this.logActionTypeSelect.click();
+      await this.page.locator('.ant-select-dropdown').waitFor({ state: 'visible', timeout: 5000 });
       await this.logActionTypeOption(actionType).click();
-      await this.page.waitForTimeout(300);
     }
     if (dateRange) {
       await this.logDateRangePicker.click();
       await this.page.locator('.ant-picker-input input').first().fill(dateRange[0]);
       await this.page.locator('.ant-picker-input input').last().fill(dateRange[1]);
       await this.page.keyboard.press('Enter');
-      await this.page.waitForTimeout(300);
     }
     await this.logSearchButton.click();
-    await this.page.waitForTimeout(1500);
+    // Wait for search results - the log table should update
+    await this.logTable.waitFor({ state: 'visible', timeout: 5000 });
   }
 
   async resetLogFilters() {
     await this.logResetButton.click();
-    await this.page.waitForTimeout(1500);
+    // Wait for table to refresh
+    await this.logTable.waitFor({ state: 'visible', timeout: 5000 });
   }
 
   async refreshLogs() {
     await this.logRefreshButton.click();
-    await this.page.waitForTimeout(1500);
+    // Wait for table to refresh
+    await this.logTable.waitFor({ state: 'visible', timeout: 5000 });
   }
 
   async getLogOperatorNames(): Promise<string[]> {
@@ -422,12 +435,14 @@ export class SystemManagementPage {
 
   async nextLogPage() {
     await this.logPageNextButton.click();
-    await this.page.waitForTimeout(1000);
+    // Wait for table to update
+    await this.logTableRows.first().waitFor({ state: 'visible', timeout: 5000 });
   }
 
   async prevLogPage() {
     await this.logPagePrevButton.click();
-    await this.page.waitForTimeout(1000);
+    // Wait for table to update
+    await this.logTableRows.first().waitFor({ state: 'visible', timeout: 5000 });
   }
 
   async getLogTotalCount(): Promise<number> {
@@ -441,13 +456,15 @@ export class SystemManagementPage {
   async closeModal() {
     // Click the modal's close (X) button — Escape doesn't work on controlled Ant Design modals
     await this.page.locator('.ant-modal-close').click();
-    await this.page.waitForTimeout(1000);
+    // Verify modal is hidden
+    await this.page.locator('.ant-modal').waitFor({ state: 'hidden', timeout: 5000 });
   }
 
   async closeModalViaCancel() {
     // Click the modal's close (X) button — more reliable than keyboard Escape for antd modals
     await this.page.locator('.ant-modal-close').click();
-    await this.page.waitForTimeout(1000);
+    // Verify modal is hidden
+    await this.page.locator('.ant-modal').waitFor({ state: 'hidden', timeout: 5000 });
   }
 
   // ==================== Legacy / Backward-Compat Methods (for SM tests) ====================
@@ -494,18 +511,21 @@ export class SystemManagementPage {
     // Admin search uses the form's inline filter - find input and button
     await this.page.locator('input[placeholder="搜索用户名"]').fill(username);
     await this.page.locator('button').filter({ hasText: '查询' }).click();
-    await this.page.waitForTimeout(1000);
+    // Wait for table to update
+    await this.adminTableRows.first().waitFor({ state: 'visible', timeout: 5000 });
   }
 
   async resetAdminSearch() {
     await this.page.locator('button').filter({ hasText: '重置' }).click();
-    await this.page.waitForTimeout(1000);
+    // Wait for table to update
+    await this.adminTableRows.first().waitFor({ state: 'visible', timeout: 5000 });
   }
 
   async searchOperator(operator: string) {
     await this.logOperatorInput.fill(operator);
     await this.logSearchButton.click();
-    await this.page.waitForTimeout(1000);
+    // Wait for table to update
+    await this.logTableRows.first().waitFor({ state: 'visible', timeout: 5000 });
   }
 
   async clickReset() {

@@ -29,7 +29,6 @@ test.describe('平台后台 - 套餐配置', () => {
   });
 
   test('PC-003: 配置套餐产品', async ({ page }) => {
-    await page.waitForTimeout(1000);
     const configBtn = page.locator('.ant-table button').filter({ hasText: '配置产品' }).first();
     if (await configBtn.isVisible()) {
       await configBtn.click();
@@ -48,7 +47,6 @@ test.describe('平台后台 - 套餐配置', () => {
   });
 
   test('PC-004: 配置产品功能点', async ({ page }) => {
-    await page.waitForTimeout(1000);
     const configBtn = page.locator('.ant-table button').filter({ hasText: '配置产品' }).first();
     if (await configBtn.isVisible()) {
       await configBtn.click();
@@ -58,14 +56,14 @@ test.describe('平台后台 - 套餐配置', () => {
       const productCheckbox = page.locator('.ant-modal .ant-checkbox').first();
       if (await productCheckbox.isVisible()) {
         await productCheckbox.click();
-        await page.waitForTimeout(500);
+        // Wait for UI to update
       }
 
       // Expand feature configuration panel
       const panelHeader = page.locator('.ant-collapse-item-header').filter({ hasText: '功能点配置' }).first();
       if (await panelHeader.isVisible()) {
         await panelHeader.click();
-        await page.waitForTimeout(500);
+        // Wait for UI to update
 
         // Check if feature list is rendered
         const featureItem = page.locator('.ant-modal .ant-checkbox').nth(1);
@@ -84,7 +82,6 @@ test.describe('平台后台 - 套餐配置', () => {
   });
 
   test('PC-005: 编辑套餐', async ({ page }) => {
-    await page.waitForTimeout(1000);
     const editBtn = page.locator('.ant-table button').filter({ hasText: '编辑' }).first();
     if (await editBtn.isVisible()) {
       await editBtn.click();

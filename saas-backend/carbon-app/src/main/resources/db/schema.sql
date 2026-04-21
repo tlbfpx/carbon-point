@@ -39,6 +39,7 @@ CREATE TABLE platform_admins (
     last_login_ip   VARCHAR(45) COMMENT '最后登录IP',
     created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    email           VARCHAR(100) COMMENT '邮箱',
     deleted         TINYINT(1) NOT NULL DEFAULT 0 COMMENT '软删除标记',
 
     INDEX idx_status (status)
@@ -243,7 +244,7 @@ CREATE TABLE point_transactions (
     INDEX idx_tenant_type_created (tenant_id, type, created_at),
     INDEX idx_tenant_created (tenant_id, created_at),
     INDEX idx_reference (type, reference_id),
-    INDEX idx_expire_time (expire_time),
+    INDEX idx_expire_time (expire_time)
 
     -- 按季度RANGE分区，每季度一个分区
     -- 需在数据量达到阈值后启用分区

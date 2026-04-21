@@ -183,6 +183,78 @@ Available as Claude skills: `openspec-explore`, `openspec-new`, `openspec-contin
 - Task lists are flat checkbox lists grouped by functional module
 - Spec documents are authoritative over implementation plans when they conflict
 
+## Playwright E2E Testing Guidelines
+
+### Locator Priority (high → low)
+
+`getByRole` → `getByLabel` → `getByPlaceholder` → `getByText` → `getByTestId` → avoid CSS/XPath
+
+- **禁止**使用动态 ID、深层级 CSS、索引选择器（如 `:nth-child`）
+
+### Waiting
+
+- **禁止** `page.waitForTimeout()` / `sleep()`
+- 依赖自动等待 + `waitForResponse` / `waitForURL` / `expect().toPass()`
+
+### Test Isolation
+
+- 每个测试独立，不共享状态；使用 `beforeEach` 重置环境
+- 测试数据必须唯一（时间戳/UUID），测试后清理（`afterEach`）
+
+### Assertions
+
+- 始终使用 `expect(locator).toBeVisible()` 等自动重试断言
+- **禁止**手动 `waitForSelector` + 普通断言
+
+### Page Object Design
+
+- 方法只做动作（click/fill），不写断言
+- 返回 `Locator` 或 `Promise<void>`，不返回内部数据
+- 方法名用动词开头（`addUser`, `clickSubmit`）
+
+### Config Requirements
+
+- 设置 `baseURL`，测试中只用相对路径
+- 开启 `trace: 'on-first-retry'`, `screenshot: 'only-on-failure'`
+- 合理配置 `timeout`（通常 60s）和 `retries`
+
+### File Uploads
+
+- 使用 `page.setInputFiles()` 模拟真实文件
+- 测试图片放在 `test-resources` 或临时生成
+
+### Navigation & Network
+
+- 点击触发跳转：`await Promise.all([page.waitForNavigation(), page.click('...')])`
+- 等待 API 响应：`await page.waitForResponse(resp => resp.url().includes('/api/...'))`
+
+### Form Validation Testing
+
+- 先填正确数据，再改单个字段触发错误提示
+- 验证错误信息可见 + 提交按钮状态变化
+
+### Login State Reuse
+
+- 使用 `storageState` 保存已登录状态
+- 避免每个测试重复登录
+
+### Debugging
+
+- 本地调试用 `await page.pause()` 或 `--debug`
+- 失败时自动截图 + 录屏 + trace
+
+### Code Maintainability
+
+- 常量（URL、角色名、错误文案）提取到配置文件
+- 复杂测试数据生成封装到 `utils/test-data.ts`
+- 测试用例命名清晰（如 "应该能添加新用户并在列表中显示"）
+
+### Anti-Patterns (禁止)
+
+- 在测试中直接修改 `localStorage` / `sessionStorage`（除非绝对必要）
+- 依赖测试用例的执行顺序
+- 使用 `page.evaluate()` 代替 Playwright 原生方法
+
 ## Key Domain Rules
 
 - Point calculation chain order is fixed and must not be reordered

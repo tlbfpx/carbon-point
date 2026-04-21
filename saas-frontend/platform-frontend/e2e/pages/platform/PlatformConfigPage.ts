@@ -24,6 +24,7 @@ export class PlatformConfigPage {
 
   async save() {
     await this.saveButton.click();
-    await this.page.waitForTimeout(1000);
+    // Wait for save operation to complete - either success message or error
+    await this.page.locator('.ant-message').waitFor({ state: 'visible', timeout: 5000 });
   }
 }

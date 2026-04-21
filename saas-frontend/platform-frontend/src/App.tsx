@@ -97,6 +97,7 @@ const PlatformMenuItems: MenuProps['items'] = [
     ],
   },
   { key: '/packages', icon: <ShopOutlined />, label: '套餐管理' },
+  { key: '/config', icon: <SettingOutlined />, label: '平台配置' },
 ];
 
 const PlatformContent: React.FC = () => {

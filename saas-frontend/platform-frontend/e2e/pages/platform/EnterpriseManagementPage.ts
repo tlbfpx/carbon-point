@@ -65,14 +65,16 @@ export class EnterpriseManagementPage {
   async searchEnterprise(keyword: string) {
     await this.searchInput.fill(keyword);
     await this.page.keyboard.press('Enter');
-    await this.page.waitForTimeout(1500);
+    // Wait for table to update
+    await this.table.locator('.ant-table-tbody tr').first().waitFor({ state: 'visible', timeout: 5000 });
   }
 
   async clearSearch() {
     const clearBtn = this.page.locator('.ant-input-search .ant-input-clear-icon');
     if (await clearBtn.isVisible()) {
       await clearBtn.click();
-      await this.page.waitForTimeout(500);
+      // Wait for table to update
+      await this.table.locator('.ant-table-tbody tr').first().waitFor({ state: 'visible', timeout: 5000 });
     }
   }
 
@@ -145,10 +147,11 @@ export class EnterpriseManagementPage {
     try {
       await this.page.waitForSelector('.ant-popover', { timeout: 3000 });
       await this.page.locator('.ant-popover .ant-btn').filter({ hasText: '确定' }).click();
+      // Wait for popover to close
+      await this.page.locator('.ant-popover').waitFor({ state: 'hidden', timeout: 5000 });
     } catch {
       // Popover confirm not found - button click may have been sufficient
     }
-    await this.page.waitForTimeout(500);
   }
 
   async clickNextPage() {
@@ -156,7 +159,8 @@ export class EnterpriseManagementPage {
     const isDisabled = await nextBtn.getAttribute('aria-disabled');
     if (isDisabled !== 'true') {
       await nextBtn.click();
-      await this.page.waitForTimeout(1000);
+      // Wait for table to update
+      await this.table.locator('.ant-table-tbody tr').first().waitFor({ state: 'visible', timeout: 5000 });
     }
   }
 
@@ -165,7 +169,8 @@ export class EnterpriseManagementPage {
     const isDisabled = await prevBtn.getAttribute('aria-disabled');
     if (isDisabled !== 'true') {
       await prevBtn.click();
-      await this.page.waitForTimeout(1000);
+      // Wait for table to update
+      await this.table.locator('.ant-table-tbody tr').first().waitFor({ state: 'visible', timeout: 5000 });
     }
   }
 
@@ -173,7 +178,8 @@ export class EnterpriseManagementPage {
     const closeBtn = this.detailModal.locator('.ant-modal-close');
     if (await closeBtn.isVisible()) {
       await closeBtn.click();
-      await this.page.waitForTimeout(300);
+      // Wait for modal to close
+      await this.page.locator('.ant-modal').waitFor({ state: 'hidden', timeout: 5000 });
     }
   }
 
@@ -197,7 +203,8 @@ export class EnterpriseManagementPage {
 
   async clickExport() {
     await this.exportButton.click();
-    await this.page.waitForTimeout(1000);
+    // Wait for export operation to complete - message should appear
+    await this.page.locator('.ant-message').waitFor({ state: 'visible', timeout: 5000 });
   }
 
   async getEmptyState(): Promise<Locator> {
@@ -226,7 +233,8 @@ export class EnterpriseManagementPage {
 
   async cancelModal() {
     await this.page.locator('.ant-modal .ant-modal-close').click();
-    await this.page.waitForTimeout(300);
+    // Wait for modal to close
+    await this.page.locator('.ant-modal').waitFor({ state: 'hidden', timeout: 5000 });
   }
 
   async waitForModalVisible(timeout = 5000) {

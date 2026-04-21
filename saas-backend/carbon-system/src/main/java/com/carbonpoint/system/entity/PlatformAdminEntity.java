@@ -3,6 +3,7 @@ package com.carbonpoint.system.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
@@ -40,6 +41,9 @@ public class PlatformAdminEntity {
     /** super_admin / admin / viewer */
     private String role;
 
+    /** Email address */
+    private String email;
+
     /** active / disabled */
     private String status;
 
@@ -54,6 +58,9 @@ public class PlatformAdminEntity {
 
     @com.baomidou.mybatisplus.annotation.TableField(fill = com.baomidou.mybatisplus.annotation.FieldFill.INSERT_UPDATE)
     private LocalDateTime updatedAt;
+
+    @TableLogic
+    private Integer deleted;
 
     /** Role constants */
     public static final String ROLE_SUPER_ADMIN = "super_admin";
