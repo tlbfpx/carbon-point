@@ -62,10 +62,10 @@ const BlockLibrary: React.FC = () => {
     refetchOnWindowFocus: false,
   });
 
-  const triggers: TriggerInfo[] = triggersData?.data || [];
-  const ruleNodes: RuleNodeInfo[] = ruleNodesData?.data || [];
-  const features: FeatureInfo[] = featuresData?.data || [];
-  const modules: RegistryModule[] = modulesData?.data || [];
+  const triggers: TriggerInfo[] = Array.isArray(triggersData) ? triggersData : (triggersData?.data || []);
+  const ruleNodes: RuleNodeInfo[] = Array.isArray(ruleNodesData) ? ruleNodesData : (ruleNodesData?.data || []);
+  const features: FeatureInfo[] = Array.isArray(featuresData) ? featuresData : (featuresData?.data || []);
+  const modules: RegistryModule[] = Array.isArray(modulesData) ? modulesData : (modulesData?.data || []);
 
   const triggerColumns = [
     {

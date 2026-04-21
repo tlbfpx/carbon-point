@@ -13,4 +13,7 @@ public class ProductCreateReq {
     private String description;
     private Integer status;
     private Integer sortOrder;
+    private String triggerType;
+    private String ruleChainConfig;
+    private String defaultConfig;
 }

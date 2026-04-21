@@ -3,6 +3,7 @@ package com.carbonpoint.platform.rule;
 import com.carbonpoint.platform.RuleNode;
 import com.carbonpoint.platform.model.RuleContext;
 import com.carbonpoint.platform.model.RuleResult;
+import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,6 +12,7 @@ import java.util.Map;
  * Rule node that applies level-based coefficient to points.
  * Levels: 1=1.0x, 2=1.2x, 3=1.5x, 4=2.0x, 5=2.5x.
  */
+@Component
 public class LevelCoefficientRule implements RuleNode {
 
     @Override

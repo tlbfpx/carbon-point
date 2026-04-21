@@ -7,14 +7,12 @@ import com.carbonpoint.stair.dto.CheckInRequestDTO;
 import com.carbonpoint.stair.dto.CheckInResponseDTO;
 import com.carbonpoint.stair.dto.TimeSlotDTO;
 import com.carbonpoint.stair.entity.CheckInRecordEntity;
-import com.carbonpoint.stair.entity.OutboxEvent;
-import com.carbonpoint.stair.mapper.CheckInRecordMapper;
-import com.carbonpoint.stair.mapper.CheckinUserMapper;
-import com.carbonpoint.stair.mapper.OutboxEventMapper;
 import com.carbonpoint.stair.util.DistributedLock;
 import com.carbonpoint.common.exception.BusinessException;
 import com.carbonpoint.common.result.ErrorCode;
 import com.carbonpoint.common.tenant.TenantContext;
+import com.carbonpoint.stair.mapper.CheckInRecordMapper;
+import com.carbonpoint.stair.mapper.CheckinUserMapper;
 import org.springframework.dao.DuplicateKeyException;
 import com.carbonpoint.points.dto.PointCalcResult;
 import com.carbonpoint.points.entity.PointRule;
@@ -22,9 +20,10 @@ import com.carbonpoint.points.mapper.PointRuleMapper;
 import com.carbonpoint.points.service.PointAccountService;
 import com.carbonpoint.points.service.PointEngineService;
 import com.carbonpoint.points.service.PointRuleService;
+import com.carbonpoint.points.service.PointsEventBus;
+import com.carbonpoint.points.dto.PointsEvent;
 import com.carbonpoint.system.entity.User;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +37,8 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -51,7 +52,7 @@ public class CheckInService {
     private final PointAccountService pointAccountService;
     private final PointRuleService pointRuleService;
     private final DistributedLock distributedLock;
-    private final OutboxEventMapper outboxEventMapper;
+    private final PointsEventBus pointsEventBus;
     private final ObjectMapper objectMapper;
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -145,46 +146,26 @@ public class CheckInService {
         int consecutiveDays = calculateConsecutiveDays(user, today);
         record.setConsecutiveDays(consecutiveDays);
 
-         // Insert the check-in record AND save an outbox event within the same transaction
-         // This guarantees atomicity: either both succeed or both fail
-         try {
-             checkInRecordMapper.insert(record);
+         // Insert the check-in record
+          try {
+              checkInRecordMapper.insert(record);
+          } catch (DuplicateKeyException e) {
+              throw new BusinessException(ErrorCode.CHECKIN_ALREADY_DONE);
+          }
 
-             // Create outbox event for points awarding
-             if (calcResult.getTotalPoints() > 0) {
-                 OutboxEvent outbox = new OutboxEvent();
-                 outbox.setAggregateType("check_in");
-                 outbox.setAggregateId(record.getId());
-                 outbox.setEventType("points_awarded");
-
-                  // Create payload JSON
-                  try {
-                      PointsAwardedPayload payload = new PointsAwardedPayload(
-                              userId, calcResult.getTotalPoints(), record.getId());
-                      String payloadJson = objectMapper.writeValueAsString(payload);
-                      outbox.setPayload(payloadJson);
-                  } catch (JsonProcessingException e) {
-                     log.error("Failed to serialize outbox payload", e);
-                     throw new BusinessException(ErrorCode.SYSTEM_ERROR, "系统内部错误");
-                 }
-
-                 outbox.setProcessed(0);
-                 outboxEventMapper.insert(outbox);
-             }
-         } catch (DuplicateKeyException e) {
-             // Unique index conflict — concurrent duplicate attempt (idempotent, return "already checked in")
-             throw new BusinessException(ErrorCode.CHECKIN_ALREADY_DONE);
-         }
-
-         // Points awarding will be processed after commit by the outbox processor
-         // For now, we process it immediately after commit to keep things simple
-         // (Outbox guarantees atomicity, immediate processing keeps latency low)
-         int totalAward = calcResult.getTotalPoints();
-         if (totalAward > 0) {
-             pointAccountService.awardPoints(userId, totalAward, "check_in",
-                     String.valueOf(record.getId()),
-                     String.format("打卡获得 %d 积分", totalAward));
-         }
+          // Points awarding via async event bus
+          int totalAward = calcResult.getTotalPoints();
+          if (totalAward > 0) {
+              pointsEventBus.publish(new PointsEvent(
+                      tenantId,
+                      userId,
+                      "stair_climbing",
+                      "check_in",
+                      totalAward,
+                      String.valueOf(record.getId()),
+                      String.format("打卡获得 %d 积分", totalAward)
+              ));
+          }
 
          // 8. Update consecutive check-in info
          checkinUserMapper.updateConsecutiveInfo(userId, consecutiveDays, today);
@@ -219,22 +200,30 @@ public class CheckInService {
     }
 
     private int calculateConsecutiveDays(User user, LocalDate today) {
-        LocalDate lastCheckin = user.getLastCheckinDate();
-        int currentStreak = user.getConsecutiveDays();
+        LambdaQueryWrapper<CheckInRecordEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(CheckInRecordEntity::getUserId, user.getId())
+               .select(CheckInRecordEntity::getCheckinDate)
+               .ge(CheckInRecordEntity::getCheckinDate, today.minusDays(60))
+               .orderByDesc(CheckInRecordEntity::getCheckinDate)
+               .groupBy(CheckInRecordEntity::getCheckinDate);
 
-        if (lastCheckin == null) {
+        List<CheckInRecordEntity> records = checkInRecordMapper.selectList(wrapper);
+        if (records == null || records.isEmpty()) {
             return 1;
         }
-        if (lastCheckin.equals(today)) {
-            // Already checked in today - this shouldn't happen due to the DB check
-            return currentStreak;
+
+        Set<LocalDate> checkinDates = records.stream()
+                .map(CheckInRecordEntity::getCheckinDate)
+                .collect(Collectors.toSet());
+
+        int consecutiveDays = 0;
+        LocalDate checkDate = today;
+        while (checkinDates.contains(checkDate)) {
+            consecutiveDays++;
+            checkDate = checkDate.minusDays(1);
         }
-        if (lastCheckin.equals(today.minusDays(1))) {
-            // Consecutive day
-            return currentStreak + 1;
-        }
-        // Streak broken, reset
-        return 1;
+
+        return consecutiveDays > 0 ? consecutiveDays : 1;
     }
 
     /**
@@ -396,14 +385,5 @@ public class CheckInService {
              return checkinTime.toLocalDate().plusDays(1);
          }
          return checkinTime.toLocalDate();
-     }
-
-     /**
-      * Payload for the outbox event when points are awarded after check-in.
-      */
-     private record PointsAwardedPayload(
-             Long userId,
-             int points,
-             Long checkInRecordId
-     ) {}
+      }
 }

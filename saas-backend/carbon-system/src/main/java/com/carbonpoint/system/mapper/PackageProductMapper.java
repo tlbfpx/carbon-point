@@ -5,6 +5,7 @@ import com.carbonpoint.common.tenant.InterceptorIgnore;
 import com.carbonpoint.system.entity.PackageProductEntity;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
@@ -25,6 +26,6 @@ public interface PackageProductMapper extends BaseMapper<PackageProductEntity> {
     @Select("SELECT * FROM package_products WHERE package_id = #{packageId} AND product_id = #{productId}")
     PackageProductEntity selectByPackageIdAndProductId(@Param("packageId") Long packageId, @Param("productId") String productId);
 
-    @Select("DELETE FROM package_products WHERE package_id = #{packageId}")
+    @Delete("DELETE FROM package_products WHERE package_id = #{packageId}")
     int deleteByPackageId(@Param("packageId") Long packageId);
 }

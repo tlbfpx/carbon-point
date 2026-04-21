@@ -3,6 +3,7 @@ package com.carbonpoint.platform.rule;
 import com.carbonpoint.platform.RuleNode;
 import com.carbonpoint.platform.model.RuleContext;
 import com.carbonpoint.platform.model.RuleResult;
+import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -12,6 +13,7 @@ import java.util.concurrent.ThreadLocalRandom;
  * Rule node that generates random base points within [minPoints, maxPoints] range
  * from the tenant configuration.
  */
+@Component
 public class RandomBaseRule implements RuleNode {
 
     @Override

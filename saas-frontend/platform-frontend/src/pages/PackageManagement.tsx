@@ -76,15 +76,11 @@ const PackageManagement: React.FC = () => {
 
   const createMutation = useMutation({
     mutationFn: createPackage,
-    onSuccess: (res: { code: number; message?: string }) => {
-      if (res.code === 200 || res.code === 0) {
-        message.success('套餐创建成功');
-        setPackageModalOpen(false);
-        form.resetFields();
-        queryClient.invalidateQueries({ queryKey: ['packages'] });
-      } else {
-        message.error(res.message || '创建失败');
-      }
+    onSuccess: () => {
+      message.success('套餐创建成功');
+      setPackageModalOpen(false);
+      form.resetFields();
+      queryClient.invalidateQueries({ queryKey: ['packages'] });
     },
     onError: (err: unknown) => {
       const error = err as { response?: { data?: { message?: string } } };
@@ -95,16 +91,12 @@ const PackageManagement: React.FC = () => {
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: { name: string; description?: string; status?: number } }) =>
       updatePackage(id, data),
-    onSuccess: (res: { code: number; message?: string }) => {
-      if (res.code === 200 || res.code === 0) {
-        message.success('套餐更新成功');
-        setPackageModalOpen(false);
-        setEditingPackage(null);
-        form.resetFields();
-        queryClient.invalidateQueries({ queryKey: ['packages'] });
-      } else {
-        message.error(res.message || '更新失败');
-      }
+    onSuccess: () => {
+      message.success('套餐更新成功');
+      setPackageModalOpen(false);
+      setEditingPackage(null);
+      form.resetFields();
+      queryClient.invalidateQueries({ queryKey: ['packages'] });
     },
     onError: (err: unknown) => {
       const error = err as { response?: { data?: { message?: string } } };
@@ -114,13 +106,9 @@ const PackageManagement: React.FC = () => {
 
   const deleteMutation = useMutation({
     mutationFn: deletePackage,
-    onSuccess: (res: { code: number; message?: string }) => {
-      if (res.code === 200 || res.code === 0) {
-        message.success('套餐已删除');
-        queryClient.invalidateQueries({ queryKey: ['packages'] });
-      } else {
-        message.error(res.message || '删除失败');
-      }
+    onSuccess: () => {
+      message.success('套餐已删除');
+      queryClient.invalidateQueries({ queryKey: ['packages'] });
     },
     onError: (err: unknown) => {
       const error = err as { response?: { data?: { message?: string } } };
@@ -131,14 +119,10 @@ const PackageManagement: React.FC = () => {
   const updateProductsMutation = useMutation({
     mutationFn: ({ packageId, products }: { packageId: string; products: { productId: string; sortOrder?: number }[] }) =>
       updatePackageProducts(packageId, products),
-    onSuccess: (res: { code: number; message?: string }) => {
-      if (res.code === 200 || res.code === 0) {
-        message.success('套餐产品更新成功');
-        setProductModalOpen(false);
-        queryClient.invalidateQueries({ queryKey: ['packages'] });
-      } else {
-        message.error(res.message || '更新失败');
-      }
+    onSuccess: () => {
+      message.success('套餐产品更新成功');
+      setProductModalOpen(false);
+      queryClient.invalidateQueries({ queryKey: ['packages'] });
     },
     onError: (err: unknown) => {
       const error = err as { response?: { data?: { message?: string } } };
@@ -151,13 +135,9 @@ const PackageManagement: React.FC = () => {
       packageId, productId, features,
     }: { packageId: string; productId: string; features: { featureId: string; configValue?: string; isEnabled: boolean }[] }) =>
       updatePackageProductFeatures(packageId, productId, features),
-    onSuccess: (res: { code: number; message?: string }) => {
-      if (res.code === 200 || res.code === 0) {
-        message.success('功能点配置保存成功');
-        queryClient.invalidateQueries({ queryKey: ['packages'] });
-      } else {
-        message.error(res.message || '保存失败');
-      }
+    onSuccess: () => {
+      message.success('功能点配置保存成功');
+      queryClient.invalidateQueries({ queryKey: ['packages'] });
     },
     onError: (err: unknown) => {
       const error = err as { response?: { data?: { message?: string } } };
@@ -217,7 +197,7 @@ const PackageManagement: React.FC = () => {
 
   const handleFormFinish = (values: { code?: string; name: string; description?: string }) => {
     if (packageModalMode === 'create') {
-      createMutation.mutate({ code: `PKG_${Date.now()}`, name: values.name, description: values.description, permissionCodes: [] });
+      createMutation.mutate({ code: values.code || `PKG_${Date.now()}`, name: values.name, description: values.description, permissionCodes: [] });
     } else if (editingPackage) {
       updateMutation.mutate({ id: editingPackage.id, data: values });
     }
@@ -235,13 +215,13 @@ const PackageManagement: React.FC = () => {
   const handleToggleStatus = (record: PermissionPackage) => {
     updateMutation.mutate({
       id: record.id,
-      data: { name: record.name, description: record.description, status: record.status === 1 ? 0 : 1 },
+      data: { name: record.name, description: record.description, status: (record.status === true || record.status === 1) ? 0 : 1 },
     });
   };
 
-  const records = packagesData?.data?.records || packagesData?.data || [];
-  const total = packagesData?.data?.total || records.length;
-  const allProducts = productsData?.data?.records || productsData?.data || [];
+  const records = packagesData?.records || (Array.isArray(packagesData) ? packagesData : (packagesData?.data?.records || packagesData?.data || []));
+  const total = (packagesData?.total || packagesData?.data?.total) || records.length;
+  const allProducts = productsData?.records || (Array.isArray(productsData) ? productsData : (productsData?.data?.records || productsData?.data || []));
 
   const columns = [
     { title: '套餐编码', dataIndex: 'code', width: 120, render: (v: string) => <Text code copyable>{v}</Text> },
@@ -251,7 +231,10 @@ const PackageManagement: React.FC = () => {
       title: '状态',
       dataIndex: 'status',
       width: 80,
-      render: (s: number) => <Tag color={s === 1 ? 'green' : 'default'}>{s === 1 ? '启用' : '禁用'}</Tag>,
+      render: (s: number | boolean) => {
+        const active = s === true || s === 1;
+        return <Tag color={active ? 'green' : 'default'}>{active ? '启用' : '禁用'}</Tag>;
+      },
     },
     {
       title: '权限数',
@@ -274,7 +257,9 @@ const PackageManagement: React.FC = () => {
     {
       title: '操作',
       width: 260,
-      render: (_: unknown, record: PermissionPackage) => (
+      render: (_: unknown, record: PermissionPackage) => {
+        const isActive = record.status === true || record.status === 1;
+        return (
         <Space size="small">
           <Button type="link" size="small" icon={<EditOutlined />} onClick={() => openEditModal(record)}>
             编辑
@@ -283,13 +268,13 @@ const PackageManagement: React.FC = () => {
             配置产品
           </Button>
           <Popconfirm
-            title={record.status === 1 ? '确认禁用该套餐？' : '确认启用该套餐？'}
+            title={isActive ? '确认禁用该套餐？' : '确认启用该套餐？'}
             onConfirm={() => handleToggleStatus(record)}
             okText="确认"
             cancelText="取消"
           >
             <Button type="link" size="small">
-              {record.status === 1 ? '禁用' : '启用'}
+              {isActive ? '禁用' : '启用'}
             </Button>
           </Popconfirm>
           {record.code !== 'free' && record.tenantCount === 0 && (
@@ -305,7 +290,8 @@ const PackageManagement: React.FC = () => {
             </Popconfirm>
           )}
         </Space>
-      ),
+      );
+      },
     },
   ];
 

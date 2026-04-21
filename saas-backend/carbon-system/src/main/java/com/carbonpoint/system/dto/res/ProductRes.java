@@ -23,6 +23,9 @@ public class ProductRes {
     private Integer status;
     private Integer sortOrder;
     private Integer featureCount;
+    private String triggerType;
+    private String ruleChainConfig;
+    private String defaultConfig;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

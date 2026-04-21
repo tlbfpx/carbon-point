@@ -3,6 +3,7 @@ package com.carbonpoint.platform.rule;
 import com.carbonpoint.platform.RuleNode;
 import com.carbonpoint.platform.model.RuleContext;
 import com.carbonpoint.platform.model.RuleResult;
+import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,6 +12,7 @@ import java.util.Map;
  * Rule node for walking products: filters out points if step count
  * is below the configured threshold.
  */
+@Component
 public class ThresholdFilterRule implements RuleNode {
 
     @Override

@@ -3,6 +3,7 @@ package com.carbonpoint.platform.rule;
 import com.carbonpoint.platform.RuleNode;
 import com.carbonpoint.platform.model.RuleContext;
 import com.carbonpoint.platform.model.RuleResult;
+import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -13,6 +14,7 @@ import java.util.Map;
  * Rule node that checks if today is a special date and applies a multiplier.
  * Supports specific dates and recurring monthly patterns.
  */
+@Component
 public class SpecialDateMultiplierRule implements RuleNode {
 
     @Override

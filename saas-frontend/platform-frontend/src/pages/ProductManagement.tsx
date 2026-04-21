@@ -23,7 +23,7 @@ import {
   Alert,
   Typography,
 } from 'antd';
-const { Text } = Typography;
+const { Text, Title } = Typography;
 import { GlassCard } from '@carbon-point/design-system';
 import {
   PlusOutlined,
@@ -55,9 +55,11 @@ import {
   RegistryModule,
   RuleNodeInfo,
   FeatureInfo,
+  ProductFeature,
 } from '@/api/platform';
 import { extractArray } from '@/utils';
 import { EXTENSION_GUIDANCE } from '@/constants/feature-menu-map';
+import RuleNodeConfigModal from '@/components/RuleNodeConfigModal';
 
 const CATEGORY_OPTIONS = [
   { value: 'stairs_climbing', label: '爬楼积分', color: 'blue' },
@@ -116,6 +118,7 @@ const ProductManagement: React.FC = () => {
     description: string;
     triggerType: string;
     ruleChain: string[];
+    ruleChainConfigs: Record<string, string>;
     features: string[];
   }>({
     code: '',
@@ -124,8 +127,17 @@ const ProductManagement: React.FC = () => {
     description: '',
     triggerType: '',
     ruleChain: [],
+    ruleChainConfigs: {},
     features: [],
   });
+
+  // Rule node config modal state
+  const [ruleNodeConfigModalOpen, setRuleNodeConfigModalOpen] = useState(false);
+  const [configuringRuleNode, setConfiguringRuleNode] = useState<string>('');
+  const [configuringRuleNodeIndex, setConfiguringRuleNodeIndex] = useState<number>(-1);
+
+  // Success modal state
+  const [successModalOpen, setSuccessModalOpen] = useState(false);
 
   const { data: productsData, isLoading, refetch } = useQuery({
     queryKey: ['products', page, pageSize, categoryFilter],
@@ -291,14 +303,15 @@ const ProductManagement: React.FC = () => {
       description: '',
       triggerType: '',
       ruleChain: [],
+      ruleChainConfigs: {},
       features: [],
     });
     setWizardOpen(true);
   };
 
-  const wizardModules: RegistryModule[] = registryModulesData?.data || [];
-  const wizardRuleNodes: RuleNodeInfo[] = registryRuleNodesData?.data || [];
-  const wizardFeatures: FeatureInfo[] = registryFeaturesData?.data || [];
+  const wizardModules: RegistryModule[] = Array.isArray(registryModulesData) ? registryModulesData : (registryModulesData?.data || []);
+  const wizardRuleNodes: RuleNodeInfo[] = Array.isArray(registryRuleNodesData) ? registryRuleNodesData : (registryRuleNodesData?.data || []);
+  const wizardFeatures: FeatureInfo[] = Array.isArray(registryFeaturesData) ? registryFeaturesData : (registryFeaturesData?.data || []);
 
   const handleWizardNext = () => {
     // Validate current step
@@ -320,15 +333,49 @@ const ProductManagement: React.FC = () => {
   };
 
   const handleWizardFinish = () => {
-    createMutation.mutate({
-      code: wizardData.code,
-      name: wizardData.name,
-      category: wizardData.category,
-      description: wizardData.description,
-      status: 1,
-      sortOrder: 0,
-    });
-    setWizardOpen(false);
+    createMutation.mutate(
+      {
+        code: wizardData.code,
+        name: wizardData.name,
+        category: wizardData.category,
+        description: wizardData.description,
+        status: 1,
+        sortOrder: 0,
+        triggerType: wizardData.triggerType || undefined,
+        ruleChainConfig: wizardData.ruleChain.length > 0
+          ? JSON.stringify({
+              nodes: wizardData.ruleChain,
+              configs: wizardData.ruleChainConfigs,
+            })
+          : undefined,
+        features: wizardData.features,
+      },
+      {
+        onSuccess: () => {
+          setWizardOpen(false);
+          setSuccessModalOpen(true);
+        },
+      }
+    );
+  };
+
+  const openRuleNodeConfig = (nodeName: string, index: number) => {
+    setConfiguringRuleNode(nodeName);
+    setConfiguringRuleNodeIndex(index);
+    setRuleNodeConfigModalOpen(true);
+  };
+
+  const handleRuleNodeConfigSave = (configJson: string) => {
+    setWizardData((prev) => ({
+      ...prev,
+      ruleChainConfigs: {
+        ...prev.ruleChainConfigs,
+        [`${configuringRuleNode}-${configuringRuleNodeIndex}`]: configJson,
+      },
+    }));
+    setRuleNodeConfigModalOpen(false);
+    setConfiguringRuleNode('');
+    setConfiguringRuleNodeIndex(-1);
   };
 
   // When category changes in wizard, try to auto-select trigger from matching module
@@ -391,8 +438,8 @@ const ProductManagement: React.FC = () => {
   const getCategoryConfig = (category: string) =>
     CATEGORY_OPTIONS.find((c) => c.value === category) || { label: category, color: 'default' };
 
-  const products = productsData?.data?.records || productsData?.data || [];
-  const total = productsData?.data?.total || products.length;
+  const products = productsData?.records || (Array.isArray(productsData) ? productsData : (productsData?.data?.records || productsData?.data || []));
+  const total = (productsData?.total || productsData?.data?.total) || products.length;
   const allFeatures = extractArray<Feature>(featuresData);
 
   const columns = [
@@ -657,55 +704,73 @@ const ProductManagement: React.FC = () => {
                   <Empty description="规则链为空" image={Empty.PRESENTED_IMAGE_SIMPLE} />
                 ) : (
                   <div>
-                    {wizardData.ruleChain.map((nodeName, index) => (
-                      <div
-                        key={`${nodeName}-${index}`}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          padding: '8px 12px',
-                          marginBottom: 4,
-                          background: '#fafafa',
-                          borderRadius: 6,
-                          border: '1px solid #f0f0f0',
-                        }}
-                      >
-                        <HolderOutlined style={{ color: '#999', marginRight: 8, cursor: 'grab' }} />
-                        <Badge count={index + 1} style={{ backgroundColor: '#722ed1', marginRight: 8 }} />
-                        <Tag color="purple" style={{ flex: 1 }}>
-                          {RULE_NODE_LABELS[nodeName] || nodeName}
-                        </Tag>
-                        <Space size={2}>
-                          <Button
-                            type="text"
-                            size="small"
-                            icon={<ArrowUpOutlined />}
-                            disabled={index === 0}
-                            onClick={() => moveRuleChainItem(index, 'up')}
-                          />
-                          <Button
-                            type="text"
-                            size="small"
-                            icon={<ArrowDownOutlined />}
-                            disabled={index === wizardData.ruleChain.length - 1}
-                            onClick={() => moveRuleChainItem(index, 'down')}
-                          />
-                          <Button
-                            type="text"
-                            size="small"
-                            danger
-                            onClick={() => {
-                              setWizardData((prev) => ({
-                                ...prev,
-                                ruleChain: prev.ruleChain.filter((_, i) => i !== index),
-                              }));
-                            }}
-                          >
-                            移除
-                          </Button>
-                        </Space>
-                      </div>
-                    ))}
+                    {wizardData.ruleChain.map((nodeName, index) => {
+                      const hasConfig = !!wizardData.ruleChainConfigs[`${nodeName}-${index}`];
+                      return (
+                        <div
+                          key={`${nodeName}-${index}`}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            padding: '8px 12px',
+                            marginBottom: 4,
+                            background: hasConfig ? '#f6ffed' : '#fafafa',
+                            borderRadius: 6,
+                            border: hasConfig ? '1px solid #b7eb8f' : '1px solid #f0f0f0',
+                          }}
+                        >
+                          <HolderOutlined style={{ color: '#999', marginRight: 8, cursor: 'grab' }} />
+                          <Badge count={index + 1} style={{ backgroundColor: '#722ed1', marginRight: 8 }} />
+                          <Tag color="purple" style={{ flex: 1 }}>
+                            {RULE_NODE_LABELS[nodeName] || nodeName}
+                          </Tag>
+                          {hasConfig && <Tag color="green">已配置</Tag>}
+                          <Space size={2}>
+                            <Button
+                              type="text"
+                              size="small"
+                              icon={<SettingOutlined />}
+                              onClick={() => openRuleNodeConfig(nodeName, index)}
+                            >
+                              配置
+                            </Button>
+                            <Button
+                              type="text"
+                              size="small"
+                              icon={<ArrowUpOutlined />}
+                              disabled={index === 0}
+                              onClick={() => moveRuleChainItem(index, 'up')}
+                            />
+                            <Button
+                              type="text"
+                              size="small"
+                              icon={<ArrowDownOutlined />}
+                              disabled={index === wizardData.ruleChain.length - 1}
+                              onClick={() => moveRuleChainItem(index, 'down')}
+                            />
+                            <Button
+                              type="text"
+                              size="small"
+                              danger
+                              onClick={() => {
+                                setWizardData((prev) => {
+                                  const newChain = prev.ruleChain.filter((_, i) => i !== index);
+                                  const newConfigs = { ...prev.ruleChainConfigs };
+                                  delete newConfigs[`${nodeName}-${index}`];
+                                  return {
+                                    ...prev,
+                                    ruleChain: newChain,
+                                    ruleChainConfigs: newConfigs,
+                                  };
+                                });
+                              }}
+                            >
+                              移除
+                            </Button>
+                          </Space>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -1028,6 +1093,74 @@ const ProductManagement: React.FC = () => {
           </>
         )}
       </Drawer>
+
+      {/* Success Modal */}
+      <Modal
+        title="产品创建成功"
+        open={successModalOpen}
+        onCancel={() => setSuccessModalOpen(false)}
+        footer={null}
+        width={520}
+      >
+        <div style={{ textAlign: 'center', padding: '24px 0' }}>
+          <CheckCircleOutlined style={{ fontSize: 64, color: '#52c41a', marginBottom: 16 }} />
+          <Title level={4} style={{ marginBottom: 8 }}>产品创建成功！</Title>
+          <Text type="secondary">
+            您可以继续以下操作：
+          </Text>
+        </div>
+        <Space direction="vertical" style={{ width: '100%', marginTop: 16 }}>
+          <Button
+            type="primary"
+            block
+            icon={<EyeOutlined />}
+            onClick={() => {
+              setSuccessModalOpen(false);
+              // In a real implementation, we would open the detail drawer for the created product
+              message.info('查看产品详情功能即将上线');
+            }}
+          >
+            查看产品详情
+          </Button>
+          <Button
+            block
+            icon={<SettingOutlined />}
+            onClick={() => {
+              setSuccessModalOpen(false);
+              message.info('前往套餐管理功能即将上线');
+            }}
+          >
+            去套餐管理，将产品加入套餐
+          </Button>
+          <Button
+            block
+            icon={<PlusOutlined />}
+            onClick={() => {
+              setSuccessModalOpen(false);
+              openWizard();
+            }}
+          >
+            继续创建新产品
+          </Button>
+        </Space>
+      </Modal>
+
+      {/* Rule Node Config Modal */}
+      <RuleNodeConfigModal
+        open={ruleNodeConfigModalOpen}
+        nodeName={configuringRuleNode}
+        initialConfig={
+          configuringRuleNodeIndex >= 0
+            ? wizardData.ruleChainConfigs[`${configuringRuleNode}-${configuringRuleNodeIndex}`]
+            : undefined
+        }
+        onCancel={() => {
+          setRuleNodeConfigModalOpen(false);
+          setConfiguringRuleNode('');
+          setConfiguringRuleNodeIndex(-1);
+        }}
+        onSave={handleRuleNodeConfigSave}
+      />
 
       {/* Feature Configuration Modal */}
       <Modal

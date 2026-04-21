@@ -35,7 +35,7 @@ public interface PackageProductFeatureMapper extends BaseMapper<PackageProductFe
     int deleteByPackageId(@Param("packageId") Long packageId);
 
     @Insert("<script>" +
-            "INSERT INTO package_product_features (package_id, product_id, feature_id, config_value, is_enabled, is_customized, create_time, update_time) VALUES " +
+            "INSERT INTO package_product_features (package_id, product_id, feature_id, config_value, is_enabled, is_customized, created_at, updated_at) VALUES " +
             "<foreach collection='list' item='item' separator=','>" +
             "(#{item.packageId}, #{item.productId}, #{item.featureId}, #{item.configValue}, #{item.isEnabled}, #{item.isCustomized}, NOW(), NOW())" +
             "</foreach>" +

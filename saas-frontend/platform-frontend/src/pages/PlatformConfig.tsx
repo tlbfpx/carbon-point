@@ -50,6 +50,11 @@ const PlatformConfigPage: React.FC = () => {
       const configs = configData as PlatformConfig[];
       const flags: Record<string, boolean> = {};
       const templateList: RuleTemplate[] = [];
+      const paramsValues: Record<string, unknown> = {};
+      const notificationValues: Record<string, unknown> = {};
+      const pointsValues: Record<string, unknown> = {};
+      const integrationValues: Record<string, unknown> = {};
+      const systemValues: Record<string, unknown> = {};
 
       configs.forEach((c: PlatformConfig) => {
         if (c.group === 'feature_flag') {
@@ -63,10 +68,31 @@ const PlatformConfigPage: React.FC = () => {
             templateList.push({ id: c.key, name: c.key, slots: [] });
           }
         }
+        if (c.group === 'platform_params') {
+          paramsValues[c.key] = c.value;
+        }
+        if (c.group === 'notification') {
+          notificationValues[c.key] = c.value;
+        }
+        if (c.group === 'points_rule') {
+          pointsValues[c.key] = c.value;
+        }
+        if (c.group === 'integration') {
+          integrationValues[c.key] = c.value;
+        }
+        if (c.group === 'system') {
+          systemValues[c.key] = c.value;
+        }
       });
 
       setFeatureFlags(flags);
       setTemplates(templateList);
+
+      if (Object.keys(paramsValues).length > 0) baseForm.setFieldsValue(paramsValues);
+      if (Object.keys(notificationValues).length > 0) notificationForm.setFieldsValue(notificationValues);
+      if (Object.keys(pointsValues).length > 0) pointsForm.setFieldsValue(pointsValues);
+      if (Object.keys(integrationValues).length > 0) integrationForm.setFieldsValue(integrationValues);
+      if (Object.keys(systemValues).length > 0) systemForm.setFieldsValue(systemValues);
     }
   }, [configData]);
 
@@ -155,7 +181,14 @@ const PlatformConfigPage: React.FC = () => {
       { key: 'systemName', value: values.systemName as string, group: 'system', description: '系统名称' },
       { key: 'maintenanceMode', value: values.maintenanceMode as boolean, group: 'system', description: '维护模式' },
       { key: 'logLevel', value: values.logLevel as string, group: 'system', description: '日志级别' },
+      { key: 'systemDescription', value: values.systemDescription as string, group: 'system', description: '系统描述' },
     ];
+    if (values.maintenanceStartTime) {
+      configs.push({ key: 'maintenanceStartTime', value: dayjs(values.maintenanceStartTime).toISOString(), group: 'system', description: '维护开始时间' });
+    }
+    if (values.maintenanceEndTime) {
+      configs.push({ key: 'maintenanceEndTime', value: dayjs(values.maintenanceEndTime).toISOString(), group: 'system', description: '维护结束时间' });
+    }
     setIsLoading(true);
     updateMutation.mutate(configs, {
       onSuccess: () => message.success('系统设置保存成功'),

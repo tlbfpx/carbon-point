@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, Row, Col, Tag, Typography } from 'antd';
+import { Card, Row, Col, Tag, Typography, Spin, Empty } from 'antd';
 import {
   DashboardOutlined,
   TeamOutlined,
@@ -11,111 +11,66 @@ import {
   SafetyOutlined,
   AppstoreOutlined,
   CheckCircleOutlined,
+  QuestionCircleOutlined,
 } from '@ant-design/icons';
+import { useQuery } from '@tanstack/react-query';
 import { useBranding } from '@/components/BrandingProvider';
+import { apiClient } from '@/api/request';
 
 const { Title, Text } = Typography;
 
-interface Feature {
+interface MenuItem {
   key: string;
-  icon: React.ReactNode;
   label: string;
-  description: string;
-  category: string;
-  enabled: boolean;
+  icon: string;
+  path: string;
+  sortOrder: number;
+  children?: MenuItem[];
+  disabled: boolean;
 }
 
-const categories = [
+const ICON_MAP: Record<string, React.ReactNode> = {
+  DashboardOutlined: <DashboardOutlined />,
+  TeamOutlined: <TeamOutlined />,
+  SettingOutlined: <SettingOutlined />,
+  ShopOutlined: <ShopOutlined />,
+  ShoppingOutlined: <ShoppingOutlined />,
+  TrophyOutlined: <TrophyOutlined />,
+  BarChartOutlined: <BarChartOutlined />,
+  SafetyOutlined: <SafetyOutlined />,
+  AppstoreOutlined: <AppstoreOutlined />,
+};
+
+const CATEGORY_MAP: Record<string, { key: string; label: string; color: string }> = {
+  dashboard: { key: 'core', label: '核心功能', color: '#4f46e5' },
+  members: { key: 'core', label: '核心功能', color: '#4f46e5' },
+  points: { key: 'core', label: '核心功能', color: '#4f46e5' },
+  rules: { key: 'operation', label: '运营工具', color: '#0891b2' },
+  products: { key: 'operation', label: '运营工具', color: '#0891b2' },
+  orders: { key: 'operation', label: '运营工具', color: '#0891b2' },
+  reports: { key: 'data', label: '数据管理', color: '#059669' },
+  roles: { key: 'data', label: '数据管理', color: '#059669' },
+  branding: { key: 'data', label: '数据管理', color: '#059669' },
+};
+
+const DEFAULT_CATEGORIES = [
   { key: 'core', label: '核心功能', color: '#4f46e5' },
   { key: 'operation', label: '运营工具', color: '#0891b2' },
   { key: 'data', label: '数据管理', color: '#059669' },
 ];
 
-const features: Feature[] = [
-  {
-    key: 'dashboard',
-    icon: <DashboardOutlined />,
-    label: '数据看板',
-    description: '查看企业整体运营数据概况',
-    category: 'core',
-    enabled: true,
-  },
-  {
-    key: 'members',
-    icon: <TeamOutlined />,
-    label: '员工管理',
-    description: '管理企业内部员工账户与信息',
-    category: 'core',
-    enabled: true,
-  },
-  {
-    key: 'points',
-    icon: <TrophyOutlined />,
-    label: '积分运营',
-    description: '配置积分规则与运营策略',
-    category: 'core',
-    enabled: true,
-  },
-  {
-    key: 'rules',
-    icon: <SettingOutlined />,
-    label: '规则配置',
-    description: '设置打卡规则与积分计算规则',
-    category: 'operation',
-    enabled: true,
-  },
-  {
-    key: 'products',
-    icon: <ShopOutlined />,
-    label: '商品管理',
-    description: '管理积分商城虚拟商品',
-    category: 'operation',
-    enabled: true,
-  },
-  {
-    key: 'orders',
-    icon: <ShoppingOutlined />,
-    label: '订单管理',
-    description: '查看和处理商品兑换订单',
-    category: 'operation',
-    enabled: true,
-  },
-  {
-    key: 'reports',
-    icon: <BarChartOutlined />,
-    label: '数据报表',
-    description: '查看详细数据报表与趋势分析',
-    category: 'data',
-    enabled: true,
-  },
-  {
-    key: 'roles',
-    icon: <SafetyOutlined />,
-    label: '角色权限',
-    description: '配置企业角色与菜单权限',
-    category: 'data',
-    enabled: true,
-  },
-  {
-    key: 'branding',
-    icon: <AppstoreOutlined />,
-    label: '品牌配置',
-    description: '自定义企业 Logo 与品牌色',
-    category: 'data',
-    enabled: true,
-  },
-  {
-    key: 'feature-matrix',
-    icon: <AppstoreOutlined />,
-    label: '功能点阵',
-    description: '功能模块概览与状态',
-    category: 'core',
-    enabled: true,
-  },
-];
+const fetchMenus = async (): Promise<MenuItem[]> => {
+  const res = await apiClient.get('/api/menus');
+  return (res as { data: MenuItem[] }).data ?? [];
+};
 
 const FeatureMatrix: React.FC = () => {
   const { primaryColor } = useBranding();
+
+  const { data: menus, isLoading } = useQuery({
+    queryKey: ['menus'],
+    queryFn: fetchMenus,
+  });
 
   const colors = {
     primary: primaryColor,
@@ -126,8 +81,28 @@ const FeatureMatrix: React.FC = () => {
     sectionBg: '#f5f3f0',
   };
 
-  const renderFeatureCard = (feature: Feature) => (
-    <Col xs={24} sm={12} md={8} lg={6} key={feature.key}>
+  const flatMenus = React.useMemo(() => {
+    if (!menus) return [];
+    const result: MenuItem[] = [];
+    const flatten = (items: MenuItem[]) => {
+      for (const item of items) {
+        result.push(item);
+        if (item.children?.length) flatten(item.children);
+      }
+    };
+    flatten(menus);
+    return result;
+  }, [menus]);
+
+  const getIcon = (iconName?: string) => {
+    if (!iconName) return <QuestionCircleOutlined />;
+    return ICON_MAP[iconName] || <QuestionCircleOutlined />;
+  };
+
+  const getCategory = (key: string) => CATEGORY_MAP[key] ?? null;
+
+  const renderFeatureCard = (item: MenuItem) => (
+    <Col xs={24} sm={12} md={8} lg={6} key={item.key}>
       <Card
         hoverable
         style={{
@@ -135,14 +110,10 @@ const FeatureMatrix: React.FC = () => {
           border: `1px solid ${colors.warmBorder}`,
           boxShadow: '0 2px 16px rgba(0, 0, 0, 0.04)',
           transition: 'all 0.2s ease',
-          opacity: feature.enabled ? 1 : 0.5,
+          opacity: item.disabled ? 0.5 : 1,
           marginBottom: 16,
         }}
-        styles={{
-          body: {
-            padding: '20px',
-          },
-        }}
+        styles={{ body: { padding: '20px' } }}
       >
         <div
           style={{
@@ -158,7 +129,7 @@ const FeatureMatrix: React.FC = () => {
             marginBottom: 16,
           }}
         >
-          {feature.icon}
+          {getIcon(item.icon)}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
           <Text
@@ -169,9 +140,9 @@ const FeatureMatrix: React.FC = () => {
               color: colors.textHeading,
             }}
           >
-            {feature.label}
+            {item.label}
           </Text>
-          {feature.enabled ? (
+          {!item.disabled ? (
             <Tag
               color="success"
               icon={<CheckCircleOutlined />}
@@ -208,11 +179,46 @@ const FeatureMatrix: React.FC = () => {
             lineHeight: 1.5,
           }}
         >
-          {feature.description}
+          {item.path || item.key}
         </Text>
       </Card>
     </Col>
   );
+
+  const groupedFeatures = React.useMemo(() => {
+    const groups: Record<string, MenuItem[]> = {};
+    for (const item of flatMenus) {
+      const cat = getCategory(item.key);
+      const catKey = cat?.key ?? 'other';
+      if (!groups[catKey]) groups[catKey] = [];
+      groups[catKey].push(item);
+    }
+    return groups;
+  }, [flatMenus]);
+
+  const allCategories = React.useMemo(() => {
+    const cats = [...DEFAULT_CATEGORIES];
+    if (groupedFeatures['other']) {
+      cats.push({ key: 'other', label: '其他功能', color: '#6b7280' });
+    }
+    return cats;
+  }, [groupedFeatures]);
+
+  if (isLoading) {
+    return (
+      <div style={{ padding: 48, textAlign: 'center' }}>
+        <Spin size="large" tip="加载功能列表..." />
+      </div>
+    );
+  }
+
+  if (!flatMenus.length) {
+    return (
+      <div style={{ padding: 48, textAlign: 'center' }}>
+        <Empty description="暂无功能菜单数据" />
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: '0 0 24px 0', fontFamily: 'Noto Sans SC, sans-serif' }}>
@@ -235,8 +241,9 @@ const FeatureMatrix: React.FC = () => {
       </div>
 
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-        {categories.map((cat) => {
-          const count = features.filter((f) => f.category === cat.key && f.enabled).length;
+        {allCategories.map((cat) => {
+          const items = groupedFeatures[cat.key] ?? [];
+          const enabledCount = items.filter((f) => !f.disabled).length;
           return (
             <Col xs={24} sm={8} key={cat.key}>
               <Card
@@ -260,7 +267,7 @@ const FeatureMatrix: React.FC = () => {
                     }}
                   >
                     <span style={{ fontFamily: 'Outfit, sans-serif', fontSize: 18, fontWeight: 700, color: cat.color }}>
-                      {count}
+                      {enabledCount}
                     </span>
                   </div>
                   <div>
@@ -276,7 +283,7 @@ const FeatureMatrix: React.FC = () => {
                       {cat.label}
                     </Text>
                     <Text style={{ fontSize: 12, color: colors.textMuted }}>
-                      {count} 个功能模块
+                      {enabledCount} 个功能模块
                     </Text>
                   </div>
                 </div>
@@ -295,7 +302,7 @@ const FeatureMatrix: React.FC = () => {
         styles={{ body: { padding: 24 } }}
       >
         <Row gutter={[16, 16]}>
-          {features.map(renderFeatureCard)}
+          {flatMenus.map(renderFeatureCard)}
         </Row>
       </Card>
     </div>

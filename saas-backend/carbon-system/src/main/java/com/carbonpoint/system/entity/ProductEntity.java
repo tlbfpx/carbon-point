@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.carbonpoint.common.tenant.InterceptorIgnore;
 import lombok.Data;
@@ -35,6 +36,15 @@ public class ProductEntity {
 
     /** Display sort order */
     private Integer sortOrder;
+
+    private String triggerType;
+
+    private String ruleChainConfig;
+
+    private String defaultConfig;
+
+    @TableLogic
+    private Integer deleted;
 
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdAt;

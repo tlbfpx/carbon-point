@@ -45,7 +45,7 @@ export interface PermissionPackage {
   code: string;
   name: string;
   description?: string;
-  status: number;
+  status: number | boolean;
   permissionCount: number;
   tenantCount: number;
   createdAt: string;
@@ -284,6 +284,9 @@ export interface Product {
   status: number;
   sortOrder: number;
   featureCount: number;
+  triggerType?: string;
+  ruleChainConfig?: string;
+  defaultConfig?: string;
   createTime: string;
   updateTime: string;
 }
@@ -360,6 +363,10 @@ export const createProduct = async (data: {
   description?: string;
   status?: number;
   sortOrder?: number;
+  triggerType?: string;
+  ruleChainConfig?: string;
+  defaultConfig?: string;
+  features?: string[];
 }) => {
   const res = await platformApiClient.post('/products', data);
   return res.data;

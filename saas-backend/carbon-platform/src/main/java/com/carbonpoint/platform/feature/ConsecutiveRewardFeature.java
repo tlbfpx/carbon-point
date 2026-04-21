@@ -35,7 +35,7 @@ public class ConsecutiveRewardFeature implements Feature {
 
         List<Map<String, Object>> milestones = List.of(
                 Map.of("days", 3, "bonusPoints", 50, "name", "连续3天"),
-                Map.of("days", 7, "bonusPoints", 200, "name", "连续7天"),
+                Map.of("days", 7, "bonusPoints", 500, "name", "连续7天"),
                 Map.of("days", 30, "bonusPoints", 1000, "name", "连续30天")
         );
         config.put("milestones", milestones);

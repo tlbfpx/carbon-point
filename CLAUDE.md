@@ -48,6 +48,8 @@ saas-frontend/
 ├── enterprise-frontend/   # Enterprise admin (port 3000)
 ├── h5/                  # User-facing H5 mobile (port 3002, base: /h5/)
 └── platform-frontend/    # Platform admin (port 3001)
+ 
+ 
 ```
 Note: `packages/` has been inlined into each app — design-system, utils, and api layers are now local to each app for independent deployment.
 

@@ -2,6 +2,11 @@ package com.carbonpoint.points.service;
 
 import com.carbonpoint.common.exception.BusinessException;
 import com.carbonpoint.common.result.ErrorCode;
+import com.carbonpoint.common.tenant.TenantContext;
+import com.carbonpoint.platform.model.RuleContext;
+import com.carbonpoint.platform.model.RuleResult;
+import com.carbonpoint.platform.registry.ProductRegistry;
+import com.carbonpoint.platform.rule.RuleChainExecutor;
 import com.carbonpoint.points.LevelConstants;
 import com.carbonpoint.points.dto.PointCalcResult;
 import com.carbonpoint.points.entity.PointRule;
@@ -11,19 +16,20 @@ import com.carbonpoint.system.entity.User;
 import com.carbonpoint.system.service.NotificationTrigger;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class PointEngineService {
 
     private final PointRuleService pointRuleService;
@@ -31,6 +37,8 @@ public class PointEngineService {
     private final CheckInRecordQueryMapper checkInRecordQueryMapper;
     private final PointsUserMapper pointsUserMapper;
     private final NotificationTrigger notificationTrigger;
+    private final Optional<RuleChainExecutor> ruleChainExecutor;
+    private final Optional<ProductRegistry> productRegistry;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final Random random = new Random();
 
@@ -38,15 +46,23 @@ public class PointEngineService {
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
     private static final DateTimeFormatter TIME_FMT_WITH_SECONDS = DateTimeFormatter.ofPattern("HH:mm:ss");
 
-    /**
-     * Core point calculation following the fixed chain:
-     * 1. Time slot match → random base points
-     * 2. Special date multiplier
-     * 3. Level coefficient
-     * 4. Round
-     * 5. Daily cap
-     * 6. (Continuous reward handled separately)
-     */
+    public PointEngineService(
+            PointRuleService pointRuleService,
+            PointAccountService pointAccountService,
+            CheckInRecordQueryMapper checkInRecordQueryMapper,
+            PointsUserMapper pointsUserMapper,
+            NotificationTrigger notificationTrigger,
+            Optional<RuleChainExecutor> ruleChainExecutor,
+            Optional<ProductRegistry> productRegistry) {
+        this.pointRuleService = pointRuleService;
+        this.pointAccountService = pointAccountService;
+        this.checkInRecordQueryMapper = checkInRecordQueryMapper;
+        this.pointsUserMapper = pointsUserMapper;
+        this.notificationTrigger = notificationTrigger;
+        this.ruleChainExecutor = ruleChainExecutor;
+        this.productRegistry = productRegistry;
+    }
+
     public PointCalcResult calculate(Long userId, Long ruleId, int userLevel) {
         PointRule timeSlotRule = pointRuleService.getById(ruleId);
         if (timeSlotRule == null) {
@@ -55,13 +71,140 @@ public class PointEngineService {
         return calculate(userId, timeSlotRule, userLevel);
     }
 
-    /**
-     * Calculate points using an already-loaded PointRule.
-     */
     public PointCalcResult calculate(Long userId, PointRule timeSlotRule, int userLevel) {
+        // Try rule chain execution first (when carbon-platform is available)
+        if (ruleChainExecutor.isPresent() && productRegistry.isPresent()) {
+            Optional<PointCalcResult> chainResult = tryRuleChain(userId, timeSlotRule, userLevel);
+            if (chainResult.isPresent()) {
+                return chainResult.get();
+            }
+        }
+
+        // Fallback: hardcoded calculation chain
+        return calculateLegacy(userId, timeSlotRule, userLevel);
+    }
+
+    private Optional<PointCalcResult> tryRuleChain(Long userId, PointRule timeSlotRule, int userLevel) {
+        try {
+            var registry = productRegistry.get();
+            var executor = ruleChainExecutor.get();
+
+            // Use "stair_climbing" as default product code
+            var moduleOpt = registry.getModule("stair_climbing");
+            if (moduleOpt.isEmpty()) {
+                return Optional.empty();
+            }
+
+            var module = moduleOpt.get();
+            List<String> ruleChainNames = module.getRuleChain();
+            if (ruleChainNames == null || ruleChainNames.isEmpty()) {
+                return Optional.empty();
+            }
+
+            Long tenantId = timeSlotRule.getTenantId();
+
+            Map<String, Object> tenantConfig = buildTenantConfig(tenantId);
+            Map<String, Object> triggerData = buildTriggerData(userId, userLevel, tenantId);
+
+            RuleContext context = RuleContext.builder()
+                    .userId(userId)
+                    .tenantId(tenantId)
+                    .productCode(module.getCode())
+                    .currentPoints(0)
+                    .tenantConfig(tenantConfig)
+                    .triggerData(triggerData)
+                    .build();
+
+            RuleResult chainResult = executor.executeByName(ruleChainNames, context);
+
+            PointCalcResult result = new PointCalcResult();
+            result.setBasePoints(extractIntMetadata(chainResult, "basePoints", chainResult.getPoints()));
+            result.setMultiplierRate(extractDoubleMetadata(chainResult, "multiplierRate", 1.0));
+            result.setLevelMultiplier(extractDoubleMetadata(chainResult, "levelMultiplier", 1.0));
+            result.setFinalPoints(chainResult.getPoints());
+            result.setTotalPoints(chainResult.getPoints());
+            result.setDailyCapHit(extractBoolMetadata(chainResult, "dailyCapHit", false));
+
+            log.debug("RuleChain calculation for user {}: final={}, capHit={}, metadata={}",
+                    userId, chainResult.getPoints(), result.isDailyCapHit(), chainResult.getMetadata());
+
+            return Optional.of(result);
+        } catch (Exception e) {
+            log.warn("Rule chain execution failed, falling back to legacy: {}", e.getMessage());
+            return Optional.empty();
+        }
+    }
+
+    private Map<String, Object> buildTenantConfig(Long tenantId) {
+        Map<String, Object> config = new HashMap<>();
+
+        // Time slot rules
+        List<PointRule> timeSlotRules = pointRuleService.getRulesByType(tenantId, PointRuleService.TYPE_TIME_SLOT);
+        config.put("timeSlotRules", timeSlotRules.stream().map(r -> {
+            try {
+                return objectMapper.readTree(r.getConfig());
+            } catch (Exception e) {
+                return null;
+            }
+        }).filter(java.util.Objects::nonNull).toList());
+
+        // Special date rules
+        List<PointRule> specialDateRules = pointRuleService.getRulesByType(tenantId, PointRuleService.TYPE_SPECIAL_DATE);
+        config.put("specialDateRules", specialDateRules.stream().map(r -> {
+            try {
+                return objectMapper.readTree(r.getConfig());
+            } catch (Exception e) {
+                return null;
+            }
+        }).filter(java.util.Objects::nonNull).toList());
+
+        // Daily cap rules
+        List<PointRule> dailyCapRules = pointRuleService.getRulesByType(tenantId, PointRuleService.TYPE_DAILY_CAP);
+        if (!dailyCapRules.isEmpty()) {
+            try {
+                config.put("dailyCapConfig", objectMapper.readTree(dailyCapRules.get(0).getConfig()));
+            } catch (Exception ignored) {
+            }
+        }
+
+        return config;
+    }
+
+    private Map<String, Object> buildTriggerData(Long userId, int userLevel, Long tenantId) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("checkInTime", LocalTime.now().format(TIME_FMT));
+        data.put("userLevel", userLevel);
+        data.put("dailyAwarded", getDailyAwarded(userId));
+        return data;
+    }
+
+    private int extractIntMetadata(RuleResult result, String key, int defaultValue) {
+        if (result.getMetadata() != null && result.getMetadata().containsKey(key)) {
+            Object val = result.getMetadata().get(key);
+            if (val instanceof Number) return ((Number) val).intValue();
+        }
+        return defaultValue;
+    }
+
+    private double extractDoubleMetadata(RuleResult result, String key, double defaultValue) {
+        if (result.getMetadata() != null && result.getMetadata().containsKey(key)) {
+            Object val = result.getMetadata().get(key);
+            if (val instanceof Number) return ((Number) val).doubleValue();
+        }
+        return defaultValue;
+    }
+
+    private boolean extractBoolMetadata(RuleResult result, String key, boolean defaultValue) {
+        if (result.getMetadata() != null && result.getMetadata().containsKey(key)) {
+            Object val = result.getMetadata().get(key);
+            if (val instanceof Boolean) return (Boolean) val;
+        }
+        return defaultValue;
+    }
+
+    private PointCalcResult calculateLegacy(Long userId, PointRule timeSlotRule, int userLevel) {
         PointCalcResult result = new PointCalcResult();
 
-        // Step 1: Base points from the rule
         int basePoints = calculateBasePoints(timeSlotRule);
         result.setBasePoints(basePoints);
 
@@ -69,22 +212,18 @@ public class PointEngineService {
         double levelMultiplier = 1.0;
         int dailyAwarded = getDailyAwarded(userId);
 
-        // Step 2: Special date multiplier
         String specialMultiplierStr = getSpecialDateMultiplier(timeSlotRule.getTenantId());
         if (specialMultiplierStr != null) {
             multiplierRate = Double.parseDouble(specialMultiplierStr);
             result.setMultiplierRate(multiplierRate);
         }
 
-        // Step 3: Level coefficient
         levelMultiplier = LevelConstants.getCoefficient(userLevel);
         result.setLevelMultiplier(levelMultiplier);
 
-        // Step 4: Calculate
         double rawPoints = basePoints * multiplierRate * levelMultiplier;
         int roundedPoints = (int) Math.round(rawPoints);
 
-        // Step 5: Daily cap
         int dailyLimit = getDailyLimit(timeSlotRule.getTenantId());
         boolean dailyCapHit = false;
         if (dailyLimit > 0 && dailyAwarded + roundedPoints > dailyLimit) {
@@ -97,14 +236,11 @@ public class PointEngineService {
         result.setFinalPoints(roundedPoints);
         result.setTotalPoints(roundedPoints);
 
-        log.debug("Point calculation for user {}: base={}, multiplier={}, level={}, dailyAwarded={}, dailyLimit={}, final={}, capHit={}",
+        log.debug("Legacy calculation for user {}: base={}, multiplier={}, level={}, dailyAwarded={}, dailyLimit={}, final={}, capHit={}",
                 userId, basePoints, multiplierRate, levelMultiplier, dailyAwarded, dailyLimit, roundedPoints, dailyCapHit);
         return result;
     }
 
-    /**
-     * Public calculate that auto-detects which time slot is active.
-     */
     public PointCalcResult calculate(Long userId, int userLevel) {
         Long tenantId = getTenantIdFromUser(userId);
         LocalTime now = LocalTime.now();
@@ -118,9 +254,6 @@ public class PointEngineService {
         return calculate(userId, activeRule.getId(), userLevel);
     }
 
-    /**
-     * Check and award streak/continuous check-in bonus.
-     */
     public void checkAndAwardStreakReward(Long userId, Integer consecutiveDays) {
         Long tenantId = getTenantIdFromUser(userId);
         List<PointRule> streakRules = pointRuleService.getRulesByType(tenantId, PointRuleService.TYPE_STREAK);
@@ -129,14 +262,13 @@ public class PointEngineService {
                 JsonNode config = objectMapper.readTree(rule.getConfig());
                 int requiredDays = config.get("days").asInt();
                 int bonusPoints = config.get("bonusPoints").asInt();
-                if (consecutiveDays >= requiredDays && consecutiveDays % requiredDays == 0) {
+                if (consecutiveDays.equals(requiredDays)) {
                     pointAccountService.awardPoints(userId, bonusPoints, "streak_bonus",
                             String.valueOf(rule.getId()),
                             String.format("连续打卡%s天奖励", requiredDays));
                     log.info("Awarded streak bonus {} points to user {} for {} consecutive days",
                             bonusPoints, userId, consecutiveDays);
 
-                    // Send streak bonus notification
                     User user = pointsUserMapper.selectById(userId);
                     if (user != null) {
                         notificationTrigger.onStreakBonus(tenantId, userId, user.getPhone(), user.getEmail(),
@@ -149,9 +281,6 @@ public class PointEngineService {
         }
     }
 
-    /**
-     * Check if a given time falls within a time slot rule's range.
-     */
     public boolean isTimeInSlot(LocalTime time, String configJson) {
         try {
             JsonNode node = objectMapper.readTree(configJson);
@@ -163,7 +292,6 @@ public class PointEngineService {
             }
             String startStr = startNode.asText();
             String endStr = endNode.asText();
-            // Try with-seconds formatter first, fall back to without-seconds
             LocalTime start = startStr.length() == 8
                     ? LocalTime.parse(startStr, TIME_FMT_WITH_SECONDS)
                     : LocalTime.parse(startStr, TIME_FMT);
@@ -179,9 +307,6 @@ public class PointEngineService {
         }
     }
 
-    /**
-     * Get currently active time slot rule for a tenant.
-     */
     public PointRule getActiveTimeSlot(Long tenantId) {
         LocalTime now = LocalTime.now();
         return pointRuleService.getRulesByType(tenantId, PointRuleService.TYPE_TIME_SLOT)
@@ -227,7 +352,7 @@ public class PointEngineService {
                             return String.valueOf(multiplier);
                         }
                     } else if ("WEEKLY".equals(recurring)) {
-                        int dayOfWeek = config.get("dayOfWeek").asInt(); // 1=Mon to 7=Sun (ISO)
+                        int dayOfWeek = config.get("dayOfWeek").asInt();
                         if (today.getDayOfWeek().getValue() == dayOfWeek) {
                             return String.valueOf(multiplier);
                         }
@@ -252,10 +377,6 @@ public class PointEngineService {
         }
     }
 
-    /**
-     * Query total final_points awarded to a user today from check_in_records.
-     * FIX: was returning 0, now properly queries the DB.
-     */
     private int getDailyAwarded(Long userId) {
         String todayStr = LocalDate.now().format(DATE_FMT);
         int awarded = checkInRecordQueryMapper.sumFinalPointsToday(userId, todayStr);
@@ -264,6 +385,6 @@ public class PointEngineService {
     }
 
     private Long getTenantIdFromUser(Long userId) {
-        return com.carbonpoint.common.tenant.TenantContext.getTenantId();
+        return TenantContext.getTenantId();
     }
 }

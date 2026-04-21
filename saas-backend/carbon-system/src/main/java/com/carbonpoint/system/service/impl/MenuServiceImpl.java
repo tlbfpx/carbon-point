@@ -1,6 +1,6 @@
 package com.carbonpoint.system.service.impl;
 
-import com.carbonpoint.common.context.TenantContext;
+import com.carbonpoint.common.tenant.TenantContext;
 import com.carbonpoint.system.dto.res.MenuItemVO;
 import com.carbonpoint.system.entity.*;
 import com.carbonpoint.system.mapper.*;
@@ -41,9 +41,9 @@ public class MenuServiceImpl implements MenuService {
         Tenant tenant = tenantMapper.selectById(tenantId);
         if (tenant != null && tenant.getPackageId() != null) {
             // Add product menus based on package
-            List<PackageProduct> packageProducts = packageProductMapper.selectByPackageId(tenant.getPackageId());
-            for (PackageProduct pp : packageProducts) {
-                Product product = productMapper.selectById(pp.getProductId());
+            List<PackageProductEntity> packageProducts = packageProductMapper.selectByPackageId(tenant.getPackageId());
+            for (PackageProductEntity pp : packageProducts) {
+                ProductEntity product = productMapper.selectById(pp.getProductId());
                 if (product != null && product.getStatus() == 1) {
                     menu.add(buildProductMenu(product, pp, tenant.getPackageId()));
                 }
@@ -61,7 +61,7 @@ public class MenuServiceImpl implements MenuService {
                 .collect(Collectors.toList());
     }
 
-    private MenuItemVO buildProductMenu(Product product, PackageProduct pp, Long packageId) {
+    private MenuItemVO buildProductMenu(ProductEntity product, PackageProductEntity pp, Long packageId) {
         MenuItemVO productMenu = buildMenuItem(
                 "product-" + product.getCode(),
                 product.getName(),
@@ -75,8 +75,8 @@ public class MenuServiceImpl implements MenuService {
         children.add(buildMenuItem("records", "打卡记录", "FileTextOutlined", "/product/" + product.getCode() + "/records", 1));
 
         // Get enabled features for this product in the package
-        List<PackageProductFeature> features = packageProductFeatureMapper.selectByPackageAndProduct(packageId, pp.getProductId());
-        for (PackageProductFeature ppf : features) {
+        List<PackageProductFeatureEntity> features = packageProductFeatureMapper.selectByPackageIdAndProductId(packageId, pp.getProductId());
+        for (PackageProductFeatureEntity ppf : features) {
             if (ppf.getIsEnabled()) {
                 String featureKey = ppf.getFeatureId();
                 children.add(buildFeatureMenu(featureKey, product.getCode()));

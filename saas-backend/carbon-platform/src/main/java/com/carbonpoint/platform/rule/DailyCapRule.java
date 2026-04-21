@@ -3,6 +3,7 @@ package com.carbonpoint.platform.rule;
 import com.carbonpoint.platform.RuleNode;
 import com.carbonpoint.platform.model.RuleContext;
 import com.carbonpoint.platform.model.RuleResult;
+import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,6 +12,7 @@ import java.util.Map;
  * Rule node that clamps points if the daily cap is exceeded.
  * Compares current daily total + new points against the configured cap.
  */
+@Component
 public class DailyCapRule implements RuleNode {
 
     @Override

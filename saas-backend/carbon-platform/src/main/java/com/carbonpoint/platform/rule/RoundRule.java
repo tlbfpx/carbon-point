@@ -3,6 +3,7 @@ package com.carbonpoint.platform.rule;
 import com.carbonpoint.platform.RuleNode;
 import com.carbonpoint.platform.model.RuleContext;
 import com.carbonpoint.platform.model.RuleResult;
+import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
@@ -12,6 +13,7 @@ import java.util.Map;
  * a passthrough marker in the chain. It exists to provide a consistent
  * rounding step after floating-point multiplications.
  */
+@Component
 public class RoundRule implements RuleNode {
 
     @Override

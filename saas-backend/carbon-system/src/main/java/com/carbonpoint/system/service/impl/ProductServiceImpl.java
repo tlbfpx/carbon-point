@@ -97,6 +97,9 @@ public class ProductServiceImpl implements ProductService {
         product.setDescription(req.getDescription());
         product.setStatus(req.getStatus() != null ? req.getStatus() : 1);
         product.setSortOrder(req.getSortOrder() != null ? req.getSortOrder() : 0);
+        product.setTriggerType(req.getTriggerType());
+        product.setRuleChainConfig(req.getRuleChainConfig());
+        product.setDefaultConfig(req.getDefaultConfig());
 
         productMapper.insert(product);
 
@@ -136,6 +139,15 @@ public class ProductServiceImpl implements ProductService {
         }
         if (req.getSortOrder() != null) {
             product.setSortOrder(req.getSortOrder());
+        }
+        if (StringUtils.hasText(req.getTriggerType())) {
+            product.setTriggerType(req.getTriggerType());
+        }
+        if (StringUtils.hasText(req.getRuleChainConfig())) {
+            product.setRuleChainConfig(req.getRuleChainConfig());
+        }
+        if (StringUtils.hasText(req.getDefaultConfig())) {
+            product.setDefaultConfig(req.getDefaultConfig());
         }
 
         productMapper.updateById(product);
@@ -239,6 +251,9 @@ public class ProductServiceImpl implements ProductService {
                 .description(product.getDescription())
                 .status(product.getStatus())
                 .sortOrder(product.getSortOrder())
+                .triggerType(product.getTriggerType())
+                .ruleChainConfig(product.getRuleChainConfig())
+                .defaultConfig(product.getDefaultConfig())
                 .featureCount(featureCount)
                 .createdAt(product.getCreatedAt())
                 .updatedAt(product.getUpdatedAt())

@@ -46,6 +46,7 @@ import PointExpiration from '@/pages/PointExpiration';
 import { useAuthStore } from '@/store/authStore';
 import { useBranding } from '@/components/BrandingProvider';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import PermissionGuard from '@/components/PermissionGuard';
 import { routeLogger } from '@/utils';
 import { getTenantProducts } from '@/api/tenantProducts';
 import { useQuery } from '@tanstack/react-query';
@@ -422,22 +423,22 @@ const EnterpriseContent: React.FC = () => {
           <Routes>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/login" element={<Navigate to="/dashboard" replace />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/members" element={<Member />} />
-            <Route path="/rules" element={<Rules />} />
-            <Route path="/products" element={<Products />} />
-            <Route path="/orders" element={<Orders />} />
-            <Route path="/points" element={<Points />} />
-            <Route path="/point-expiration" element={<PointExpiration />} />
-            <Route path="/reports" element={<Reports />} />
-            <Route path="/roles" element={<Roles />} />
-            <Route path="/feature-matrix" element={<FeatureMatrix />} />
-            <Route path="/dict-management" element={<DictManagement />} />
-            <Route path="/branding" element={<Branding />} />
-            <Route path="/operation-log" element={<OperationLog />} />
-            <Route path="/walking" element={<WalkingManagement />} />
-            <Route path="/walking/step-config" element={<WalkingManagement />} />
-            <Route path="/walking/fun-equiv" element={<WalkingManagement />} />
+            <Route path="/dashboard" element={<PermissionGuard><Dashboard /></PermissionGuard>} />
+            <Route path="/members" element={<PermissionGuard><Member /></PermissionGuard>} />
+            <Route path="/rules" element={<PermissionGuard><Rules /></PermissionGuard>} />
+            <Route path="/products" element={<PermissionGuard><Products /></PermissionGuard>} />
+            <Route path="/orders" element={<PermissionGuard><Orders /></PermissionGuard>} />
+            <Route path="/points" element={<PermissionGuard><Points /></PermissionGuard>} />
+            <Route path="/point-expiration" element={<PermissionGuard><PointExpiration /></PermissionGuard>} />
+            <Route path="/reports" element={<PermissionGuard><Reports /></PermissionGuard>} />
+            <Route path="/roles" element={<PermissionGuard><Roles /></PermissionGuard>} />
+            <Route path="/feature-matrix" element={<PermissionGuard><FeatureMatrix /></PermissionGuard>} />
+            <Route path="/dict-management" element={<PermissionGuard><DictManagement /></PermissionGuard>} />
+            <Route path="/branding" element={<PermissionGuard><Branding /></PermissionGuard>} />
+            <Route path="/operation-log" element={<PermissionGuard><OperationLog /></PermissionGuard>} />
+            <Route path="/walking" element={<PermissionGuard><WalkingManagement /></PermissionGuard>} />
+            <Route path="/walking/step-config" element={<PermissionGuard><WalkingManagement /></PermissionGuard>} />
+            <Route path="/walking/fun-equiv" element={<PermissionGuard><WalkingManagement /></PermissionGuard>} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </Content>

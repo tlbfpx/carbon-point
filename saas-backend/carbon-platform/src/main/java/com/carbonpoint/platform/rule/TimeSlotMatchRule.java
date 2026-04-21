@@ -3,6 +3,8 @@ package com.carbonpoint.platform.rule;
 import com.carbonpoint.platform.RuleNode;
 import com.carbonpoint.platform.model.RuleContext;
 import com.carbonpoint.platform.model.RuleResult;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Component;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -15,6 +17,7 @@ import java.util.Map;
  * Rule node that matches the current time against configured time slots.
  * If the check-in time is not within any slot, sets points to 0.
  */
+@Component
 public class TimeSlotMatchRule implements RuleNode {
 
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
