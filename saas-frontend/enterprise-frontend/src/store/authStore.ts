@@ -20,6 +20,7 @@ interface AuthState {
   permissionsLoading: boolean;
   fetchPermissionsPromise: Promise<void> | null;
   isAuthenticated: boolean;
+  isHydrated: boolean; // 是否已完成hydration
   login: (accessToken: string, refreshToken: string, user: AdminUser) => void;
   logout: () => void;
   updateUser: (user: Partial<AdminUser>) => void;
@@ -54,7 +55,8 @@ function saveToStorage(state: { accessToken: string | null; refreshToken: string
   } catch {}
 }
 
-export const useAuthStore = create<AuthState>()((set, get) => ({
+// 立即在模块加载时尝试加载
+let initialState: Partial<AuthState> = {
   accessToken: null,
   refreshToken: null,
   user: null,
@@ -62,14 +64,38 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
   permissionsLoading: false,
   fetchPermissionsPromise: null,
   isAuthenticated: false,
+  isHydrated: false,
+};
+
+try {
+  const stored = loadFromStorage();
+  if (stored.accessToken || stored.refreshToken || stored.user) {
+    initialState = {
+      ...initialState,
+      ...stored,
+      isAuthenticated: true,
+      isHydrated: true,
+    };
+    console.log('[authStore] Initial state loaded from storage, isAuthenticated=true');
+  } else {
+    initialState.isHydrated = true;
+  }
+} catch {
+  initialState.isHydrated = true;
+}
+
+export const useAuthStore = create<AuthState>()((set, get) => ({
+  ...initialState as AuthState,
 
   hydrate: () => {
     const stored = loadFromStorage();
     console.log('[authStore] hydrate() called, stored.hasToken:', !!(stored.accessToken || stored.refreshToken || stored.user));
     if (stored.accessToken || stored.refreshToken || stored.user) {
       console.log('[authStore] Setting isAuthenticated=true');
-      set({ ...stored, isAuthenticated: true });
+      set({ ...stored, isAuthenticated: true, isHydrated: true });
       get().fetchPermissions();
+    } else {
+      set({ isHydrated: true });
     }
   },
 

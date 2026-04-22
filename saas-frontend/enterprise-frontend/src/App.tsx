@@ -49,6 +49,8 @@ import ErrorBoundary from '@/components/ErrorBoundary';
 import PermissionGuard from '@/components/PermissionGuard';
 import { routeLogger } from '@/utils';
 import { getTenantProducts } from '@/api/tenantProducts';
+import { getTenantMenu, MenuItem as ApiMenuItem } from '@/api/menu';
+import { getIconComponent } from '@/utils/iconMapper';
 import { useQuery } from '@tanstack/react-query';
 
 const { Header, Sider, Content } = Layout;
@@ -73,6 +75,7 @@ const ENTERPRISE_PERMISSION_MAP: Record<string, string | undefined> = {
   '/point-expiration': 'enterprise:point:query',
 };
 
+// Static menu fallback
 const EnterpriseMenuItems: MenuProps['items'] = [
   { key: '/dashboard', icon: <DashboardOutlined />, label: '数据看板' },
   { key: '/members', icon: <TeamOutlined />, label: '员工管理' },
@@ -105,6 +108,56 @@ const EnterpriseMenuItems: MenuProps['items'] = [
   { key: '/operation-log', icon: <FileTextOutlined />, label: '操作日志' },
 ];
 
+// Map backend paths to frontend routes
+const mapBackendPathToFrontend = (backendPath: string): string => {
+  const pathMap: Record<string, string> = {
+    '/dashboard': '/dashboard',
+    '/mall': '/products',
+    '/users': '/members',
+    '/reports': '/reports',
+    '/settings': '/branding',
+  };
+
+  // Check for product paths
+  if (backendPath.startsWith('/product/')) {
+    const parts = backendPath.split('/');
+    const productCode = parts[2];
+    const feature = parts[3];
+
+    if (productCode === 'stair_climbing' || productCode === 'stairs_climbing') {
+      if (!feature || feature === 'records') {
+        return '/rules';
+      }
+      // All stair climbing features map to rules page
+      return '/rules';
+    }
+
+    if (productCode === 'walking') {
+      if (feature === 'step-calc' || feature === 'step-config') {
+        return '/walking/step-config';
+      }
+      if (feature === 'fun-equiv' || feature === 'fun_equiv') {
+        return '/walking/fun-equiv';
+      }
+      return '/walking/step-config';
+    }
+  }
+
+  // If direct match, return it
+  if (pathMap[backendPath]) {
+    return pathMap[backendPath];
+  }
+
+  // Check if path exists in permission map
+  if (ENTERPRISE_PERMISSION_MAP[backendPath]) {
+    return backendPath;
+  }
+
+  // Default fallback
+  console.log('[Menu] Unknown path, falling back to dashboard:', backendPath);
+  return '/dashboard';
+};
+
 // Dark gradient sidebar colors
 const SIDER_GRADIENT = 'linear-gradient(180deg, #1a1a2e 0%, #16213e 100%)';
 const PAGE_GRADIENT = 'linear-gradient(135deg, #f8f7f4 0%, #f0efe9 100%)';
@@ -112,7 +165,7 @@ const MENU_ITEM_DEFAULT_COLOR = '#a0aec0';
 const MENU_ITEM_ACTIVE_BG = 'rgba(255, 255, 255, 0.08)';
 
 const EnterpriseContent: React.FC = () => {
-  const { user, isAuthenticated, logout, permissions, permissionsLoading } = useAuthStore();
+  const { user, isAuthenticated, logout, permissions, permissionsLoading, isHydrated } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
@@ -124,6 +177,18 @@ const EnterpriseContent: React.FC = () => {
     queryFn: getTenantProducts,
     enabled: isAuthenticated,
     retry: 1,
+    staleTime: 10 * 60 * 1000, // 10 minutes
+    refetchOnWindowFocus: false,
+  });
+
+  // Fetch dynamic menu based on tenant's package
+  const { data: dynamicMenu, isLoading: menuLoading } = useQuery({
+    queryKey: ['tenant-menu'],
+    queryFn: getTenantMenu,
+    enabled: isAuthenticated,
+    retry: 1,
+    staleTime: 10 * 60 * 1000, // 10 minutes
+    refetchOnWindowFocus: false,
   });
 
   // Check if walking product is available for this tenant
@@ -135,7 +200,7 @@ const EnterpriseContent: React.FC = () => {
   }, [tenantProducts]);
 
   // Debug logging
-  console.log('[EnterpriseContent render] isAuthenticated:', isAuthenticated, 'user:', !!user, 'location:', location.pathname, 'hasWalkingProduct:', hasWalkingProduct);
+  console.log('[EnterpriseContent render] isAuthenticated:', isAuthenticated, 'user:', !!user, 'location:', location.pathname, 'hasWalkingProduct:', hasWalkingProduct, 'dynamicMenu:', dynamicMenu);
 
   useEffect(() => {
     useAuthStore.getState().hydrate();
@@ -145,36 +210,68 @@ const EnterpriseContent: React.FC = () => {
     routeLogger.info(`[路由切换] 导航到 ${location.pathname}`);
   }, [location.pathname]);
 
-  const menuItems = EnterpriseMenuItems
-    .filter(item => {
-      const key = String((item as any).key);
+  // Convert API menu items to Ant Design Menu items with path mapping
+  const convertToMenuItems = (items: ApiMenuItem[]): MenuProps['items'] => {
+    if (!items || !Array.isArray(items)) return [];
 
-      // Hide walking group if tenant doesn't have walking product
-      if (key === 'walking-group' && !hasWalkingProduct) {
-        return false;
-      }
+    return items.map(item => {
+      const frontendPath = mapBackendPathToFrontend(item.path || item.key);
 
-      // Check permissions for leaf items
-      if (permissionsLoading || productsLoading) return true;
-      const perm = ENTERPRISE_PERMISSION_MAP[key];
-      return !perm || permissions.includes(perm);
-    })
-    .map(item => {
-      const i = item as any;
-      if (i.children) {
-        return {
-          ...item,
-          children: i.children.map((child: any) => ({
-            ...child,
-            onClick: () => { if (child.key) navigate(String(child.key)); },
-          })),
-        };
-      }
       return {
-        ...item,
-        onClick: () => { if (i?.key) navigate(String(i.key)); },
+        key: frontendPath,
+        icon: getIconComponent(item.icon),
+        label: item.label,
+        disabled: item.disabled || false,
+        children: item.children && item.children.length > 0 ? convertToMenuItems(item.children) : undefined,
+        onClick: () => {
+          if (frontendPath && (!item.children || item.children.length === 0)) {
+            navigate(frontendPath);
+          }
+        },
       };
     });
+  };
+
+  // Use dynamic menu if available, otherwise fallback to static
+  const menuItems = useMemo(() => {
+    if (dynamicMenu && Array.isArray(dynamicMenu) && dynamicMenu.length > 0) {
+      console.log('[Menu] Using dynamic menu');
+      return convertToMenuItems(dynamicMenu);
+    }
+
+    // Fallback to static menu
+    console.log('[Menu] Using static menu fallback');
+    return EnterpriseMenuItems
+      .filter(item => {
+        const key = String((item as any).key);
+
+        // Hide walking group if tenant doesn't have walking product
+        if (key === 'walking-group' && !hasWalkingProduct) {
+          return false;
+        }
+
+        // Check permissions for leaf items
+        if (permissionsLoading || productsLoading) return true;
+        const perm = ENTERPRISE_PERMISSION_MAP[key];
+        return !perm || permissions.includes(perm);
+      })
+      .map(item => {
+        const i = item as any;
+        if (i.children) {
+          return {
+            ...item,
+            children: i.children.map((child: any) => ({
+              ...child,
+              onClick: () => { if (child.key) navigate(String(child.key)); },
+            })),
+          };
+        }
+        return {
+          ...item,
+          onClick: () => { if (i?.key) navigate(String(i.key)); },
+        };
+      });
+  }, [dynamicMenu, hasWalkingProduct, permissionsLoading, productsLoading, permissions, navigate]);
 
   const userMenuItems: MenuProps['items'] = [
     { key: 'profile', icon: <UserOutlined />, label: '个人信息' },
@@ -189,14 +286,29 @@ const EnterpriseContent: React.FC = () => {
   ];
 
   // Custom menu item renderer for pill-shaped items with glow effects
-  const customMenuItems: MenuProps['items'] = menuItems.map((item: any) => ({
+  const customMenuItems: MenuProps['items'] = (menuItems || []).map((item: any) => ({
     ...item,
     label: (
       <span className="custom-menu-label">
-        {item.label}
+        {item?.label || ''}
       </span>
     ),
   }));
+
+  // 还在hydrating → 显示加载状态
+  if (!isHydrated) {
+    return (
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
+        background: '#1a1a2e',
+      }}>
+        <div style={{ color: '#fff', fontSize: '16px' }}>加载中...</div>
+      </div>
+    );
+  }
 
   // Not authenticated → standalone full-page login (no sidebar/header)
   if (!isAuthenticated) {
@@ -293,8 +405,9 @@ const EnterpriseContent: React.FC = () => {
           theme="dark"
           mode="inline"
           selectedKeys={[location.pathname]}
-          defaultOpenKeys={['stair-group', 'walking-group']}
+          defaultOpenKeys={dynamicMenu ? [] : ['stair-group', 'walking-group']}
           items={customMenuItems}
+          loading={menuLoading || productsLoading}
           style={{
             flex: 1,
             background: 'transparent',
@@ -449,7 +562,10 @@ const EnterpriseContent: React.FC = () => {
 
 const App: React.FC = () => (
   <ConfigProvider {...designSystemConfig.dark}>
-    <BrowserRouter basename="/enterprise" future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+    <BrowserRouter
+      basename="/enterprise"
+      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+    >
       <ErrorBoundary>
         <EnterpriseContent />
       </ErrorBoundary>
