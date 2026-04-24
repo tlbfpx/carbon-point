@@ -42,6 +42,7 @@ public class RegistryModuleRes {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class TriggerInfo {
+        private String id;
         private String type;
         private String name;
         private String productCode;
@@ -53,6 +54,7 @@ public class RegistryModuleRes {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class RuleNodeInfo {
+        private String id;
         private String name;
         private String description;
         private Integer sortOrder;

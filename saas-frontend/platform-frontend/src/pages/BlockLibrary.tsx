@@ -8,6 +8,12 @@ import {
   Typography,
   Alert,
   Button,
+  Modal,
+  Form,
+  Input,
+  InputNumber,
+  message,
+  Popconfirm,
 } from 'antd';
 import {
   ThunderboltOutlined,
@@ -15,18 +21,29 @@ import {
   ReloadOutlined,
   ApiOutlined,
   SettingOutlined,
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
 } from '@ant-design/icons';
 import { EXTENSION_GUIDANCE } from '@/constants/feature-menu-map';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   getRegistryTriggers,
   getRegistryRuleNodes,
   getRegistryFeatures,
   getRegistryModules,
+  createTriggerType,
+  updateTriggerType,
+  deleteTriggerType,
+  createRuleNodeType,
+  updateRuleNodeType,
+  deleteRuleNodeType,
   TriggerInfo,
   RuleNodeInfo,
   FeatureInfo,
   RegistryModule,
+  TriggerType,
+  RuleNodeType,
 } from '@/api/platform';
 
 const { Title, Text } = Typography;
@@ -53,7 +70,6 @@ const DESIGN_SYSTEM = {
       geekblue: { bg: '#EFF6FF', border: '#BFDBFE', color: '#1D4ED8' },
     },
 
-    // 文字颜色 — slate 色阶
     text: {
       primary: '#1E293B',
       secondary: '#475569',
@@ -61,7 +77,6 @@ const DESIGN_SYSTEM = {
       white: '#FFFFFF',
     },
 
-    // 背景色
     bg: {
       white: '#FFFFFF',
       light: '#F8FAFC',
@@ -83,7 +98,6 @@ const DESIGN_SYSTEM = {
   },
 };
 
-// 高对比度标签组件
 const HighContrastTag = ({
   children,
   color = 'blue'
@@ -112,7 +126,6 @@ const HighContrastTag = ({
   );
 };
 
-// 模块卡片组件
 const ModuleCard = ({ module }: { module: RegistryModule }) => (
   <div
     style={{
@@ -144,7 +157,7 @@ const ModuleCard = ({ module }: { module: RegistryModule }) => (
           规则链：
         </Text>
         <Space wrap size="small">
-          {module.ruleChain.map((node, i) => (
+          {module.ruleChain.map((node: string, i: number) => (
             <HighContrastTag key={node} color="purple">
               {i + 1}. {node}
             </HighContrastTag>
@@ -159,7 +172,7 @@ const ModuleCard = ({ module }: { module: RegistryModule }) => (
           功能点：
         </Text>
         <Space wrap size="small">
-          {module.features.map((f) => (
+          {module.features.map((f: string) => (
             <HighContrastTag key={f} color="orange">
               {f}
             </HighContrastTag>
@@ -171,7 +184,18 @@ const ModuleCard = ({ module }: { module: RegistryModule }) => (
 );
 
 const BlockLibrary: React.FC = () => {
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('triggers');
+
+  // Trigger CRUD state
+  const [triggerModalOpen, setTriggerModalOpen] = useState(false);
+  const [editingTrigger, setEditingTrigger] = useState<TriggerType | null>(null);
+  const [triggerForm] = Form.useForm();
+
+  // Rule Node CRUD state
+  const [ruleNodeModalOpen, setRuleNodeModalOpen] = useState(false);
+  const [editingRuleNode, setEditingRuleNode] = useState<RuleNodeType | null>(null);
+  const [ruleNodeForm] = Form.useForm();
 
   const { data: triggersData, isLoading: triggersLoading, refetch: refetchTriggers } = useQuery({
     queryKey: ['registry-triggers'],
@@ -206,6 +230,124 @@ const BlockLibrary: React.FC = () => {
   const features: FeatureInfo[] = Array.isArray(featuresData) ? featuresData : (featuresData?.data || []);
   const modules: RegistryModule[] = Array.isArray(modulesData) ? modulesData : (modulesData?.data || []);
 
+  // ---- Trigger CRUD ----
+  const triggerCreateMutation = useMutation({
+    mutationFn: createTriggerType,
+    onSuccess: () => {
+      message.success('创建成功');
+      setTriggerModalOpen(false);
+      triggerForm.resetFields();
+      queryClient.invalidateQueries({ queryKey: ['registry-triggers'] });
+    },
+    onError: (err: any) => message.error(err?.message || '创建失败'),
+  });
+
+  const triggerUpdateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => updateTriggerType(id, data),
+    onSuccess: () => {
+      message.success('更新成功');
+      setTriggerModalOpen(false);
+      setEditingTrigger(null);
+      triggerForm.resetFields();
+      queryClient.invalidateQueries({ queryKey: ['registry-triggers'] });
+    },
+    onError: (err: any) => message.error(err?.message || '更新失败'),
+  });
+
+  const triggerDeleteMutation = useMutation({
+    mutationFn: deleteTriggerType,
+    onSuccess: () => {
+      message.success('删除成功');
+      queryClient.invalidateQueries({ queryKey: ['registry-triggers'] });
+    },
+    onError: (err: any) => message.error(err?.message || '删除失败'),
+  });
+
+  const openTriggerCreate = () => {
+    setEditingTrigger(null);
+    triggerForm.resetFields();
+    setTriggerModalOpen(true);
+  };
+
+  const openTriggerEdit = (record: TriggerInfo & { id?: string }) => {
+    // The list endpoint returns TriggerInfo format; for edit we need the id
+    // The GET triggers returns type as "type" field but the DB entity uses "id" as PK
+    // We'll use the record data directly
+    setEditingTrigger(record as any);
+    triggerForm.setFieldsValue({
+      code: record.type,
+      name: record.name,
+      description: record.description,
+    });
+    setTriggerModalOpen(true);
+  };
+
+  const handleTriggerFormFinish = (values: any) => {
+    if (editingTrigger) {
+      triggerUpdateMutation.mutate({ id: (editingTrigger as any).id || editingTrigger.type, data: values });
+    } else {
+      triggerCreateMutation.mutate(values);
+    }
+  };
+
+  // ---- Rule Node CRUD ----
+  const ruleNodeCreateMutation = useMutation({
+    mutationFn: createRuleNodeType,
+    onSuccess: () => {
+      message.success('创建成功');
+      setRuleNodeModalOpen(false);
+      ruleNodeForm.resetFields();
+      queryClient.invalidateQueries({ queryKey: ['registry-rule-nodes'] });
+    },
+    onError: (err: any) => message.error(err?.message || '创建失败'),
+  });
+
+  const ruleNodeUpdateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => updateRuleNodeType(id, data),
+    onSuccess: () => {
+      message.success('更新成功');
+      setRuleNodeModalOpen(false);
+      setEditingRuleNode(null);
+      ruleNodeForm.resetFields();
+      queryClient.invalidateQueries({ queryKey: ['registry-rule-nodes'] });
+    },
+    onError: (err: any) => message.error(err?.message || '更新失败'),
+  });
+
+  const ruleNodeDeleteMutation = useMutation({
+    mutationFn: deleteRuleNodeType,
+    onSuccess: () => {
+      message.success('删除成功');
+      queryClient.invalidateQueries({ queryKey: ['registry-rule-nodes'] });
+    },
+    onError: (err: any) => message.error(err?.message || '删除失败'),
+  });
+
+  const openRuleNodeCreate = () => {
+    setEditingRuleNode(null);
+    ruleNodeForm.resetFields();
+    setRuleNodeModalOpen(true);
+  };
+
+  const openRuleNodeEdit = (record: RuleNodeInfo & { id?: string }) => {
+    setEditingRuleNode(record as any);
+    ruleNodeForm.setFieldsValue({
+      code: record.name,
+      name: record.name,
+      description: record.description,
+      sortOrder: record.sortOrder,
+    });
+    setRuleNodeModalOpen(true);
+  };
+
+  const handleRuleNodeFormFinish = (values: any) => {
+    if (editingRuleNode) {
+      ruleNodeUpdateMutation.mutate({ id: (editingRuleNode as any).id || editingRuleNode.name, data: values });
+    } else {
+      ruleNodeCreateMutation.mutate({ ...values, beanName: values.beanName || values.code });
+    }
+  };
+
   const handleRefresh = () => {
     switch (activeTab) {
       case 'triggers':
@@ -227,7 +369,7 @@ const BlockLibrary: React.FC = () => {
     {
       title: '触发器类型',
       dataIndex: 'type',
-      width: 160,
+      width: 180,
       render: (type: string) => <HighContrastTag color="blue">{type}</HighContrastTag>,
     },
     {
@@ -241,25 +383,33 @@ const BlockLibrary: React.FC = () => {
       ),
     },
     {
-      title: '关联产品',
-      dataIndex: 'productCode',
-      width: 160,
-      render: (code: string) => {
-        const module = modules.find((m) => m.code === code);
-        return module ? (
-          <HighContrastTag color="geekblue">{module.name}</HighContrastTag>
-        ) : (
-          <HighContrastTag color="gray">{code}</HighContrastTag>
-        );
-      },
-    },
-    {
       title: '说明',
       dataIndex: 'description',
       render: (desc: string) => (
         <Text style={{ color: DESIGN_SYSTEM.colors.text.secondary }}>
           {desc || '-'}
         </Text>
+      ),
+    },
+    {
+      title: '操作',
+      width: 140,
+      render: (_: unknown, record: TriggerInfo & { id?: string }) => (
+        <Space size="small">
+          <Button type="link" size="small" icon={<EditOutlined />} onClick={() => openTriggerEdit(record)}>
+            编辑
+          </Button>
+          <Popconfirm
+            title="确认删除此触发器类型？"
+            onConfirm={() => triggerDeleteMutation.mutate((record as any).id || record.type)}
+            okText="确认"
+            cancelText="取消"
+          >
+            <Button type="link" size="small" danger icon={<DeleteOutlined />}>
+              删除
+            </Button>
+          </Popconfirm>
+        </Space>
       ),
     },
   ];
@@ -317,6 +467,27 @@ const BlockLibrary: React.FC = () => {
           <HighContrastTag color="gray">通用</HighContrastTag>
         );
       },
+    },
+    {
+      title: '操作',
+      width: 140,
+      render: (_: unknown, record: RuleNodeInfo & { id?: string }) => (
+        <Space size="small">
+          <Button type="link" size="small" icon={<EditOutlined />} onClick={() => openRuleNodeEdit(record)}>
+            编辑
+          </Button>
+          <Popconfirm
+            title="确认删除此规则节点类型？"
+            onConfirm={() => ruleNodeDeleteMutation.mutate((record as any).id || record.name)}
+            okText="确认"
+            cancelText="取消"
+          >
+            <Button type="link" size="small" danger icon={<DeleteOutlined />}>
+              删除
+            </Button>
+          </Popconfirm>
+        </Space>
+      ),
     },
   ];
 
@@ -437,6 +608,11 @@ const BlockLibrary: React.FC = () => {
       ),
       children: (
         <>
+          <div style={{ marginBottom: 16, textAlign: 'right' }}>
+            <Button type="primary" icon={<PlusOutlined />} onClick={openTriggerCreate}>
+              新增触发器类型
+            </Button>
+          </div>
           <Table
             columns={triggerColumns}
             dataSource={triggers}
@@ -446,18 +622,11 @@ const BlockLibrary: React.FC = () => {
             locale={{
               emptyText: (
                 <Empty
-                  description="暂无已注册的触发器。请联系开发团队添加新的触发器类型。"
+                  description="暂无触发器类型，点击上方按钮新增"
                   image={Empty.PRESENTED_IMAGE_SIMPLE}
                 />
               ),
             }}
-          />
-          <Alert
-            type="info"
-            showIcon
-            message={EXTENSION_GUIDANCE.title}
-            description={EXTENSION_GUIDANCE.description}
-            style={{ marginTop: 16 }}
           />
         </>
       ),
@@ -481,6 +650,11 @@ const BlockLibrary: React.FC = () => {
       ),
       children: (
         <>
+          <div style={{ marginBottom: 16, textAlign: 'right' }}>
+            <Button type="primary" icon={<PlusOutlined />} onClick={openRuleNodeCreate}>
+              新增规则节点类型
+            </Button>
+          </div>
           <Table
             columns={ruleNodeColumns}
             dataSource={ruleNodes}
@@ -490,18 +664,11 @@ const BlockLibrary: React.FC = () => {
             locale={{
               emptyText: (
                 <Empty
-                  description="暂无已注册的规则节点。请联系开发团队添加新的规则节点类型。"
+                  description="暂无规则节点类型，点击上方按钮新增"
                   image={Empty.PRESENTED_IMAGE_SIMPLE}
                 />
               ),
             }}
-          />
-          <Alert
-            type="info"
-            showIcon
-            message={EXTENSION_GUIDANCE.title}
-            description={EXTENSION_GUIDANCE.description}
-            style={{ marginTop: 16 }}
           />
         </>
       ),
@@ -534,18 +701,11 @@ const BlockLibrary: React.FC = () => {
             locale={{
               emptyText: (
                 <Empty
-                  description="暂无已注册的功能点模板。请联系开发团队添加新的功能点类型。"
+                  description="暂无已注册的功能点模板"
                   image={Empty.PRESENTED_IMAGE_SIMPLE}
                 />
               ),
             }}
-          />
-          <Alert
-            type="info"
-            showIcon
-            message={EXTENSION_GUIDANCE.title}
-            description={EXTENSION_GUIDANCE.description}
-            style={{ marginTop: 16 }}
           />
         </>
       ),
@@ -554,7 +714,6 @@ const BlockLibrary: React.FC = () => {
 
   return (
     <div>
-      {/* 标题区域 */}
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
@@ -566,7 +725,7 @@ const BlockLibrary: React.FC = () => {
             积木组件库
           </h2>
           <p style={{ margin: '4px 0 0', fontSize: 14, color: '#94A3B8' }}>
-            查看系统中已注册的所有积木组件（触发器、规则节点、功能点、产品模块）
+            管理系统中所有积木组件（触发器、规则节点、功能点、产品模块）
           </p>
         </div>
 
@@ -579,7 +738,6 @@ const BlockLibrary: React.FC = () => {
         </Button>
       </div>
 
-      {/* Tabs */}
       <div style={{
         background: '#ffffff',
         border: '1px solid rgba(0, 0, 0, 0.06)',
@@ -594,6 +752,122 @@ const BlockLibrary: React.FC = () => {
           tabBarStyle={{ marginBottom: 24 }}
         />
       </div>
+
+      {/* Trigger Type Modal */}
+      <Modal
+        title={editingTrigger ? '编辑触发器类型' : '新增触发器类型'}
+        open={triggerModalOpen}
+        onCancel={() => { setTriggerModalOpen(false); setEditingTrigger(null); triggerForm.resetFields(); }}
+        footer={null}
+        width={500}
+      >
+        <Form form={triggerForm} layout="vertical" onFinish={handleTriggerFormFinish}>
+          {editingTrigger ? (
+            <Form.Item label="编码">
+              <Input value={editingTrigger.type} disabled />
+            </Form.Item>
+          ) : (
+            <Form.Item
+              name="code"
+              label="编码"
+              rules={[{ required: true, message: '请输入触发器编码' }]}
+              extra="唯一标识，如 check_in、sensor_data，创建后不可修改"
+            >
+              <Input placeholder="如: check_in" style={{ fontFamily: 'monospace' }} />
+            </Form.Item>
+          )}
+          <Form.Item
+            name="name"
+            label="名称"
+            rules={[{ required: true, message: '请输入触发器名称' }]}
+          >
+            <Input placeholder="如: 打卡触发器" />
+          </Form.Item>
+          <Form.Item name="description" label="描述">
+            <Input.TextArea rows={2} placeholder="触发器描述（选填）" />
+          </Form.Item>
+          <Form.Item name="sortOrder" label="排序" initialValue={0}>
+            <InputNumber min={0} style={{ width: '100%' }} />
+          </Form.Item>
+          <Form.Item style={{ marginBottom: 0 }}>
+            <Space>
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={triggerCreateMutation.isPending || triggerUpdateMutation.isPending}
+              >
+                {editingTrigger ? '保存修改' : '确认创建'}
+              </Button>
+              <Button onClick={() => { setTriggerModalOpen(false); setEditingTrigger(null); triggerForm.resetFields(); }}>
+                取消
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* Rule Node Type Modal */}
+      <Modal
+        title={editingRuleNode ? '编辑规则节点类型' : '新增规则节点类型'}
+        open={ruleNodeModalOpen}
+        onCancel={() => { setRuleNodeModalOpen(false); setEditingRuleNode(null); ruleNodeForm.resetFields(); }}
+        footer={null}
+        width={500}
+      >
+        <Form form={ruleNodeForm} layout="vertical" onFinish={handleRuleNodeFormFinish}>
+          {editingRuleNode ? (
+            <Form.Item label="编码">
+              <Input value={editingRuleNode.name} disabled />
+            </Form.Item>
+          ) : (
+            <>
+              <Form.Item
+                name="code"
+                label="节点编码"
+                rules={[{ required: true, message: '请输入节点编码' }]}
+                extra="唯一标识，如 time_slot_match，创建后不可修改"
+              >
+                <Input placeholder="如: time_slot_match" style={{ fontFamily: 'monospace' }} />
+              </Form.Item>
+              <Form.Item
+                name="beanName"
+                label="Bean 名称"
+                rules={[{ required: true, message: '请输入对应的 Java Bean 名称' }]}
+                extra="对应 RuleNode 实现类的 getName() 返回值，如 timeSlotMatch"
+              >
+                <Input placeholder="如: timeSlotMatch" style={{ fontFamily: 'monospace' }} />
+              </Form.Item>
+            </>
+          )}
+          <Form.Item
+            name="name"
+            label="显示名称"
+            rules={[{ required: true, message: '请输入显示名称' }]}
+          >
+            <Input placeholder="如: 时段匹配" />
+          </Form.Item>
+          <Form.Item name="description" label="描述">
+            <Input.TextArea rows={2} placeholder="规则节点描述（选填）" />
+          </Form.Item>
+          <Form.Item name="sortOrder" label="排序" initialValue={0}>
+            <InputNumber min={0} style={{ width: '100%' }} />
+          </Form.Item>
+          <Form.Item style={{ marginBottom: 0 }}>
+            <Space>
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={ruleNodeCreateMutation.isPending || ruleNodeUpdateMutation.isPending}
+              >
+                {editingRuleNode ? '保存修改' : '确认创建'}
+              </Button>
+              <Button onClick={() => { setRuleNodeModalOpen(false); setEditingRuleNode(null); ruleNodeForm.resetFields(); }}>
+                取消
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 };

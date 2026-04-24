@@ -95,6 +95,7 @@ public class PlatformRegistryController {
         List<TriggerTypeEntity> triggerTypes = triggerTypeService.list();
         List<RegistryModuleRes.TriggerInfo> triggers = triggerTypes.stream()
                 .map(tt -> RegistryModuleRes.TriggerInfo.builder()
+                        .id(tt.getId())
                         .type(tt.getCode())
                         .name(tt.getName())
                         .productCode(null)
@@ -113,6 +114,7 @@ public class PlatformRegistryController {
         List<RuleNodeTypeEntity> nodeTypes = ruleNodeTypeService.list();
         List<RegistryModuleRes.RuleNodeInfo> nodes = nodeTypes.stream()
                 .map(rnt -> RegistryModuleRes.RuleNodeInfo.builder()
+                        .id(rnt.getId())
                         .name(rnt.getCode())
                         .description(rnt.getDescription())
                         .sortOrder(rnt.getSortOrder())

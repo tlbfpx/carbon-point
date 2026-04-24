@@ -31,6 +31,7 @@ import SystemUsers from '@/pages/SystemUsers';
 import SystemRoles from '@/pages/SystemRoles';
 import OperationLogs from '@/pages/OperationLogs';
 import DictManagement from '@/pages/DictManagement';
+import FeatureManagement from '@/pages/FeatureManagement';
 import PlatformLoginPage from '@/pages/PlatformLoginPage';
 
 import { useAuthStore } from '@/store/authStore';
@@ -56,6 +57,7 @@ const PLATFORM_PERMISSION_MAP: Record<string, string> = {
   '/system/logs': 'platform:system:log:query',
   '/system/dict': 'platform:system:dict:view',
   '/features/products': 'platform:product:list',
+  '/features/registry': 'platform:feature:list',
   '/features/blocks': 'platform:block:list',
   '/packages': 'platform:package:list',
   '/config': 'platform:config:view',
@@ -71,6 +73,7 @@ const PLATFORM_MENU_ROLES: Record<string, PlatformRole[]> = {
   '/system/dict': [PLATFORM_ROLES.SUPER_ADMIN],
   '/features': [PLATFORM_ROLES.SUPER_ADMIN, PLATFORM_ROLES.ADMIN],
   '/features/products': [PLATFORM_ROLES.SUPER_ADMIN, PLATFORM_ROLES.ADMIN],
+  '/features/registry': [PLATFORM_ROLES.SUPER_ADMIN, PLATFORM_ROLES.ADMIN],
   '/features/blocks': [PLATFORM_ROLES.SUPER_ADMIN, PLATFORM_ROLES.ADMIN],
   '/packages': [PLATFORM_ROLES.SUPER_ADMIN, PLATFORM_ROLES.ADMIN, PLATFORM_ROLES.VIEWER],
   '/config': [PLATFORM_ROLES.SUPER_ADMIN, PLATFORM_ROLES.ADMIN, PLATFORM_ROLES.VIEWER],
@@ -95,6 +98,7 @@ const PlatformMenuItems: MenuProps['items'] = [
     icon: <AppstoreOutlined />,
     label: '功能配置',
     children: [
+      { key: '/features/registry', label: '功能配置项' },
       { key: '/features/products', label: '产品管理' },
       { key: '/features/blocks', label: '积木组件库' },
     ],
@@ -273,6 +277,7 @@ const PlatformContent: React.FC = () => {
                   <Route path="/system/logs" element={<OperationLogs />} />
                   <Route path="/system/dict" element={<DictManagement />} />
                   <Route path="/config" element={<PlatformConfig />} />
+                  <Route path="/features/registry" element={<FeatureManagement />} />
                   <Route path="/features/products" element={<ProductManagement />} />
                   <Route path="/products/:id/config" element={<ProductConfig />} />
                   <Route path="/features/blocks" element={<BlockLibrary />} />

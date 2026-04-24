@@ -117,6 +117,11 @@ export const toggleEnterpriseStatus = async (id: string, status: 'active' | 'ina
   return res.data;
 };
 
+export const deleteEnterprise = async (id: string) => {
+  const res = await platformApiClient.delete(`/tenants/${id}`);
+  return res.data;
+};
+
 export const getPlatformAdmins = async () => {
   const res = await platformApiClient.get('/admins', { params: { pageSize: 500 } });
   return res.data;
@@ -607,6 +612,7 @@ export const updatePlatformRolePermissions = async (id: string, permissionCodes:
 
 // Registry APIs - SPI component discovery
 export interface TriggerInfo {
+  id: string;
   type: string;
   name: string;
   productCode: string;
@@ -614,6 +620,7 @@ export interface TriggerInfo {
 }
 
 export interface RuleNodeInfo {
+  id: string;
   name: string;
   description: string;
   sortOrder: number;
@@ -659,6 +666,59 @@ export const getRegistryRuleNodes = async () => {
 
 export const getRegistryFeatures = async () => {
   const res = await platformApiClient.get('/registry/features');
+  return res.data;
+};
+
+// Trigger Type CRUD
+export interface TriggerType {
+  id: string;
+  code: string;
+  name: string;
+  description?: string;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const createTriggerType = async (data: { code: string; name: string; description?: string; sortOrder?: number }) => {
+  const res = await platformApiClient.post('/registry/triggers', data);
+  return res.data;
+};
+
+export const updateTriggerType = async (id: string, data: { name?: string; description?: string; sortOrder?: number }) => {
+  const res = await platformApiClient.put(`/registry/triggers/${id}`, data);
+  return res.data;
+};
+
+export const deleteTriggerType = async (id: string) => {
+  const res = await platformApiClient.delete(`/registry/triggers/${id}`);
+  return res.data;
+};
+
+// Rule Node Type CRUD
+export interface RuleNodeType {
+  id: string;
+  code: string;
+  name: string;
+  description?: string;
+  beanName: string;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const createRuleNodeType = async (data: { code: string; name: string; description?: string; beanName: string; sortOrder?: number }) => {
+  const res = await platformApiClient.post('/registry/rule-nodes', data);
+  return res.data;
+};
+
+export const updateRuleNodeType = async (id: string, data: { name?: string; description?: string; beanName?: string; sortOrder?: number }) => {
+  const res = await platformApiClient.put(`/registry/rule-nodes/${id}`, data);
+  return res.data;
+};
+
+export const deleteRuleNodeType = async (id: string) => {
+  const res = await platformApiClient.delete(`/registry/rule-nodes/${id}`);
   return res.data;
 };
 
