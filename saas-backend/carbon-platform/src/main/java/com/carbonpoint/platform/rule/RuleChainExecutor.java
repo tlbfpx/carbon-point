@@ -48,8 +48,22 @@ public class RuleChainExecutor {
     /** Index: camelCase name → RuleNode bean. Built in @PostConstruct. */
     private final Map<String, RuleNode> nodeIndex = new HashMap<>();
 
+    /**
+     * Dynamic name mapping populated from the rule_node_types database table.
+     * Takes priority over the static NAME_MAP when resolving snake_case to camelCase.
+     */
+    private final Map<String, String> dynamicNameMap = new HashMap<>();
+
     public RuleChainExecutor(Optional<List<RuleNode>> allNodes) {
         this.allNodes = allNodes.orElse(List.of());
+    }
+
+    /**
+     * Register a code-to-bean_name mapping from the database catalog.
+     * Called by PlatformRegistryController at startup after loading rule_node_types.
+     */
+    public void registerNameMapping(String code, String beanName) {
+        dynamicNameMap.put(code, beanName);
     }
 
     @PostConstruct
@@ -110,8 +124,9 @@ public class RuleChainExecutor {
 
         List<RuleNode> resolved = new ArrayList<>();
         for (String rawName : nodeNames) {
-            // Try direct camelCase lookup first, then map from snake_case
-            String camelName = NAME_MAP.getOrDefault(rawName, rawName);
+            // Resolve: dynamicNameMap (DB) > static NAME_MAP > raw name
+            String camelName = dynamicNameMap.getOrDefault(rawName,
+                    NAME_MAP.getOrDefault(rawName, rawName));
             RuleNode node = nodeIndex.get(camelName);
             if (node != null) {
                 resolved.add(node);

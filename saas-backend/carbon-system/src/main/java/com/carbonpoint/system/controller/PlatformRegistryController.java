@@ -4,24 +4,24 @@ import com.carbonpoint.common.result.Result;
 import com.carbonpoint.platform.Feature;
 import com.carbonpoint.platform.ProductModule;
 import com.carbonpoint.platform.registry.ProductRegistry;
+import com.carbonpoint.platform.rule.RuleChainExecutor;
 import com.carbonpoint.system.dto.res.RegistryModuleRes;
+import com.carbonpoint.system.entity.RuleNodeTypeEntity;
+import com.carbonpoint.system.entity.TriggerTypeEntity;
+import com.carbonpoint.system.service.RuleNodeTypeService;
+import com.carbonpoint.system.service.TriggerTypeService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Exposes the SPI registry so the platform admin UI can discover
  * available triggers, rule nodes, and feature templates.
+ * Trigger types and rule node types are now backed by database tables
+ * (trigger_types, rule_node_types) for full CRUD support.
  */
 @RestController
 @RequestMapping("/platform/registry")
@@ -47,6 +47,21 @@ public class PlatformRegistryController {
     }
 
     private final ProductRegistry productRegistry;
+    private final TriggerTypeService triggerTypeService;
+    private final RuleNodeTypeService ruleNodeTypeService;
+    private final RuleChainExecutor ruleChainExecutor;
+
+    /**
+     * After application startup, load rule_node_types from DB and register
+     * their code-to-bean_name mappings in RuleChainExecutor's dynamic map.
+     */
+    @EventListener(ApplicationReadyEvent.class)
+    void registerDynamicNameMappings() {
+        List<RuleNodeTypeEntity> nodeTypes = ruleNodeTypeService.list();
+        for (RuleNodeTypeEntity entity : nodeTypes) {
+            ruleChainExecutor.registerNameMapping(entity.getCode(), entity.getBeanName());
+        }
+    }
 
     /**
      * List all registered product modules with full metadata.
@@ -72,51 +87,37 @@ public class PlatformRegistryController {
     }
 
     /**
-     * List all unique trigger types across all registered modules.
+     * List all trigger types from the database catalog.
      * GET /platform/registry/triggers
      */
     @GetMapping("/triggers")
     public Result<List<RegistryModuleRes.TriggerInfo>> getTriggers() {
-        Set<String> seen = new LinkedHashSet<>();
-        List<RegistryModuleRes.TriggerInfo> triggers = new ArrayList<>();
-        for (ProductModule module : productRegistry.getAllModules()) {
-            String type = module.getTriggerType();
-            if (seen.add(type)) {
-                triggers.add(RegistryModuleRes.TriggerInfo.builder()
-                        .type(type)
-                        .name(getTriggerName(type))
-                        .productCode(module.getCode())
-                        .description(TRIGGER_DESCRIPTIONS.getOrDefault(type, ""))
-                        .build());
-            }
-        }
+        List<TriggerTypeEntity> triggerTypes = triggerTypeService.list();
+        List<RegistryModuleRes.TriggerInfo> triggers = triggerTypes.stream()
+                .map(tt -> RegistryModuleRes.TriggerInfo.builder()
+                        .type(tt.getCode())
+                        .name(tt.getName())
+                        .productCode(null)
+                        .description(tt.getDescription())
+                        .build())
+                .toList();
         return Result.success(triggers);
     }
 
     /**
-     * List all unique rule node types across all registered modules.
+     * List all rule node types from the database catalog.
      * GET /platform/registry/rule-nodes
      */
     @GetMapping("/rule-nodes")
     public Result<List<RegistryModuleRes.RuleNodeInfo>> getRuleNodes() {
-        Set<String> seen = new LinkedHashSet<>();
-        List<RegistryModuleRes.RuleNodeInfo> nodes = new ArrayList<>();
-        for (ProductModule module : productRegistry.getAllModules()) {
-            List<String> chain = module.getRuleChain();
-            if (chain != null) {
-                for (int i = 0; i < chain.size(); i++) {
-                    String name = chain.get(i);
-                    if (seen.add(name)) {
-                        nodes.add(RegistryModuleRes.RuleNodeInfo.builder()
-                                .name(name)
-                                .description(RULE_NODE_DESCRIPTIONS.getOrDefault(name, ""))
-                                .sortOrder(i)
-                                .build());
-                    }
-                }
-            }
-        }
-        nodes.sort(Comparator.comparingInt(RegistryModuleRes.RuleNodeInfo::getSortOrder));
+        List<RuleNodeTypeEntity> nodeTypes = ruleNodeTypeService.list();
+        List<RegistryModuleRes.RuleNodeInfo> nodes = nodeTypes.stream()
+                .map(rnt -> RegistryModuleRes.RuleNodeInfo.builder()
+                        .name(rnt.getCode())
+                        .description(rnt.getDescription())
+                        .sortOrder(rnt.getSortOrder())
+                        .build())
+                .toList();
         return Result.success(nodes);
     }
 
@@ -145,6 +146,78 @@ public class PlatformRegistryController {
         }
         return Result.success(features);
     }
+
+    // ---- Trigger Type CRUD ----
+
+    /**
+     * Create a new trigger type.
+     * POST /platform/registry/triggers
+     */
+    @PostMapping("/triggers")
+    public Result<TriggerTypeEntity> createTrigger(@RequestBody TriggerTypeEntity entity) {
+        TriggerTypeEntity created = triggerTypeService.create(entity);
+        return Result.success(created);
+    }
+
+    /**
+     * Update an existing trigger type.
+     * PUT /platform/registry/triggers/{id}
+     */
+    @PutMapping("/triggers/{id}")
+    public Result<TriggerTypeEntity> updateTrigger(@PathVariable String id,
+                                                    @RequestBody TriggerTypeEntity updates) {
+        TriggerTypeEntity updated = triggerTypeService.update(id, updates);
+        return Result.success(updated);
+    }
+
+    /**
+     * Delete a trigger type.
+     * DELETE /platform/registry/triggers/{id}
+     */
+    @DeleteMapping("/triggers/{id}")
+    public Result<Void> deleteTrigger(@PathVariable String id) {
+        triggerTypeService.delete(id);
+        return Result.success();
+    }
+
+    // ---- Rule Node Type CRUD ----
+
+    /**
+     * Create a new rule node type.
+     * POST /platform/registry/rule-nodes
+     */
+    @PostMapping("/rule-nodes")
+    public Result<RuleNodeTypeEntity> createRuleNode(@RequestBody RuleNodeTypeEntity entity) {
+        RuleNodeTypeEntity created = ruleNodeTypeService.create(entity);
+        // Register the new mapping in RuleChainExecutor's dynamic map
+        ruleChainExecutor.registerNameMapping(entity.getCode(), entity.getBeanName());
+        return Result.success(created);
+    }
+
+    /**
+     * Update an existing rule node type.
+     * PUT /platform/registry/rule-nodes/{id}
+     */
+    @PutMapping("/rule-nodes/{id}")
+    public Result<RuleNodeTypeEntity> updateRuleNode(@PathVariable String id,
+                                                      @RequestBody RuleNodeTypeEntity updates) {
+        RuleNodeTypeEntity updated = ruleNodeTypeService.update(id, updates);
+        // Re-register the mapping in case beanName changed
+        ruleChainExecutor.registerNameMapping(updated.getCode(), updated.getBeanName());
+        return Result.success(updated);
+    }
+
+    /**
+     * Delete a rule node type.
+     * DELETE /platform/registry/rule-nodes/{id}
+     */
+    @DeleteMapping("/rule-nodes/{id}")
+    public Result<Void> deleteRuleNode(@PathVariable String id) {
+        ruleNodeTypeService.delete(id);
+        return Result.success();
+    }
+
+    // ---- Private helpers ----
 
     private RegistryModuleRes toModuleRes(ProductModule module) {
         List<RegistryModuleRes.RuleNodeInfo> ruleNodes = new ArrayList<>();
