@@ -34,6 +34,10 @@ public class PointRule {
     /** 执行顺序 */
     private Integer sortOrder;
 
+    private String sourceTemplateId;
+
+    private String productCode;
+
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdAt;
 

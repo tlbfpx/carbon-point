@@ -1,14 +1,21 @@
 package com.carbonpoint.system.controller;
 
 import com.carbonpoint.common.result.Result;
+import com.carbonpoint.system.dto.req.BasicConfigUpdateReq;
 import com.carbonpoint.system.dto.req.ProductCreateReq;
 import com.carbonpoint.system.dto.req.ProductFeatureUpdateReq;
 import com.carbonpoint.system.dto.req.ProductUpdateReq;
+import com.carbonpoint.system.dto.req.RuleTemplateCreateReq;
+import com.carbonpoint.system.dto.req.RuleTemplateUpdateReq;
 import com.carbonpoint.system.dto.res.PageRes;
 import com.carbonpoint.system.dto.res.ProductFeatureRes;
 import com.carbonpoint.system.dto.res.ProductPackageBriefRes;
 import com.carbonpoint.system.dto.res.ProductRes;
+import com.carbonpoint.system.dto.res.RuleTemplateRes;
+import com.carbonpoint.system.security.PlatformAdminOnly;
+import com.carbonpoint.system.service.ProductRuleTemplateService;
 import com.carbonpoint.system.service.ProductService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,6 +30,7 @@ import java.util.List;
 public class ProductController {
 
     private final ProductService productService;
+    private final ProductRuleTemplateService ruleTemplateService;
 
     /**
      * List products with pagination.
@@ -99,5 +107,48 @@ public class ProductController {
     @GetMapping("/{productId}/packages")
     public Result<List<ProductPackageBriefRes>> getProductPackages(@PathVariable String productId) {
         return Result.success(productService.getProductPackages(productId));
+    }
+
+    @PlatformAdminOnly
+    @GetMapping("/{id}/basic-config")
+    public Result<String> getBasicConfig(@PathVariable String id) {
+        return Result.success(productService.getBasicConfig(id));
+    }
+
+    @PlatformAdminOnly
+    @PutMapping("/{id}/basic-config")
+    public Result<Void> updateBasicConfig(@PathVariable String id, @RequestBody @Valid BasicConfigUpdateReq req) {
+        productService.updateBasicConfig(id, req.getBasicConfig());
+        return Result.success(null);
+    }
+
+    @PlatformAdminOnly
+    @GetMapping("/{id}/rule-templates")
+    public Result<List<RuleTemplateRes>> listRuleTemplates(@PathVariable String id) {
+        return Result.success(ruleTemplateService.listByProduct(id));
+    }
+
+    @PlatformAdminOnly
+    @PostMapping("/{id}/rule-templates")
+    public Result<RuleTemplateRes> createRuleTemplate(@PathVariable String id, @RequestBody @Valid RuleTemplateCreateReq req) {
+        RuleTemplateRes res = ruleTemplateService.create(id, req);
+        ruleTemplateService.syncToTenants(id);
+        return Result.success(res);
+    }
+
+    @PlatformAdminOnly
+    @PutMapping("/{id}/rule-templates/{templateId}")
+    public Result<RuleTemplateRes> updateRuleTemplate(@PathVariable String id, @PathVariable String templateId,
+                                                       @RequestBody @Valid RuleTemplateUpdateReq req) {
+        RuleTemplateRes res = ruleTemplateService.update(templateId, req);
+        ruleTemplateService.syncToTenants(id);
+        return Result.success(res);
+    }
+
+    @PlatformAdminOnly
+    @DeleteMapping("/{id}/rule-templates/{templateId}")
+    public Result<Void> deleteRuleTemplate(@PathVariable String id, @PathVariable String templateId) {
+        ruleTemplateService.delete(templateId);
+        return Result.success(null);
     }
 }

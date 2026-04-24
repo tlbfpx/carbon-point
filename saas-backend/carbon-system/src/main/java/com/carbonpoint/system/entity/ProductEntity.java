@@ -43,6 +43,8 @@ public class ProductEntity {
 
     private String defaultConfig;
 
+    private String basicConfig;
+
     @TableLogic
     private Integer deleted;
 

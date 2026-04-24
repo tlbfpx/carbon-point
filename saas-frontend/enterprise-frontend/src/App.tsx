@@ -42,6 +42,7 @@ import LoginPage from '@/pages/LoginPage';
 import OperationLog from '@/pages/OperationLog';
 import WalkingManagement from '@/pages/walking/WalkingManagement';
 import PointExpiration from '@/pages/PointExpiration';
+import ProductConfig from '@/pages/ProductConfig';
 
 import { useAuthStore } from '@/store/authStore';
 import { useBranding } from '@/components/BrandingProvider';
@@ -62,6 +63,7 @@ const ENTERPRISE_PERMISSION_MAP: Record<string, string | undefined> = {
   '/members': 'enterprise:member:list',
   '/rules': 'enterprise:rule:view',
   '/products': 'enterprise:product:list',
+  '/product-config': 'enterprise:product:config',
   '/orders': 'enterprise:order:list',
   '/points': 'enterprise:point:query',
   '/reports': 'enterprise:report:view',
@@ -99,6 +101,7 @@ const EnterpriseMenuItems: MenuProps['items'] = [
     ],
   },
   { key: '/products', icon: <ShopOutlined />, label: '产品管理' },
+  { key: '/product-config', icon: <SettingOutlined />, label: '产品配置' },
   { key: '/orders', icon: <ShoppingOutlined />, label: '订单管理' },
   { key: '/points', icon: <TrophyOutlined />, label: '积分运营' },
   { key: '/point-expiration', icon: <ClockCircleOutlined />, label: '积分过期配置' },
@@ -542,6 +545,7 @@ const EnterpriseContent: React.FC = () => {
             <Route path="/members" element={<PermissionGuard><Member /></PermissionGuard>} />
             <Route path="/rules" element={<PermissionGuard><Rules /></PermissionGuard>} />
             <Route path="/products" element={<PermissionGuard><Products /></PermissionGuard>} />
+            <Route path="/product-config" element={<PermissionGuard><ProductConfig /></PermissionGuard>} />
             <Route path="/orders" element={<PermissionGuard><Orders /></PermissionGuard>} />
             <Route path="/points" element={<PermissionGuard><Points /></PermissionGuard>} />
             <Route path="/point-expiration" element={<PermissionGuard><PointExpiration /></PermissionGuard>} />

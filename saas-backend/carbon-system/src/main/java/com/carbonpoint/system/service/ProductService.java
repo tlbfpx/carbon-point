@@ -27,4 +27,8 @@ public interface ProductService {
     void updateProductFeatures(String productId, ProductFeatureUpdateReq req);
 
     List<ProductPackageBriefRes> getProductPackages(String productId);
+
+    String getBasicConfig(String productId);
+
+    void updateBasicConfig(String productId, String basicConfigJson);
 }

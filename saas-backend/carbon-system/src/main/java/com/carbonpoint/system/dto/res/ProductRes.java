@@ -26,6 +26,7 @@ public class ProductRes {
     private String triggerType;
     private String ruleChainConfig;
     private String defaultConfig;
+    private String basicConfig;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

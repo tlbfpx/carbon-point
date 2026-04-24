@@ -259,4 +259,59 @@ public class PointRuleService {
         dto.setUpdatedAt(entity.getUpdatedAt());
         return dto;
     }
+
+    /**
+     * Upsert a point rule from a template. Updates config/name/sortOrder but preserves enabled.
+     */
+    @Transactional
+    public void upsertFromTemplate(Long tenantId, String sourceTemplateId, String productCode,
+                                    String ruleType, String name, String config, Integer sortOrder) {
+        LambdaQueryWrapper<PointRule> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(PointRule::getTenantId, tenantId)
+               .eq(PointRule::getSourceTemplateId, sourceTemplateId);
+        PointRule existing = pointRuleMapper.selectOne(wrapper);
+
+        if (existing != null) {
+            existing.setName(name);
+            existing.setConfig(config);
+            existing.setSortOrder(sortOrder);
+            pointRuleMapper.updateById(existing);
+        } else {
+            PointRule rule = new PointRule();
+            rule.setTenantId(tenantId);
+            rule.setType(ruleType);
+            rule.setName(name);
+            rule.setConfig(config);
+            rule.setEnabled(true);
+            rule.setSortOrder(sortOrder);
+            rule.setSourceTemplateId(sourceTemplateId);
+            rule.setProductCode(productCode);
+            pointRuleMapper.insert(rule);
+        }
+    }
+
+    /** Delete all point_rules that originated from a specific template. */
+    @Transactional
+    public void deleteBySourceTemplateId(String sourceTemplateId) {
+        pointRuleMapper.delete(new LambdaQueryWrapper<PointRule>()
+                .eq(PointRule::getSourceTemplateId, sourceTemplateId));
+    }
+
+    /** Get all point_rules for a tenant filtered by productCode. */
+    public List<PointRule> listByTenantAndProduct(Long tenantId, String productCode) {
+        LambdaQueryWrapper<PointRule> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(PointRule::getTenantId, tenantId)
+               .eq(PointRule::getProductCode, productCode)
+               .orderByAsc(PointRule::getSortOrder);
+        return pointRuleMapper.selectList(wrapper);
+    }
+
+    /** Toggle enabled state for a point rule. */
+    @Transactional
+    public void toggleEnabled(Long ruleId) {
+        PointRule rule = pointRuleMapper.selectById(ruleId);
+        if (rule == null) throw new IllegalArgumentException("规则不存在");
+        rule.setEnabled(!rule.getEnabled());
+        pointRuleMapper.updateById(rule);
+    }
 }

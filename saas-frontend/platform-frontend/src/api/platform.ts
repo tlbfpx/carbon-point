@@ -287,8 +287,27 @@ export interface Product {
   triggerType?: string;
   ruleChainConfig?: string;
   defaultConfig?: string;
+  basicConfig?: string;
   createTime: string;
   updateTime: string;
+}
+
+export interface RuleTemplate {
+  id: string;
+  productId: string;
+  ruleType: string;
+  name: string;
+  config: string;
+  enabled: boolean;
+  sortOrder: number;
+  description: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BasicConfig {
+  point_params: Record<string, any>;
+  behavior_params: Record<string, any>;
 }
 
 export interface Feature {
@@ -640,5 +659,37 @@ export const getRegistryRuleNodes = async () => {
 
 export const getRegistryFeatures = async () => {
   const res = await platformApiClient.get('/registry/features');
+  return res.data;
+};
+
+// Basic Config APIs
+export const getBasicConfig = async (productId: string): Promise<any> => {
+  const res = await platformApiClient.get(`/products/${productId}/basic-config`);
+  return res.data;
+};
+
+export const updateBasicConfig = async (productId: string, config: string): Promise<any> => {
+  const res = await platformApiClient.put(`/products/${productId}/basic-config`, { basicConfig: config });
+  return res.data;
+};
+
+// Rule Template APIs
+export const getRuleTemplates = async (productId: string): Promise<RuleTemplate[]> => {
+  const res = await platformApiClient.get(`/products/${productId}/rule-templates`);
+  return res.data;
+};
+
+export const createRuleTemplate = async (productId: string, data: any): Promise<RuleTemplate> => {
+  const res = await platformApiClient.post(`/products/${productId}/rule-templates`, data);
+  return res.data;
+};
+
+export const updateRuleTemplate = async (productId: string, templateId: string, data: any): Promise<RuleTemplate> => {
+  const res = await platformApiClient.put(`/products/${productId}/rule-templates/${templateId}`, data);
+  return res.data;
+};
+
+export const deleteRuleTemplate = async (productId: string, templateId: string): Promise<any> => {
+  const res = await platformApiClient.delete(`/products/${productId}/rule-templates/${templateId}`);
   return res.data;
 };

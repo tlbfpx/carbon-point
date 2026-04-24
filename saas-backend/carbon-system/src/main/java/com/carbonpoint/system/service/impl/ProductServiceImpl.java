@@ -22,6 +22,7 @@ import com.carbonpoint.system.mapper.PackageProductMapper;
 import com.carbonpoint.system.mapper.PermissionPackageMapper;
 import com.carbonpoint.system.mapper.ProductFeatureMapper;
 import com.carbonpoint.system.mapper.ProductMapper;
+import com.carbonpoint.system.service.ProductRuleTemplateService;
 import com.carbonpoint.system.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,6 +48,7 @@ public class ProductServiceImpl implements ProductService {
     private final FeatureMapper featureMapper;
     private final PackageProductMapper packageProductMapper;
     private final PermissionPackageMapper permissionPackageMapper;
+    private final ProductRuleTemplateService ruleTemplateService;
 
     @Override
     public PageRes<ProductRes> getProducts(int page, int size, String category, Integer status, String keyword) {
@@ -277,9 +279,27 @@ public class ProductServiceImpl implements ProductService {
                 .triggerType(product.getTriggerType())
                 .ruleChainConfig(product.getRuleChainConfig())
                 .defaultConfig(product.getDefaultConfig())
+                .basicConfig(product.getBasicConfig())
                 .featureCount(featureCount)
                 .createdAt(product.getCreatedAt())
                 .updatedAt(product.getUpdatedAt())
                 .build();
+    }
+
+    @Override
+    public String getBasicConfig(String productId) {
+        ProductEntity product = productMapper.selectById(productId);
+        if (product == null) throw new IllegalArgumentException("产品不存在: " + productId);
+        return product.getBasicConfig();
+    }
+
+    @Override
+    @Transactional
+    public void updateBasicConfig(String productId, String basicConfigJson) {
+        ProductEntity product = productMapper.selectById(productId);
+        if (product == null) throw new IllegalArgumentException("产品不存在: " + productId);
+        product.setBasicConfig(basicConfigJson);
+        productMapper.updateById(product);
+        ruleTemplateService.syncToTenants(productId);
     }
 }

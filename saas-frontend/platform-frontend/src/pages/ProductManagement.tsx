@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Table,
   Button,
@@ -15,15 +16,12 @@ import {
   Checkbox,
   Empty,
   Tooltip,
-  Drawer,
-  Descriptions,
   Badge,
-  Timeline,
   Steps,
   Alert,
   Typography,
 } from 'antd';
-const { Text, Title } = Typography;
+const { Text } = Typography;
 import { GlassCard } from '@carbon-point/design-system';
 import {
   PlusOutlined,
@@ -32,7 +30,6 @@ import {
   SettingOutlined,
   ReloadOutlined,
   CheckCircleOutlined,
-  EyeOutlined,
   HolderOutlined,
   ArrowUpOutlined,
   ArrowDownOutlined,
@@ -44,18 +41,13 @@ import {
   createProduct,
   updateProduct,
   deleteProduct,
-  getProductFeatures,
-  updateProductFeatures,
-  getFeatures,
   getRegistryModules,
   getRegistryRuleNodes,
   getRegistryFeatures,
   Product,
-  Feature,
   RegistryModule,
   RuleNodeInfo,
   FeatureInfo,
-  ProductFeature,
   getProductPackages,
 } from '@/api/platform';
 import { extractArray } from '@/utils';
@@ -97,16 +89,12 @@ const FEATURE_LABELS: Record<string, string> = {
 
 const ProductManagement: React.FC = () => {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [categoryFilter, setCategoryFilter] = useState<string | undefined>();
   const [modalOpen, setModalOpen] = useState(false);
-  const [featureModalOpen, setFeatureModalOpen] = useState(false);
-  const [drawerOpen, setDrawerOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [drawerProduct, setDrawerProduct] = useState<Product | null>(null);
-  const [selectedFeatures, setSelectedFeatures] = useState<Record<string, { enabled: boolean; required: boolean; configValue?: string }>>({});
   const [form] = Form.useForm();
 
   // Wizard state
@@ -137,9 +125,6 @@ const ProductManagement: React.FC = () => {
   const [configuringRuleNode, setConfiguringRuleNode] = useState<string>('');
   const [configuringRuleNodeIndex, setConfiguringRuleNodeIndex] = useState<number>(-1);
 
-  // Success modal state
-  const [successModalOpen, setSuccessModalOpen] = useState(false);
-
   // Product-package association map: productId → package brief list
   const [productPackagesMap, setProductPackagesMap] = useState<Record<string, { id: string; code: string; name: string }[]>>({});
 
@@ -150,18 +135,6 @@ const ProductManagement: React.FC = () => {
     refetchOnWindowFocus: false,
   });
 
-  const { data: featuresData } = useQuery({
-    queryKey: ['all-features'],
-    queryFn: () => getFeatures({ size: 100 }),
-    enabled: featureModalOpen,
-  });
-
-  const { data: drawerProductFeatures, isLoading: drawerFeaturesLoading } = useQuery({
-    queryKey: ['product-features-detail', drawerProduct?.id],
-    queryFn: () => getProductFeatures(drawerProduct!.id),
-    enabled: !!drawerProduct?.id && drawerOpen,
-    retry: false,
-  });
 
   // Registry data for wizard
   const { data: registryModulesData } = useQuery({
@@ -226,19 +199,6 @@ const ProductManagement: React.FC = () => {
     },
   });
 
-  const updateFeaturesMutation = useMutation({
-    mutationFn: ({ productId, features }: { productId: string; features: { featureId: string; isEnabled: boolean; isRequired: boolean; configValue?: string }[] }) =>
-      updateProductFeatures(productId, features),
-    onSuccess: () => {
-      message.success('功能点更新成功');
-      setFeatureModalOpen(false);
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-    },
-    onError: (err: unknown) => {
-      const error = err as { response?: { data?: { message?: string } } };
-      message.error(error?.response?.data?.message || '更新失败');
-    },
-  });
 
   const openCreateModal = () => {
     setEditingProduct(null);
@@ -257,29 +217,6 @@ const ProductManagement: React.FC = () => {
     setModalOpen(true);
   };
 
-  const openFeatureModal = async (record: Product) => {
-    setSelectedProduct(record);
-    try {
-      const productFeatures = await getProductFeatures(record.id);
-      const featureMap: Record<string, { enabled: boolean; required: boolean; configValue?: string }> = {};
-      (productFeatures || []).forEach((pf: ProductFeature) => {
-        featureMap[pf.featureId] = {
-          enabled: pf.isEnabled,
-          required: pf.isRequired,
-          configValue: pf.configValue,
-        };
-      });
-      setSelectedFeatures(featureMap);
-    } catch {
-      setSelectedFeatures({});
-    }
-    setFeatureModalOpen(true);
-  };
-
-  const openDetailDrawer = (record: Product) => {
-    setDrawerProduct(record);
-    setDrawerOpen(true);
-  };
 
   // Wizard helpers
   const openWizard = () => {
@@ -341,7 +278,7 @@ const ProductManagement: React.FC = () => {
       {
         onSuccess: () => {
           setWizardOpen(false);
-          setSuccessModalOpen(true);
+          message.success('产品创建成功');
         },
       }
     );
@@ -414,26 +351,12 @@ const ProductManagement: React.FC = () => {
     }
   };
 
-  const handleFeatureSave = () => {
-    if (!selectedProduct) return;
-    const allFeatures = extractArray<Feature>(featuresData);
-    const features = allFeatures
-      .filter((f: Feature) => selectedFeatures[f.id]?.enabled)
-      .map((f: Feature) => ({
-        featureId: f.id,
-        isEnabled: true,
-        isRequired: selectedFeatures[f.id]?.required || false,
-        configValue: selectedFeatures[f.id]?.configValue,
-      }));
-    updateFeaturesMutation.mutate({ productId: selectedProduct.id, features });
-  };
 
   const getCategoryConfig = (category: string) =>
     CATEGORY_OPTIONS.find((c) => c.value === category) || { label: category, color: 'default' };
 
   const products = productsData?.records || (Array.isArray(productsData) ? productsData : []);
   const total = productsData?.total || products.length;
-  const allFeatures = extractArray<Feature>(featuresData);
 
   // Batch-fetch package associations when products list loads
   const loadProductPackages = async (productIds: string[]) => {
@@ -512,17 +435,14 @@ const ProductManagement: React.FC = () => {
     },
     {
       title: '操作',
-      width: 280,
+      width: 220,
       render: (_: unknown, record: Product) => (
         <Space size="small">
-          <Button type="link" size="small" icon={<EyeOutlined />} onClick={() => openDetailDrawer(record)}>
-            详情
-          </Button>
           <Button type="link" size="small" icon={<EditOutlined />} onClick={() => openEditModal(record)}>
             编辑
           </Button>
-          <Button type="link" size="small" icon={<SettingOutlined />} onClick={() => openFeatureModal(record)}>
-            配置功能
+          <Button type="link" size="small" icon={<SettingOutlined />} onClick={() => navigate(`/products/${record.id}/config`)}>
+            配置
           </Button>
           <Popconfirm
             title="确认删除该产品？"
@@ -999,177 +919,6 @@ const ProductManagement: React.FC = () => {
         </Form>
       </Modal>
 
-      {/* Product Detail Drawer */}
-      <Drawer
-        title={`产品详情 - ${drawerProduct?.name}`}
-        open={drawerOpen}
-        onClose={() => { setDrawerOpen(false); setDrawerProduct(null); }}
-        width={560}
-        destroyOnHidden
-      >
-        {drawerProduct && (
-          <>
-            <Descriptions column={1} bordered size="small" style={{ marginBottom: 24 }}>
-              <Descriptions.Item label="产品编码">{drawerProduct.code}</Descriptions.Item>
-              <Descriptions.Item label="产品名称">{drawerProduct.name}</Descriptions.Item>
-              <Descriptions.Item label="触发类型">
-                {(() => {
-                  const trigger = TRIGGER_TYPE_MAP[drawerProduct.category];
-                  return trigger ? (
-                    <Tag color={trigger.color}>{trigger.label}</Tag>
-                  ) : (
-                    <Tag>{drawerProduct.category}</Tag>
-                  );
-                })()}
-              </Descriptions.Item>
-              <Descriptions.Item label="状态">
-                <Tag color={drawerProduct.status === 1 ? 'green' : 'default'}>
-                  {drawerProduct.status === 1 ? '启用' : '禁用'}
-                </Tag>
-              </Descriptions.Item>
-              <Descriptions.Item label="描述">{drawerProduct.description || '-'}</Descriptions.Item>
-              <Descriptions.Item label="排序">{drawerProduct.sortOrder}</Descriptions.Item>
-              <Descriptions.Item label="创建时间">
-                {drawerProduct.createTime ? dayjs(drawerProduct.createTime).format('YYYY-MM-DD HH:mm') : '-'}
-              </Descriptions.Item>
-            </Descriptions>
-
-            <h4 style={{ marginBottom: 12 }}>规则链预览</h4>
-            <Timeline
-              style={{ marginBottom: 24, marginTop: 8 }}
-              items={(() => {
-                const matchedModule = wizardModules.find((m) => {
-                  const codeMap: Record<string, string> = {
-                    stairs_climbing: 'stair_climbing',
-                    walking: 'walking',
-                  };
-                  return m.code === codeMap[drawerProduct.category];
-                });
-                const chain = matchedModule?.ruleChain || [];
-                if (chain.length === 0) {
-                  return [
-                    { color: 'gray', children: '暂无规则链数据' },
-                  ];
-                }
-                return chain.map((node, i) => ({
-                  color: i === 0 ? 'blue' : 'gray',
-                  children: (
-                    <Space>
-                      <Tag color="purple">{node}</Tag>
-                      <span style={{ color: '#475569', fontSize: 12 }}>
-                        {RULE_NODE_LABELS[node] || ''}
-                      </span>
-                    </Space>
-                  ),
-                }));
-              })()}
-            />
-
-            <h4 style={{ marginBottom: 12 }}>功能点列表</h4>
-            {drawerFeaturesLoading ? (
-              <div style={{ textAlign: 'center', padding: 24, color: '#94A3B8' }}>加载中...</div>
-            ) : (() => {
-              const features = drawerProductFeatures || [];
-              if (features.length === 0) {
-                return <Empty description="暂无功能点配置" image={Empty.PRESENTED_IMAGE_SIMPLE} />;
-              }
-              return (
-                <div>
-                  {features.map((pf: ProductFeature) => (
-                    <div
-                      key={pf.featureId}
-                      style={{
-                        padding: '8px 12px',
-                        marginBottom: 8,
-                        background: '#F8FAFC',
-                        borderRadius: 6,
-                        border: '1px solid rgba(0, 0, 0, 0.06)',
-                      }}
-                    >
-                      <Space style={{ width: '100%', justifyContent: 'space-between' }}>
-                        <Space>
-                          <strong>{pf.feature?.name || pf.featureId}</strong>
-                          <Tag color={pf.feature?.type === 'permission' ? 'blue' : 'orange'}>
-                            {pf.feature?.type === 'permission' ? '权限' : '配置'}
-                          </Tag>
-                        </Space>
-                        <Space>
-                          {pf.isRequired && <Tag color="red">必需</Tag>}
-                          {!pf.isRequired && <Tag color="default">可选</Tag>}
-                          {pf.isEnabled ? (
-                            <Tag color="green">已启用</Tag>
-                          ) : (
-                            <Tag color="default">未启用</Tag>
-                          )}
-                        </Space>
-                      </Space>
-                      {pf.feature?.description && (
-                        <div style={{ color: '#94A3B8', fontSize: 12, marginTop: 4 }}>{pf.feature.description}</div>
-                      )}
-                      {pf.configValue && (
-                        <div style={{ color: '#475569', fontSize: 12, marginTop: 2 }}>
-                          配置值: <Tag>{pf.configValue}</Tag>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              );
-            })()}
-          </>
-        )}
-      </Drawer>
-
-      {/* Success Modal */}
-      <Modal
-        title="产品创建成功"
-        open={successModalOpen}
-        onCancel={() => setSuccessModalOpen(false)}
-        footer={null}
-        width={520}
-      >
-        <div style={{ textAlign: 'center', padding: '24px 0' }}>
-          <CheckCircleOutlined style={{ fontSize: 64, color: '#52c41a', marginBottom: 16 }} />
-          <Title level={4} style={{ marginBottom: 8 }}>产品创建成功！</Title>
-          <Text type="secondary">
-            您可以继续以下操作：
-          </Text>
-        </div>
-        <Space direction="vertical" style={{ width: '100%', marginTop: 16 }}>
-          <Button
-            type="primary"
-            block
-            icon={<EyeOutlined />}
-            onClick={() => {
-              setSuccessModalOpen(false);
-              // In a real implementation, we would open the detail drawer for the created product
-              message.info('查看产品详情功能即将上线');
-            }}
-          >
-            查看产品详情
-          </Button>
-          <Button
-            block
-            icon={<SettingOutlined />}
-            onClick={() => {
-              setSuccessModalOpen(false);
-              message.info('前往套餐管理功能即将上线');
-            }}
-          >
-            去套餐管理，将产品加入套餐
-          </Button>
-          <Button
-            block
-            icon={<PlusOutlined />}
-            onClick={() => {
-              setSuccessModalOpen(false);
-              openWizard();
-            }}
-          >
-            继续创建新产品
-          </Button>
-        </Space>
-      </Modal>
 
       {/* Rule Node Config Modal */}
       <RuleNodeConfigModal
@@ -1188,73 +937,6 @@ const ProductManagement: React.FC = () => {
         onSave={handleRuleNodeConfigSave}
       />
 
-      {/* Feature Configuration Modal */}
-      <Modal
-        title={`配置功能点 - ${selectedProduct?.name}`}
-        open={featureModalOpen}
-        onCancel={() => { setFeatureModalOpen(false); setSelectedProduct(null); setSelectedFeatures({}); }}
-        onOk={handleFeatureSave}
-        confirmLoading={updateFeaturesMutation.isPending}
-        width={800}
-        destroyOnHidden
-      >
-        <GlassCard size="small" type="inner" title="功能点列表" style={{ marginBottom: 0 }}>
-          {allFeatures.length === 0 ? (
-            <Empty description="暂无可配置的功能点" image={Empty.PRESENTED_IMAGE_SIMPLE} />
-          ) : (
-            allFeatures.map((feature: Feature) => (
-              <div key={feature.id} style={{ padding: '12px 0', borderBottom: '1px solid rgba(0, 0, 0, 0.06)' }}>
-                <Space style={{ width: '100%', justifyContent: 'space-between' }}>
-                  <Space>
-                    <Checkbox
-                      checked={selectedFeatures[feature.id]?.enabled}
-                      onChange={(e) => setSelectedFeatures((prev) => ({
-                        ...prev,
-                        [feature.id]: { ...prev[feature.id], enabled: e.target.checked },
-                      }))}
-                    >
-                      <strong>{feature.name}</strong>
-                      <Tag color={feature.type === 'permission' ? 'blue' : 'orange'} style={{ marginLeft: 4 }}>
-                        {feature.type === 'permission' ? '权限' : '配置'}
-                      </Tag>
-                      {feature.group && <Tag>{feature.group}</Tag>}
-                    </Checkbox>
-                  </Space>
-                  {selectedFeatures[feature.id]?.enabled && (
-                    <Space>
-                      {feature.type === 'permission' && (
-                        <Checkbox
-                          checked={selectedFeatures[feature.id]?.required}
-                          onChange={(e) => setSelectedFeatures((prev) => ({
-                            ...prev,
-                            [feature.id]: { ...prev[feature.id], required: e.target.checked },
-                          }))}
-                        >
-                          必需
-                        </Checkbox>
-                      )}
-                      {feature.type === 'config' && (
-                        <Input
-                          placeholder="配置值"
-                          value={selectedFeatures[feature.id]?.configValue || ''}
-                          onChange={(e) => setSelectedFeatures((prev) => ({
-                            ...prev,
-                            [feature.id]: { ...prev[feature.id], configValue: e.target.value },
-                          }))}
-                          style={{ width: 200 }}
-                        />
-                      )}
-                    </Space>
-                  )}
-                </Space>
-                {feature.description && (
-                  <div style={{ marginLeft: 24, marginTop: 4, color: '#475569', fontSize: 13 }}>{feature.description}</div>
-                )}
-              </div>
-            ))
-          )}
-        </GlassCard>
-      </Modal>
     </div>
   );
 };

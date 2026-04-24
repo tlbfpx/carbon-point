@@ -18,6 +18,7 @@ import com.carbonpoint.system.event.PackagePermissionUpdatedEvent;
 import com.carbonpoint.system.mapper.*;
 import com.carbonpoint.system.security.PermissionService;
 import com.carbonpoint.system.service.PackageService;
+import com.carbonpoint.system.service.ProductRuleTemplateService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -45,6 +46,7 @@ public class PackageServiceImpl implements PackageService {
     private final UserRoleMapper userRoleMapper;
     private final PermissionService permissionService;
     private final ApplicationEventPublisher eventPublisher;
+    private final ProductRuleTemplateService ruleTemplateService;
     private final FeatureMapper featureMapper;
 
     @Override
@@ -350,6 +352,12 @@ public class PackageServiceImpl implements PackageService {
 
         log.info("Tenant package changed: tenantId={}, oldPackageId={}, newPackageId={}, operatorId={}",
                 tenantId, oldPackageId, newPkg.getId(), operatorId);
+
+        // Initialize rule templates from new package's products
+        List<String> newProductIds = packageProductMapper.selectProductIdsByPackageId(req.getPackageId());
+        for (String productId : newProductIds) {
+            ruleTemplateService.syncToTenants(productId);
+        }
     }
 
     /**
@@ -518,6 +526,11 @@ public class PackageServiceImpl implements PackageService {
         // Batch insert package-product associations
         for (PackageProductEntity pp : packageProducts) {
             packageProductMapper.insert(pp);
+        }
+
+        // Sync rule templates for products in this package
+        for (var item : req.getProducts()) {
+            ruleTemplateService.syncToTenants(item.getProductId());
         }
 
         log.info("Package products updated: packageId={}, productCount={}", packageId, packageProducts.size());

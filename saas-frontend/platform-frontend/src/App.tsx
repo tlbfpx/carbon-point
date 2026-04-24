@@ -25,6 +25,7 @@ import SystemManagement from '@/pages/SystemManagement';
 import PlatformConfig from '@/pages/PlatformConfig';
 import PackageManagement from '@/pages/PackageManagement';
 import ProductManagement from '@/pages/ProductManagement';
+import ProductConfig from '@/pages/ProductConfig';
 import BlockLibrary from '@/pages/BlockLibrary';
 import SystemUsers from '@/pages/SystemUsers';
 import SystemRoles from '@/pages/SystemRoles';
@@ -273,6 +274,7 @@ const PlatformContent: React.FC = () => {
                   <Route path="/system/dict" element={<DictManagement />} />
                   <Route path="/config" element={<PlatformConfig />} />
                   <Route path="/features/products" element={<ProductManagement />} />
+                  <Route path="/products/:id/config" element={<ProductConfig />} />
                   <Route path="/features/blocks" element={<BlockLibrary />} />
                   <Route path="/packages" element={<PackageManagement />} />
                   <Route path="*" element={<Navigate to="/dashboard" replace />} />

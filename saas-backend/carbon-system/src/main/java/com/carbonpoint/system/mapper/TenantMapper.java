@@ -44,4 +44,8 @@ public interface TenantMapper extends BaseMapper<Tenant> {
     @InterceptorIgnore
     @Select("SELECT tenant_id, COUNT(*) AS cnt FROM users GROUP BY tenant_id")
     List<Map<String, Object>> countUsersByTenantId();
+
+    @InterceptorIgnore
+    @Select("SELECT id FROM tenants WHERE package_id = #{packageId}")
+    List<Long> selectIdsByPackageId(@Param("packageId") Long packageId);
 }
