@@ -5,8 +5,10 @@ import { loginAsPlatformAdmin, uniqueId } from '../../helpers';
 test.describe('平台后台 - 产品配置向导全流程', () => {
   test.beforeEach(async ({ page }) => {
     await loginAsPlatformAdmin(page, BASE_URL);
-    await page.goto(`${BASE_URL}/features/products`);
-    await page.waitForLoadState('networkidle');
+    // Navigate via menu click (SPA navigation to avoid Zustand hydration race)
+    await page.getByRole('menuitem', { name: '产品管理' }).click();
+    await page.waitForURL('**/features/products**', { timeout: 10000 });
+    await page.waitForSelector('.ant-table-tbody tr', { timeout: 10000 });
   });
 
   test('PW-001: 产品配置向导 - 完整流程测试', async ({ page }) => {

@@ -164,7 +164,7 @@ const PackageManagement: React.FC = () => {
     setProductFeaturesLoading(true);
     try {
       const detail = await getPackageDetail(record.id);
-      const packageProducts = detail.data?.products || [];
+      const packageProducts = detail?.products || [];
       const newSelectedProducts = packageProducts.map((p: PackageProduct) => p.productId);
       setSelectedProducts(newSelectedProducts);
 
@@ -173,7 +173,7 @@ const PackageManagement: React.FC = () => {
         if (pkgProduct.productId) {
           try {
             const featuresData = await getProductFeatures(pkgProduct.productId);
-            const productFeatures: ProductFeature[] = featuresData.data || [];
+            const productFeatures: ProductFeature[] = featuresData || [];
             featureMap[pkgProduct.productId] = {};
             productFeatures.forEach((pf: ProductFeature) => {
               featureMap[pkgProduct.productId][pf.featureId] = pf;
@@ -219,9 +219,9 @@ const PackageManagement: React.FC = () => {
     });
   };
 
-  const records = packagesData?.records || (Array.isArray(packagesData) ? packagesData : (packagesData?.data?.records || packagesData?.data || []));
-  const total = (packagesData?.total || packagesData?.data?.total) || records.length;
-  const allProducts = productsData?.records || (Array.isArray(productsData) ? productsData : (productsData?.data?.records || productsData?.data || []));
+  const records = packagesData?.records || (Array.isArray(packagesData) ? packagesData : []);
+  const total = packagesData?.total || records.length;
+  const allProducts = productsData?.records || (Array.isArray(productsData) ? productsData : []);
 
   const columns = [
     { title: '套餐编码', dataIndex: 'code', width: 120, render: (v: string) => <Text code copyable>{v}</Text> },
@@ -297,8 +297,8 @@ const PackageManagement: React.FC = () => {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16, alignItems: 'center' }}>
-        <h2 style={{ margin: 0 }}>套餐管理</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24, alignItems: 'center' }}>
+        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600, color: '#1E293B' }}>套餐管理</h2>
         <Space>
           <Button icon={<ReloadOutlined />} onClick={() => refetch()}>刷新</Button>
           <Button type="primary" icon={<PlusOutlined />} onClick={openCreateModal}>创建套餐</Button>
@@ -418,7 +418,7 @@ const PackageManagement: React.FC = () => {
                     <Tag color={product.category === 'stairs_climbing' ? 'blue' : 'green'}>
                       {product.category === 'stairs_climbing' ? '爬楼积分' : '走路积分'}
                     </Tag>
-                    <span style={{ fontSize: 12, color: '#666' }}>
+                    <span style={{ fontSize: 12, color: '#475569' }}>
                       {enabledCount}/{featureList.length} 功能点已启用
                     </span>
                   </div>
@@ -513,13 +513,14 @@ const PackageManagement: React.FC = () => {
                       style={{ marginTop: 8 }}
                       icon={<CheckCircleOutlined />}
                       onClick={() => {
+                        if (!selectedPackage?.id) return;
                         const features = Object.values(packageProductFeatures[product.id] || {}).map((pf: ProductFeature) => ({
                           featureId: pf.featureId,
                           configValue: pf.configValue,
                           isEnabled: pf.isEnabled,
                         }));
                         updateProductFeaturesMutation.mutate({
-                          packageId: selectedPackage?.id,
+                          packageId: selectedPackage.id,
                           productId: product.id,
                           features,
                         });

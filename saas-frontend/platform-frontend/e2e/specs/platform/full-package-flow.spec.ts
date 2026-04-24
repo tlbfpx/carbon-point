@@ -40,22 +40,22 @@ test.describe('平台后台 - 套餐完整创建流程', () => {
     // Navigate to product management
     await page.getByRole('menuitem', { name: '产品管理' }).click();
     await page.waitForLoadState('networkidle');
-    await expect(page.locator('h2').filter({ hasText: '产品管理' })).toBeVisible();
+    await expect(page.locator('h1').filter({ hasText: '产品管理' })).toBeVisible();
 
     // Navigate to block library
     await page.getByRole('menuitem', { name: '积木组件库' }).click();
     await page.waitForLoadState('networkidle');
-    await expect(page.locator('h2').filter({ hasText: '积木组件库' })).toBeVisible();
+    await expect(page.locator('h1').filter({ hasText: '积木组件库' })).toBeVisible();
 
     // Navigate to package management
     await page.getByRole('menuitem', { name: '套餐管理' }).click();
     await page.waitForLoadState('networkidle');
-    await expect(page.locator('h2').filter({ hasText: '套餐管理' })).toBeVisible();
+    await expect(page.locator('h1').filter({ hasText: '套餐管理' })).toBeVisible();
 
     // Navigate to platform config
     await page.getByRole('menuitem', { name: '平台配置' }).click();
     await page.waitForLoadState('networkidle');
-    await expect(page.locator('h2').filter({ hasText: '平台配置' })).toBeVisible();
+    await expect(page.locator('h1').filter({ hasText: '平台配置' })).toBeVisible();
   });
 
   // ──────────────────────────────────────────────
@@ -227,7 +227,7 @@ test.describe('平台后台 - 套餐完整创建流程', () => {
     if (successModalVisible) {
       await expect(productPage.successModal).toContainText('产品创建成功');
       // Close success modal
-      await productPage.successModal.locator('button').filter({ hasText: '查看产品详情' }).click();
+      await productPage.successModal.locator('button').filter({ hasText: /查看产品详情/ }).click();
     }
 
     // Verify product appears in table
@@ -383,7 +383,7 @@ test.describe('平台后台 - 套餐完整创建流程', () => {
         }
 
         // Click OK to save
-        const okBtn = productPage.featureConfigModal.locator('.ant-modal-footer button').filter({ hasText: '确定' });
+        const okBtn = productPage.featureConfigModal.locator('.ant-modal-footer button').filter({ hasText: /确\s*定/ });
         if (await okBtn.isVisible()) {
           await okBtn.click();
           await expect(page.locator('.ant-message')).toContainText('成功');
@@ -558,7 +558,7 @@ test.describe('平台后台 - 套餐完整创建流程', () => {
       await btn.click();
 
       // Confirm popconfirm
-      const confirmBtn = page.locator('.ant-popconfirm button').filter({ hasText: '确认' });
+      const confirmBtn = page.locator('.ant-popconfirm button').filter({ hasText: /确\s*认/ });
       await confirmBtn.click();
 
       // Verify success
@@ -643,7 +643,8 @@ test.describe('平台后台 - 套餐完整创建流程', () => {
     // Test email validation
     const emailInput = page.locator('.ant-form-item').filter({ hasText: '通知邮箱' }).locator('input');
     await emailInput.fill('invalid-email');
-    await configPage.saveButton.first().click();
+    // Click the visible save button (on the active notification tab)
+    await page.locator('button:visible').filter({ hasText: /保\s*存/ }).first().click();
     await expect(page.locator('.ant-form-item-explain-error')).toBeVisible({ timeout: 3000 });
 
     // Fix with valid email
@@ -723,7 +724,8 @@ test.describe('平台后台 - 套餐完整创建流程', () => {
     // Test URL validation
     const urlInput = page.locator('.ant-form-item').filter({ hasText: 'API网关地址' }).locator('input');
     await urlInput.fill('not-a-url');
-    await page.locator('button').filter({ hasText: '保存' }).first().click();
+    // Click the visible save button (on the active integration tab)
+    await page.locator('button:visible').filter({ hasText: /保\s*存/ }).first().click();
     await expect(page.locator('.ant-form-item-explain-error')).toBeVisible({ timeout: 3000 });
   });
 
@@ -876,7 +878,7 @@ test.describe('平台后台 - 套餐完整创建流程', () => {
     const successVisible = await productPage.successModal.isVisible({ timeout: 5000 }).catch(() => false);
     if (successVisible) {
       // Close success modal to go to next step
-      await productPage.successModal.locator('button').filter({ hasText: '去套餐管理' }).click();
+      await productPage.successModal.locator('button').filter({ hasText: /去套餐管理/ }).click();
     }
 
     // Verify product exists
@@ -988,7 +990,7 @@ test.describe('平台后台 - 套餐完整创建流程', () => {
     await expect(popconfirm).toContainText('确认删除');
 
     // Confirm delete
-    await popconfirm.locator('button').filter({ hasText: '确认' }).click();
+    await popconfirm.locator('button').filter({ hasText: /确\s*认/ }).click();
     await expect(page.locator('.ant-message')).toContainText('成功');
   });
 
@@ -1009,13 +1011,14 @@ test.describe('平台后台 - 套餐完整创建流程', () => {
 
     // Find and delete (only possible if tenantCount === 0 and code !== 'free')
     const row = packagePage.table.locator('tr').filter({ hasText: tempName });
-    const deleteBtn = row.locator('button').filter({ hasText: '删除' });
+    // Delete button is icon-only (no text label), locate by the delete icon inside it
+    const deleteBtn = row.locator('.anticon-delete').locator('..');
     // The button may be absent if code is 'free' or has tenants
     if (await deleteBtn.isVisible()) {
       await deleteBtn.click();
       const popconfirm = page.locator('.ant-popconfirm');
       await expect(popconfirm).toContainText('确认删除');
-      await popconfirm.locator('button').filter({ hasText: '确认' }).click();
+      await popconfirm.locator('button').filter({ hasText: /确\s*认/ }).click();
       await expect(page.locator('.ant-message')).toContainText('成功');
     }
   });

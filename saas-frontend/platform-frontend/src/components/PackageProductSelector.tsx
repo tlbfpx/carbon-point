@@ -157,6 +157,7 @@ const PackageProductSelector: React.FC<PackageProductSelectorProps> = ({
                 {selected && features.length > 0 && (
                   <Collapse ghost>
                     <Panel
+                      key="features"
                       header={
                         <Space>
                           <SettingOutlined />
@@ -182,7 +183,7 @@ const PackageProductSelector: React.FC<PackageProductSelectorProps> = ({
                                 <div>
                                   <Text>{feature.name}</Text>
                                   {feature.type && (
-                                    <Tag size="small" style={{ marginLeft: 8 }}>
+                                    <Tag style={{ marginLeft: 8 }}>
                                       {feature.type}
                                     </Tag>
                                   )}

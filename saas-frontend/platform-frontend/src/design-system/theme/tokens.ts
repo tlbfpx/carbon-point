@@ -149,49 +149,67 @@ export const darkThemeTokens = {
 };
 
 // ============================================
-// 亮色主题 Tokens
+// 亮色主题 Tokens（现代轻量商务风）
 // ============================================
 export const lightThemeTokens = {
   ...darkThemeTokens,
 
-  colorBgBase: BRAND_PALETTE.lightBg,
-  colorBgContainer: BRAND_PALETTE.lightCard,
-  colorBgElevated: 'rgba(255, 255, 255, 0.9)',
-  colorBgLayout: BRAND_PALETTE.lightBg,
-  colorBgSpotlight: 'rgba(99, 102, 241, 0.08)',
+  // 品牌色
+  colorPrimary: BRAND_PALETTE.primary,
+  colorSuccess: '#10B981',
+  colorWarning: '#F59E0B',
+  colorError: '#EF4444',
+  colorInfo: '#3B82F6',
 
-  colorText: '#18181B',
-  colorTextSecondary: '#52525B',
-  colorTextTertiary: '#71717A',
-  colorTextQuaternary: '#A1A1AA',
+  // 背景层级 — 三层灰阶
+  colorBgBase: '#FFFFFF',
+  colorBgContainer: '#FFFFFF',
+  colorBgElevated: '#FFFFFF',
+  colorBgLayout: '#F5F5F7',        // 页面底层：冷调浅灰
+  colorBgSpotlight: 'rgba(99, 102, 241, 0.06)',
 
-  colorBorder: 'rgba(0, 0, 0, 0.08)',
-  colorBorderSecondary: 'rgba(0, 0, 0, 0.04)',
+  // 文字层级 — 四级 slate 灰阶
+  colorText: '#1E293B',             // 标题：深 slate
+  colorTextSecondary: '#475569',    // 正文：中 slate
+  colorTextTertiary: '#94A3B8',     // 辅助：浅 slate
+  colorTextQuaternary: '#CBD5E1',   // 禁用：极浅 slate
 
-  colorGlassBg: 'rgba(255, 255, 255, 0.6)',
-  colorGlassBorder: 'rgba(255, 255, 255, 0.8)',
-  colorGlassHighlight: 'rgba(255, 255, 255, 0.9)',
+  // 边框
+  colorBorder: 'rgba(0, 0, 0, 0.06)',
+  colorBorderSecondary: 'rgba(0, 0, 0, 0.03)',
 
+  // 圆角 — 12-16px 柔和圆角
+  borderRadius: 12,
+  borderRadiusLG: 16,
+  borderRadiusSM: 8,
+  borderRadiusXS: 4,
+
+  // 字体
+  fontFamily: "'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif",
+
+  // 亮色玻璃效果 — 不再使用深色玻璃
+  colorGlassBg: 'rgba(255, 255, 255, 0.95)',
+  colorGlassBorder: 'rgba(0, 0, 0, 0.06)',
+  colorGlassHighlight: 'rgba(255, 255, 255, 1)',
+
+  // 阴影系统 — 极淡柔和
   boxShadow: `
-    0 4px 24px rgba(0, 0, 0, 0.06),
-    0 1px 2px rgba(0, 0, 0, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8)
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    0 1px 2px rgba(0, 0, 0, 0.02)
   `,
   boxShadowSecondary: `
-    0 8px 32px rgba(0, 0, 0, 0.08),
-    0 2px 8px rgba(0, 0, 0, 0.04)
+    0 1px 3px rgba(0, 0, 0, 0.06),
+    0 4px 12px rgba(0, 0, 0, 0.04)
   `,
+  // 卡片阴影
   boxShadowGlass: `
-    0 8px 32px rgba(99, 102, 241, 0.08),
-    0 2px 8px rgba(0, 0, 0, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.02)
+    0 1px 3px rgba(0, 0, 0, 0.06),
+    0 4px 12px rgba(0, 0, 0, 0.04)
   `,
+  // 卡片悬停阴影
   boxShadowGlassHover: `
-    0 12px 48px rgba(99, 102, 241, 0.12),
-    0 4px 16px rgba(0, 0, 0, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.95),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.02)
+    0 4px 12px rgba(0, 0, 0, 0.08),
+    0 8px 24px rgba(0, 0, 0, 0.06)
   `,
 };
 
@@ -200,40 +218,16 @@ export const lightThemeTokens = {
 // ============================================
 export const componentTokens = {
   // 按钮
-  Button: {
-    primaryShadow: `0 4px 16px rgba(99, 102, 241, 0.3)`,
-    defaultBg: 'rgba(255, 255, 255, 0.05)',
-    defaultBorderColor: 'rgba(255, 255, 255, 0.12)',
-    defaultColor: '#E4E4E7',
-  },
-
-  // 卡片
-  Card: {
-    glassBackground: 'var(--color-glass-bg)',
-    glassBorder: '1px solid var(--color-glass-border)',
-    glassBlur: 12,
-  },
+  Button: {},
 
   // 菜单
-  Menu: {
-    darkItemBg: 'transparent',
-    darkItemSelectedBg: 'rgba(99, 102, 241, 0.15)',
-    darkItemHoverBg: 'rgba(99, 102, 241, 0.08)',
-    darkItemColor: '#A1A1AA',
-    darkItemSelectedColor: '#FFFFFF',
-  },
+  Menu: {},
 
   // 输入框
-  Input: {
-    activeShadow: `0 0 0 3px rgba(99, 102, 241, 0.15)`,
-  },
+  Input: {},
 
   // 模态框
-  Modal: {
-    contentGlassBg: 'rgba(26, 26, 36, 0.85)',
-    headerBg: 'transparent',
-    footerBg: 'transparent',
-  },
+  Modal: {},
 
   // 抽屉
   Drawer: {

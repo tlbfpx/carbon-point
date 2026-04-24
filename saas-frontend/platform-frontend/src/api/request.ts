@@ -4,6 +4,17 @@ import { apiLogger } from '../utils/logger';
 
 const PLATFORM_BASE_URL = import.meta.env.VITE_PLATFORM_API_BASE_URL || 'http://localhost:8080/platform';
 
+// Force redirect to login — used when both access & refresh tokens are expired
+const forceRedirectToLogin = () => {
+  const { isAuthenticated, logout } = useAuthStore.getState();
+  if (isAuthenticated) {
+    logout();
+    // Use window.location for an immediate, unconditional redirect
+    // that bypasses any pending React state updates
+    window.location.href = '/platform/login';
+  }
+};
+
 export const platformApiClient = axios.create({
   baseURL: PLATFORM_BASE_URL,
   timeout: 30000,
@@ -23,7 +34,14 @@ platformApiClient.interceptors.request.use((config) => {
 });
 
 platformApiClient.interceptors.response.use(
-  (res) => res.data,
+  (res) => {
+    const data = res.data;
+    // Check for business error codes — backend returns { code: "0000", data, message } for success
+    if (data && data.code && data.code !== '0000') {
+      return Promise.reject(new Error(data.message || '操作失败'));
+    }
+    return data;
+  },
   async (error: AxiosError) => {
     const url = error.config?.url || 'unknown';
     const method = error.config?.method?.toUpperCase() || 'UNKNOWN';
@@ -52,17 +70,22 @@ platformApiClient.interceptors.response.use(
             isRefreshing = true;
             try {
               const refreshRes = await axios.post(`${PLATFORM_BASE_URL}/auth/refresh`, { refreshToken });
-              const { accessToken, refreshToken: newRefresh } = refreshRes.data.data;
+              const refreshData = refreshRes.data?.data;
+              if (!refreshData?.accessToken) {
+                throw new Error('Refresh failed: no token returned');
+              }
+              const { accessToken, refreshToken: newRefresh } = refreshData;
               useAuthStore.getState().login(accessToken, newRefresh, useAuthStore.getState().user!);
 
               // Process queued requests with new token
               refreshQueue.forEach(cb => cb(accessToken));
               refreshQueue = [];
             } catch {
-              // Reject all queued requests
+              // Reject all queued requests and redirect to login
               refreshQueue.forEach(cb => cb(''));
               refreshQueue = [];
-              useAuthStore.getState().logout();
+              forceRedirectToLogin();
+              return Promise.reject(error);
             } finally {
               isRefreshing = false;
             }
@@ -80,7 +103,7 @@ platformApiClient.interceptors.response.use(
             });
           });
         } else {
-          useAuthStore.getState().logout();
+          forceRedirectToLogin();
         }
       }
     }

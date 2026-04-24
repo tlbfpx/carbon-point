@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.time.format.DateTimeFormatter;
 
 /**
@@ -36,19 +37,16 @@ public class PlatformTenantServiceImpl implements PlatformTenantService {
 
     @Override
     public IPage<TenantVO> listTenants(int page, int pageSize, String keyword, String status) {
-        Page<Tenant> pageParam = new Page<>(page, pageSize);
-        LambdaQueryWrapper<Tenant> query = new LambdaQueryWrapper<>();
+        // Use @InterceptorIgnore-aware mapper to bypass TenantLineInnerInterceptor.
+        // The standard selectPage() would inject WHERE tenant_id = ? which fails
+        // because the tenants table itself has no tenant_id column.
+        long offset = (long) (page - 1) * pageSize;
+        List<Tenant> records = tenantMapper.selectPageForPlatform(keyword, offset, pageSize);
+        long total = tenantMapper.countForPlatform(keyword);
 
-        if (keyword != null && !keyword.isBlank()) {
-            query.like(Tenant::getName, keyword);
-        }
-        if (status != null && !status.isBlank()) {
-            query.eq(Tenant::getStatus, status);
-        }
-        query.orderByDesc(Tenant::getCreatedAt);
-
-        Page<Tenant> result = tenantMapper.selectPage(pageParam, query);
-        return result.convert(this::toVO);
+        Page<TenantVO> result = new Page<>(page, pageSize, total);
+        result.setRecords(records.stream().map(this::toVO).toList());
+        return result;
     }
 
     @Override

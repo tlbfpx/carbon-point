@@ -13,7 +13,7 @@ export class PackageManagementPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.heading = page.locator('h2').filter({ hasText: '套餐管理' });
+    this.heading = page.locator('h1').filter({ hasText: '套餐管理' });
     this.createButton = page.locator('button').filter({ hasText: '创建套餐' });
     this.refreshButton = page.locator('button').filter({ hasText: '刷新' });
     this.table = page.locator('.ant-table');
@@ -68,14 +68,15 @@ export class PackageManagementPage {
     const row = this.table.locator('tr').filter({ hasText: name });
     const toggleBtn = row.locator('button').filter({ hasText: /启用|禁用/ });
     await toggleBtn.click();
-    const confirmBtn = this.page.locator('.ant-popconfirm').locator('button').filter({ hasText: '确认' });
+    const confirmBtn = this.page.locator('.ant-popconfirm').locator('button').filter({ hasText: /确\s*认/ });
     await confirmBtn.click();
   }
 
   async deletePackage(name: string) {
     const row = this.table.locator('tr').filter({ hasText: name });
-    await row.locator('button').filter({ hasText: '删除' }).click();
-    const confirmBtn = this.page.locator('.ant-popconfirm').locator('button').filter({ hasText: '确认' });
+    // Delete button is icon-only (no text label), locate by the delete icon
+    await row.locator('.anticon-delete').locator('..').click();
+    const confirmBtn = this.page.locator('.ant-popconfirm').locator('button').filter({ hasText: /确\s*认/ });
     await confirmBtn.click();
   }
 

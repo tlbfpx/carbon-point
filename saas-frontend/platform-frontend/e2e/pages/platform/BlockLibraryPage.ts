@@ -15,7 +15,7 @@ export class BlockLibraryPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.heading = page.locator('h2').filter({ hasText: '积木组件库' });
+    this.heading = page.locator('h1').filter({ hasText: '积木组件库' });
     this.modulesOverview = page.locator('.ant-card').filter({ hasText: '已注册产品模块' });
     this.tabs = page.locator('.ant-tabs-tab');
     this.triggerTab = page.locator('.ant-tabs-tab').filter({ hasText: '触发器' });

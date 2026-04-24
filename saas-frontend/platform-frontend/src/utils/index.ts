@@ -154,11 +154,17 @@ export const deepClone = <T>(obj: T): T => {
  */
 export const extractArray = <T>(data: unknown): T[] => {
   if (Array.isArray(data)) return data as T[];
-  if (data && typeof data === 'object' && 'data' in data) {
-    const inner = (data as { data: unknown }).data;
-    if (Array.isArray(inner)) return inner as T[];
-    if (inner && typeof inner === 'object' && 'records' in inner) {
-      return (inner as { records: T[] }).records;
+  if (data && typeof data === 'object') {
+    // Direct paginated response (already unwrapped from Result wrapper)
+    if ('records' in data && Array.isArray((data as { records: unknown }).records)) {
+      return (data as { records: T[] }).records;
+    }
+    if ('data' in data) {
+      const inner = (data as { data: unknown }).data;
+      if (Array.isArray(inner)) return inner as T[];
+      if (inner && typeof inner === 'object' && 'records' in inner) {
+        return (inner as { records: T[] }).records;
+      }
     }
   }
   return [];

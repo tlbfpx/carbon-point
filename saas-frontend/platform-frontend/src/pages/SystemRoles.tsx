@@ -50,57 +50,53 @@ const SystemRoles: React.FC = () => {
 
   const createMutation = useMutation({
     mutationFn: createPlatformRole,
-    onSuccess: (res: { code: number; message?: string }) => {
-      if (res.code === 200 || res.code === 0) {
-        message.success('创建成功');
-        setModalOpen(false);
-        form.resetFields();
-        queryClient.invalidateQueries({ queryKey: ['platform-roles'] });
-      } else {
-        message.error(res.message || '创建失败');
-      }
+    onSuccess: () => {
+      message.success('创建成功');
+      setModalOpen(false);
+      form.resetFields();
+      queryClient.invalidateQueries({ queryKey: ['platform-roles'] });
+    },
+    onError: (err: any) => {
+      message.error(err?.message || '创建失败');
     },
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: any }) =>
       updatePlatformRole(id, data),
-    onSuccess: (res: { code: number; message?: string }) => {
-      if (res.code === 200 || res.code === 0) {
-        message.success('更新成功');
-        setModalOpen(false);
-        setEditingRole(null);
-        form.resetFields();
-        queryClient.invalidateQueries({ queryKey: ['platform-roles'] });
-      } else {
-        message.error(res.message || '更新失败');
-      }
+    onSuccess: () => {
+      message.success('更新成功');
+      setModalOpen(false);
+      setEditingRole(null);
+      form.resetFields();
+      queryClient.invalidateQueries({ queryKey: ['platform-roles'] });
+    },
+    onError: (err: any) => {
+      message.error(err?.message || '更新失败');
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: deletePlatformRole,
-    onSuccess: (res: { code: number; message?: string }) => {
-      if (res.code === 200 || res.code === 0) {
-        message.success('删除成功');
-        queryClient.invalidateQueries({ queryKey: ['platform-roles'] });
-      } else {
-        message.error(res.message || '删除失败');
-      }
+    onSuccess: () => {
+      message.success('删除成功');
+      queryClient.invalidateQueries({ queryKey: ['platform-roles'] });
+    },
+    onError: (err: any) => {
+      message.error(err?.message || '删除失败');
     },
   });
 
   const updatePermMutation = useMutation({
     mutationFn: ({ id, permissionCodes }: { id: string; permissionCodes: string[] }) =>
       updatePlatformRolePermissions(id, permissionCodes),
-    onSuccess: (res: { code: number; message?: string }) => {
-      if (res.code === 200 || res.code === 0) {
-        message.success('权限更新成功');
-        setPermModalOpen(false);
-        queryClient.invalidateQueries({ queryKey: ['platform-roles'] });
-      } else {
-        message.error(res.message || '更新失败');
-      }
+    onSuccess: () => {
+      message.success('权限更新成功');
+      setPermModalOpen(false);
+      queryClient.invalidateQueries({ queryKey: ['platform-roles'] });
+    },
+    onError: (err: any) => {
+      message.error(err?.message || '权限更新失败');
     },
   });
 
@@ -124,7 +120,7 @@ const SystemRoles: React.FC = () => {
     setSelectedRole(record);
     try {
       const permData = await getPlatformRolePermissions(record.id);
-      setCheckedKeys(permData.data || []);
+      setCheckedKeys(permData || []);
     } catch {
       setCheckedKeys([]);
     }
@@ -186,13 +182,13 @@ const SystemRoles: React.FC = () => {
     },
   ];
 
-  const roles = extractArray<PlatformRole>(rolesData);
-  const permissionTree = permissionsData?.data || [];
+  const roles = [...extractArray<PlatformRole>(rolesData)].reverse();
+  const permissionTree = permissionsData || [];
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-        <h2>角色管理</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24, alignItems: 'center' }}>
+        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600, color: '#1E293B' }}>角色管理</h2>
         <Button type="primary" icon={<PlusOutlined />} onClick={openCreateModal}>
           新增角色
         </Button>
@@ -209,6 +205,7 @@ const SystemRoles: React.FC = () => {
       <Modal
         title={editingRole ? '编辑角色' : '新增角色'}
         open={modalOpen}
+        destroyOnHidden
         onCancel={() => {
           setModalOpen(false);
           setEditingRole(null);

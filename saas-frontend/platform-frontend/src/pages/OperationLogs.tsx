@@ -106,14 +106,14 @@ const OperationLogs: React.FC = () => {
     },
   ];
 
-  const records = data?.data?.records || data?.data || [];
-  const total = data?.data?.total || records.length;
+  const records = data?.records || [];
+  const total = data?.total || records.length;
 
   return (
     <div>
-      <h2 style={{ marginBottom: 16 }}>操作日志</h2>
+      <h2 style={{ marginBottom: 24, fontSize: 20, fontWeight: 600, color: '#1E293B' }}>操作日志</h2>
 
-      <GlassCard style={{ marginBottom: 16 }}>
+      <GlassCard variant="elevated" style={{ marginBottom: 16 }}>
         <Form
           form={form}
           layout="inline"
@@ -153,7 +153,7 @@ const OperationLogs: React.FC = () => {
       </GlassCard>
 
       <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ color: '#666' }}>共 {total} 条记录</span>
+        <span style={{ color: '#475569' }}>共 {total} 条记录</span>
         <Space>
           <Button icon={<ReloadOutlined />} onClick={() => refetch()}>
             刷新

@@ -36,14 +36,8 @@ export default defineConfig({
   globalSetup: './e2e/global-setup.ts',
   globalTeardown: './e2e/global-teardown.ts',
 
-  webServer: process.env.CI
-    ? undefined
-    : {
-        command: 'pnpm --filter @carbon-point/enterprise-frontend dev',
-        url: 'http://localhost:3000',
-        reuseExistingServer: !process.env.CI,
-        timeout: 120 * 1000,
-      },
+  // Use existing server (assuming it's already running)
+  webServer: undefined,
 
   projects: [
     {

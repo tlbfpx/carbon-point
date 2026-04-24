@@ -72,7 +72,7 @@ const FeatureSelector: React.FC<FeatureSelectorProps> = ({
                 <Space>
                   <Text strong>{feature.name}</Text>
                   {feature.type && (
-                    <Tag color="blue" size="small">
+                    <Tag color="blue">
                       {feature.type}
                     </Tag>
                   )}

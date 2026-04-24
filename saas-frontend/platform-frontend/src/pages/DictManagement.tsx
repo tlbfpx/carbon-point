@@ -33,48 +33,45 @@ const DictManagement: React.FC = () => {
 
   const { data: dictData, isLoading } = useQuery({
     queryKey: ['dict-items', dictTypeFilter],
-    queryFn: () => getDictItems({ dictType: dictTypeFilter, size: 100 }),
+    queryFn: () => getDictItems({ dictType: dictTypeFilter, size: 500 }),
   });
 
   const createMutation = useMutation({
     mutationFn: createDictItem,
-    onSuccess: (res: { code: number; message?: string }) => {
-      if (res.code === 200 || res.code === 0) {
-        message.success('创建成功');
-        setModalOpen(false);
-        form.resetFields();
-        queryClient.invalidateQueries({ queryKey: ['dict-items'] });
-      } else {
-        message.error(res.message || '创建失败');
-      }
+    onSuccess: () => {
+      message.success('创建成功');
+      setModalOpen(false);
+      form.resetFields();
+      queryClient.invalidateQueries({ queryKey: ['dict-items'] });
+    },
+    onError: (err: any) => {
+      message.error(err?.message || '创建失败');
     },
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: any }) =>
       updateDictItem(id, data),
-    onSuccess: (res: { code: number; message?: string }) => {
-      if (res.code === 200 || res.code === 0) {
-        message.success('更新成功');
-        setModalOpen(false);
-        setEditingItem(null);
-        form.resetFields();
-        queryClient.invalidateQueries({ queryKey: ['dict-items'] });
-      } else {
-        message.error(res.message || '更新失败');
-      }
+    onSuccess: () => {
+      message.success('更新成功');
+      setModalOpen(false);
+      setEditingItem(null);
+      form.resetFields();
+      queryClient.invalidateQueries({ queryKey: ['dict-items'] });
+    },
+    onError: (err: any) => {
+      message.error(err?.message || '更新失败');
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: deleteDictItem,
-    onSuccess: (res: { code: number; message?: string }) => {
-      if (res.code === 200 || res.code === 0) {
-        message.success('删除成功');
-        queryClient.invalidateQueries({ queryKey: ['dict-items'] });
-      } else {
-        message.error(res.message || '删除失败');
-      }
+    onSuccess: () => {
+      message.success('删除成功');
+      queryClient.invalidateQueries({ queryKey: ['dict-items'] });
+    },
+    onError: (err: any) => {
+      message.error(err?.message || '删除失败');
     },
   });
 
@@ -144,8 +141,8 @@ const DictManagement: React.FC = () => {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-        <h2>字典管理</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24, alignItems: 'center' }}>
+        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600, color: '#1E293B' }}>字典管理</h2>
         <Space>
           <Select
             placeholder="筛选字典类型"

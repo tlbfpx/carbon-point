@@ -183,11 +183,19 @@ const PlatformConfigPage: React.FC = () => {
       { key: 'logLevel', value: values.logLevel as string, group: 'system', description: '日志级别' },
       { key: 'systemDescription', value: values.systemDescription as string, group: 'system', description: '系统描述' },
     ];
-    if (values.maintenanceStartTime) {
-      configs.push({ key: 'maintenanceStartTime', value: dayjs(values.maintenanceStartTime).toISOString(), group: 'system', description: '维护开始时间' });
+    if (values.maintenanceStartTime && typeof values.maintenanceStartTime !== 'object' && values.maintenanceStartTime !== null && values.maintenanceStartTime !== undefined) {
+      try {
+        configs.push({ key: 'maintenanceStartTime', value: dayjs(values.maintenanceStartTime as any).toISOString(), group: 'system', description: '维护开始时间' });
+      } catch {
+        // ignore invalid date
+      }
     }
-    if (values.maintenanceEndTime) {
-      configs.push({ key: 'maintenanceEndTime', value: dayjs(values.maintenanceEndTime).toISOString(), group: 'system', description: '维护结束时间' });
+    if (values.maintenanceEndTime && typeof values.maintenanceEndTime !== 'object' && values.maintenanceEndTime !== null && values.maintenanceEndTime !== undefined) {
+      try {
+        configs.push({ key: 'maintenanceEndTime', value: dayjs(values.maintenanceEndTime as any).toISOString(), group: 'system', description: '维护结束时间' });
+      } catch {
+        // ignore invalid date
+      }
     }
     setIsLoading(true);
     updateMutation.mutate(configs, {
@@ -284,7 +292,7 @@ const PlatformConfigPage: React.FC = () => {
     return (
       <div>
         {slots.map((slot, index) => (
-          <GlassCard key={index} size="small" style={{ marginBottom: 8 }} title={`时段 ${index + 1}`} hoverable>
+          <GlassCard key={index} size="small" variant="elevated" style={{ marginBottom: 8 }} title={`时段 ${index + 1}`} hoverable>
             <Space align="start" style={{ width: '100%' }}>
               <Form.Item label="时段名称" style={{ marginBottom: 0 }}>
                 <Input
@@ -359,7 +367,7 @@ const PlatformConfigPage: React.FC = () => {
 
   return (
     <div>
-      <h2 style={{ marginBottom: 24 }}>平台配置</h2>
+      <h2 style={{ marginBottom: 24, fontSize: 20, fontWeight: 600, color: '#1E293B' }}>平台配置</h2>
 
       <Tabs defaultActiveKey="basic" items={[
         {
@@ -525,13 +533,13 @@ const PlatformConfigPage: React.FC = () => {
                       alignItems: 'center',
                       justifyContent: 'space-between',
                       padding: '12px 16px',
-                      background: '#f5f5f5',
+                      background: '#F8FAFC',
                       borderRadius: 8,
                     }}
                   >
                     <div>
                       <div>{label}</div>
-                      <div style={{ fontSize: 12, color: '#999' }}>{description}</div>
+                      <div style={{ fontSize: 12, color: '#94A3B8' }}>{description}</div>
                     </div>
                     <Switch
                       checked={featureFlags[key] ?? false}
@@ -669,6 +677,7 @@ const PlatformConfigPage: React.FC = () => {
           label: '规则模板',
           children: (
             <GlassCard
+              variant="elevated"
               title="默认规则模板"
               extra={
                 <Button type="primary" icon={<PlusOutlined />} size="small" onClick={openCreateTemplate}>
@@ -685,11 +694,11 @@ const PlatformConfigPage: React.FC = () => {
                   loading={configLoading}
                 />
               ) : (
-                <div style={{ textAlign: 'center', padding: '32px 0', color: '#999' }}>
+                <div style={{ textAlign: 'center', padding: '32px 0', color: '#94A3B8' }}>
                   暂无规则模板
                 </div>
               )}
-              <p style={{ color: '#999', fontSize: 12, marginTop: 8 }}>
+              <p style={{ color: '#94A3B8', fontSize: 12, marginTop: 8 }}>
                 提示：新企业开通时将自动应用选定的规则模板，可创建多个模板供选择
               </p>
             </GlassCard>
@@ -704,10 +713,16 @@ const PlatformConfigPage: React.FC = () => {
         onCancel={() => {
           setRuleTemplateModalOpen(false);
           setEditingTemplate(null);
-          templateForm.resetFields();
+        }}
+        afterOpenChange={(open) => {
+          if (!open) {
+            templateForm.resetFields();
+            setEditingTemplate(null);
+          }
         }}
         footer={null}
         width={640}
+        destroyOnHidden
       >
         <Form
           form={templateForm}
@@ -725,15 +740,20 @@ const PlatformConfigPage: React.FC = () => {
           <Form.Item name="description" label="描述">
             <Input.TextArea rows={2} placeholder="模板描述（选填）" />
           </Form.Item>
-          <Form.Item label="时段配置">
-            <SlotFields slots={templateForm.getFieldValue('slots') || []} onChange={(slots) => templateForm.setFieldValue('slots', slots)} />
+          <Form.Item label="时段配置" shouldUpdate={(prev, cur) => prev.slots !== cur.slots}>
+            {() => (
+              <SlotFields
+                slots={templateForm.getFieldValue('slots') || []}
+                onChange={(slots) => templateForm.setFieldValue('slots', slots)}
+              />
+            )}
           </Form.Item>
           <Form.Item style={{ marginBottom: 0 }}>
             <Space>
               <Button type="primary" htmlType="submit" loading={isLoading} icon={<CheckOutlined />}>
                 {editingTemplate ? '保存修改' : '确认创建'}
               </Button>
-              <Button onClick={() => { setRuleTemplateModalOpen(false); setEditingTemplate(null); templateForm.resetFields(); }} icon={<CloseOutlined />}>
+              <Button onClick={() => { setRuleTemplateModalOpen(false); setEditingTemplate(null); }} icon={<CloseOutlined />}>
                 取消
               </Button>
             </Space>

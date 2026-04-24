@@ -23,7 +23,7 @@ export class ProductManagementPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.heading = page.locator('h2').filter({ hasText: '产品管理' });
+    this.heading = page.locator('h1').filter({ hasText: '产品管理' });
     this.createWizardButton = page.locator('button').filter({ hasText: '配置产品' });
     this.quickCreateButton = page.locator('button').filter({ hasText: '快速创建' });
     this.refreshButton = page.locator('button').filter({ hasText: '刷新' });
@@ -214,7 +214,7 @@ export class ProductManagementPage {
     const row = this.table.locator('tr').filter({ hasText: productName });
     await row.locator('button').filter({ hasText: '删除' }).click();
     // Confirm in Popconfirm
-    const confirmBtn = this.page.locator('.ant-popconfirm').locator('button').filter({ hasText: '确认' });
+    const confirmBtn = this.page.locator('.ant-popconfirm').locator('button').filter({ hasText: /确\s*认/ });
     await confirmBtn.click();
   }
 

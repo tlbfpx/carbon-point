@@ -37,6 +37,10 @@ export interface GlassCardProps extends Omit<CardProps, 'styles'> {
    * 内边距
    */
   padding?: number | string;
+  /**
+   * 卡片变体：'glass' 液态玻璃（暗色主题） | 'elevated' 白色浮层（亮色主题）
+   */
+  variant?: 'glass' | 'elevated';
 }
 
 /**
@@ -51,11 +55,39 @@ export const GlassCard: React.FC<GlassCardProps> = ({
   glassOpacity = 0.6,
   blurIntensity = 12,
   padding = 24,
+  variant = 'elevated',
   style,
   className,
   children,
   ...cardProps
 }) => {
+  // Elevated variant — white card for light theme
+  if (variant === 'elevated') {
+    const elevatedStyles: CSSProperties = {
+      background: '#ffffff',
+      border: '1px solid rgba(0, 0, 0, 0.06)',
+      borderRadius: 12,
+      boxShadow: '0 1px 3px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 0, 0, 0.04)',
+      padding: padding as number,
+      position: 'relative',
+      overflow: 'hidden',
+      transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+      ...style,
+    };
+
+    return (
+      <Card
+        {...cardProps}
+        style={elevatedStyles}
+        className={className}
+        styles={{ body: { position: 'relative', zIndex: 1 } }}
+      >
+        {children}
+      </Card>
+    );
+  }
+
+  // Glass variant — original liquid glass (dark theme)
   // 动态样式计算
   const glassStyles = useMemo(() => {
     const baseBg = brandColor
@@ -132,7 +164,7 @@ export const GlassCard: React.FC<GlassCardProps> = ({
   }, [enableGradientBorder, enableNoise]);
 
   // 悬停效果
-  const hoverStyles: CSSProperties = hoverable
+  const hoverStyles: Record<string, any> = hoverable
     ? {
         '&:hover': {
           border: '1px solid rgba(255, 255, 255, 0.18)',
@@ -149,7 +181,7 @@ export const GlassCard: React.FC<GlassCardProps> = ({
     : {};
 
   // 合并所有样式
-  const mergedStyles: CSSProperties = {
+  const mergedStyles: any = {
     ...glassStyles,
     ...pseudoElementStyles,
     ...hoverStyles,

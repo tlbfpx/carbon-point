@@ -35,6 +35,34 @@ export interface GlassCardProps {
    * 内边距
    */
   padding?: number | string;
+  /**
+   * 自定义样式
+   */
+  style?: React.CSSProperties;
+  /**
+   * 自定义类名
+   */
+  className?: string;
+  /**
+   * 子元素
+   */
+  children?: React.ReactNode;
+  /**
+   * 标题
+   */
+  title?: React.ReactNode;
+  /**
+   * 额外内容
+   */
+  extra?: React.ReactNode;
+  /**
+   * 点击事件
+   */
+  onClick?: () => void;
+  /**
+   * 其他属性
+   */
+  [key: string]: any;
 }
 
 /**
@@ -52,6 +80,10 @@ export const GlassCard: React.FC<GlassCardProps> = ({
   style,
   className,
   children,
+  title,
+  extra,
+  onClick,
+  ...props
 }) => {
   // 动态样式计算
   const glassStyles = useMemo(() => {
@@ -129,7 +161,7 @@ export const GlassCard: React.FC<GlassCardProps> = ({
   }, [enableGradientBorder, enableNoise]);
 
   // 悬停效果
-  const hoverStyles: CSSProperties = hoverable
+  const hoverStyles: any = hoverable
     ? {
         '&:hover': {
           border: '1px solid rgba(255, 255, 255, 0.18)',
@@ -146,7 +178,7 @@ export const GlassCard: React.FC<GlassCardProps> = ({
     : {};
 
   // 合并所有样式
-  const mergedStyles: CSSProperties = {
+  const mergedStyles: any = {
     ...glassStyles,
     ...pseudoElementStyles,
     ...hoverStyles,
@@ -163,9 +195,19 @@ export const GlassCard: React.FC<GlassCardProps> = ({
     <div
       style={mergedStyles}
       className={className}
+      onClick={onClick}
+      {...props}
     >
       {enableNoise && <div className="cp-noise" />}
-      <div style={contentStyle}>{children}</div>
+      <div style={contentStyle}>
+        {(title || extra) && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            {title && <div style={{ fontSize: 16, fontWeight: 600 }}>{title}</div>}
+            {extra && <div>{extra}</div>}
+          </div>
+        )}
+        {children}
+      </div>
     </div>
   );
 };

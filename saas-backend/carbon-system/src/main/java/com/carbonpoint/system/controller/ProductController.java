@@ -6,6 +6,7 @@ import com.carbonpoint.system.dto.req.ProductFeatureUpdateReq;
 import com.carbonpoint.system.dto.req.ProductUpdateReq;
 import com.carbonpoint.system.dto.res.PageRes;
 import com.carbonpoint.system.dto.res.ProductFeatureRes;
+import com.carbonpoint.system.dto.res.ProductPackageBriefRes;
 import com.carbonpoint.system.dto.res.ProductRes;
 import com.carbonpoint.system.service.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -93,5 +94,10 @@ public class ProductController {
                                               @RequestBody ProductFeatureUpdateReq req) {
         productService.updateProductFeatures(productId, req);
         return Result.success();
+    }
+
+    @GetMapping("/{productId}/packages")
+    public Result<List<ProductPackageBriefRes>> getProductPackages(@PathVariable String productId) {
+        return Result.success(productService.getProductPackages(productId));
     }
 }

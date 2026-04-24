@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
-import { Layout, Menu, Avatar, Dropdown, Button, ConfigProvider } from 'antd';
+import { Layout, Menu, Avatar, Dropdown, Button, ConfigProvider, Input, Badge } from 'antd';
 import {
   DashboardOutlined,
   TeamOutlined,
@@ -13,6 +13,8 @@ import {
   MenuUnfoldOutlined,
   AppstoreOutlined,
   ShopOutlined,
+  SearchOutlined,
+  QuestionCircleOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { designSystemConfig } from '@carbon-point/design-system';
@@ -96,6 +98,7 @@ const PlatformMenuItems: MenuProps['items'] = [
       { key: '/features/blocks', label: '积木组件库' },
     ],
   },
+  { type: 'divider' },
   { key: '/packages', icon: <ShopOutlined />, label: '套餐管理' },
   { key: '/config', icon: <SettingOutlined />, label: '平台配置' },
 ];
@@ -147,52 +150,111 @@ const PlatformContent: React.FC = () => {
         trigger={null}
         collapsible
         collapsed={collapsed}
-        theme="dark"
-        style={{ background: '#001529' }}
+        theme="light"
+        width={220}
+        collapsedWidth={72}
+        style={{
+          background: '#F8F9FC',
+          borderRight: '1px solid rgba(0, 0, 0, 0.06)',
+          overflow: 'auto',
+          height: '100vh',
+          position: 'fixed',
+          left: 0,
+          top: 0,
+          bottom: 0,
+          zIndex: 100,
+        }}
       >
         <div style={{
           height: 64,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          color: '#fff',
-          fontSize: collapsed ? 16 : 18,
-          fontWeight: 'bold',
+          color: '#6366F1',
+          fontSize: collapsed ? 18 : 18,
+          fontWeight: 700,
+          fontFamily: "'Inter', 'Noto Sans SC', sans-serif",
+          borderBottom: '1px solid rgba(0, 0, 0, 0.06)',
         }}>
           {collapsed ? '碳' : '平台管理后台'}
         </div>
         {isAuthenticated && (
           <Menu
-            theme="dark"
             mode="inline"
             selectedKeys={[location.pathname]}
             openKeys={openKeys}
             onOpenChange={setOpenKeys}
             items={menuItems as any}
             onClick={({ key }) => navigate(key)}
-            style={{ borderRight: 0 }}
+            style={{
+              borderRight: 0,
+              background: 'transparent',
+              padding: '8px 0',
+            }}
           />
         )}
       </Sider>
-      <Layout>
+      <Layout style={{ marginLeft: collapsed ? 72 : 220, transition: 'margin-left 0.2s' }}>
         <Header style={{
-          padding: '0 16px',
-          background: '#fff',
+          padding: '0 24px',
+          background: '#ffffff',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          boxShadow: '0 1px 4px rgba(0,21,41,.08)',
+          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)',
+          borderBottom: '1px solid rgba(0, 0, 0, 0.04)',
+          position: 'sticky',
+          top: 0,
+          zIndex: 99,
         }}>
-          <Button
-            type="text"
-            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-            onClick={() => setCollapsed(!collapsed)}
-          />
-          <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
-            <Avatar style={{ cursor: 'pointer' }}>{user?.username?.charAt(0) || 'U'}</Avatar>
-          </Dropdown>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <Button
+              type="text"
+              icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+              onClick={() => setCollapsed(!collapsed)}
+              style={{ color: '#475569' }}
+            />
+            <Input
+              placeholder="搜索企业、用户、订单..."
+              prefix={<SearchOutlined style={{ color: '#94A3B8' }} />}
+              style={{
+                width: 280,
+                borderRadius: 8,
+                background: '#F5F5F7',
+                border: '1px solid transparent',
+              }}
+            />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <Button type="text" icon={<QuestionCircleOutlined />} style={{ color: '#94A3B8' }} />
+            <Badge count={0} showZero={false} size="small">
+              <Button type="text" icon={<BellOutlined />} style={{ color: '#94A3B8' }} />
+            </Badge>
+            <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                <Avatar
+                  size={32}
+                  style={{
+                    background: 'linear-gradient(135deg, #6366F1, #8B5CF6)',
+                    fontSize: 14,
+                    fontWeight: 600,
+                  }}
+                >
+                  {user?.username?.charAt(0) || 'U'}
+                </Avatar>
+                {!collapsed && (
+                  <span style={{ fontSize: 14, color: '#475569' }}>
+                    {user?.username || '用户'}
+                  </span>
+                )}
+              </div>
+            </Dropdown>
+          </div>
         </Header>
-        <Content style={{ margin: 16, padding: 24, background: '#fff', minHeight: 280 }}>
+        <Content style={{
+          margin: 24,
+          minHeight: 280,
+        }}>
            <Routes>
               {!isAuthenticated ? (
                 <>
@@ -228,7 +290,7 @@ const App: React.FC = () => (
     basename="/platform"
     future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
   >
-    <ConfigProvider {...designSystemConfig.dark}>
+    <ConfigProvider {...designSystemConfig.light}>
       <ErrorBoundary>
         <PlatformContent />
       </ErrorBoundary>

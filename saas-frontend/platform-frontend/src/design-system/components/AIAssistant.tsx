@@ -13,7 +13,6 @@ import {
   Typography,
   Space,
   Avatar,
-  ScrollableContent,
 } from 'antd';
 import {
   RobotOutlined,

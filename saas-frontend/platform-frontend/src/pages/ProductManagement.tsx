@@ -56,6 +56,7 @@ import {
   RuleNodeInfo,
   FeatureInfo,
   ProductFeature,
+  getProductPackages,
 } from '@/api/platform';
 import { extractArray } from '@/utils';
 import { EXTENSION_GUIDANCE } from '@/constants/feature-menu-map';
@@ -139,6 +140,9 @@ const ProductManagement: React.FC = () => {
   // Success modal state
   const [successModalOpen, setSuccessModalOpen] = useState(false);
 
+  // Product-package association map: productId → package brief list
+  const [productPackagesMap, setProductPackagesMap] = useState<Record<string, { id: string; code: string; name: string }[]>>({});
+
   const { data: productsData, isLoading, refetch } = useQuery({
     queryKey: ['products', page, pageSize, categoryFilter],
     queryFn: () => getProducts({ page, size: pageSize, category: categoryFilter }),
@@ -183,15 +187,11 @@ const ProductManagement: React.FC = () => {
 
   const createMutation = useMutation({
     mutationFn: createProduct,
-    onSuccess: (res: { code: number; message?: string }) => {
-      if (res.code === 200 || res.code === 0) {
-        message.success('创建成功');
-        setModalOpen(false);
-        form.resetFields();
-        queryClient.invalidateQueries({ queryKey: ['products'] });
-      } else {
-        message.error(res.message || '创建失败');
-      }
+    onSuccess: () => {
+      message.success('创建成功');
+      setModalOpen(false);
+      form.resetFields();
+      queryClient.invalidateQueries({ queryKey: ['products'] });
     },
     onError: (err: unknown) => {
       const error = err as { response?: { data?: { message?: string } } };
@@ -201,16 +201,12 @@ const ProductManagement: React.FC = () => {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: { name?: string; description?: string; status?: number; sortOrder?: number } }) => updateProduct(id, data),
-    onSuccess: (res: { code: number; message?: string }) => {
-      if (res.code === 200 || res.code === 0) {
-        message.success('更新成功');
-        setModalOpen(false);
-        setEditingProduct(null);
-        form.resetFields();
-        queryClient.invalidateQueries({ queryKey: ['products'] });
-      } else {
-        message.error(res.message || '更新失败');
-      }
+    onSuccess: () => {
+      message.success('更新成功');
+      setModalOpen(false);
+      setEditingProduct(null);
+      form.resetFields();
+      queryClient.invalidateQueries({ queryKey: ['products'] });
     },
     onError: (err: unknown) => {
       const error = err as { response?: { data?: { message?: string } } };
@@ -220,13 +216,9 @@ const ProductManagement: React.FC = () => {
 
   const deleteMutation = useMutation({
     mutationFn: deleteProduct,
-    onSuccess: (res: { code: number; message?: string }) => {
-      if (res.code === 200 || res.code === 0) {
-        message.success('删除成功');
-        queryClient.invalidateQueries({ queryKey: ['products'] });
-      } else {
-        message.error(res.message || '删除失败');
-      }
+    onSuccess: () => {
+      message.success('删除成功');
+      queryClient.invalidateQueries({ queryKey: ['products'] });
     },
     onError: (err: unknown) => {
       const error = err as { response?: { data?: { message?: string } } };
@@ -237,14 +229,10 @@ const ProductManagement: React.FC = () => {
   const updateFeaturesMutation = useMutation({
     mutationFn: ({ productId, features }: { productId: string; features: { featureId: string; isEnabled: boolean; isRequired: boolean; configValue?: string }[] }) =>
       updateProductFeatures(productId, features),
-    onSuccess: (res: { code: number; message?: string }) => {
-      if (res.code === 200 || res.code === 0) {
-        message.success('功能点更新成功');
-        setFeatureModalOpen(false);
-        queryClient.invalidateQueries({ queryKey: ['products'] });
-      } else {
-        message.error(res.message || '更新失败');
-      }
+    onSuccess: () => {
+      message.success('功能点更新成功');
+      setFeatureModalOpen(false);
+      queryClient.invalidateQueries({ queryKey: ['products'] });
     },
     onError: (err: unknown) => {
       const error = err as { response?: { data?: { message?: string } } };
@@ -274,7 +262,7 @@ const ProductManagement: React.FC = () => {
     try {
       const productFeatures = await getProductFeatures(record.id);
       const featureMap: Record<string, { enabled: boolean; required: boolean; configValue?: string }> = {};
-      (productFeatures.data || []).forEach((pf: ProductFeature) => {
+      (productFeatures || []).forEach((pf: ProductFeature) => {
         featureMap[pf.featureId] = {
           enabled: pf.isEnabled,
           required: pf.isRequired,
@@ -309,9 +297,9 @@ const ProductManagement: React.FC = () => {
     setWizardOpen(true);
   };
 
-  const wizardModules: RegistryModule[] = Array.isArray(registryModulesData) ? registryModulesData : (registryModulesData?.data || []);
-  const wizardRuleNodes: RuleNodeInfo[] = Array.isArray(registryRuleNodesData) ? registryRuleNodesData : (registryRuleNodesData?.data || []);
-  const wizardFeatures: FeatureInfo[] = Array.isArray(registryFeaturesData) ? registryFeaturesData : (registryFeaturesData?.data || []);
+  const wizardModules: RegistryModule[] = extractArray<RegistryModule>(registryModulesData);
+  const wizardRuleNodes: RuleNodeInfo[] = extractArray<RuleNodeInfo>(registryRuleNodesData);
+  const wizardFeatures: FeatureInfo[] = extractArray<FeatureInfo>(registryFeaturesData);
 
   const handleWizardNext = () => {
     // Validate current step
@@ -417,7 +405,12 @@ const ProductManagement: React.FC = () => {
     if (editingProduct) {
       updateMutation.mutate({ id: editingProduct.id, data: values });
     } else {
-      createMutation.mutate(values);
+      // 确保 code 存在
+      const dataToCreate = {
+        ...values,
+        code: values.code || values.name.toLowerCase().replace(/\s+/g, '_'),
+      };
+      createMutation.mutate(dataToCreate as any);
     }
   };
 
@@ -438,9 +431,31 @@ const ProductManagement: React.FC = () => {
   const getCategoryConfig = (category: string) =>
     CATEGORY_OPTIONS.find((c) => c.value === category) || { label: category, color: 'default' };
 
-  const products = productsData?.records || (Array.isArray(productsData) ? productsData : (productsData?.data?.records || productsData?.data || []));
-  const total = (productsData?.total || productsData?.data?.total) || products.length;
+  const products = productsData?.records || (Array.isArray(productsData) ? productsData : []);
+  const total = productsData?.total || products.length;
   const allFeatures = extractArray<Feature>(featuresData);
+
+  // Batch-fetch package associations when products list loads
+  const loadProductPackages = async (productIds: string[]) => {
+    const newMap: Record<string, { id: string; code: string; name: string }[]> = {};
+    await Promise.all(productIds.map(async (pid) => {
+      try {
+        const res = await getProductPackages(pid);
+        const pkgs = Array.isArray(res) ? res : [];
+        if (pkgs.length > 0) newMap[pid] = pkgs;
+      } catch { /* ignore — column falls back to "—" */ }
+    }));
+    setProductPackagesMap((prev) => ({ ...prev, ...newMap }));
+  };
+
+  React.useEffect(() => {
+    if (products.length > 0) {
+      const idsToFetch = products
+        .map((p: Product) => p.id)
+        .filter((id: string) => !productPackagesMap[id]);
+      if (idsToFetch.length > 0) loadProductPackages(idsToFetch);
+    }
+  }, [products]);
 
   const columns = [
     { title: '产品编码', dataIndex: 'code', width: 140 },
@@ -479,10 +494,21 @@ const ProductManagement: React.FC = () => {
     { title: '创建时间', dataIndex: 'createTime', width: 110, render: (t: string) => t ? dayjs(t).format('YYYY-MM-DD') : '-' },
     {
       title: '关联套餐',
-      width: 120,
-      render: (_: unknown, record: Product) => (
-        <Text type="secondary">—</Text>
-      ),
+      width: 160,
+      render: (_: unknown, record: Product) => {
+        const pkgs = productPackagesMap[record.id];
+        if (!pkgs || pkgs.length === 0) return <Text type="secondary">—</Text>;
+        const visible = pkgs.slice(0, 2);
+        const remaining = pkgs.length - 2;
+        return (
+          <Space size={4} wrap>
+            {visible.map((p) => (
+              <Tag key={p.id} color="blue">{p.name}</Tag>
+            ))}
+            {remaining > 0 && <Tag>+{remaining}</Tag>}
+          </Space>
+        );
+      },
     },
     {
       title: '操作',
@@ -517,8 +543,8 @@ const ProductManagement: React.FC = () => {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16, alignItems: 'center' }}>
-        <h2 style={{ margin: 0 }}>产品管理</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24, alignItems: 'center' }}>
+        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600, color: '#1E293B' }}>产品管理</h2>
         <Space>
           <Button icon={<ReloadOutlined />} onClick={() => refetch()}>刷新</Button>
           <Button type="primary" icon={<PlusOutlined />} onClick={openWizard}>
@@ -567,7 +593,7 @@ const ProductManagement: React.FC = () => {
         onCancel={() => setWizardOpen(false)}
         width={720}
         footer={null}
-        destroyOnClose
+        destroyOnHidden
       >
         <Alert
           type="info"
@@ -645,7 +671,7 @@ const ProductManagement: React.FC = () => {
                     size="small"
                     hoverable
                     style={{
-                      border: isSelected ? '2px solid #1890ff' : '1px solid #f0f0f0',
+                      border: isSelected ? '2px solid #6366F1' : '1px solid rgba(0, 0, 0, 0.06)',
                       cursor: 'pointer',
                     }}
                     onClick={() => {
@@ -663,7 +689,7 @@ const ProductManagement: React.FC = () => {
                           <Text strong>{module.trigger?.name || module.triggerType}</Text>
                           <Tag color="geekblue">{module.name}</Tag>
                         </Space>
-                        <div style={{ color: '#666', fontSize: 13, marginTop: 4 }}>
+                        <div style={{ color: '#475569', fontSize: 13, marginTop: 4 }}>
                           {module.trigger?.description || `触发类型: ${module.triggerType}`}
                         </div>
                       </div>
@@ -716,10 +742,10 @@ const ProductManagement: React.FC = () => {
                             marginBottom: 4,
                             background: hasConfig ? '#f6ffed' : '#fafafa',
                             borderRadius: 6,
-                            border: hasConfig ? '1px solid #b7eb8f' : '1px solid #f0f0f0',
+                            border: hasConfig ? '1px solid #b7eb8f' : '1px solid rgba(0, 0, 0, 0.06)',
                           }}
                         >
-                          <HolderOutlined style={{ color: '#999', marginRight: 8, cursor: 'grab' }} />
+                          <HolderOutlined style={{ color: '#94A3B8', marginRight: 8, cursor: 'grab' }} />
                           <Badge count={index + 1} style={{ backgroundColor: '#722ed1', marginRight: 8 }} />
                           <Tag color="purple" style={{ flex: 1 }}>
                             {RULE_NODE_LABELS[nodeName] || nodeName}
@@ -796,7 +822,7 @@ const ProductManagement: React.FC = () => {
                     >
                       <div>
                         <Tag color="purple">{RULE_NODE_LABELS[node.name] || node.name}</Tag>
-                        <div style={{ color: '#999', fontSize: 12, marginTop: 2 }}>{node.description}</div>
+                        <div style={{ color: '#94A3B8', fontSize: 12, marginTop: 2 }}>{node.description}</div>
                       </div>
                       <Button
                         type="link"
@@ -847,7 +873,7 @@ const ProductManagement: React.FC = () => {
                       marginBottom: 8,
                       background: isSelected ? '#f6ffed' : '#fafafa',
                       borderRadius: 6,
-                      border: isSelected ? '1px solid #b7eb8f' : '1px solid #f0f0f0',
+                      border: isSelected ? '1px solid #b7eb8f' : '1px solid rgba(0, 0, 0, 0.06)',
                       cursor: 'pointer',
                     }}
                     onClick={() => {
@@ -912,7 +938,7 @@ const ProductManagement: React.FC = () => {
         onCancel={() => { setModalOpen(false); setEditingProduct(null); form.resetFields(); }}
         footer={null}
         width={520}
-        destroyOnClose
+        destroyOnHidden
       >
         <Form form={form} layout="vertical" onFinish={handleFormFinish}>
           {!editingProduct && (
@@ -979,7 +1005,7 @@ const ProductManagement: React.FC = () => {
         open={drawerOpen}
         onClose={() => { setDrawerOpen(false); setDrawerProduct(null); }}
         width={560}
-        destroyOnClose
+        destroyOnHidden
       >
         {drawerProduct && (
           <>
@@ -1030,7 +1056,7 @@ const ProductManagement: React.FC = () => {
                   children: (
                     <Space>
                       <Tag color="purple">{node}</Tag>
-                      <span style={{ color: '#666', fontSize: 12 }}>
+                      <span style={{ color: '#475569', fontSize: 12 }}>
                         {RULE_NODE_LABELS[node] || ''}
                       </span>
                     </Space>
@@ -1041,9 +1067,9 @@ const ProductManagement: React.FC = () => {
 
             <h4 style={{ marginBottom: 12 }}>功能点列表</h4>
             {drawerFeaturesLoading ? (
-              <div style={{ textAlign: 'center', padding: 24, color: '#999' }}>加载中...</div>
+              <div style={{ textAlign: 'center', padding: 24, color: '#94A3B8' }}>加载中...</div>
             ) : (() => {
-              const features = drawerProductFeatures?.data || [];
+              const features = drawerProductFeatures || [];
               if (features.length === 0) {
                 return <Empty description="暂无功能点配置" image={Empty.PRESENTED_IMAGE_SIMPLE} />;
               }
@@ -1055,9 +1081,9 @@ const ProductManagement: React.FC = () => {
                       style={{
                         padding: '8px 12px',
                         marginBottom: 8,
-                        background: '#fafafa',
+                        background: '#F8FAFC',
                         borderRadius: 6,
-                        border: '1px solid #f0f0f0',
+                        border: '1px solid rgba(0, 0, 0, 0.06)',
                       }}
                     >
                       <Space style={{ width: '100%', justifyContent: 'space-between' }}>
@@ -1078,10 +1104,10 @@ const ProductManagement: React.FC = () => {
                         </Space>
                       </Space>
                       {pf.feature?.description && (
-                        <div style={{ color: '#999', fontSize: 12, marginTop: 4 }}>{pf.feature.description}</div>
+                        <div style={{ color: '#94A3B8', fontSize: 12, marginTop: 4 }}>{pf.feature.description}</div>
                       )}
                       {pf.configValue && (
-                        <div style={{ color: '#666', fontSize: 12, marginTop: 2 }}>
+                        <div style={{ color: '#475569', fontSize: 12, marginTop: 2 }}>
                           配置值: <Tag>{pf.configValue}</Tag>
                         </div>
                       )}
@@ -1170,14 +1196,14 @@ const ProductManagement: React.FC = () => {
         onOk={handleFeatureSave}
         confirmLoading={updateFeaturesMutation.isPending}
         width={800}
-        destroyOnClose
+        destroyOnHidden
       >
         <GlassCard size="small" type="inner" title="功能点列表" style={{ marginBottom: 0 }}>
           {allFeatures.length === 0 ? (
             <Empty description="暂无可配置的功能点" image={Empty.PRESENTED_IMAGE_SIMPLE} />
           ) : (
             allFeatures.map((feature: Feature) => (
-              <div key={feature.id} style={{ padding: '12px 0', borderBottom: '1px solid #f0f0f0' }}>
+              <div key={feature.id} style={{ padding: '12px 0', borderBottom: '1px solid rgba(0, 0, 0, 0.06)' }}>
                 <Space style={{ width: '100%', justifyContent: 'space-between' }}>
                   <Space>
                     <Checkbox
@@ -1222,7 +1248,7 @@ const ProductManagement: React.FC = () => {
                   )}
                 </Space>
                 {feature.description && (
-                  <div style={{ marginLeft: 24, marginTop: 4, color: '#666', fontSize: 13 }}>{feature.description}</div>
+                  <div style={{ marginLeft: 24, marginTop: 4, color: '#475569', fontSize: 13 }}>{feature.description}</div>
                 )}
               </div>
             ))

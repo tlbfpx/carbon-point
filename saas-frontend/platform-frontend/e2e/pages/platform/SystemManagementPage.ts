@@ -116,14 +116,16 @@ export class SystemManagementPage {
     this.adminPagination = page.locator('.ant-pagination');
     this.adminPageNextButton = page.locator('.ant-pagination .ant-pagination-next');
     this.adminPagePrevButton = page.locator('.ant-pagination .ant-pagination-prev');
-    this.adminPageJumperInput = page.locator('.ant-pagination .ant-pagination-options- jumper input');
+    this.adminPageJumperInput = page.locator('.ant-pagination .ant-pagination-options-quick-jumper input');
     this.adminPageSizeChanger = page.locator('.ant-pagination .ant-select');
     this.adminTotalText = page.locator('.ant-pagination .ant-pagination-total-text');
 
     // ---- Log Tab ----
-    this.logTable = page.locator('.ant-table').nth(1);
-    this.logTableRows = page.locator('.ant-table').nth(1).locator('.ant-table-tbody tr');
-    this.logOperatorInput = page.locator('input[placeholder="搜索操作人"]');
+    // Ant Design Tabs hides inactive panels, so there is only ONE visible .ant-table
+    // at a time.  The logTabPanel locator scopes to the "logs" tab pane.
+    this.logTable = page.locator('.ant-tabs-tabpane-active .ant-table');
+    this.logTableRows = page.locator('.ant-tabs-tabpane-active .ant-table-tbody tr');
+    this.logOperatorInput = page.locator('input[placeholder="操作人ID"]');
     this.logActionTypeSelect = page.locator('.ant-select').filter({ hasText: '' }).first();
     this.logActionTypeOption = (type: string) =>
       page.locator('.ant-select-dropdown .ant-select-item-option').filter({ hasText: type });
@@ -141,24 +143,28 @@ export class SystemManagementPage {
       this.logTableRows.filter({ hasText: operator }).locator('td').nth(3);
     this.logTimeCell = (operator: string) =>
       this.logTableRows.filter({ hasText: operator }).locator('td').nth(4);
-    this.logPagination = page.locator('.ant-pagination').nth(1);
-    this.logPageNextButton = page.locator('.ant-pagination').nth(1).locator('.ant-pagination-next');
-    this.logPagePrevButton = page.locator('.ant-pagination').nth(1).locator('.ant-pagination-prev');
-    this.logTotalText = page.locator('.ant-pagination').nth(1).locator('.ant-pagination-total-text');
+    this.logPagination = page.locator('.ant-tabs-tabpane-active .ant-pagination');
+    this.logPageNextButton = page.locator('.ant-tabs-tabpane-active .ant-pagination-next');
+    this.logPagePrevButton = page.locator('.ant-tabs-tabpane-active .ant-pagination-prev');
+    this.logTotalText = page.locator('.ant-tabs-tabpane-active .ant-pagination-total-text');
   }
 
   // ==================== Navigation ====================
 
   async goto() {
-    await this.page.waitForSelector('.ant-layout-sider', { timeout: 15000 });
-    // Try clicking menu item first, fallback to direct URL navigation
-    try {
-      await this.page.click('text=系统管理');
-      await this.page.waitForURL('**/system', { timeout: 5000 });
-    } catch {
-      // Fallback: navigate directly using full URL
-      await this.page.goto(`${BASE_URL}/system`);
-    }
+    // After loginAsPlatformAdmin the app is hydrated and running at /dashboard.
+    // "系统管理" is a submenu parent (expand-only), so we cannot click it to
+    // navigate.  A full page.goto(BASE_URL/system) causes a reload race:
+    // Zustand starts unhydrated -> router redirects to /login -> hydrate -> /dashboard.
+    //
+    // Solution: use pushState + popstate to trigger React Router's client-side
+    // navigation without a full page reload. This works because React Router
+    // v6 BrowserRouter listens to popstate events.
+    await this.page.evaluate((targetPath: string) => {
+      window.history.pushState({}, '', targetPath);
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    }, `${BASE_URL}/system`);
+    await this.page.waitForURL('**/system', { timeout: 10000 });
     await this.page.waitForLoadState('networkidle');
     await this.page.waitForSelector('.ant-tabs', { timeout: 15000 });
   }
@@ -336,7 +342,7 @@ export class SystemManagementPage {
   // ==================== Admin Pagination ====================
 
   async navigateToAdminPage(page: number) {
-    const jumper = this.page.locator('.ant-pagination-options- jumper input');
+    const jumper = this.page.locator('.ant-pagination .ant-pagination-options-quick-jumper input');
     await jumper.fill(String(page));
     await this.page.keyboard.press('Enter');
     // Wait for table to update
@@ -573,7 +579,7 @@ export class SystemManagementPage {
 
   async assertModalTitle(title: string) {
     const modalTitle = this.page.locator('.ant-modal-title');
-    await expect(modalTitle).HaveText(title);
+    await expect(modalTitle).toHaveText(title);
   }
 
   async assertAdminNotVisible(username: string) {

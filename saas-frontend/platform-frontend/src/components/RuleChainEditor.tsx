@@ -4,18 +4,15 @@ import {
   Button,
   Space,
   List,
-  DragDropContext,
-  Droppable,
-  Draggable,
-  DropResult,
   Typography,
   Tooltip,
 } from 'antd';
 import {
-  HolderOutlined,
   PlusOutlined,
   DeleteOutlined,
   SettingOutlined,
+  UpOutlined,
+  DownOutlined,
 } from '@ant-design/icons';
 
 const { Title, Text } = Typography;
@@ -45,16 +42,18 @@ const RuleChainEditor: React.FC<RuleChainEditorProps> = ({
 }) => {
   const [nodes, setNodes] = useState<RuleNodeItem[]>(ruleNodes);
 
-  const handleDragEnd = (result: DropResult) => {
-    if (!result.destination || disabled) return;
+  const moveNode = (index: number, direction: 'up' | 'down') => {
+    if (disabled) return;
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= nodes.length) return;
 
     const items = Array.from(nodes);
-    const [reorderedItem] = items.splice(result.source.index, 1);
-    items.splice(result.destination.index, 0, reorderedItem);
+    const [item] = items.splice(index, 1);
+    items.splice(newIndex, 0, item);
 
-    const reordered = items.map((item, index) => ({
+    const reordered = items.map((item, i) => ({
       ...item,
-      sortOrder: index + 1,
+      sortOrder: i + 1,
     }));
 
     setNodes(reordered);
@@ -120,88 +119,75 @@ const RuleChainEditor: React.FC<RuleChainEditorProps> = ({
         {/* Right: Current Rule Chain */}
         <div style={{ flex: 1 }}>
           <Title level={5}>规则链</Title>
-          <DragDropContext onDragEnd={handleDragEnd}>
-            <Droppable droppableId="rule-chain">
-              {(provided) => (
+          <div>
+            {nodes.map((node, index) => (
+              <Card
+                key={node.id}
+                size="small"
+                style={{
+                  marginBottom: 8,
+                }}
+                extra={
+                  <Space>
+                    <Tooltip title="上移">
+                      <Button
+                        type="text"
+                        icon={<UpOutlined />}
+                        onClick={() => moveNode(index, 'up')}
+                        disabled={disabled || index === 0}
+                      />
+                    </Tooltip>
+                    <Tooltip title="下移">
+                      <Button
+                        type="text"
+                        icon={<DownOutlined />}
+                        onClick={() => moveNode(index, 'down')}
+                        disabled={disabled || index === nodes.length - 1}
+                      />
+                    </Tooltip>
+                    <Tooltip title="配置">
+                      <Button
+                        type="text"
+                        icon={<SettingOutlined />}
+                        onClick={() => handleConfigNode(node)}
+                        disabled={disabled}
+                      />
+                    </Tooltip>
+                    <Tooltip title="删除">
+                      <Button
+                        type="text"
+                        danger
+                        icon={<DeleteOutlined />}
+                        onClick={() => handleRemoveNode(node.id)}
+                        disabled={disabled}
+                      />
+                    </Tooltip>
+                  </Space>
+                }
+              >
                 <div
-                  {...provided.droppableProps}
-                  ref={provided.innerRef}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 12,
+                  }}
                 >
-                  {nodes.map((node, index) => (
-                    <Draggable
-                      key={node.id}
-                      draggableId={node.id}
-                      index={index}
-                      isDragDisabled={disabled}
-                    >
-                      {(provided, snapshot) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          style={{
-                            ...provided.draggableProps.style,
-                            marginBottom: 8,
-                          }}
-                        >
-                          <Card
-                            size="small"
-                            style={{
-                              background: snapshot.isDragging ? '#e6f7ff' : '#fff',
-                            }}
-                            extra={
-                              <Space>
-                                <Tooltip title="配置">
-                                  <Button
-                                    type="text"
-                                    icon={<SettingOutlined />}
-                                    onClick={() => handleConfigNode(node)}
-                                    disabled={disabled}
-                                  />
-                                </Tooltip>
-                                <Tooltip title="删除">
-                                  <Button
-                                    type="text"
-                                    danger
-                                    icon={<DeleteOutlined />}
-                                    onClick={() => handleRemoveNode(node.id)}
-                                    disabled={disabled}
-                                  />
-                                </Tooltip>
-                              </Space>
-                            }
-                          >
-                            <div
-                              style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 12,
-                              }}
-                              {...provided.dragHandleProps}
-                            >
-                              <HolderOutlined style={{ cursor: 'grab', color: '#999' }} />
-                              <div>
-                                <Text strong>{node.sortOrder}. {node.name}</Text>
-                                {node.description && (
-                                  <Text type="secondary" style={{ display: 'block', fontSize: 12 }}>
-                                    {node.description}
-                                  </Text>
-                                )}
-                              </div>
-                            </div>
-                          </Card>
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
-                  {provided.placeholder}
+                  <div>
+                    <Text strong>{node.sortOrder}. {node.name}</Text>
+                    {node.description && (
+                      <Text type="secondary" style={{ display: 'block', fontSize: 12 }}>
+                        {node.description}
+                      </Text>
+                    )}
+                  </div>
                 </div>
-              )}
-            </Droppable>
-          </DragDropContext>
+              </Card>
+            ))}
+          </div>
 
           {nodes.length === 0 && (
             <div style={{ textAlign: 'center', padding: 40, color: '#999' }}>
-              从左侧拖拽添加规则节点
+              从左侧添加规则节点
             </div>
           )}
         </div>

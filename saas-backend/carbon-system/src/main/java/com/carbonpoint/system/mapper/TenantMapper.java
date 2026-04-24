@@ -25,8 +25,10 @@ public interface TenantMapper extends BaseMapper<Tenant> {
     Tenant selectByIdForPlatform(Long id);
 
     @InterceptorIgnore
-    @Select("SELECT COUNT(*) FROM tenants" +
-            "<if test='keyword != null and keyword != \"\"'> WHERE name LIKE CONCAT('%', #{keyword}, '%')</if>")
+    @Select("<script>" +
+            "SELECT COUNT(*) FROM tenants" +
+            "<if test='keyword != null and keyword != \"\"'> WHERE name LIKE CONCAT('%', #{keyword}, '%')</if>" +
+            "</script>")
     long countForPlatform(@Param("keyword") String keyword);
 
     @InterceptorIgnore

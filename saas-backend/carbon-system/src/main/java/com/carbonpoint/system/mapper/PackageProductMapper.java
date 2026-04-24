@@ -26,6 +26,9 @@ public interface PackageProductMapper extends BaseMapper<PackageProductEntity> {
     @Select("SELECT * FROM package_products WHERE package_id = #{packageId} AND product_id = #{productId}")
     PackageProductEntity selectByPackageIdAndProductId(@Param("packageId") Long packageId, @Param("productId") String productId);
 
+    @Select("SELECT package_id FROM package_products WHERE product_id = #{productId}")
+    List<Long> selectPackageIdsByProductId(@Param("productId") String productId);
+
     @Delete("DELETE FROM package_products WHERE package_id = #{packageId}")
     int deleteByPackageId(@Param("packageId") Long packageId);
 }

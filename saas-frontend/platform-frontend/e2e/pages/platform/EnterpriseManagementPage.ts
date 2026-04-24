@@ -59,7 +59,14 @@ export class EnterpriseManagementPage {
 
   async submitEnterprise() {
     const modal = this.page.locator('.ant-modal');
-    await modal.locator('button').filter({ hasText: '确认开通' }).click();
+    // Use button[type="submit"] first (the form's own submit button)
+    const submitBtn = modal.locator('button[type="submit"]');
+    if (await submitBtn.isVisible().catch(() => false)) {
+      await submitBtn.click();
+    } else {
+      // Fallback: search by text (Ant Design may render with spaces)
+      await modal.locator('button').filter({ hasText: /确\s*认\s*开\s*通/ }).click();
+    }
   }
 
   async searchEnterprise(keyword: string) {
@@ -145,12 +152,14 @@ export class EnterpriseManagementPage {
     }
     await statusBtn.click();
     try {
-      await this.page.waitForSelector('.ant-popover', { timeout: 3000 });
-      await this.page.locator('.ant-popover .ant-btn').filter({ hasText: '确定' }).click();
+      // Ant Design Popconfirm renders as .ant-popconfirm
+      await this.page.waitForSelector('.ant-popconfirm', { timeout: 3000 });
+      // Ant Design renders "确 定" (with space) - use regex
+      await this.page.locator('.ant-popconfirm button').filter({ hasText: /确\s*定/ }).click();
       // Wait for popover to close
-      await this.page.locator('.ant-popover').waitFor({ state: 'hidden', timeout: 5000 });
+      await this.page.locator('.ant-popconfirm').waitFor({ state: 'hidden', timeout: 5000 });
     } catch {
-      // Popover confirm not found - button click may have been sufficient
+      // Popconfirm confirm not found - button click may have been sufficient
     }
   }
 

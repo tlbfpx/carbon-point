@@ -55,7 +55,8 @@ import { useQuery } from '@tanstack/react-query';
 
 const { Header, Sider, Content } = Layout;
 
-// Enterprise admin permission map — branding does not require a specific permission
+// Phase 2 fallback: when dynamic menu API is unavailable, this map gates static menu items by permission.
+// See enterprise-package-menu-design.md §7 — Phase 3 removes this entirely once platform-backend can fully drive menus.
 const ENTERPRISE_PERMISSION_MAP: Record<string, string | undefined> = {
   '/dashboard': 'enterprise:dashboard:view',
   '/members': 'enterprise:member:list',
@@ -75,7 +76,8 @@ const ENTERPRISE_PERMISSION_MAP: Record<string, string | undefined> = {
   '/point-expiration': 'enterprise:point:query',
 };
 
-// Static menu fallback
+// Phase 2 fallback: static menu rendered when getTenantMenu() returns empty.
+// Aligns with enterprise-package-menu-design.md §7 migration strategy. Remove in Phase 3.
 const EnterpriseMenuItems: MenuProps['items'] = [
   { key: '/dashboard', icon: <DashboardOutlined />, label: '数据看板' },
   { key: '/members', icon: <TeamOutlined />, label: '员工管理' },
@@ -191,7 +193,7 @@ const EnterpriseContent: React.FC = () => {
     refetchOnWindowFocus: false,
   });
 
-  // Check if walking product is available for this tenant
+  // Only used in static-fallback mode to hide walking menus for tenants without walking product.
   const hasWalkingProduct = useMemo(() => {
     if (!tenantProducts) return false;
     return tenantProducts.some(

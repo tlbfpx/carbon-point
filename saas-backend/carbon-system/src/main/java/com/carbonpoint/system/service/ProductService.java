@@ -6,6 +6,7 @@ import com.carbonpoint.system.dto.req.ProductUpdateReq;
 import com.carbonpoint.system.dto.res.PageRes;
 import com.carbonpoint.system.dto.res.ProductFeatureRes;
 import com.carbonpoint.system.dto.res.ProductRes;
+import com.carbonpoint.system.dto.res.ProductPackageBriefRes;
 
 import java.util.List;
 
@@ -24,4 +25,6 @@ public interface ProductService {
     List<ProductFeatureRes> getProductFeatures(String productId);
 
     void updateProductFeatures(String productId, ProductFeatureUpdateReq req);
+
+    List<ProductPackageBriefRes> getProductPackages(String productId);
 }

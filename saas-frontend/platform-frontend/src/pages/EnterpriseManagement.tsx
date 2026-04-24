@@ -209,8 +209,8 @@ const EnterpriseManagement: React.FC = () => {
     setDetailActiveTab('info');
   };
 
-  const stats = statsData?.data;
-  const packageOptions = (packagesData?.data?.records || packagesData?.data || [])
+  const stats = statsData;
+  const packageOptions = (packagesData?.records || packagesData || [])
     .filter((p: { status: number }) => p.status === 1)
     .map((p: { id: string; name: string }) => ({ value: p.id, label: p.name }));
 
@@ -222,7 +222,7 @@ const EnterpriseManagement: React.FC = () => {
         <div>
           <div style={{ fontWeight: 500 }}>{name}</div>
           {record.expireTime && (
-            <div style={{ fontSize: 12, color: dayjs(record.expireTime).isBefore(dayjs()) ? '#ff4d4f' : '#999' }}>
+            <div style={{ fontSize: 12, color: dayjs(record.expireTime).isBefore(dayjs()) ? '#EF4444' : '#94A3B8' }}>
               {dayjs(record.expireTime).isBefore(dayjs()) ? '已到期' : `到期: ${dayjs(record.expireTime).format('YYYY-MM-DD')}`}
             </div>
           )}
@@ -413,7 +413,7 @@ const EnterpriseManagement: React.FC = () => {
         </div>
       );
     }
-    const products = tenantProductsData?.data || [];
+    const products = tenantProductsData || [];
     if (!products || products.length === 0) {
       return (
         <div>
@@ -485,8 +485,8 @@ const EnterpriseManagement: React.FC = () => {
       );
     }
 
-    const products = tenantProductsData?.data || [];
-    const packageDetail = packageDetailData?.data;
+    const products = tenantProductsData || [];
+    const packageDetail = packageDetailData;
     const packageProducts = packageDetail?.products || [];
 
     // Calculate stats
@@ -555,7 +555,7 @@ const EnterpriseManagement: React.FC = () => {
             <Tag color={CATEGORY_COLOR_MAP[product.category] || 'default'}>
               {CATEGORY_LABEL_MAP[product.category] || product.category}
             </Tag>
-            <span style={{ fontSize: 12, color: '#666' }}>
+            <span style={{ fontSize: 12, color: '#475569' }}>
               {enabledCount}/{features.length} 已启用
             </span>
           </div>
@@ -654,13 +654,13 @@ const EnterpriseManagement: React.FC = () => {
     );
   };
 
-  const total = data?.data?.total || 0;
-  const records = data?.data?.records || [];
+  const total = data?.total || 0;
+  const records = data?.records || [];
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <h2 style={{ margin: 0 }}>企业管理</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600, color: '#1E293B' }}>企业管理</h2>
         <Space>
           <Button icon={<ReloadOutlined />} onClick={() => { refetch(); queryClient.invalidateQueries({ queryKey: ['platform-stats'] }); }}>
             刷新
@@ -740,13 +740,13 @@ const EnterpriseManagement: React.FC = () => {
         onCancel={() => { setModalOpen(false); form.resetFields(); }}
         footer={null}
         width={520}
-        destroyOnClose
+        destroyOnHidden
       >
         <Form
           form={form}
           layout="vertical"
           onFinish={(values) => {
-            const allPackages = (packagesData?.data?.records || packagesData?.data || []);
+            const allPackages = (packagesData?.records || packagesData || []);
             const selectedPkg = allPackages.find((p: { id: string }) => p.id === values.packageId);
             createMutation.mutate({ ...values, packageName: selectedPkg?.name });
           }}
@@ -835,7 +835,7 @@ const EnterpriseManagement: React.FC = () => {
         onCancel={handleCloseDetail}
         footer={null}
         width={680}
-        destroyOnClose
+        destroyOnHidden
       >
         {editingEnterprise && (
           <Tabs
@@ -875,7 +875,7 @@ const EnterpriseManagement: React.FC = () => {
           message="套餐更换后，运营角色超出新套餐的权限将被自动清理，确认更换？"
         />
         <div style={{ marginTop: 16 }}>
-          <p style={{ margin: 0, color: '#666', fontSize: 13 }}>
+          <p style={{ margin: 0, color: '#475569', fontSize: 13 }}>
             新套餐权限将自动同步到企业超管角色，超出范围的运营角色权限将被移除。
           </p>
         </div>

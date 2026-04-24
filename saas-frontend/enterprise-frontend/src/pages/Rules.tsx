@@ -80,7 +80,8 @@ const Rules: React.FC = () => {
       for (const p of tenantProducts) {
         if (p.featureConfig) {
           Object.entries(p.featureConfig).forEach(([key, value]) => {
-            if (value === true || value === 'true' || value === '1') {
+            const v = value as any;
+            if (v === true || v === 'true' || v === '1' || v === 1) {
               features.push(key);
             }
           });

@@ -27,8 +27,8 @@ export interface DashboardStats {
 }
 
 export const getDashboardStats = async (_tenantId: string): Promise<DashboardStats> => {
-  const res = await apiClient.get<{ code: number; data: DashboardStats }>('/reports/dashboard/stats');
-  return res.data;
+  const res = await apiClient.get('/reports/dashboard/stats') as { data?: DashboardStats };
+  return res.data as DashboardStats;
 };
 
 export const getCheckInTrend = async (_tenantId: string, days = 7) => {
@@ -127,27 +127,27 @@ export interface EnterpriseDashboardData {
 }
 
 export const getEnterpriseDashboard = async (_tenantId: string): Promise<EnterpriseDashboardData> => {
-  const res = await apiClient.get<{ code: number; data: EnterpriseDashboardData }>('/reports/enterprise/dashboard');
-  return res.data;
+  const res = await apiClient.get('/reports/enterprise/dashboard') as { data?: EnterpriseDashboardData };
+  return res.data as EnterpriseDashboardData;
 };
 
 export const getEnterpriseProductTrend = async (_tenantId: string, dimension = 'day', limit = 30): Promise<ProductTrendData> => {
-  const res = await apiClient.get<{ code: number; data: ProductTrendData }>('/reports/enterprise/product-trend', {
+  const res = await apiClient.get('/reports/enterprise/product-trend', {
     params: { dimension, limit },
-  });
-  return res.data;
+  }) as { data?: ProductTrendData };
+  return res.data as ProductTrendData;
 };
 
 export const getCrossProductOverview = async (start?: string, end?: string): Promise<CrossProductOverview> => {
-  const res = await apiClient.get<{ code: number; data: CrossProductOverview }>('/reports/product-overview', {
+  const res = await apiClient.get('/reports/product-overview', {
     params: { start, end },
-  });
-  return res.data;
+  }) as { data?: CrossProductOverview };
+  return res.data as CrossProductOverview;
 };
 
 export const getProductStats = async (start?: string, end?: string): Promise<ProductStats[]> => {
-  const res = await apiClient.get<{ code: number; data: ProductStats[] }>('/reports/product-stats', {
+  const res = await apiClient.get('/reports/product-stats', {
     params: { start, end },
-  });
-  return res.data;
+  }) as { data?: ProductStats[] };
+  return res.data ?? [];
 };

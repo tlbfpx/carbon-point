@@ -2,7 +2,7 @@ import axios, { AxiosError } from 'axios';
 import { useAuthStore } from '../store/authStore';
 import { apiLogger } from '../utils/logger';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 interface ErrorResponse {
   code?: number;
@@ -34,9 +34,21 @@ const serializeData = (data: unknown): unknown => {
 };
 
 apiClient.interceptors.request.use((config) => {
+  // Always get the latest token from store (in case it changed
   const token = useAuthStore.getState().accessToken;
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
+  } else {
+    // If no token in store, try to load from localStorage one more time
+    try {
+      const raw = localStorage.getItem('carbon-enterprise-auth');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed?.state?.accessToken) {
+          config.headers.Authorization = `Bearer ${parsed.state.accessToken}`;
+        }
+      }
+    } catch {}
   }
   apiLogger.debug(`[API请求] ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`, {
     params: config.params,

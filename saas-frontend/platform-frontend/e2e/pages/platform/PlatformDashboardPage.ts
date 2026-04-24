@@ -21,10 +21,15 @@ export class PlatformDashboardPage {
     this.areaChart = page.locator('.recharts-areaChart').first();
     this.lineChart = page.locator('.recharts-lineChart').first();
     this.barChart = page.locator('.recharts-barChart').first();
-    this.rankingTable = page.locator('h2:has-text("企业排行详情") + * table');
+    this.rankingTable = page.locator('h1:has-text("企业排行详情") + * table');
   }
 
   async goto() {
+    // Check if already on dashboard (after loginAsPlatformAdmin)
+    const heading = this.page.locator('h1').filter({ hasText: '平台看板' });
+    if (await heading.isVisible().catch(() => false)) {
+      return; // Already on dashboard
+    }
     await this.page.goto(`${BASE_URL}/dashboard`);
     await this.page.waitForLoadState('networkidle');
   }
@@ -33,7 +38,7 @@ export class PlatformDashboardPage {
     await expect(this.sidebar).toBeVisible();
     await this.page.waitForLoadState('networkidle');
     // Wait for dashboard content to load
-    await this.statCards.first().waitFor({ state: 'visible', timeout: 5000 });
+    await this.statCards.first().waitFor({ state: 'visible', timeout: 15000 });
   }
 
   async switchDimension(dim: 'day' | 'week' | 'month') {

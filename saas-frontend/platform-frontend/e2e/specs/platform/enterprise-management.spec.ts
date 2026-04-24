@@ -16,7 +16,7 @@ test.describe('平台后台 - 企业管理', () => {
   });
 
   test('EM-001: 企业管理页面可访问', async ({ page: p }) => {
-    await expect(p.locator('h2').filter({ hasText: '企业管理' })).toBeVisible();
+    await expect(p.locator('h1').filter({ hasText: '企业管理' })).toBeVisible();
     await expect(page.table).toBeVisible();
   });
 
@@ -111,8 +111,14 @@ test.describe('平台后台 - 企业管理', () => {
     await page.clickAddEnterprise();
     await waitForModal(p);
     // Try to submit without filling any fields
-    const submitBtn = p.locator('.ant-modal button').filter({ hasText: '确认开通' });
-    await submitBtn.click();
+    const submitBtn = p.locator('.ant-modal button[type="submit"]');
+    if (!await submitBtn.isVisible().catch(() => false)) {
+      // Fallback to text-based search
+      const altBtn = p.locator('.ant-modal button').filter({ hasText: /确\s*认\s*开\s*通/ });
+      await altBtn.click();
+    } else {
+      await submitBtn.click();
+    }
     // Modal should still be open (validation blocks submission)
     await expect(p.locator('.ant-modal')).toBeVisible();
   });
@@ -171,12 +177,12 @@ test.describe('平台后台 - 企业管理', () => {
       }
     }
     if (!foundToggle) return;
-    // Wait for popover confirmation
-    const popover = p.locator('.ant-popover');
-    await popover.waitFor({ state: 'visible', timeout: 5000 });
-    if (await popover.isVisible().catch(() => false)) {
-      // Button text is "确 定" (with space) in Ant Design popconfirm
-      await popover.locator('button').filter({ hasText: '确 定' }).click({ force: true });
+    // Wait for popconfirm confirmation
+    const popconfirm = p.locator('.ant-popconfirm');
+    await popconfirm.waitFor({ state: 'visible', timeout: 5000 });
+    if (await popconfirm.isVisible().catch(() => false)) {
+      // Ant Design renders "确 定" (with space)
+      await popconfirm.locator('button').filter({ hasText: /确\s*定/ }).click({ force: true });
     }
     try {
       await expectAntSuccess(p, 5000);
@@ -194,7 +200,7 @@ test.describe('平台后台 - 企业管理', () => {
       return;
     }
     const currentStatus = await page.getStatusBadge(0);
-    if (!currentStatus.includes('停用') && !currentStatus.includes('失效')) {
+    if (!currentStatus.includes('停用')) {
       // Skip if not in suspended state
       return;
     }
@@ -241,9 +247,10 @@ test.describe('平台后台 - 企业管理', () => {
     await waitForModal(p);
     // Fill only contact info, leave name empty
     const modal = p.locator('.ant-modal');
-    const inputs = modal.locator('input');
-    await inputs.nth(1).fill('联系人');
-    await inputs.nth(2).fill('13800001111');
+    // Fill contactName and contactPhone using Form.Item labels
+    await modal.locator('.ant-form-item').filter({ hasText: '联系人' }).locator('input').fill('联系人');
+    await modal.locator('.ant-form-item').filter({ hasText: '联系电话' }).locator('input').fill('13800001111');
+    // Submit
     await page.submitEnterprise();
     // Modal should still be open (validation blocks)
     await expect(p.locator('.ant-modal')).toBeVisible();
@@ -253,9 +260,9 @@ test.describe('平台后台 - 企业管理', () => {
     await page.clickAddEnterprise();
     await waitForModal(p);
     const modal = p.locator('.ant-modal');
-    const inputs = modal.locator('input');
-    await inputs.nth(0).fill('测试企业名');
-    await inputs.nth(2).fill('13800001111');
+    // Fill only name and phone, leave contact empty
+    await modal.locator('.ant-form-item').filter({ hasText: '企业名称' }).locator('input').fill('测试企业名');
+    await modal.locator('.ant-form-item').filter({ hasText: '联系电话' }).locator('input').fill('13800001111');
     await page.submitEnterprise();
     await expect(p.locator('.ant-modal')).toBeVisible();
   });

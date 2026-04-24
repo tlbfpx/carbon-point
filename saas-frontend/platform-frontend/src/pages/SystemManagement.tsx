@@ -106,8 +106,8 @@ const SystemManagement: React.FC = () => {
     },
   ];
 
-  const logRecords = logsData?.data?.records || logsData?.data || [];
-  const logTotal = logsData?.data?.total || logRecords.length;
+  const logRecords = logsData?.records || [];
+  const logTotal = logsData?.total || logRecords.length;
 
   // ---- Admin mutations ----
   const createAdminMutation = useMutation({
@@ -292,7 +292,7 @@ const SystemManagement: React.FC = () => {
   ];
 
   // Compute admin list with pagination
-  const adminRecords = adminsData?.data?.records || adminsData?.data || [];
+  const adminRecords = adminsData?.records || [];
   const paginatedAdmins = adminRecords.slice(
     (adminPage - 1) * adminPageSize,
     adminPage * adminPageSize
@@ -300,7 +300,7 @@ const SystemManagement: React.FC = () => {
 
   return (
     <div>
-      <h2 style={{ marginBottom: 24 }}>系统管理</h2>
+      <h2 style={{ marginBottom: 24, fontSize: 20, fontWeight: 600, color: '#1E293B' }}>系统管理</h2>
 
       <Tabs
         activeKey={activeTab}

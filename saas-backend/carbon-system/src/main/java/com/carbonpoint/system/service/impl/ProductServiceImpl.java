@@ -10,11 +10,16 @@ import com.carbonpoint.system.dto.req.ProductFeatureUpdateReq;
 import com.carbonpoint.system.dto.req.ProductUpdateReq;
 import com.carbonpoint.system.dto.res.PageRes;
 import com.carbonpoint.system.dto.res.ProductFeatureRes;
+import com.carbonpoint.system.dto.res.ProductPackageBriefRes;
 import com.carbonpoint.system.dto.res.ProductRes;
 import com.carbonpoint.system.entity.FeatureEntity;
+import com.carbonpoint.system.entity.PackageProductEntity;
+import com.carbonpoint.system.entity.PermissionPackage;
 import com.carbonpoint.system.entity.ProductEntity;
 import com.carbonpoint.system.entity.ProductFeatureEntity;
 import com.carbonpoint.system.mapper.FeatureMapper;
+import com.carbonpoint.system.mapper.PackageProductMapper;
+import com.carbonpoint.system.mapper.PermissionPackageMapper;
 import com.carbonpoint.system.mapper.ProductFeatureMapper;
 import com.carbonpoint.system.mapper.ProductMapper;
 import com.carbonpoint.system.service.ProductService;
@@ -40,6 +45,8 @@ public class ProductServiceImpl implements ProductService {
     private final ProductMapper productMapper;
     private final ProductFeatureMapper productFeatureMapper;
     private final FeatureMapper featureMapper;
+    private final PackageProductMapper packageProductMapper;
+    private final PermissionPackageMapper permissionPackageMapper;
 
     @Override
     public PageRes<ProductRes> getProducts(int page, int size, String category, Integer status, String keyword) {
@@ -237,6 +244,22 @@ public class ProductServiceImpl implements ProductService {
 
         log.info("Product features updated: productId={}, featureCount={}",
                 productId, req.getFeatures() != null ? req.getFeatures().size() : 0);
+    }
+
+    @Override
+    public List<ProductPackageBriefRes> getProductPackages(String productId) {
+        List<Long> packageIds = packageProductMapper.selectPackageIdsByProductId(productId);
+        if (packageIds.isEmpty()) {
+            return List.of();
+        }
+        List<PermissionPackage> packages = permissionPackageMapper.selectBatchIds(packageIds);
+        return packages.stream()
+                .map(pkg -> ProductPackageBriefRes.builder()
+                        .id(pkg.getId())
+                        .code(pkg.getCode())
+                        .name(pkg.getName())
+                        .build())
+                .collect(Collectors.toList());
     }
 
     private ProductRes toRes(ProductEntity product) {

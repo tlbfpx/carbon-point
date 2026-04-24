@@ -27,7 +27,7 @@ export const getCurrentUser = async () => {
 };
 
 export const getPlatformMyPermissions = async (): Promise<string[]> => {
-  const res = await platformApiClient.get<{ data: string[] }>('/permissions/my');
-  // Interceptor already unwraps Axios res.data, so res = Result<{data: string[]}>
+  const res = await platformApiClient.get('/permissions/my') as { data?: string[] };
+  // Interceptor already unwraps Axios res.data
   return res.data ?? [];
 };

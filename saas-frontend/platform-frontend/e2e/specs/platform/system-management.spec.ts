@@ -71,21 +71,22 @@ test.describe('平台后台 - 系统管理', () => {
 
   test('SM-009: 操作日志Tab切换后表格可见', async ({ page }) => {
     await systemPage.switchToTab('操作日志');
-    await expect(page.locator('.ant-table').nth(1)).toBeVisible();
+    // Ant Design Tabs hides inactive panels, so there is only one visible .ant-table
+    await expect(page.locator('.ant-tabs-tabpane-active .ant-table')).toBeVisible();
   });
 
   test('SM-010: 操作日志表头正确', async ({ page }) => {
     await systemPage.switchToTab('操作日志');
-    // Wait for log table to be visible
-    await page.locator('.ant-table').nth(1).waitFor({ state: 'visible', timeout: 5000 });
-    // Table containers may be hidden if no data, just check the count
-    const tableCount = await page.locator('.ant-table-container').count();
-    expect(tableCount).toBeGreaterThanOrEqual(2);
+    // Wait for log table to be visible (Ant Design Tabs hides inactive panels)
+    await page.locator('.ant-tabs-tabpane-active .ant-table').waitFor({ state: 'visible', timeout: 5000 });
+    // Just verify the table container is visible
+    const tableContainer = page.locator('.ant-tabs-tabpane-active .ant-table-container');
+    await expect(tableContainer).toBeVisible();
   });
 
   test('SM-011: 操作日志搜索框可见', async ({ page }) => {
     await systemPage.switchToTab('操作日志');
-    await expect(page.locator('input[placeholder*="操作人"]')).toBeVisible();
+    await expect(page.locator('input[placeholder="操作人ID"]')).toBeVisible();
   });
 
   test('SM-012: 操作日志查询按钮可见', async ({ page }) => {
@@ -156,13 +157,13 @@ test.describe('平台后台 - 系统管理', () => {
 
   test('SM-022: 操作日志表格可滚动加载', async ({ page }) => {
     await systemPage.switchToTab('操作日志');
-    await page.locator('.ant-table').nth(1).waitFor({ state: 'visible', timeout: 5000 });
+    await page.locator('.ant-tabs-tabpane-active .ant-table').waitFor({ state: 'visible', timeout: 5000 });
     await page.evaluate(() => {
-      const tableBody = document.querySelectorAll('.ant-table-tbody')[1];
+      const tableBody = document.querySelector('.ant-tabs-tabpane-active .ant-table-tbody');
       if (tableBody) tableBody.scrollTop = tableBody.scrollHeight;
     });
     // Just verify the table still exists after scroll
-    await expect(page.locator('.ant-table').nth(1)).toBeVisible();
+    await expect(page.locator('.ant-tabs-tabpane-active .ant-table')).toBeVisible();
   });
 
   test('SM-023: 创建管理员弹窗可关闭', async ({ page }) => {
@@ -200,8 +201,8 @@ test.describe('平台后台 - 系统管理', () => {
 
   test('SM-029: 操作日志表格存在', async ({ page }) => {
     await systemPage.switchToTab('操作日志');
-    // Just verify the table container exists
-    await expect(page.locator('.ant-table-wrapper').nth(1)).toBeVisible();
+    // Just verify the table container exists (Ant Design Tabs hides inactive panels)
+    await expect(page.locator('.ant-tabs-tabpane-active .ant-table-wrapper')).toBeVisible();
   });
 
   test('SM-030: 系统管理页面Tab可交互', async ({ page }) => {
@@ -327,9 +328,9 @@ test.describe('平台后台 - 系统管理', () => {
     test('PC-013: 操作日志可按操作人搜索', async ({ page }) => {
       await systemPage.switchToTab('操作日志');
       // Enter an operator to search using direct locator
-      await page.locator('input[placeholder*="操作人"]').fill('admin');
+      await page.locator('input[placeholder="操作人ID"]').fill('admin');
       // Verify search input has the value
-      await expect(page.locator('input[placeholder*="操作人"]')).toHaveValue('admin');
+      await expect(page.locator('input[placeholder="操作人ID"]')).toHaveValue('admin');
     });
 
     test('PC-014: 操作日志搜索区域存在', async ({ page }) => {
@@ -345,7 +346,7 @@ test.describe('平台后台 - 系统管理', () => {
       await expect(refreshBtn).toBeEnabled();
       await refreshBtn.click();
       // Wait for table to refresh - verify it's still visible
-      await expect(page.locator('.ant-table').nth(1)).toBeVisible();
+      await expect(page.locator('.ant-tabs-tabpane-active .ant-table')).toBeVisible();
     });
 
     test('PC-016: 操作日志查询按钮可点击', async ({ page }) => {

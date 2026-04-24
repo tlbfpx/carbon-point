@@ -200,40 +200,16 @@ export const lightThemeTokens = {
 // ============================================
 export const componentTokens = {
   // 按钮
-  Button: {
-    primaryShadow: `0 4px 16px rgba(99, 102, 241, 0.3)`,
-    defaultBg: 'rgba(255, 255, 255, 0.05)',
-    defaultBorderColor: 'rgba(255, 255, 255, 0.12)',
-    defaultColor: '#E4E4E7',
-  },
-
-  // 卡片
-  Card: {
-    glassBackground: 'var(--color-glass-bg)',
-    glassBorder: '1px solid var(--color-glass-border)',
-    glassBlur: 12,
-  },
+  Button: {},
 
   // 菜单
-  Menu: {
-    darkItemBg: 'transparent',
-    darkItemSelectedBg: 'rgba(99, 102, 241, 0.15)',
-    darkItemHoverBg: 'rgba(99, 102, 241, 0.08)',
-    darkItemColor: '#A1A1AA',
-    darkItemSelectedColor: '#FFFFFF',
-  },
+  Menu: {},
 
   // 输入框
-  Input: {
-    activeShadow: `0 0 0 3px rgba(99, 102, 241, 0.15)`,
-  },
+  Input: {},
 
   // 模态框
-  Modal: {
-    contentGlassBg: 'rgba(26, 26, 36, 0.85)',
-    headerBg: 'transparent',
-    footerBg: 'transparent',
-  },
+  Modal: {},
 
   // 抽屉
   Drawer: {

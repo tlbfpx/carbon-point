@@ -54,15 +54,11 @@ const SystemUsers: React.FC = () => {
 
   const createMutation = useMutation({
     mutationFn: createPlatformAdmin,
-    onSuccess: (res: { code: number; message?: string }) => {
-      if (res.code === 200 || res.code === 0) {
-        message.success('创建成功');
-        setModalOpen(false);
-        form.resetFields();
-        queryClient.invalidateQueries({ queryKey: ['platform-admins'] });
-      } else {
-        message.error(res.message || '创建失败');
-      }
+    onSuccess: () => {
+      message.success('创建成功');
+      setModalOpen(false);
+      form.resetFields();
+      queryClient.invalidateQueries({ queryKey: ['platform-admins'] });
     },
     onError: (err: any) => {
       message.error(err?.response?.data?.message || '创建失败');
@@ -72,16 +68,12 @@ const SystemUsers: React.FC = () => {
   const updateMutation = useMutation({
     mutationFn: ({ userId, data }: { userId: string; data: any }) =>
       updatePlatformAdmin(userId, data),
-    onSuccess: (res: { code: number; message?: string }) => {
-      if (res.code === 200 || res.code === 0) {
-        message.success('更新成功');
-        setModalOpen(false);
-        setEditingUser(null);
-        form.resetFields();
-        queryClient.invalidateQueries({ queryKey: ['platform-admins'] });
-      } else {
-        message.error(res.message || '更新失败');
-      }
+    onSuccess: () => {
+      message.success('更新成功');
+      setModalOpen(false);
+      setEditingUser(null);
+      form.resetFields();
+      queryClient.invalidateQueries({ queryKey: ['platform-admins'] });
     },
     onError: (err: any) => {
       message.error(err?.response?.data?.message || '更新失败');
@@ -90,13 +82,9 @@ const SystemUsers: React.FC = () => {
 
   const deleteMutation = useMutation({
     mutationFn: deletePlatformAdmin,
-    onSuccess: (res: { code: number; message?: string }) => {
-      if (res.code === 200 || res.code === 0) {
-        message.success('删除成功');
-        queryClient.invalidateQueries({ queryKey: ['platform-admins'] });
-      } else {
-        message.error(res.message || '删除失败');
-      }
+    onSuccess: () => {
+      message.success('删除成功');
+      queryClient.invalidateQueries({ queryKey: ['platform-admins'] });
     },
     onError: (err: any) => {
       message.error(err?.response?.data?.message || '删除失败');
@@ -148,17 +136,13 @@ const SystemUsers: React.FC = () => {
     setResetPasswordLoading(true);
     try {
       // Call reset password API
-      const res = await updatePlatformAdmin(resetPasswordTarget!.userId, {
+      await updatePlatformAdmin(resetPasswordTarget!.userId, {
         newPassword: values.newPassword,
       });
-      if (res.code === 200 || res.code === 0) {
-        message.success('密码重置成功');
-        setResetPasswordModalOpen(false);
-        setResetPasswordTarget(null);
-        resetForm.resetFields();
-      } else {
-        message.error(res.message || '重置失败');
-      }
+      message.success('密码重置成功');
+      setResetPasswordModalOpen(false);
+      setResetPasswordTarget(null);
+      resetForm.resetFields();
     } catch (err: any) {
       message.error(err?.response?.data?.message || '重置失败');
     } finally {
@@ -247,8 +231,8 @@ const SystemUsers: React.FC = () => {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16, alignItems: 'center' }}>
-        <h2 style={{ margin: 0 }}>用户管理</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24, alignItems: 'center' }}>
+        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600, color: '#1E293B' }}>用户管理</h2>
         <Space>
           <Button icon={<ReloadOutlined />} onClick={() => refetch()}>
             刷新
@@ -277,7 +261,7 @@ const SystemUsers: React.FC = () => {
         }}
         footer={null}
         width={500}
-        destroyOnClose
+        destroyOnHidden
       >
         <Form
           form={form}
@@ -386,7 +370,7 @@ const SystemUsers: React.FC = () => {
         }}
         footer={null}
         width={420}
-        destroyOnClose
+        destroyOnHidden
       >
         <Form
           form={resetForm}

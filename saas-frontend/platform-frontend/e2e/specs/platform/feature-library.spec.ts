@@ -5,12 +5,13 @@ import { loginAsPlatformAdmin, uniqueId } from '../../helpers';
 test.describe('平台后台 - 功能点库', () => {
   test.beforeEach(async ({ page }) => {
     await loginAsPlatformAdmin(page, BASE_URL);
+    // Navigate via URL — "积木组件库" menu item may not exist in sidebar
     await page.goto(`${BASE_URL}/features/blocks`);
-    await page.waitForLoadState('networkidle');
+    await page.waitForSelector('.ant-table', { timeout: 10000 });
   });
 
   test('FL-001: 积木组件库页面可访问', async ({ page }) => {
-    await expect(page.locator('h2')).toContainText('积木组件库');
+    await expect(page.locator('h1')).toContainText('积木组件库');
     await expect(page.locator('.ant-table')).toBeVisible();
   });
 

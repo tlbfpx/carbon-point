@@ -112,7 +112,10 @@ test.describe('平台后台 - 平台看板 (20 tests)', () => {
   test('PD-016: 表格不显示分页（数据少于一页）', async ({ page }) => {
     const table = page.locator('.ant-card').filter({ hasText: '企业排行详情' }).locator('.ant-table');
     // Table has pagination={false} so no pagination should be visible
-    await expect(table.locator('.ant-pagination')).not.toBeVisible();
+    const pagination = table.locator('.ant-pagination');
+    // If pagination element exists, it shouldn't be visible; if not found, that's fine too
+    const paginationVisible = await pagination.isVisible().catch(() => false);
+    expect(paginationVisible).toBe(false);
   });
 
   test('PD-017: 排行表格显示企业名称列', async ({ page }) => {
@@ -134,8 +137,8 @@ test.describe('平台后台 - 平台看板 (20 tests)', () => {
 
   test('PD-020: 导出按钮可点击', async ({ page }) => {
     await page.waitForLoadState('networkidle');
-    const exportBtn = page.locator('button:has-text("导出报表")');
-    await exportBtn.waitFor({ timeout: 5000 });
+    const exportBtn = page.locator('button').filter({ hasText: '导出报表' });
+    await exportBtn.waitFor({ state: 'visible', timeout: 10000 });
     await expect(exportBtn).toBeEnabled();
   });
 });

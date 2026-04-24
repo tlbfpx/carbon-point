@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { Form, Input, Button, Card, message, Checkbox, Alert, Space } from 'antd';
-import { IdcardOutlined, LockOutlined, SafetyCertificateOutlined, UserOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
+import { Form, Input, Button, message, Checkbox, Alert, Space } from 'antd';
+import { LockOutlined, SafetyCertificateOutlined, UserOutlined } from '@ant-design/icons';
 import { platformApiClient } from '@/api/request';
 import { useAuthStore } from '@/store/authStore';
 
@@ -88,32 +88,36 @@ const PlatformLoginPage: React.FC = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)',
+        background: '#F5F5F7',
         position: 'relative',
       }}
     >
-      {/* Decorative background elements */}
+      {/* Subtle decorative gradient */}
       <div
         style={{
           position: 'absolute',
-          top: '-50%',
-          left: '-50%',
-          width: '200%',
-          height: '200%',
-          background: 'radial-gradient(circle at 30% 30%, rgba(64, 158, 255, 0.08) 0%, transparent 50%)',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: '45%',
+          background: 'linear-gradient(135deg, #6366F1 0%, #8B5CF6 50%, #a78bfa 100%)',
+          borderBottomLeftRadius: '40% 60px',
+          borderBottomRightRadius: '40% 60px',
           pointerEvents: 'none',
         }}
       />
 
-      <Card
+      <div
         style={{
           width: 420,
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+          background: '#ffffff',
           borderRadius: 16,
-          border: 'none',
-          overflow: 'hidden',
+          border: '1px solid rgba(0, 0, 0, 0.06)',
+          boxShadow: '0 4px 24px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04)',
+          padding: '40px 36px 32px',
+          position: 'relative',
+          zIndex: 1,
         }}
-        styles={{ body: { padding: '40px 36px 32px' } }}
       >
         {/* Logo and title */}
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
@@ -122,20 +126,20 @@ const PlatformLoginPage: React.FC = () => {
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              width: 72,
-              height: 72,
+              width: 64,
+              height: 64,
               borderRadius: 16,
-              background: 'linear-gradient(135deg, #1890ff 0%, #096dd9 100%)',
+              background: 'linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)',
               marginBottom: 16,
-              boxShadow: '0 4px 16px rgba(24, 144, 255, 0.4)',
+              boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)',
             }}
           >
-            <SafetyCertificateOutlined style={{ fontSize: 36, color: '#fff' }} />
+            <SafetyCertificateOutlined style={{ fontSize: 32, color: '#fff' }} />
           </div>
-          <h1 style={{ fontSize: 24, fontWeight: 700, margin: 0, color: '#1a1a2e' }}>
+          <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, color: '#1E293B', fontFamily: "'Inter', 'Noto Sans SC', sans-serif" }}>
             平台管理后台
           </h1>
-          <p style={{ color: '#8c8c8c', marginTop: 6, fontSize: 14 }}>
+          <p style={{ color: '#94A3B8', marginTop: 6, fontSize: 14 }}>
             SaaS 多租户运营管理系统
           </p>
         </div>
@@ -167,11 +171,11 @@ const PlatformLoginPage: React.FC = () => {
             ]}
           >
             <Input
-              prefix={<UserOutlined style={{ color: '#bfbfbf', fontSize: 18 }} />}
+              prefix={<UserOutlined style={{ color: '#94A3B8' }} />}
               placeholder="请输入管理员用户名"
               autoComplete="username"
               maxLength={32}
-              size="large"
+              style={{ borderRadius: 8 }}
             />
           </Form.Item>
 
@@ -183,10 +187,10 @@ const PlatformLoginPage: React.FC = () => {
             ]}
           >
             <Input.Password
-              prefix={<LockOutlined style={{ color: '#bfbfbf', fontSize: 18 }} />}
+              prefix={<LockOutlined style={{ color: '#94A3B8' }} />}
               placeholder="请输入密码"
               autoComplete="current-password"
-              size="large"
+              style={{ borderRadius: 8 }}
             />
           </Form.Item>
 
@@ -194,7 +198,7 @@ const PlatformLoginPage: React.FC = () => {
             <Space style={{ width: '100%', justifyContent: 'space-between' }}>
               <Checkbox>记住用户名</Checkbox>
               <a
-                style={{ fontSize: 13, color: '#1890ff' }}
+                style={{ fontSize: 13, color: '#6366F1' }}
                 onClick={(e) => {
                   e.preventDefault();
                   message.info('请联系系统管理员重置密码');
@@ -213,8 +217,8 @@ const PlatformLoginPage: React.FC = () => {
               loading={loading}
               size="large"
               style={{
-                height: 48,
-                fontSize: 16,
+                height: 44,
+                fontSize: 15,
                 borderRadius: 8,
                 fontWeight: 500,
               }}
@@ -230,16 +234,16 @@ const PlatformLoginPage: React.FC = () => {
             marginTop: 24,
             textAlign: 'center',
             paddingTop: 16,
-            borderTop: '1px solid #f0f0f0',
+            borderTop: '1px solid rgba(0, 0, 0, 0.06)',
           }}
         >
-          <Space split={<span style={{ color: '#d9d9d9' }}>|</span>}>
-            <a style={{ fontSize: 12, color: '#8c8c8c' }}>帮助中心</a>
-            <a style={{ fontSize: 12, color: '#8c8c8c' }}>服务条款</a>
-            <a style={{ fontSize: 12, color: '#8c8c8c' }}>隐私政策</a>
+          <Space split={<span style={{ color: '#CBD5E1' }}>|</span>}>
+            <a style={{ fontSize: 12, color: '#94A3B8' }}>帮助中心</a>
+            <a style={{ fontSize: 12, color: '#94A3B8' }}>服务条款</a>
+            <a style={{ fontSize: 12, color: '#94A3B8' }}>隐私政策</a>
           </Space>
         </div>
-      </Card>
+      </div>
     </div>
   );
 };

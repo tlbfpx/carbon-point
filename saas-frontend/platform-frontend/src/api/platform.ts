@@ -118,7 +118,7 @@ export const toggleEnterpriseStatus = async (id: string, status: 'active' | 'ina
 };
 
 export const getPlatformAdmins = async () => {
-  const res = await platformApiClient.get('/admins');
+  const res = await platformApiClient.get('/admins', { params: { pageSize: 500 } });
   return res.data;
 };
 
@@ -385,7 +385,6 @@ export const deleteProduct = async (id: string) => {
   return res.data;
 };
 
-/** Get packages that include a specific product */
 export const getProductPackages = async (productId: string) => {
   const res = await platformApiClient.get(`/products/${productId}/packages`);
   return res.data;

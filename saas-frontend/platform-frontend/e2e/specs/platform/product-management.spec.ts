@@ -5,12 +5,14 @@ import { loginAsPlatformAdmin, uniqueId } from '../../helpers';
 test.describe('平台后台 - 产品管理', () => {
   test.beforeEach(async ({ page }) => {
     await loginAsPlatformAdmin(page, BASE_URL);
-    await page.goto(`${BASE_URL}/features/products`);
-    await page.waitForLoadState('networkidle');
+    // Navigate via menu click (SPA navigation to avoid Zustand hydration race)
+    await page.getByRole('menuitem', { name: '产品管理' }).click();
+    await page.waitForURL('**/features/products**', { timeout: 10000 });
+    await page.waitForSelector('.ant-table-tbody tr', { timeout: 10000 });
   });
 
   test('PM-001: 产品管理页面可访问', async ({ page }) => {
-    await expect(page.locator('h2')).toContainText('产品管理');
+    await expect(page.locator('h1')).toContainText('产品管理');
     await expect(page.locator('.ant-table')).toBeVisible();
   });
 
@@ -21,8 +23,8 @@ test.describe('平台后台 - 产品管理', () => {
     await page.click('button:has-text("快速创建")');
     await expect(page.locator('.ant-modal')).toBeVisible();
 
-    await page.fill('input[placeholder*="产品名称"]', productName);
-    await page.fill('input[placeholder*="编码"]', productCode);
+    await page.fill('input[placeholder*="请输入产品名称"]', productName);
+    await page.fill('input[placeholder*="如: stairs_basic"]', productCode);
 
     await page.click('.ant-modal button:has-text("确认创建")');
     await expect(page.locator('.ant-message')).toContainText('成功');

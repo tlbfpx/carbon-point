@@ -19,7 +19,7 @@ export class PlatformConfigPage {
     this.page = page;
     this.form = page.locator('.ant-form');
     this.saveButton = page.locator('button').filter({ hasText: '保存' });
-    this.heading = page.locator('h2').filter({ hasText: '平台配置' });
+    this.heading = page.locator('h1').filter({ hasText: '平台配置' });
     this.tabs = page.locator('.ant-tabs-tab');
     this.basicTab = page.locator('.ant-tabs-tab').filter({ hasText: '基础配置' });
     this.notificationTab = page.locator('.ant-tabs-tab').filter({ hasText: '通知设置' });
@@ -97,7 +97,7 @@ export class PlatformConfigPage {
     const table = this.page.locator('.ant-table');
     const row = table.locator('tr').filter({ hasText: name });
     await row.locator('button').filter({ hasText: '删除' }).click();
-    const confirmBtn = this.page.locator('.ant-popconfirm').locator('button').filter({ hasText: '确认' });
+    const confirmBtn = this.page.locator('.ant-popconfirm').locator('button').filter({ hasText: /确\s*认/ });
     await confirmBtn.click();
   }
 }

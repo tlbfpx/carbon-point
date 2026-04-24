@@ -5,12 +5,14 @@ import { loginAsPlatformAdmin, uniqueId } from '../../helpers';
 test.describe('平台后台 - 套餐配置', () => {
   test.beforeEach(async ({ page }) => {
     await loginAsPlatformAdmin(page, BASE_URL);
-    await page.goto(`${BASE_URL}/packages`);
-    await page.waitForLoadState('networkidle');
+    // Use SPA navigation via menu click to avoid Zustand hydration race
+    await page.getByRole('menuitem', { name: '套餐管理' }).click();
+    await page.waitForURL('**/packages', { timeout: 10000 });
+    await page.waitForSelector('.ant-table-tbody tr', { timeout: 10000 });
   });
 
   test('PC-001: 套餐管理页面可访问', async ({ page }) => {
-    await expect(page.locator('h2')).toContainText('套餐管理');
+    await expect(page.locator('h1')).toContainText('套餐管理');
     await expect(page.locator('.ant-table')).toBeVisible();
   });
 

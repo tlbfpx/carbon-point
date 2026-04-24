@@ -44,6 +44,10 @@ export { hexToRgb } from './theme/liquid-glass';
 export { GlassCard, GlassCardColumn, GlassCardStat } from './components/GlassCard';
 export type { GlassCardProps, GlassCardStatProps } from './components/GlassCard';
 
+// StatCard - 现代指标卡片（浅色主题）
+export { StatCard } from './components/StatCard';
+export type { StatCardProps } from './components/StatCard';
+
 // AIAssistant - AI 助手浮窗
 export { AIAssistant } from './components/AIAssistant';
 export type { AIAssistantProps, AIMessage, AIAction } from './components/AIAssistant';
@@ -131,18 +135,75 @@ export const designSystemConfig = {
       colorWarning: '#F59E0B',
       colorError: '#EF4444',
       borderRadius: 12,
-      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+      fontFamily: "'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
       colorBgContainer: '#ffffff',
       colorBgElevated: '#ffffff',
-      colorBgLayout: '#f5f5f5',
-      colorBorder: 'rgba(0, 0, 0, 0.08)',
-      colorText: '#18181B',
-      colorTextSecondary: 'rgba(0, 0, 0, 0.65)',
-      colorTextTertiary: 'rgba(0, 0, 0, 0.45)',
+      colorBgLayout: '#F5F5F7',
+      colorBorder: 'rgba(0, 0, 0, 0.06)',
+      colorText: '#1E293B',
+      colorTextSecondary: '#475569',
+      colorTextTertiary: '#94A3B8',
+      colorTextQuaternary: '#CBD5E1',
+      fontSize: 14,
+      controlHeight: 36,
     },
     components: {
       Button: {
-        primaryShadow: '0 4px 16px rgba(99, 102, 241, 0.3)',
+        primaryShadow: '0 2px 8px rgba(99, 102, 241, 0.25)',
+        defaultBg: '#ffffff',
+        defaultBorderColor: 'rgba(0, 0, 0, 0.08)',
+      },
+      Card: {
+        background: '#ffffff',
+        colorBorderSecondary: 'rgba(0, 0, 0, 0.06)',
+      },
+      Menu: {
+        itemBg: 'transparent',
+        subMenuItemBg: 'transparent',
+        itemSelectedBg: 'rgba(99, 102, 241, 0.08)',
+        itemSelectedColor: '#6366F1',
+        itemHoverBg: 'rgba(99, 102, 241, 0.04)',
+        itemHoverColor: '#4F46E5',
+        itemColor: '#475569',
+        groupTitleColor: '#94A3B8',
+        itemMarginBlock: 4,
+        itemMarginInline: 8,
+        itemBorderRadius: 8,
+        collapsedIconSize: 20,
+        iconSize: 18,
+      },
+      Input: {
+        colorBgContainer: '#ffffff',
+        colorBorder: 'rgba(0, 0, 0, 0.1)',
+        activeBorderColor: '#6366F1',
+        hoverBorderColor: 'rgba(99, 102, 241, 0.4)',
+        activeShadow: '0 0 0 2px rgba(99, 102, 241, 0.1)',
+        borderRadius: 8,
+      },
+      Table: {
+        headerBg: 'transparent',
+        headerColor: '#94A3B8',
+        rowHoverBg: 'rgba(99, 102, 241, 0.02)',
+        borderColor: 'rgba(0, 0, 0, 0.04)',
+        headerBorderRadius: 0,
+        fontSize: 14,
+        cellPaddingBlock: 14,
+      },
+      Segmented: {
+        itemSelectedBg: '#ffffff',
+        itemColor: '#475569',
+        itemSelectedColor: '#1E293B',
+        containerBg: 'rgba(0, 0, 0, 0.04)',
+        borderRadius: 8,
+        borderRadiusSM: 6,
+      },
+      Modal: {
+        contentBg: '#ffffff',
+        headerBg: '#ffffff',
+      },
+      Statistic: {
+        contentFontSize: 28,
+        titleFontSize: 13,
       },
     },
   },

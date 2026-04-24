@@ -8,7 +8,7 @@ import { useQuery } from '@tanstack/react-query';
 
 const WalkingManagement: React.FC = () => {
   const { primaryColor } = useBranding();
-  const [activeTab, setActiveTab] = useState<'step-config' | 'fun-equiv'>('step-config');
+  const [activeTab, setActiveTab] = useState<string>('step-config');
 
   // Fetch tenant products to check enabled features
   const { data: tenantProducts } = useQuery({
@@ -30,12 +30,12 @@ const WalkingManagement: React.FC = () => {
   }, [tenantProducts]);
 
   const tabs = useMemo(() => {
-    const baseTabs = [
-      { key: 'step-config' as const, label: '步数积分配置', icon: <SettingOutlined /> },
+    const baseTabs: Array<{ key: string; label: string; icon: React.ReactNode }> = [
+      { key: 'step-config', label: '步数积分配置', icon: <SettingOutlined /> },
     ];
     if (isFunEquivalenceEnabled) {
       baseTabs.push({
-        key: 'fun-equiv' as const,
+        key: 'fun-equiv',
         label: '趣味换算',
         icon: <SmileOutlined />,
       });

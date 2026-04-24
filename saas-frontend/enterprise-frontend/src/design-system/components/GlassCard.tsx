@@ -132,7 +132,7 @@ export const GlassCard: React.FC<GlassCardProps> = ({
   }, [enableGradientBorder, enableNoise]);
 
   // 悬停效果
-  const hoverStyles: CSSProperties = hoverable
+  const hoverStyles: Record<string, any> = hoverable
     ? {
         '&:hover': {
           border: '1px solid rgba(255, 255, 255, 0.18)',
@@ -149,7 +149,7 @@ export const GlassCard: React.FC<GlassCardProps> = ({
     : {};
 
   // 合并所有样式
-  const mergedStyles: CSSProperties = {
+  const mergedStyles: any = {
     ...glassStyles,
     ...pseudoElementStyles,
     ...hoverStyles,
