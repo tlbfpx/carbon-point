@@ -29,37 +29,13 @@ CREATE TABLE product_rule_templates (
 
 -- 3. Seed stair_climbing templates
 INSERT INTO product_rule_templates (id, product_id, rule_type, name, config, enabled, sort_order, description) VALUES
-('tpl-stair-ts-morning', (SELECT id FROM platform_products WHERE code = 'stair_climbing'),
- 'time_slot', '{"name":"早间通勤","startTime":"07:00","endTime":"09:00","minPoints":5,"maxPoints":15}',
- 1, 1, '早间爬楼梯 07:00-09:00');
-
-INSERT INTO product_rule_templates (id, product_id, rule_type, name, config, enabled, sort_order, description) VALUES
-('tpl-stair-ts-afternoon', (SELECT id FROM platform_products WHERE code = 'stair_climbing'),
- 'time_slot', '{"name":"午间午后","startTime":"11:30","endTime":"13:30","minPoints":4,"maxPoints":12}',
- 1, 2, '午间爬楼梯 11:30-13:30');
-
-INSERT INTO product_rule_templates (id, product_id, rule_type, name, config, enabled, sort_order, description) VALUES
-('tpl-stair-streak', (SELECT id FROM platform_products WHERE code = 'stair_climbing'),
- 'streak', '{"days":3,"bonusPoints":5}',
- 1, 3, '连续打卡3天起奖');
-
-INSERT INTO product_rule_templates (id, product_id, rule_type, name, config, enabled, sort_order, description) VALUES
-('tpl-stair-daily-cap', (SELECT id FROM platform_products WHERE code = 'stair_climbing'),
- 'daily_cap', '{"dailyLimit":100}',
- 1, 4, '每日积分上限100');
-
-INSERT INTO product_rule_templates (id, product_id, rule_type, name, config, enabled, sort_order, description) VALUES
-('tpl-stair-level-coeff', (SELECT id FROM platform_products WHERE code = 'stair_climbing'),
- 'level_coefficient', '{"levels":{"Lv.1":1.0,"Lv.2":1.1,"Lv.3":1.2,"Lv.4":1.3,"Lv.5":1.5}}',
- 1, 5, '等级系数加成');
+('tpl-stair-ts-morning', 'stair_climbing', 'time_slot', '早间通勤', '{"name":"早间通勤","startTime":"07:00","endTime":"09:00","minPoints":5,"maxPoints":15}', 1, 1, '早间爬楼梯 07:00-09:00'),
+('tpl-stair-ts-afternoon', 'stair_climbing', 'time_slot', '午间午后', '{"name":"午间午后","startTime":"11:30","endTime":"13:30","minPoints":4,"maxPoints":12}', 1, 2, '午间爬楼梯 11:30-13:30'),
+('tpl-stair-streak', 'stair_climbing', 'streak', '连续打卡奖', '{"days":3,"bonusPoints":5}', 1, 3, '连续打卡3天起奖'),
+('tpl-stair-daily-cap', 'stair_climbing', 'daily_cap', '每日积分上限', '{"dailyLimit":100}', 1, 4, '每日积分上限100'),
+('tpl-stair-level-coeff', 'stair_climbing', 'level_coefficient', '等级系数加成', '{"levels":{"Lv.1":1.0,"Lv.2":1.1,"Lv.3":1.2,"Lv.4":1.3,"Lv.5":1.5}}', 1, 5, '等级系数加成');
 
 -- 4. Seed walking templates
 INSERT INTO product_rule_templates (id, product_id, rule_type, name, config, enabled, sort_order, description) VALUES
-('tpl-walking-daily-cap', (SELECT id FROM platform_products WHERE code = 'walking'),
- 'daily_cap', '{"dailyLimit":60}',
- 1, 1, '步行每日积分上限60');
-
-INSERT INTO product_rule_templates (id, product_id, rule_type, name, config, enabled, sort_order, description) VALUES
-('tpl-walking-level-coeff', (SELECT id FROM platform_products WHERE code = 'walking'),
- 'level_coefficient', '{"levels":{"Lv.1":1.0,"Lv.2":1.05,"Lv.3":1.1,"Lv.4":1.2,"Lv.5":1.3}}',
- 1, 2, '步行等级系数');
+('tpl-walking-daily-cap', 'walking', 'daily_cap', '步行每日积分上限', '{"dailyLimit":60}', 1, 1, '步行每日积分上限60'),
+('tpl-walking-level-coeff', 'walking', 'level_coefficient', '步行等级系数', '{"levels":{"Lv.1":1.0,"Lv.2":1.05,"Lv.3":1.1,"Lv.4":1.2,"Lv.5":1.3}}', 1, 2, '步行等级系数');

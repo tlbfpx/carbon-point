@@ -42,7 +42,8 @@ public class CustomTenantLineHandler implements TenantLineHandler {
             "platform_products",
             "product_features",
             "package_products",
-            "package_product_features"
+            "package_product_features",
+            "product_rule_templates"
     ));
 
     @Override
