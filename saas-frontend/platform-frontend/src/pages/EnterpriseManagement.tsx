@@ -538,8 +538,8 @@ const EnterpriseManagement: React.FC = () => {
       features.forEach((f: PackageProductFeature) => {
         if (f.isEnabled) {
           enabledFeatures++;
-          const menus = FEATURE_MENU_MAP[f.featureId];
-          if (menus) totalMenus++;
+          const menus = FEATURE_MENU_MAP[f.featureCode];
+          if (menus) totalMenus += menus.length;
         }
       });
     });
@@ -608,7 +608,7 @@ const EnterpriseManagement: React.FC = () => {
             </thead>
             <tbody>
               {features.map((f: PackageProductFeature) => {
-                const menus = FEATURE_MENU_MAP[f.featureId];
+                const menus = FEATURE_MENU_MAP[f.featureCode];
                 return (
                   <tr key={f.featureId} style={{ borderBottom: '1px solid #f0f0f0' }}>
                     <td style={{ padding: '6px 8px' }}>
@@ -617,7 +617,7 @@ const EnterpriseManagement: React.FC = () => {
                       </Tag>
                     </td>
                     <td style={{ padding: '6px 8px' }}>
-                      {f.featureName || f.featureId}
+                      {f.featureName || f.featureCode}
                     </td>
                     <td style={{ padding: '6px 8px', textAlign: 'center' }}>
                       {f.isEnabled ? (
