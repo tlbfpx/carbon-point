@@ -226,8 +226,8 @@ const EnterpriseManagement: React.FC = () => {
 
   const stats = statsData;
   const packageOptions = (packagesData?.records || packagesData || [])
-    .filter((p: { status: number }) => p.status === 1)
-    .map((p: { id: string; name: string }) => ({ value: p.id, label: p.name }));
+    .filter((p: { status: number | boolean }) => p.status === 1 || p.status === true)
+    .map((p: { id: string | number; name: string }) => ({ value: String(p.id), label: p.name }));
 
   const columns = [
     {
