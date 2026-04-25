@@ -35,7 +35,6 @@ import dayjs from 'dayjs';
 import {
   getEnterprises,
   createEnterprise,
-  toggleEnterpriseStatus,
   deleteEnterprise,
   getPackages,
   updateTenantPackage,
@@ -50,10 +49,22 @@ import {
   PackageProduct,
   PackageProductFeature,
 } from '@/api/platform';
+import { platformApiClient } from '@/api/request';
 import { FEATURE_MENU_MAP } from '@/constants/feature-menu-map';
 import { extractArray } from '@/utils';
 
 const { Text } = Typography;
+
+// 企业状态管理API函数
+const suspendEnterprise = async (id: string) => {
+  const res = await platformApiClient.put(`/tenants/${id}/suspend`);
+  return res.data;
+};
+
+const activateEnterprise = async (id: string) => {
+  const res = await platformApiClient.put(`/tenants/${id}/activate`);
+  return res.data;
+};
 
 const EnterpriseManagement: React.FC = () => {
   const queryClient = useQueryClient();
@@ -129,17 +140,29 @@ const EnterpriseManagement: React.FC = () => {
     },
   });
 
-  const toggleMutation = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: 'active' | 'inactive' }) =>
-      toggleEnterpriseStatus(id, status),
+  const suspendMutation = useMutation({
+    mutationFn: (id: string) => suspendEnterprise(id),
     onSuccess: () => {
-      message.success('状态更新成功');
+      message.success('企业已停用');
       queryClient.invalidateQueries({ queryKey: ['enterprises'] });
       queryClient.invalidateQueries({ queryKey: ['platform-stats'] });
     },
     onError: (err: unknown) => {
       const error = err as { response?: { data?: { message?: string } } };
-      message.error(error?.response?.data?.message || '状态更新失败');
+      message.error(error?.response?.data?.message || '停用失败');
+    },
+  });
+
+  const activateMutation = useMutation({
+    mutationFn: (id: string) => activateEnterprise(id),
+    onSuccess: () => {
+      message.success('企业已开通');
+      queryClient.invalidateQueries({ queryKey: ['enterprises'] });
+      queryClient.invalidateQueries({ queryKey: ['platform-stats'] });
+    },
+    onError: (err: unknown) => {
+      const error = err as { response?: { data?: { message?: string } } };
+      message.error(error?.response?.data?.message || '开通失败');
     },
   });
 
@@ -271,7 +294,9 @@ const EnterpriseManagement: React.FC = () => {
             title={`确认${record.status === 'active' ? '停用' : '开通'}该企业？`}
             icon={<ExclamationCircleOutlined style={{ color: '#faad14' }} />}
             onConfirm={() =>
-              toggleMutation.mutate({ id: record.id, status: record.status === 'active' ? 'inactive' : 'active' })
+              record.status === 'active'
+                ? suspendMutation.mutate(record.id)
+                : activateMutation.mutate(record.id)
             }
           >
             <Button type="link" size="small">

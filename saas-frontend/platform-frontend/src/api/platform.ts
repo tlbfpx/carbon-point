@@ -112,8 +112,13 @@ export const createEnterprise = async (data: {
   return res.data;
 };
 
-export const toggleEnterpriseStatus = async (id: string, status: 'active' | 'inactive') => {
-  const res = await platformApiClient.put(`/tenants/${id}/status`, { status });
+export const suspendEnterprise = async (id: string) => {
+  const res = await platformApiClient.put(`/tenants/${id}/suspend`);
+  return res.data;
+};
+
+export const activateEnterprise = async (id: string) => {
+  const res = await platformApiClient.put(`/tenants/${id}/activate`);
   return res.data;
 };
 
