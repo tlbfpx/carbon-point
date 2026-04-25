@@ -116,16 +116,12 @@ const EnterpriseManagement: React.FC = () => {
 
   const createMutation = useMutation({
     mutationFn: createEnterprise,
-    onSuccess: (res: { code: number; message?: string }) => {
-      if (res.code === 200 || res.code === 0) {
-        message.success('企业创建成功');
-        setModalOpen(false);
-        form.resetFields();
-        queryClient.invalidateQueries({ queryKey: ['enterprises'] });
-        queryClient.invalidateQueries({ queryKey: ['platform-stats'] });
-      } else {
-        message.error(res.message || '创建失败');
-      }
+    onSuccess: () => {
+      message.success('企业创建成功');
+      setModalOpen(false);
+      form.resetFields();
+      queryClient.invalidateQueries({ queryKey: ['enterprises'] });
+      queryClient.invalidateQueries({ queryKey: ['platform-stats'] });
     },
     onError: (err: unknown) => {
       const error = err as { response?: { data?: { message?: string } } };
@@ -136,14 +132,10 @@ const EnterpriseManagement: React.FC = () => {
   const toggleMutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: 'active' | 'inactive' }) =>
       toggleEnterpriseStatus(id, status),
-    onSuccess: (res: { code: number; message?: string }) => {
-      if (res.code === 200 || res.code === 0) {
-        message.success('状态更新成功');
-        queryClient.invalidateQueries({ queryKey: ['enterprises'] });
-        queryClient.invalidateQueries({ queryKey: ['platform-stats'] });
-      } else {
-        message.error(res.message || '状态更新失败');
-      }
+    onSuccess: () => {
+      message.success('状态更新成功');
+      queryClient.invalidateQueries({ queryKey: ['enterprises'] });
+      queryClient.invalidateQueries({ queryKey: ['platform-stats'] });
     },
     onError: (err: unknown) => {
       const error = err as { response?: { data?: { message?: string } } };
@@ -167,14 +159,10 @@ const EnterpriseManagement: React.FC = () => {
   const updatePackageMutation = useMutation({
     mutationFn: ({ tenantId, packageId }: { tenantId: string; packageId: string }) =>
       updateTenantPackage(tenantId, packageId),
-    onSuccess: (res: { code: number; message?: string }) => {
-      if (res.code === 200 || res.code === 0) {
-        message.success('套餐更换成功');
-        setPackageChangeConfirmOpen(false);
-        queryClient.invalidateQueries({ queryKey: ['enterprises'] });
-      } else {
-        message.error(res.message || '套餐更换失败');
-      }
+    onSuccess: () => {
+      message.success('套餐更换成功');
+      setPackageChangeConfirmOpen(false);
+      queryClient.invalidateQueries({ queryKey: ['enterprises'] });
     },
     onError: (err: unknown) => {
       const error = err as { response?: { data?: { message?: string } } };
@@ -185,13 +173,9 @@ const EnterpriseManagement: React.FC = () => {
   const assignSuperAdminMutation = useMutation({
     mutationFn: ({ tenantId, userId }: { tenantId: string; userId: string }) =>
       assignSuperAdmin(tenantId, userId),
-    onSuccess: (res: { code: number; message?: string }) => {
-      if (res.code === 200 || res.code === 0) {
-        message.success('超级管理员分配成功');
-        queryClient.invalidateQueries({ queryKey: ['enterprise-users', editingEnterprise?.id] });
-      } else {
-        message.error(res.message || '分配失败');
-      }
+    onSuccess: () => {
+      message.success('超级管理员分配成功');
+      queryClient.invalidateQueries({ queryKey: ['enterprise-users', editingEnterprise?.id] });
     },
     onError: (err: unknown) => {
       const error = err as { response?: { data?: { message?: string } } };
