@@ -332,30 +332,39 @@ export interface ProductFeature {
   id: string;
   productId: string;
   featureId: string;
-  feature?: Feature;
+  featureCode: string;
+  featureName: string;
+  featureType: string;
+  valueType: string;
+  defaultValue?: string;
   configValue?: string;
   isRequired: boolean;
   isEnabled: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface PackageProduct {
-  id: string;
-  packageId: string;
   productId: string;
-  product?: Product;
+  productCode: string;
+  productName: string;
+  productCategory: string;
+  productStatus: number;
   sortOrder: number;
   features?: PackageProductFeature[];
 }
 
 export interface PackageProductFeature {
-  id: string;
-  packageId: string;
-  productId: string;
   featureId: string;
-  feature?: Feature;
+  featureCode: string;
+  featureName: string;
+  featureType: string;
+  valueType: string;
   configValue?: string;
   isEnabled: boolean;
   isCustomized: boolean;
+  productDefaultValue?: string;
+  systemDefaultValue?: string;
 }
 
 export interface PackageDetail extends PermissionPackage {

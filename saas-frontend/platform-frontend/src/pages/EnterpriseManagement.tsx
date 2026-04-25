@@ -28,6 +28,7 @@ import {
   ReloadOutlined,
   ExclamationCircleOutlined,
   AppstoreOutlined,
+  DeleteOutlined,
 } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
@@ -35,6 +36,7 @@ import {
   getEnterprises,
   createEnterprise,
   toggleEnterpriseStatus,
+  deleteEnterprise,
   getPackages,
   updateTenantPackage,
   getEnterpriseUsers,
@@ -149,6 +151,19 @@ const EnterpriseManagement: React.FC = () => {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => deleteEnterprise(id),
+    onSuccess: () => {
+      message.success('企业已删除');
+      queryClient.invalidateQueries({ queryKey: ['enterprises'] });
+      queryClient.invalidateQueries({ queryKey: ['platform-stats'] });
+    },
+    onError: (err: unknown) => {
+      const error = err as { message?: string; response?: { data?: { message?: string } } };
+      message.error(error?.message || error?.response?.data?.message || '删除失败');
+    },
+  });
+
   const updatePackageMutation = useMutation({
     mutationFn: ({ tenantId, packageId }: { tenantId: string; packageId: string }) =>
       updateTenantPackage(tenantId, packageId),
@@ -258,7 +273,7 @@ const EnterpriseManagement: React.FC = () => {
     },
     {
       title: '操作',
-      width: 160,
+      width: 200,
       render: (_: unknown, record: Enterprise) => (
         <Space size="small">
           <Button type="link" size="small" icon={<EditOutlined />} onClick={() => openDetail(record)}>
@@ -273,6 +288,19 @@ const EnterpriseManagement: React.FC = () => {
           >
             <Button type="link" size="small">
               {record.status === 'active' ? '停用' : '开通'}
+            </Button>
+          </Popconfirm>
+          <Popconfirm
+            title="确认删除该企业？"
+            description="删除后数据将无法恢复，请谨慎操作"
+            icon={<ExclamationCircleOutlined style={{ color: '#ff4d4f' }} />}
+            okText="确认删除"
+            cancelText="取消"
+            okButtonProps={{ danger: true }}
+            onConfirm={() => deleteMutation.mutate(record.id)}
+          >
+            <Button type="link" size="small" danger icon={<DeleteOutlined />}>
+              删除
             </Button>
           </Popconfirm>
         </Space>
@@ -579,11 +607,11 @@ const EnterpriseManagement: React.FC = () => {
                   <tr key={f.featureId} style={{ borderBottom: '1px solid #f0f0f0' }}>
                     <td style={{ padding: '6px 8px' }}>
                       <Tag style={{ fontSize: 11 }}>
-                        {f.feature?.type === 'permission' ? '权限' : '配置'}
+                        {f.featureType === 'permission' ? '权限' : '配置'}
                       </Tag>
                     </td>
                     <td style={{ padding: '6px 8px' }}>
-                      {f.feature?.name || f.featureId}
+                      {f.featureName || f.featureId}
                     </td>
                     <td style={{ padding: '6px 8px', textAlign: 'center' }}>
                       {f.isEnabled ? (

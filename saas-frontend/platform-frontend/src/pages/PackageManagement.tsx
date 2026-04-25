@@ -29,7 +29,7 @@ import {
 } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
-import type { PermissionPackage, Product, Feature, ProductFeature, PackageProduct } from '@/api/platform';
+import type { PermissionPackage, Product, ProductFeature, PackageProduct } from '@/api/platform';
 import {
   getPackages,
   createPackage,
@@ -170,17 +170,46 @@ const PackageManagement: React.FC = () => {
 
       const featureMap: Record<string, Record<string, ProductFeature>> = {};
       for (const pkgProduct of packageProducts) {
-        if (pkgProduct.productId) {
-          try {
-            const featuresData = await getProductFeatures(pkgProduct.productId);
-            const productFeatures: ProductFeature[] = featuresData || [];
-            featureMap[pkgProduct.productId] = {};
-            productFeatures.forEach((pf: ProductFeature) => {
-              featureMap[pkgProduct.productId][pf.featureId] = pf;
-            });
-          } catch {
-            // ignore
-          }
+        if (!pkgProduct.productId) continue;
+        try {
+          // Get product-level features for isRequired info
+          const featuresData = await getProductFeatures(pkgProduct.productId);
+          const productFeatures: ProductFeature[] = featuresData || [];
+
+          // Get package-level feature overrides
+          const pkgFeatures = pkgProduct.features || [];
+
+          featureMap[pkgProduct.productId] = {};
+          productFeatures.forEach((pf: ProductFeature) => {
+            const pkgF = pkgFeatures.find(f => f.featureId === pf.featureId);
+            featureMap[pkgProduct.productId][pf.featureId] = {
+              ...pf,
+              // Override with package-level config
+              isEnabled: pkgF ? pkgF.isEnabled : pf.isEnabled,
+              configValue: pkgF ? (pkgF.configValue ?? pf.configValue) : pf.configValue,
+            };
+          });
+
+          // Add any package features not in product features
+          pkgFeatures.forEach(pkgF => {
+            if (!featureMap[pkgProduct.productId][pkgF.featureId]) {
+              featureMap[pkgProduct.productId][pkgF.featureId] = {
+                id: '',
+                productId: pkgProduct.productId,
+                featureId: pkgF.featureId,
+                featureCode: pkgF.featureCode,
+                featureName: pkgF.featureName,
+                featureType: pkgF.featureType,
+                valueType: pkgF.valueType,
+                defaultValue: pkgF.productDefaultValue,
+                configValue: pkgF.configValue,
+                isRequired: false,
+                isEnabled: pkgF.isEnabled,
+              };
+            }
+          });
+        } catch {
+          // ignore individual product errors
         }
       }
       setPackageProductFeatures(featureMap);
@@ -459,9 +488,9 @@ const PackageManagement: React.FC = () => {
                               }));
                             }}
                           />
-                          <Text strong>{pf.feature?.name || pf.featureId}</Text>
-                          <Tag color={pf.feature?.type === 'permission' ? 'blue' : 'orange'}>
-                            {pf.feature?.type === 'permission' ? '权限' : '配置'}
+                          <Text strong>{pf.featureName || pf.featureId}</Text>
+                          <Tag color={pf.featureType === 'permission' ? 'blue' : 'orange'}>
+                            {pf.featureType === 'permission' ? '权限' : '配置'}
                           </Tag>
                           {pf.isRequired ? (
                             <Tag color="red" icon={<LockOutlined />}>必需</Tag>
@@ -469,9 +498,9 @@ const PackageManagement: React.FC = () => {
                             <Tag color="default">可选</Tag>
                           )}
                         </Space>
-                        {pf.feature?.type === 'config' && pf.isEnabled && !pf.isRequired && (
+                        {pf.featureType === 'config' && pf.isEnabled && !pf.isRequired && (
                           <div style={{ minWidth: 160 }}>
-                            {pf.feature.valueType === 'boolean' ? (
+                            {pf.valueType === 'boolean' ? (
                               <Switch
                                 size="small"
                                 checked={pf.configValue === 'true' || pf.configValue === '1'}
@@ -491,7 +520,7 @@ const PackageManagement: React.FC = () => {
                               <Input
                                 size="small"
                                 value={pf.configValue || ''}
-                                placeholder={pf.feature?.defaultValue || '配置值'}
+                                placeholder={pf.defaultValue || '配置值'}
                                 onChange={(e) => {
                                   setPackageProductFeatures((prev) => ({
                                     ...prev,
