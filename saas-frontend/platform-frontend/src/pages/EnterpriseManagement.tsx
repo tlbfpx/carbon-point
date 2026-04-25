@@ -213,6 +213,8 @@ const EnterpriseManagement: React.FC = () => {
     .filter((p: { status: number | boolean }) => p.status === 1 || p.status === true)
     .map((p: { id: string | number; name: string }) => ({ value: String(p.id), label: p.name }));
 
+  const allPackages = (packagesData?.records || packagesData || []) as { id: string | number; name: string; status: number | boolean }[];
+
   const columns = [
     {
       title: '企业名称',
@@ -232,11 +234,13 @@ const EnterpriseManagement: React.FC = () => {
     { title: '联系电话', dataIndex: 'contactPhone', width: 140 },
     {
       title: '套餐',
-      dataIndex: 'packageName',
+      dataIndex: 'packageId',
       width: 120,
-      render: (v: string) => (
-        <Tag color={v ? 'blue' : 'default'}>{v || '未绑定'}</Tag>
-      ),
+      render: (packageId: number | string) => {
+        if (!packageId) return <Tag>未绑定</Tag>;
+        const pkg = allPackages.find(p => String(p.id) === String(packageId));
+        return <Tag color={pkg ? 'blue' : 'default'}>{pkg?.name || `套餐${packageId}`}</Tag>;
+      },
     },
     { title: '用户数', dataIndex: 'userCount', width: 80, render: (n: number) => n ?? '-' },
     {
