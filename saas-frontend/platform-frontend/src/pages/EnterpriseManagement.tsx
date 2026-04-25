@@ -493,7 +493,7 @@ const EnterpriseManagement: React.FC = () => {
       );
     }
 
-    if (packageDetailLoading || tenantProductsLoading) {
+    if (packageDetailLoading) {
       return (
         <div style={{ textAlign: 'center', padding: 32 }}>
           <Spin tip="加载中..." />
@@ -501,19 +501,15 @@ const EnterpriseManagement: React.FC = () => {
       );
     }
 
-    const products = tenantProductsData || [];
     const packageDetail = packageDetailData;
     const packageProducts = packageDetail?.products || [];
 
-    // Calculate stats
+    // Calculate stats from package products directly
     let enabledFeatures = 0;
     let totalMenus = 0;
 
-    products.forEach((product: TenantProductInfo) => {
-      const pkgProduct = packageProducts.find(
-        (pp: PackageProduct) => pp.productId === product.productId
-      );
-      const features = pkgProduct?.features || [];
+    packageProducts.forEach((pp: PackageProduct) => {
+      const features = pp.features || [];
       features.forEach((f: PackageProductFeature) => {
         if (f.isEnabled) {
           enabledFeatures++;
@@ -527,14 +523,14 @@ const EnterpriseManagement: React.FC = () => {
     const chainItems = [
       {
         label: '套餐',
-        value: editingEnterprise.packageName || '—',
+        value: packageDetail?.name || '—',
         color: '#ddf4ff',
         borderColor: '#0969da',
         textColor: '#0969da',
       },
       {
         label: '包含产品',
-        value: `${products.length} 个`,
+        value: `${packageProducts.length} 个`,
         color: '#dafbe1',
         borderColor: '#1a7f37',
         textColor: '#1a7f37',
@@ -555,21 +551,18 @@ const EnterpriseManagement: React.FC = () => {
       },
     ];
 
-    // Build collapse panels
-    const collapseItems = products.map((product: TenantProductInfo) => {
-      const pkgProduct = packageProducts.find(
-        (pp: PackageProduct) => pp.productId === product.productId
-      );
-      const features = pkgProduct?.features || [];
+    // Build collapse panels from package products directly
+    const collapseItems = packageProducts.map((pp: PackageProduct) => {
+      const features = pp.features || [];
       const enabledCount = features.filter((f: PackageProductFeature) => f.isEnabled).length;
 
       return {
-        key: product.productId || product.productCode,
+        key: pp.productId || pp.productCode,
         label: (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontWeight: 600 }}>{product.productName}</span>
-            <Tag color={CATEGORY_COLOR_MAP[product.category] || 'default'}>
-              {CATEGORY_LABEL_MAP[product.category] || product.category}
+            <span style={{ fontWeight: 600 }}>{pp.productName}</span>
+            <Tag color={CATEGORY_COLOR_MAP[pp.productCategory] || 'default'}>
+              {CATEGORY_LABEL_MAP[pp.productCategory] || pp.productCategory}
             </Tag>
             <span style={{ fontSize: 12, color: '#475569' }}>
               {enabledCount}/{features.length} 已启用
@@ -658,13 +651,13 @@ const EnterpriseManagement: React.FC = () => {
         </div>
 
         {/* Product permission detail panels */}
-        {products.length === 0 ? (
+        {packageProducts.length === 0 ? (
           <Empty
-            description="该企业尚未启用任何产品"
+            description="该套餐尚未配置产品"
             image={Empty.PRESENTED_IMAGE_SIMPLE}
           />
         ) : (
-          <Collapse items={collapseItems} defaultActiveKey={products.map((p: TenantProductInfo) => p.productId || p.productCode)} />
+          <Collapse items={collapseItems} defaultActiveKey={packageProducts.map((pp: PackageProduct) => pp.productId || pp.productCode)} />
         )}
       </div>
     );
