@@ -1,8 +1,11 @@
 package com.carbonpoint.system.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.carbonpoint.system.dto.EnterpriseUserVO;
 import com.carbonpoint.system.dto.TenantRequest;
 import com.carbonpoint.system.dto.TenantVO;
+
+import java.util.List;
 
 /**
  * Platform-level tenant management service.
@@ -34,4 +37,19 @@ public interface PlatformTenantService {
      * Create a tenant (called by platform admin).
      */
     TenantVO createTenant(TenantRequest request, Long operatorId);
+
+    /**
+     * List all users for a specific tenant (platform admin view).
+     */
+    List<EnterpriseUserVO> listUsersForTenant(Long tenantId);
+
+    /**
+     * Assign super_admin role to a user within a tenant.
+     */
+    void assignSuperAdmin(Long tenantId, Long userId);
+
+    /**
+     * Delete a tenant (soft delete).
+     */
+    void deleteTenant(Long tenantId, Long operatorId);
 }

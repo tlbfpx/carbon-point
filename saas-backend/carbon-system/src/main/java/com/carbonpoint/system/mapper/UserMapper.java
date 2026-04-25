@@ -7,6 +7,8 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
+import java.util.List;
+
 @Mapper
 public interface UserMapper extends BaseMapper<User> {
 
@@ -50,4 +52,12 @@ public interface UserMapper extends BaseMapper<User> {
     @InterceptorIgnore(tenantLine = "1")
     @org.apache.ibatis.annotations.Delete("DELETE FROM users WHERE id = #{userId}")
     void deleteByIdNoTenant(@Param("userId") Long userId);
+
+    /**
+     * List users by tenant ID without tenant filtering.
+     * Used by platform admin to view users of a specific tenant.
+     */
+    @InterceptorIgnore(tenantLine = "1")
+    @Select("SELECT * FROM users WHERE tenant_id = #{tenantId} AND deleted = 0 ORDER BY created_at DESC")
+    List<User> selectByTenantIdForPlatform(@Param("tenantId") Long tenantId);
 }

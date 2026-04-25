@@ -591,32 +591,42 @@ public class PackageServiceImpl implements PackageService {
 
     /**
      * Build feature response list by enriching with product defaults and system defaults.
+     * If no package-level features exist, falls back to product-level defaults.
      */
     private List<PackageFeatureRes> buildFeatureResList(String productId, List<PackageProductFeatureEntity> ppfList) {
-        if (ppfList.isEmpty()) {
-            return Collections.emptyList();
-        }
-
         // Batch fetch product features to get defaults
         List<ProductFeatureEntity> productFeatures = productFeatureMapper.selectByProductId(String.valueOf(productId));
+
+        if (ppfList.isEmpty()) {
+            // No package-level features configured — fall back to product defaults
+            if (productFeatures.isEmpty()) {
+                return Collections.emptyList();
+            }
+            Map<String, FeatureEntity> featureMap = loadFeatureEntities(productFeatures);
+            return productFeatures.stream()
+                    .map(pf -> {
+                        FeatureEntity sf = featureMap.get(pf.getFeatureId());
+                        return PackageFeatureRes.builder()
+                                .featureId(pf.getFeatureId())
+                                .featureCode(sf != null ? sf.getCode() : null)
+                                .featureName(sf != null ? sf.getName() : null)
+                                .featureType(sf != null ? sf.getType() : null)
+                                .valueType(sf != null ? sf.getValueType() : null)
+                                .configValue(pf.getConfigValue())
+                                .isEnabled(pf.getIsEnabled() != null ? pf.getIsEnabled() : true)
+                                .isCustomized(false)
+                                .productDefaultValue(pf.getConfigValue())
+                                .systemDefaultValue(sf != null ? sf.getDefaultValue() : null)
+                                .build();
+                    })
+                    .toList();
+        }
+
+        // Use pre-loaded product features to build the map
         Map<String, ProductFeatureEntity> productFeatureMap = productFeatures.stream()
                 .collect(Collectors.toMap(ProductFeatureEntity::getFeatureId, pf -> pf));
 
-        // Batch fetch features to get system defaults
-        List<String> featureIds = ppfList.stream()
-                .map(PackageProductFeatureEntity::getFeatureId)
-                .collect(Collectors.toList());
-        List<FeatureEntity> systemFeatures = featureIds.isEmpty() ? Collections.emptyList()
-                : featureIds.stream()
-                        .map(id -> {
-                            LambdaQueryWrapper<FeatureEntity> w = new LambdaQueryWrapper<>();
-                            w.eq(FeatureEntity::getId, id);
-                            return featureMapper.selectOne(w);
-                        })
-                        .filter(Objects::nonNull)
-                        .toList();
-        Map<String, FeatureEntity> featureMap = systemFeatures.stream()
-                .collect(Collectors.toMap(FeatureEntity::getId, f -> f));
+        Map<String, FeatureEntity> featureMap = loadFeatureEntities(productFeatures);
 
         return ppfList.stream()
                 .map(ppf -> {
@@ -638,6 +648,29 @@ public class PackageServiceImpl implements PackageService {
                             .build();
                 })
                 .toList();
+    }
+
+    /**
+     * Load FeatureEntity objects for the feature IDs referenced by product features.
+     */
+    private Map<String, FeatureEntity> loadFeatureEntities(List<ProductFeatureEntity> productFeatures) {
+        List<String> featureIds = productFeatures.stream()
+                .map(ProductFeatureEntity::getFeatureId)
+                .distinct()
+                .collect(Collectors.toList());
+        if (featureIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        List<FeatureEntity> systemFeatures = featureIds.stream()
+                .map(id -> {
+                    LambdaQueryWrapper<FeatureEntity> w = new LambdaQueryWrapper<>();
+                    w.eq(FeatureEntity::getId, id);
+                    return featureMapper.selectOne(w);
+                })
+                .filter(Objects::nonNull)
+                .toList();
+        return systemFeatures.stream()
+                .collect(Collectors.toMap(FeatureEntity::getId, f -> f));
     }
 
     /**

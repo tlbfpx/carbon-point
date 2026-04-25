@@ -41,7 +41,4 @@ public class Tenant {
 
     @TableLogic
     private Integer deleted;
-
-    @Version
-    private Long version;
 }

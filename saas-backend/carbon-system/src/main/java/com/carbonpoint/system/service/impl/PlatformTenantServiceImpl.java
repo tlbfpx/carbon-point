@@ -5,11 +5,18 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.carbonpoint.common.exception.BusinessException;
 import com.carbonpoint.common.result.ErrorCode;
+import com.carbonpoint.system.dto.EnterpriseUserVO;
 import com.carbonpoint.system.dto.TenantRequest;
 import com.carbonpoint.system.dto.TenantVO;
 import com.carbonpoint.system.mapper.PermissionPackageMapper;
+import com.carbonpoint.system.mapper.RoleMapper;
 import com.carbonpoint.system.mapper.TenantMapper;
+import com.carbonpoint.system.mapper.UserMapper;
+import com.carbonpoint.system.mapper.UserRoleMapper;
+import com.carbonpoint.system.entity.Role;
 import com.carbonpoint.system.entity.Tenant;
+import com.carbonpoint.system.entity.User;
+import com.carbonpoint.system.entity.UserRole;
 import com.carbonpoint.system.service.PlatformTenantService;
 import com.carbonpoint.system.service.RoleService;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +25,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import java.time.format.DateTimeFormatter;
 
 /**
@@ -34,6 +44,9 @@ public class PlatformTenantServiceImpl implements PlatformTenantService {
     private final TenantMapper tenantMapper;
     private final RoleService roleService;
     private final PermissionPackageMapper permissionPackageMapper;
+    private final UserMapper userMapper;
+    private final UserRoleMapper userRoleMapper;
+    private final RoleMapper roleMapper;
 
     @Override
     public IPage<TenantVO> listTenants(int page, int pageSize, String keyword, String status) {
@@ -146,6 +159,123 @@ public class PlatformTenantServiceImpl implements PlatformTenantService {
                 tenant.getId(), tenant.getName(), packageId, operatorId);
 
         return toVO(tenant);
+    }
+
+    @Override
+    public List<EnterpriseUserVO> listUsersForTenant(Long tenantId) {
+        // Verify tenant exists
+        Tenant tenant = tenantMapper.selectById(tenantId);
+        if (tenant == null) {
+            throw new BusinessException(ErrorCode.TENANT_NOT_FOUND);
+        }
+
+        // Get all users for this tenant (bypasses tenant interceptor)
+        List<User> users = userMapper.selectByTenantIdForPlatform(tenantId);
+        if (users.isEmpty()) {
+            return List.of();
+        }
+
+        // Get all roles for this tenant
+        List<Role> tenantRoles = roleMapper.selectByTenantIdForPlatform(tenantId);
+        Map<Long, Role> roleMap = tenantRoles.stream()
+                .collect(Collectors.toMap(Role::getId, r -> r));
+
+        // Get user-role mappings for all these users
+        List<Long> userIds = users.stream().map(User::getId).toList();
+        List<UserRole> userRoles = userRoleMapper.selectByUserIds(userIds);
+
+        // Group role IDs by user
+        Map<Long, List<Long>> userRoleIdsMap = userRoles.stream()
+                .collect(Collectors.groupingBy(UserRole::getUserId,
+                        Collectors.mapping(UserRole::getRoleId, Collectors.toList())));
+
+        // Find super_admin role for this tenant
+        Long superAdminRoleId = tenantRoles.stream()
+                .filter(r -> "super_admin".equals(r.getRoleType()))
+                .map(Role::getId)
+                .findFirst()
+                .orElse(null);
+
+        return users.stream().map(user -> {
+            List<Long> roleIds = userRoleIdsMap.getOrDefault(user.getId(), List.of());
+            List<String> roleTypes = new ArrayList<>();
+            List<String> roleNames = new ArrayList<>();
+            boolean isSuperAdmin = false;
+
+            for (Long roleId : roleIds) {
+                Role role = roleMap.get(roleId);
+                if (role != null) {
+                    roleTypes.add(role.getRoleType());
+                    roleNames.add(role.getName());
+                    if (superAdminRoleId != null && superAdminRoleId.equals(roleId)) {
+                        isSuperAdmin = true;
+                    }
+                }
+            }
+
+            return EnterpriseUserVO.builder()
+                    .userId(user.getId())
+                    .username(user.getNickname())
+                    .phone(user.getPhone())
+                    .roles(roleTypes)
+                    .roleNames(roleNames)
+                    .status(user.getStatus())
+                    .isSuperAdmin(isSuperAdmin)
+                    .createTime(user.getCreatedAt())
+                    .build();
+        }).toList();
+    }
+
+    @Override
+    @Transactional
+    public void assignSuperAdmin(Long tenantId, Long userId) {
+        // Verify tenant exists
+        Tenant tenant = tenantMapper.selectById(tenantId);
+        if (tenant == null) {
+            throw new BusinessException(ErrorCode.TENANT_NOT_FOUND);
+        }
+
+        // Verify user belongs to this tenant
+        User user = userMapper.selectByIdNoTenant(userId);
+        if (user == null || !tenantId.equals(user.getTenantId())) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+        }
+
+        // Find super_admin role for this tenant
+        List<Role> tenantRoles = roleMapper.selectByTenantIdForPlatform(tenantId);
+        Role superAdminRole = tenantRoles.stream()
+                .filter(r -> "super_admin".equals(r.getRoleType()))
+                .findFirst()
+                .orElseThrow(() -> new BusinessException(ErrorCode.ROLE_NOT_FOUND));
+
+        // Check if already assigned
+        List<Long> existingRoleIds = userRoleMapper.selectRoleIdsByUserId(userId);
+        if (existingRoleIds.contains(superAdminRole.getId())) {
+            return; // Already super_admin
+        }
+
+        // Assign super_admin role
+        UserRole userRole = new UserRole();
+        userRole.setUserId(userId);
+        userRole.setRoleId(superAdminRole.getId());
+        userRole.setTenantId(tenantId);
+        userRoleMapper.batchInsert(List.of(userRole));
+
+        log.info("Super admin assigned: tenantId={}, userId={}, roleId={}", tenantId, userId, superAdminRole.getId());
+    }
+
+    @Override
+    @Transactional
+    public void deleteTenant(Long tenantId, Long operatorId) {
+        Tenant tenant = tenantMapper.selectById(tenantId);
+        if (tenant == null) {
+            throw new BusinessException(ErrorCode.TENANT_NOT_FOUND);
+        }
+
+        // Soft delete — MyBatis-Plus @TableLogic handles setting deleted=1
+        tenantMapper.deleteById(tenantId);
+
+        log.info("Tenant deleted (soft): id={}, name={}, by={}", tenantId, tenant.getName(), operatorId);
     }
 
     private TenantVO toVO(Tenant tenant) {

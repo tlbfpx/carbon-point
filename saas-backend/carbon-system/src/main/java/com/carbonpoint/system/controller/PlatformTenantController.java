@@ -4,12 +4,16 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.carbonpoint.common.result.Result;
 import com.carbonpoint.common.security.PlatformAdminContext;
 import com.carbonpoint.system.aop.PlatformOperationLog;
+import com.carbonpoint.system.dto.EnterpriseUserVO;
 import com.carbonpoint.system.dto.TenantRequest;
 import com.carbonpoint.system.dto.TenantVO;
 import com.carbonpoint.system.service.PlatformTenantService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * Platform tenant management controller.
@@ -75,6 +79,36 @@ public class PlatformTenantController {
     public Result<Void> activate(@PathVariable Long id) {
         Long operatorId = getCurrentAdminId();
         tenantService.activateTenant(id, operatorId);
+        return Result.success();
+    }
+
+    /**
+     * List all users for a specific tenant (platform admin view).
+     */
+    @GetMapping("/{id}/users")
+    public Result<List<EnterpriseUserVO>> listUsers(@PathVariable Long id) {
+        return Result.success(tenantService.listUsersForTenant(id));
+    }
+
+    /**
+     * Assign super_admin role to a user within a tenant.
+     */
+    @PutMapping("/{id}/super-admin")
+    @PlatformOperationLog(operationType = "ASSIGN_SUPER_ADMIN", operationObject = "分配超级管理员: 企业#{#id}")
+    public Result<Void> assignSuperAdmin(@PathVariable Long id, @RequestBody Map<String, Long> body) {
+        Long userId = body.get("userId");
+        tenantService.assignSuperAdmin(id, userId);
+        return Result.success();
+    }
+
+    /**
+     * Delete a tenant (soft delete).
+     */
+    @DeleteMapping("/{id}")
+    @PlatformOperationLog(operationType = "DELETE_TENANT", operationObject = "删除企业: #{#id}")
+    public Result<Void> delete(@PathVariable Long id) {
+        Long operatorId = getCurrentAdminId();
+        tenantService.deleteTenant(id, operatorId);
         return Result.success();
     }
 
