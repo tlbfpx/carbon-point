@@ -185,7 +185,7 @@ const EnterpriseManagement: React.FC = () => {
 
   const openDetail = (record: Enterprise) => {
     setEditingEnterprise(record);
-    setSelectedPackageId(record.packageId);
+    setSelectedPackageId(record.packageId != null ? String(record.packageId) : undefined);
     setDetailActiveTab('info');
     setDetailModalOpen(true);
   };
@@ -873,7 +873,7 @@ const EnterpriseManagement: React.FC = () => {
         open={packageChangeConfirmOpen}
         onCancel={() => {
           setPackageChangeConfirmOpen(false);
-          setSelectedPackageId(editingEnterprise?.packageId);
+          setSelectedPackageId(editingEnterprise?.packageId != null ? String(editingEnterprise.packageId) : undefined);
         }}
         onOk={handlePackageConfirm}
         confirmLoading={updatePackageMutation.isPending}
