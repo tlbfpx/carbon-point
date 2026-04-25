@@ -12,6 +12,7 @@ import {
   Form,
   Input,
   InputNumber,
+  Select,
   message,
   Popconfirm,
 } from 'antd';
@@ -38,12 +39,17 @@ import {
   createRuleNodeType,
   updateRuleNodeType,
   deleteRuleNodeType,
+  getFeatures,
+  createFeature,
+  updateFeature,
+  deleteFeature,
   TriggerInfo,
   RuleNodeInfo,
   FeatureInfo,
   RegistryModule,
   TriggerType,
   RuleNodeType,
+  Feature,
 } from '@/api/platform';
 
 const { Title, Text } = Typography;
@@ -197,6 +203,11 @@ const BlockLibrary: React.FC = () => {
   const [editingRuleNode, setEditingRuleNode] = useState<RuleNodeType | null>(null);
   const [ruleNodeForm] = Form.useForm();
 
+  // Feature CRUD state
+  const [featureModalOpen, setFeatureModalOpen] = useState(false);
+  const [editingFeature, setEditingFeature] = useState<Feature | null>(null);
+  const [featureForm] = Form.useForm();
+
   const { data: triggersData, isLoading: triggersLoading, refetch: refetchTriggers } = useQuery({
     queryKey: ['registry-triggers'],
     queryFn: getRegistryTriggers,
@@ -225,10 +236,19 @@ const BlockLibrary: React.FC = () => {
     refetchOnWindowFocus: false,
   });
 
+  // Features table query (for CRUD)
+  const { data: featureListData, isLoading: featureListLoading, refetch: refetchFeatureList } = useQuery({
+    queryKey: ['features-catalog'],
+    queryFn: () => getFeatures({ size: 500 }),
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
+
   const triggers: TriggerInfo[] = Array.isArray(triggersData) ? triggersData : (triggersData?.data || []);
   const ruleNodes: RuleNodeInfo[] = Array.isArray(ruleNodesData) ? ruleNodesData : (ruleNodesData?.data || []);
   const features: FeatureInfo[] = Array.isArray(featuresData) ? featuresData : (featuresData?.data || []);
   const modules: RegistryModule[] = Array.isArray(modulesData) ? modulesData : (modulesData?.data || []);
+  const featureList: Feature[] = featureListData?.data?.records || featureListData?.records || (Array.isArray(featureListData) ? featureListData : []);
 
   // ---- Trigger CRUD ----
   const triggerCreateMutation = useMutation({
@@ -323,6 +343,67 @@ const BlockLibrary: React.FC = () => {
     onError: (err: any) => message.error(err?.message || '删除失败'),
   });
 
+  // ---- Feature CRUD ----
+  const featureCreateMutation = useMutation({
+    mutationFn: createFeature,
+    onSuccess: () => {
+      message.success('创建成功');
+      setFeatureModalOpen(false);
+      featureForm.resetFields();
+      queryClient.invalidateQueries({ queryKey: ['features-catalog'] });
+    },
+    onError: (err: any) => message.error(err?.message || '创建失败'),
+  });
+
+  const featureUpdateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => updateFeature(id, data),
+    onSuccess: () => {
+      message.success('更新成功');
+      setFeatureModalOpen(false);
+      setEditingFeature(null);
+      featureForm.resetFields();
+      queryClient.invalidateQueries({ queryKey: ['features-catalog'] });
+    },
+    onError: (err: any) => message.error(err?.message || '更新失败'),
+  });
+
+  const featureDeleteMutation = useMutation({
+    mutationFn: deleteFeature,
+    onSuccess: () => {
+      message.success('删除成功');
+      queryClient.invalidateQueries({ queryKey: ['features-catalog'] });
+    },
+    onError: (err: any) => message.error(err?.message || '删除失败'),
+  });
+
+  const openFeatureCreate = () => {
+    setEditingFeature(null);
+    featureForm.resetFields();
+    setFeatureModalOpen(true);
+  };
+
+  const openFeatureEdit = (record: Feature) => {
+    setEditingFeature(record);
+    featureForm.setFieldsValue({
+      code: record.code,
+      name: record.name,
+      type: record.type,
+      valueType: record.valueType,
+      defaultValue: record.defaultValue,
+      description: record.description,
+      group: record.group,
+    });
+    setFeatureModalOpen(true);
+  };
+
+  const handleFeatureFormFinish = (values: any) => {
+    if (editingFeature) {
+      featureUpdateMutation.mutate({ id: editingFeature.id, data: values });
+    } else {
+      featureCreateMutation.mutate(values);
+    }
+  };
+
   const openRuleNodeCreate = () => {
     setEditingRuleNode(null);
     ruleNodeForm.resetFields();
@@ -357,7 +438,7 @@ const BlockLibrary: React.FC = () => {
         refetchRuleNodes();
         break;
       case 'features':
-        refetchFeatures();
+        refetchFeatureList();
         break;
       case 'modules':
         refetchModules();
@@ -493,15 +574,15 @@ const BlockLibrary: React.FC = () => {
 
   const featureColumns = [
     {
-      title: '功能点标识',
-      dataIndex: 'type',
-      width: 200,
-      render: (type: string) => <HighContrastTag color="orange">{type}</HighContrastTag>,
+      title: '编码',
+      dataIndex: 'code',
+      width: 180,
+      render: (code: string) => <span style={{ fontFamily: 'monospace', fontSize: 13 }}>{code}</span>,
     },
     {
       title: '名称',
       dataIndex: 'name',
-      width: 160,
+      width: 140,
       render: (name: string) => (
         <Text strong style={{ fontSize: '14px', color: DESIGN_SYSTEM.colors.text.primary }}>
           {name}
@@ -509,35 +590,56 @@ const BlockLibrary: React.FC = () => {
       ),
     },
     {
-      title: '是否必需',
-      dataIndex: 'required',
-      width: 100,
-      render: (required: boolean) =>
-        required ? (
-          <HighContrastTag color="red">必需</HighContrastTag>
-        ) : (
-          <HighContrastTag color="gray">可选</HighContrastTag>
-        ),
+      title: '类型',
+      dataIndex: 'type',
+      width: 80,
+      render: (type: string) => (
+        <HighContrastTag color={type === 'permission' ? 'blue' : 'purple'}>
+          {type === 'permission' ? '权限' : '配置'}
+        </HighContrastTag>
+      ),
     },
     {
-      title: '所属产品',
-      width: 240,
-      render: (_: unknown, record: FeatureInfo) => {
-        const related = modules.filter(
-          (m) => m.features && m.features.includes(record.type)
-        );
-        return related.length > 0 ? (
-          <Space wrap size="small">
-            {related.map((m) => (
-              <HighContrastTag key={m.code} color="geekblue">
-                {m.name}
-              </HighContrastTag>
-            ))}
-          </Space>
-        ) : (
-          <HighContrastTag color="gray">通用</HighContrastTag>
-        );
-      },
+      title: '值类型',
+      dataIndex: 'valueType',
+      width: 90,
+      render: (vt: string) => (
+        <HighContrastTag color="green">{vt || 'boolean'}</HighContrastTag>
+      ),
+    },
+    {
+      title: '默认值',
+      dataIndex: 'defaultValue',
+      width: 120,
+      ellipsis: true,
+      render: (v: string) => v || '-',
+    },
+    {
+      title: '分组',
+      dataIndex: 'group',
+      width: 100,
+      render: (g: string) => g ? <HighContrastTag color="orange">{g}</HighContrastTag> : '-',
+    },
+    {
+      title: '操作',
+      width: 140,
+      render: (_: unknown, record: Feature) => (
+        <Space size="small">
+          <Button type="link" size="small" icon={<EditOutlined />} onClick={() => openFeatureEdit(record)}>
+            编辑
+          </Button>
+          <Popconfirm
+            title="确认删除此功能点？"
+            onConfirm={() => featureDeleteMutation.mutate(record.id)}
+            okText="确认"
+            cancelText="取消"
+          >
+            <Button type="link" size="small" danger icon={<DeleteOutlined />}>
+              删除
+            </Button>
+          </Popconfirm>
+        </Space>
+      ),
     },
   ];
 
@@ -679,9 +781,9 @@ const BlockLibrary: React.FC = () => {
         <span>
           <SettingOutlined style={{ marginRight: 6 }} />
           功能点模板
-          {features.length > 0 && (
+          {featureList.length > 0 && (
             <Badge
-              count={features.length}
+              count={featureList.length}
               style={{
                 backgroundColor: DESIGN_SYSTEM.colors.warning,
                 marginLeft: 8,
@@ -692,16 +794,21 @@ const BlockLibrary: React.FC = () => {
       ),
       children: (
         <>
+          <div style={{ marginBottom: 16, textAlign: 'right' }}>
+            <Button type="primary" icon={<PlusOutlined />} onClick={openFeatureCreate}>
+              新增功能点
+            </Button>
+          </div>
           <Table
             columns={featureColumns}
-            dataSource={features}
-            rowKey="type"
-            loading={featuresLoading}
+            dataSource={featureList}
+            rowKey="id"
+            loading={featureListLoading}
             pagination={false}
             locale={{
               emptyText: (
                 <Empty
-                  description="暂无已注册的功能点模板"
+                  description="暂无功能点，点击上方按钮新增"
                   image={Empty.PRESENTED_IMAGE_SIMPLE}
                 />
               ),
@@ -862,6 +969,88 @@ const BlockLibrary: React.FC = () => {
                 {editingRuleNode ? '保存修改' : '确认创建'}
               </Button>
               <Button onClick={() => { setRuleNodeModalOpen(false); setEditingRuleNode(null); ruleNodeForm.resetFields(); }}>
+                取消
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* Feature Modal */}
+      <Modal
+        title={editingFeature ? '编辑功能点' : '新增功能点'}
+        open={featureModalOpen}
+        onCancel={() => { setFeatureModalOpen(false); setEditingFeature(null); featureForm.resetFields(); }}
+        footer={null}
+        width={520}
+      >
+        <Form form={featureForm} layout="vertical" onFinish={handleFeatureFormFinish}>
+          {editingFeature ? (
+            <Form.Item label="编码">
+              <Input value={editingFeature.code} disabled />
+            </Form.Item>
+          ) : (
+            <Form.Item
+              name="code"
+              label="编码"
+              rules={[{ required: true, message: '请输入功能点编码' }]}
+              extra="唯一标识，如 daily_cap、time_slot，创建后不可修改"
+            >
+              <Input placeholder="如: daily_cap" style={{ fontFamily: 'monospace' }} />
+            </Form.Item>
+          )}
+          <Form.Item
+            name="name"
+            label="名称"
+            rules={[{ required: true, message: '请输入功能点名称' }]}
+          >
+            <Input placeholder="如: 每日上限" />
+          </Form.Item>
+          <Space style={{ width: '100%' }} size="middle">
+            <Form.Item
+              name="type"
+              label="类型"
+              rules={[{ required: true, message: '请选择类型' }]}
+              style={{ width: 220 }}
+            >
+              <Select placeholder="选择类型">
+                <Select.Option value="permission">权限（开关）</Select.Option>
+                <Select.Option value="config">配置（参数）</Select.Option>
+              </Select>
+            </Form.Item>
+            <Form.Item
+              name="valueType"
+              label="值类型"
+              rules={[{ required: true, message: '请选择值类型' }]}
+              style={{ width: 220 }}
+            >
+              <Select placeholder="选择值类型">
+                <Select.Option value="boolean">Boolean</Select.Option>
+                <Select.Option value="number">Number</Select.Option>
+                <Select.Option value="string">String</Select.Option>
+                <Select.Option value="json">JSON</Select.Option>
+              </Select>
+            </Form.Item>
+          </Space>
+          <Form.Item name="defaultValue" label="默认值">
+            <Input placeholder="如: true、100、{}" style={{ fontFamily: 'monospace' }} />
+          </Form.Item>
+          <Form.Item name="group" label="分组">
+            <Input placeholder="如: point_rule、display（选填）" />
+          </Form.Item>
+          <Form.Item name="description" label="描述">
+            <Input.TextArea rows={2} placeholder="功能点描述（选填）" />
+          </Form.Item>
+          <Form.Item style={{ marginBottom: 0 }}>
+            <Space>
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={featureCreateMutation.isPending || featureUpdateMutation.isPending}
+              >
+                {editingFeature ? '保存修改' : '确认创建'}
+              </Button>
+              <Button onClick={() => { setFeatureModalOpen(false); setEditingFeature(null); featureForm.resetFields(); }}>
                 取消
               </Button>
             </Space>
