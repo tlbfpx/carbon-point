@@ -16,6 +16,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { useBranding } from '@/components/BrandingProvider';
 import { apiClient } from '@/api/request';
+import { useFeatureStore } from '@/store/featureStore';
 
 const { Title, Text } = Typography;
 
@@ -66,6 +67,7 @@ const fetchMenus = async (): Promise<MenuItem[]> => {
 
 const FeatureMatrix: React.FC = () => {
   const { primaryColor } = useBranding();
+  const { features, loaded: featuresLoaded } = useFeatureStore();
 
   const { data: menus, isLoading } = useQuery({
     queryKey: ['menus'],
@@ -101,7 +103,9 @@ const FeatureMatrix: React.FC = () => {
 
   const getCategory = (key: string) => CATEGORY_MAP[key] ?? null;
 
-  const renderFeatureCard = (item: MenuItem) => (
+  const renderFeatureCard = (item: MenuItem) => {
+    const featureEnabled = featuresLoaded ? features[item.key] === true : !item.disabled;
+    return (
     <Col xs={24} sm={12} md={8} lg={6} key={item.key}>
       <Card
         hoverable
@@ -110,7 +114,7 @@ const FeatureMatrix: React.FC = () => {
           border: `1px solid ${colors.warmBorder}`,
           boxShadow: '0 2px 16px rgba(0, 0, 0, 0.04)',
           transition: 'all 0.2s ease',
-          opacity: item.disabled ? 0.5 : 1,
+          opacity: featureEnabled ? 1 : 0.5,
           marginBottom: 16,
         }}
         styles={{ body: { padding: '20px' } }}
@@ -142,7 +146,7 @@ const FeatureMatrix: React.FC = () => {
           >
             {item.label}
           </Text>
-          {!item.disabled ? (
+          {featureEnabled ? (
             <Tag
               color="success"
               icon={<CheckCircleOutlined />}
@@ -183,7 +187,8 @@ const FeatureMatrix: React.FC = () => {
         </Text>
       </Card>
     </Col>
-  );
+    );
+  };
 
   const groupedFeatures = React.useMemo(() => {
     const groups: Record<string, MenuItem[]> = {};
@@ -243,7 +248,7 @@ const FeatureMatrix: React.FC = () => {
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         {allCategories.map((cat) => {
           const items = groupedFeatures[cat.key] ?? [];
-          const enabledCount = items.filter((f) => !f.disabled).length;
+          const enabledCount = items.filter((f) => featuresLoaded ? features[f.key] === true : !f.disabled).length;
           return (
             <Col xs={24} sm={8} key={cat.key}>
               <Card

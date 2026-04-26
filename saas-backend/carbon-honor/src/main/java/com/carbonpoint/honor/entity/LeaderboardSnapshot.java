@@ -20,6 +20,9 @@ public class LeaderboardSnapshot {
     /** today / week / history / department */
     private String snapshotType;
 
+    /** 排行维度: daily / weekly / monthly / quarterly / yearly */
+    private String dimension = "daily";
+
     private LocalDate snapshotDate;
 
     /** JSON 数组 [{rank, userId, nickname, points}] */

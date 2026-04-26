@@ -43,6 +43,9 @@ import OperationLog from '@/pages/OperationLog';
 import WalkingManagement from '@/pages/walking/WalkingManagement';
 import PointExpiration from '@/pages/PointExpiration';
 import ProductConfig from '@/pages/ProductConfig';
+import QuizManagement from '@/pages/quiz/QuizManagement';
+import MallShelf from '@/pages/MallShelf';
+import MallReports from '@/pages/MallReports';
 
 import { useAuthStore } from '@/store/authStore';
 import { useBranding } from '@/components/BrandingProvider';
@@ -76,6 +79,9 @@ const ENTERPRISE_PERMISSION_MAP: Record<string, string | undefined> = {
   '/walking/step-config': 'enterprise:walking:config',
   '/walking/fun-equiv': 'enterprise:walking:config',
   '/point-expiration': 'enterprise:point:query',
+  '/quiz': 'enterprise:quiz:view',
+  '/mall/shelf': 'enterprise:mall:shelf',
+  '/mall/reports': 'enterprise:mall:report',
 };
 
 // Phase 2 fallback: static menu rendered when getTenantMenu() returns empty.
@@ -103,6 +109,15 @@ const EnterpriseMenuItems: MenuProps['items'] = [
   { key: '/products', icon: <ShopOutlined />, label: '产品管理' },
   { key: '/product-config', icon: <SettingOutlined />, label: '产品配置' },
   { key: '/orders', icon: <ShoppingOutlined />, label: '订单管理' },
+  {
+    key: 'mall-group',
+    icon: <ShopOutlined />,
+    label: '积分商城',
+    children: [
+      { key: '/mall/shelf', label: '商品上架' },
+      { key: '/mall/reports', label: '商城报表' },
+    ],
+  },
   { key: '/points', icon: <TrophyOutlined />, label: '积分运营' },
   { key: '/point-expiration', icon: <ClockCircleOutlined />, label: '积分过期配置' },
   { key: '/reports', icon: <BarChartOutlined />, label: '数据报表' },
@@ -111,6 +126,7 @@ const EnterpriseMenuItems: MenuProps['items'] = [
   { key: '/dict-management', icon: <BookOutlined />, label: '字典管理' },
   { key: '/branding', icon: <SkinOutlined />, label: '品牌配置' },
   { key: '/operation-log', icon: <FileTextOutlined />, label: '操作日志' },
+  { key: '/quiz', icon: <BookOutlined />, label: '答题管理' },
 ];
 
 // Map backend paths to frontend routes
@@ -410,7 +426,7 @@ const EnterpriseContent: React.FC = () => {
           theme="dark"
           mode="inline"
           selectedKeys={[location.pathname]}
-          defaultOpenKeys={dynamicMenu ? [] : ['stair-group', 'walking-group']}
+          defaultOpenKeys={dynamicMenu ? [] : ['stair-group', 'walking-group', 'mall-group']}
           items={customMenuItems}
           loading={menuLoading || productsLoading}
           style={{
@@ -558,6 +574,9 @@ const EnterpriseContent: React.FC = () => {
             <Route path="/walking" element={<PermissionGuard><WalkingManagement /></PermissionGuard>} />
             <Route path="/walking/step-config" element={<PermissionGuard><WalkingManagement /></PermissionGuard>} />
             <Route path="/walking/fun-equiv" element={<PermissionGuard><WalkingManagement /></PermissionGuard>} />
+            <Route path="/quiz" element={<PermissionGuard><QuizManagement /></PermissionGuard>} />
+            <Route path="/mall/shelf" element={<PermissionGuard><MallShelf /></PermissionGuard>} />
+            <Route path="/mall/reports" element={<PermissionGuard><MallReports /></PermissionGuard>} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </Content>

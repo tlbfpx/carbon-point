@@ -39,6 +39,12 @@ public class Tenant {
      */
     private String levelMode;
 
+    /**
+     * 积分兑换汇率：用于计算商品展示价格 displayPrice = priceCents × exchangeRate / 100。
+     * 默认值1.0。
+     */
+    private java.math.BigDecimal pointsExchangeRate;
+
     @TableLogic
     private Integer deleted;
 }

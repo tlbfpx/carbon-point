@@ -53,6 +53,7 @@ import {
 import { extractArray } from '@/utils';
 import { EXTENSION_GUIDANCE } from '@/constants/feature-menu-map';
 import RuleNodeConfigModal from '@/components/RuleNodeConfigModal';
+import VisualRuleChainEditor from '@/components/rule-chain/VisualRuleChainEditor';
 
 const CATEGORY_OPTIONS = [
   { value: 'stairs_climbing', label: '爬楼积分', color: 'blue' },
@@ -635,131 +636,19 @@ const ProductManagement: React.FC = () => {
         {/* Step 2: Assemble Rule Chain */}
         {wizardStep === 2 && (
           <div>
-            <Alert
-              type="info"
-              message="组装规则链"
-              description="规则链决定了积分计算的流程。可以调整执行顺序，或从可用节点中添加/移除节点。"
-              style={{ marginBottom: 16 }}
-              showIcon
+            <VisualRuleChainEditor
+              ruleChain={wizardData.ruleChain}
+              ruleChainConfigs={wizardData.ruleChainConfigs}
+              availableNodes={wizardRuleNodes.filter((n) => !wizardData.ruleChain.includes(n.name))}
+              onChange={(chain, configs) =>
+                setWizardData((prev) => ({
+                  ...prev,
+                  ruleChain: chain,
+                  ruleChainConfigs: configs,
+                }))
+              }
+              onNodeConfig={(nodeName, index) => openRuleNodeConfig(nodeName, index)}
             />
-            <div style={{ display: 'flex', gap: 16 }}>
-              {/* Current rule chain */}
-              <div style={{ flex: 1 }}>
-                <h4 style={{ marginBottom: 12 }}>当前规则链</h4>
-                {wizardData.ruleChain.length === 0 ? (
-                  <Empty description="规则链为空" image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                ) : (
-                  <div>
-                    {wizardData.ruleChain.map((nodeName, index) => {
-                      const hasConfig = !!wizardData.ruleChainConfigs[`${nodeName}-${index}`];
-                      return (
-                        <div
-                          key={`${nodeName}-${index}`}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            padding: '8px 12px',
-                            marginBottom: 4,
-                            background: hasConfig ? '#f6ffed' : '#fafafa',
-                            borderRadius: 6,
-                            border: hasConfig ? '1px solid #b7eb8f' : '1px solid rgba(0, 0, 0, 0.06)',
-                          }}
-                        >
-                          <HolderOutlined style={{ color: '#94A3B8', marginRight: 8, cursor: 'grab' }} />
-                          <Badge count={index + 1} style={{ backgroundColor: '#722ed1', marginRight: 8 }} />
-                          <Tag color="purple" style={{ flex: 1 }}>
-                            {RULE_NODE_LABELS[nodeName] || nodeName}
-                          </Tag>
-                          {hasConfig && <Tag color="green">已配置</Tag>}
-                          <Space size={2}>
-                            <Button
-                              type="text"
-                              size="small"
-                              icon={<SettingOutlined />}
-                              onClick={() => openRuleNodeConfig(nodeName, index)}
-                            >
-                              配置
-                            </Button>
-                            <Button
-                              type="text"
-                              size="small"
-                              icon={<ArrowUpOutlined />}
-                              disabled={index === 0}
-                              onClick={() => moveRuleChainItem(index, 'up')}
-                            />
-                            <Button
-                              type="text"
-                              size="small"
-                              icon={<ArrowDownOutlined />}
-                              disabled={index === wizardData.ruleChain.length - 1}
-                              onClick={() => moveRuleChainItem(index, 'down')}
-                            />
-                            <Button
-                              type="text"
-                              size="small"
-                              danger
-                              onClick={() => {
-                                setWizardData((prev) => {
-                                  const newChain = prev.ruleChain.filter((_, i) => i !== index);
-                                  const newConfigs = { ...prev.ruleChainConfigs };
-                                  delete newConfigs[`${nodeName}-${index}`];
-                                  return {
-                                    ...prev,
-                                    ruleChain: newChain,
-                                    ruleChainConfigs: newConfigs,
-                                  };
-                                });
-                              }}
-                            >
-                              移除
-                            </Button>
-                          </Space>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-
-              {/* Available rule nodes */}
-              <div style={{ flex: 1 }}>
-                <h4 style={{ marginBottom: 12 }}>可用规则节点</h4>
-                {wizardRuleNodes
-                  .filter((node) => !wizardData.ruleChain.includes(node.name))
-                  .map((node) => (
-                    <div
-                      key={node.name}
-                      style={{
-                        padding: '8px 12px',
-                        marginBottom: 4,
-                        background: '#fff',
-                        borderRadius: 6,
-                        border: '1px dashed #d9d9d9',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                      }}
-                    >
-                      <div>
-                        <Tag color="purple">{RULE_NODE_LABELS[node.name] || node.name}</Tag>
-                        <div style={{ color: '#94A3B8', fontSize: 12, marginTop: 2 }}>{node.description}</div>
-                      </div>
-                      <Button
-                        type="link"
-                        size="small"
-                        onClick={() => {
-                          setWizardData((prev) => ({
-                            ...prev,
-                            ruleChain: [...prev.ruleChain, node.name],
-                          }));
-                        }}
-                      >
-                        添加
-                      </Button>
-                    </div>
-                  ))}
-              </div>
-            </div>
             <Alert
               type="info"
               showIcon

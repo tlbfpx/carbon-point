@@ -41,4 +41,14 @@ public interface PackageProductFeatureMapper extends BaseMapper<PackageProductFe
             "</foreach>" +
             "</script>")
     int batchInsert(@Param("list") List<PackageProductFeatureEntity> list);
+
+    /**
+     * Select enabled feature codes for a package by joining with the features table.
+     * Returns PackageProductFeatureEntity entries with featureCode populated.
+     */
+    @Select("SELECT ppf.*, f.code AS feature_code " +
+            "FROM package_product_features ppf " +
+            "INNER JOIN features f ON ppf.feature_id = f.id " +
+            "WHERE ppf.package_id = #{packageId} AND ppf.is_enabled = 1")
+    List<PackageProductFeatureEntity> selectEnabledFeatureCodesByPackageId(@Param("packageId") Long packageId);
 }

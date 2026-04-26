@@ -8,11 +8,15 @@ import com.carbonpoint.common.tenant.TenantContext;
 import com.carbonpoint.mall.dto.ProductCreateDTO;
 import com.carbonpoint.mall.entity.Product;
 import com.carbonpoint.mall.mapper.MallProductMapper;
+import com.carbonpoint.system.entity.Tenant;
+import com.carbonpoint.system.mapper.TenantMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 
 @Slf4j
@@ -22,6 +26,7 @@ public class ProductService {
 
     private static final int MAX_PAGE_SIZE = 100;
     private final MallProductMapper productMapper;
+    private final TenantMapper tenantMapper;
 
     @Transactional
     public Product create(ProductCreateDTO dto) {
@@ -147,5 +152,36 @@ public class ProductService {
             throw new BusinessException(ErrorCode.MALL_PRODUCT_NOT_FOUND);
         }
         return product;
+    }
+
+    /**
+     * 根据租户的积分兑换汇率计算商品展示积分价格。
+     * pointsPrice = basePriceCents / exchangeRate
+     * 如果 exchangeRate 未设置或为0/负数，默认为1.0。
+     *
+     * @param basePriceCents 基准价格（分）
+     * @param tenantId       租户ID
+     * @return 展示积分价格
+     */
+    public int calculateDisplayPrice(int basePriceCents, Long tenantId) {
+        BigDecimal exchangeRate = getExchangeRate(tenantId);
+        return new BigDecimal(basePriceCents)
+                .divide(exchangeRate, 0, RoundingMode.HALF_UP)
+                .intValue();
+    }
+
+    /**
+     * 获取租户的积分兑换汇率，默认1.0。
+     */
+    private BigDecimal getExchangeRate(Long tenantId) {
+        if (tenantId == null) {
+            return BigDecimal.ONE;
+        }
+        Tenant tenant = tenantMapper.selectById(tenantId);
+        if (tenant != null && tenant.getPointsExchangeRate() != null
+                && tenant.getPointsExchangeRate().compareTo(BigDecimal.ZERO) > 0) {
+            return tenant.getPointsExchangeRate();
+        }
+        return BigDecimal.ONE;
     }
 }

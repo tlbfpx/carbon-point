@@ -1,138 +1,262 @@
-import React, { useEffect } from 'react';
-import { Form, InputNumber, Button, message, Spin } from 'antd';
+import React, { useState, useCallback, useMemo } from 'react';
+import { InputNumber, Button, Table, message, Popconfirm, Typography } from 'antd';
+import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getWalkingConfig, updateWalkingConfig, WalkingConfig } from '@/api/walking';
+import { fetchTierRules, saveTierRules, StepTier } from '@/api/walking';
 import { useBranding } from '@/components/BrandingProvider';
 import { GlassCard } from '@carbon-point/design-system';
+
+const { Text } = Typography;
+
+const DEFAULT_TIERS: StepTier[] = [
+  { minSteps: 0, maxSteps: 2000, points: 0 },
+  { minSteps: 2000, maxSteps: 3000, points: 5 },
+  { minSteps: 3000, maxSteps: 5000, points: 10 },
+  { minSteps: 5000, maxSteps: null, points: 15 },
+];
 
 const StepCalcConfig: React.FC = () => {
   const { primaryColor } = useBranding();
   const queryClient = useQueryClient();
-  const [form] = Form.useForm();
 
-  // Fetch walking config
-  const { data, isLoading } = useQuery({
-    queryKey: ['walking-config'],
-    queryFn: getWalkingConfig,
+  // Fetch tier rules
+  const { data: serverTiers, isLoading } = useQuery({
+    queryKey: ['walking-tier-rules'],
+    queryFn: fetchTierRules,
   });
 
-  // Populate form when data arrives
-  useEffect(() => {
-    if (data) {
-      // Convert integer coefficient to decimal for display
-      const displayData = {
-        ...data,
-        pointsCoefficient: (data.pointsCoefficient || 1) / 100,
-      };
-      form.setFieldsValue(displayData);
-    }
-  }, [data, form]);
+  // Local editing state
+  const [tiers, setTiers] = useState<StepTier[]>([]);
+  const [initialized, setInitialized] = useState(false);
 
+  // Sync server data to local state once
+  React.useEffect(() => {
+    if (serverTiers && !initialized) {
+      setTiers(serverTiers.length > 0 ? serverTiers : DEFAULT_TIERS);
+      setInitialized(true);
+    }
+  }, [serverTiers, initialized]);
+
+  // Save mutation
   const saveMutation = useMutation({
-    mutationFn: async (values: WalkingConfig) => {
-      return updateWalkingConfig(values);
+    mutationFn: async (tiersToSave: StepTier[]) => {
+      return saveTierRules(tiersToSave);
     },
     onSuccess: () => {
-      message.success('步数积分配置已保存');
-      queryClient.invalidateQueries({ queryKey: ['walking-config'] });
+      message.success('步数梯度配置已保存');
+      queryClient.invalidateQueries({ queryKey: ['walking-tier-rules'] });
     },
     onError: () => {
       message.error('保存失败，请重试');
     },
   });
 
+  // Validate tiers for gaps/overlaps
+  const validationErrors = useMemo(() => {
+    const errors: string[] = [];
+    for (let i = 0; i < tiers.length; i++) {
+      const tier = tiers[i];
+      if (tier.minSteps < 0) {
+        errors.push(`第 ${i + 1} 行: 最小步数不能为负`);
+      }
+      if (tier.maxSteps !== null && tier.maxSteps <= tier.minSteps) {
+        errors.push(`第 ${i + 1} 行: 最大步数必须大于最小步数`);
+      }
+      if (i > 0) {
+        const prev = tiers[i - 1];
+        if (prev.maxSteps === null) {
+          errors.push(`第 ${i} 行已设为无上限，不能在其后添加更多梯度`);
+        } else if (tier.minSteps !== prev.maxSteps) {
+          errors.push(`第 ${i + 1} 行: 最小步数(${tier.minSteps})应等于上一行最大步数(${prev.maxSteps})`);
+        }
+      } else if (tier.minSteps !== 0) {
+        errors.push(`第 1 行: 最小步数应从 0 开始`);
+      }
+    }
+    return errors;
+  }, [tiers]);
+
+  const handleAddTier = useCallback(() => {
+    setTiers((prev) => {
+      const last = prev[prev.length - 1];
+      const newMin = last?.maxSteps ?? 0;
+      return [
+        ...prev,
+        { minSteps: newMin, maxSteps: null, points: 0 },
+      ];
+    });
+  }, []);
+
+  const handleRemoveTier = useCallback((index: number) => {
+    setTiers((prev) => prev.filter((_, i) => i !== index));
+  }, []);
+
+  const handleFieldChange = useCallback(
+    (index: number, field: keyof StepTier, value: number | null) => {
+      setTiers((prev) => {
+        const next = [...prev];
+        next[index] = { ...next[index], [field]: value };
+        return next;
+      });
+    },
+    [],
+  );
+
+  const handleSave = () => {
+    if (validationErrors.length > 0) {
+      message.error(validationErrors[0]);
+      return;
+    }
+    saveMutation.mutate(tiers);
+  };
+
   if (isLoading) {
     return (
       <GlassCard hoverable style={{ padding: 40, textAlign: 'center' }}>
-        <Spin />
+        <Text style={{ color: 'rgba(255,255,255,0.45)' }}>加载中...</Text>
       </GlassCard>
     );
   }
 
+  const columns = [
+    {
+      title: '梯度',
+      dataIndex: 'index',
+      width: 60,
+      render: (_: unknown, __: unknown, index: number) => (
+        <Text style={{ color: 'rgba(255,255,255,0.65)' }}>{index + 1}</Text>
+      ),
+    },
+    {
+      title: '最小步数',
+      dataIndex: 'minSteps',
+      width: 160,
+      render: (_: unknown, __: StepTier, index: number) => (
+        <InputNumber
+          min={0}
+          value={tiers[index]?.minSteps}
+          onChange={(v) => handleFieldChange(index, 'minSteps', v ?? 0)}
+          style={{
+            width: '100%',
+            borderRadius: 12,
+          }}
+          placeholder="例如: 0"
+        />
+      ),
+    },
+    {
+      title: '最大步数',
+      dataIndex: 'maxSteps',
+      width: 180,
+      render: (_: unknown, __: StepTier, index: number) => (
+        <InputNumber
+          min={0}
+          value={tiers[index]?.maxSteps}
+          onChange={(v) => handleFieldChange(index, 'maxSteps', v)}
+          placeholder="留空=无上限"
+          style={{
+            width: '100%',
+            borderRadius: 12,
+          }}
+        />
+      ),
+    },
+    {
+      title: '获得积分',
+      dataIndex: 'points',
+      width: 140,
+      render: (_: unknown, __: StepTier, index: number) => (
+        <InputNumber
+          min={0}
+          value={tiers[index]?.points}
+          onChange={(v) => handleFieldChange(index, 'points', v ?? 0)}
+          style={{
+            width: '100%',
+            borderRadius: 12,
+          }}
+          placeholder="例如: 5"
+        />
+      ),
+    },
+    {
+      title: '操作',
+      width: 80,
+      render: (_: unknown, __: unknown, index: number) => (
+        <Popconfirm
+          title="确认删除该梯度？"
+          onConfirm={() => handleRemoveTier(index)}
+          okText="确认"
+          cancelText="取消"
+        >
+          <Button type="text" danger icon={<DeleteOutlined />} style={{ borderRadius: 8 }} />
+        </Popconfirm>
+      ),
+    },
+  ];
+
   return (
     <GlassCard hoverable style={{ padding: 24 }}>
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={(values) => {
-          // Convert pointsCoefficient to integer (e.g., 0.01 -> 1)
-          const formattedValues = {
-            ...values,
-            pointsCoefficient: Math.round((values.pointsCoefficient || 0.01) * 100),
-          };
-          saveMutation.mutate(formattedValues as WalkingConfig);
+      <p
+        style={{
+          color: 'rgba(255,255,255,0.65)',
+          fontSize: 14,
+          fontFamily: 'var(--font-body)',
+          marginBottom: 24,
         }}
-        initialValues={{ stepsThreshold: 1000, pointsCoefficient: 0.01, dailyCap: 50 }}
       >
-        <Form.Item
-          name="stepsThreshold"
-          label="步数阈值"
-          rules={[{ required: true, message: '请输入步数阈值' }]}
-          extra="达到该步数后可领取积分"
-        >
-          <InputNumber
-            min={1}
-            style={{ width: '100%', borderRadius: 12, border: '1px solid rgba(255,255,255,0.1)' }}
-            placeholder="例如: 1000"
-          />
-        </Form.Item>
+        配置步数梯度积分规则，不同步数区间获得不同积分。最大步数留空表示无上限。
+      </p>
 
-        <Form.Item
-          name="pointsCoefficient"
-          label="积分系数"
-          rules={[{ required: true, message: '请输入积分系数' }]}
-          extra="每步可获得的积分数（例如 0.01 表示每步 0.01 积分）"
-          normalize={(value) => {
-            // Convert from integer (backend) to decimal (display)
-            if (value === undefined || value === null) return 0.01;
-            if (typeof value === 'number' && value >= 1) {
-              return value / 100;
-            }
-            return value;
+      <Table
+        dataSource={tiers}
+        columns={columns}
+        rowKey={(_, index) => String(index)}
+        pagination={false}
+        size="middle"
+        style={{ marginBottom: 16 }}
+      />
+
+      {validationErrors.length > 0 && (
+        <div style={{ marginBottom: 12 }}>
+          {validationErrors.map((err, i) => (
+            <Text key={i} type="danger" style={{ display: 'block', fontSize: 12 }}>
+              {err}
+            </Text>
+          ))}
+        </div>
+      )}
+
+      <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
+        <Button
+          type="dashed"
+          onClick={handleAddTier}
+          icon={<PlusOutlined />}
+          style={{
+            borderRadius: 20,
+            border: '1px dashed rgba(255,255,255,0.2)',
+            color: 'rgba(255,255,255,0.65)',
+            fontFamily: 'var(--font-body)',
           }}
         >
-          <InputNumber
-            min={0.001}
-            max={1}
-            step={0.001}
-            precision={3}
-            style={{ width: '100%', borderRadius: 12, border: '1px solid rgba(255,255,255,0.1)' }}
-            placeholder="例如: 0.01"
-          />
-        </Form.Item>
-
-        <Form.Item
-          name="dailyCap"
-          label="每日积分上限"
-          rules={[{ required: true, message: '请输入每日积分上限' }]}
-          extra="走路积分每日领取上限"
+          添加梯度
+        </Button>
+        <Button
+          type="primary"
+          onClick={handleSave}
+          loading={saveMutation.isPending}
+          style={{
+            borderRadius: 20,
+            background: `linear-gradient(135deg, ${primaryColor} 0%, ${primaryColor}dd 100%)`,
+            border: 'none',
+            fontFamily: 'var(--font-body)',
+            fontWeight: 500,
+            padding: '4px 32px',
+            height: 40,
+          }}
         >
-          <InputNumber
-            min={1}
-            style={{ width: '100%', borderRadius: 12, border: '1px solid rgba(255,255,255,0.1)' }}
-            placeholder="例如: 50"
-          />
-        </Form.Item>
-
-        <Form.Item style={{ marginBottom: 0, marginTop: 16 }}>
-          <Button
-            type="primary"
-            htmlType="submit"
-            loading={saveMutation.isPending}
-            style={{
-              borderRadius: 20,
-              background: `linear-gradient(135deg, ${primaryColor} 0%, ${primaryColor}dd 100%)`,
-              border: 'none',
-              fontFamily: 'var(--font-body)',
-              fontWeight: 500,
-              padding: '4px 32px',
-              height: 40,
-            }}
-          >
-            保存配置
-          </Button>
-        </Form.Item>
-      </Form>
+          保存配置
+        </Button>
+      </div>
     </GlassCard>
   );
 };
