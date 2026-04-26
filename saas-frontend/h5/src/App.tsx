@@ -17,6 +17,7 @@ import NotificationPage from '@/pages/NotificationPage';
 import WalkingPage from '@/pages/WalkingPage';
 import WalkingHistoryPage from '@/pages/WalkingHistoryPage';
 import PointExpirationPage from '@/pages/PointExpirationPage';
+import QuizPage from '@/pages/QuizPage';
 import { useAuthStore } from '@/store/authStore';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { routeLogger } from '@/utils/logger';
@@ -151,6 +152,14 @@ const App: React.FC = () => {
             element={
               <ProtectedRoute>
                 <WalkingHistoryPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/quiz"
+            element={
+              <ProtectedRoute>
+                <QuizPage />
               </ProtectedRoute>
             }
           />
