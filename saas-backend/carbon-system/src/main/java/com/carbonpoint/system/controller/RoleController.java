@@ -48,8 +48,8 @@ public class RoleController {
 
     @PutMapping("/{id}/permissions")
     @RequirePerm("role:assign")
-    public Result<Void> assignPermissions(@PathVariable Long id, @RequestBody List<String> permissionCodes) {
-        roleService.assignPermissions(id, permissionCodes);
+    public Result<Void> assignPermissions(@PathVariable Long id, @RequestBody RoleAssignPermissionsReq req) {
+        roleService.assignPermissions(id, req.getPermissions());
         return Result.success();
     }
 

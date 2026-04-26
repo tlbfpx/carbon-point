@@ -116,6 +116,16 @@ const SystemRoles: React.FC = () => {
     setModalOpen(true);
   };
 
+  // Collect all valid keys from the permission tree
+  const collectTreeKeys = (nodes: PermissionNode[]): string[] => {
+    const keys: string[] = [];
+    for (const node of nodes) {
+      if (node.key) keys.push(node.key);
+      if (node.children) keys.push(...collectTreeKeys(node.children));
+    }
+    return keys;
+  };
+
   const openPermModal = async (record: PlatformRole) => {
     setSelectedRole(record);
     try {
@@ -183,7 +193,19 @@ const SystemRoles: React.FC = () => {
   ];
 
   const roles = [...extractArray<PlatformRole>(rolesData)].reverse();
-  const permissionTree = permissionsData || [];
+
+  // Handle both direct array and wrapped data formats
+  const permissionTree = Array.isArray(permissionsData)
+    ? permissionsData
+    : (permissionsData?.data || permissionsData || []);
+
+  // Filter checkedKeys to only include keys that exist in the tree
+  const allTreeKeys = collectTreeKeys(permissionTree);
+  const validCheckedKeys = checkedKeys.filter((key) => key === '*' || allTreeKeys.includes(key as string));
+  // For wildcard '*', expand all tree keys
+  const displayCheckedKeys = checkedKeys.includes('*')
+    ? allTreeKeys
+    : validCheckedKeys;
 
   return (
     <div>
@@ -277,7 +299,7 @@ const SystemRoles: React.FC = () => {
         <Tree
           checkable
           treeData={permissionTree}
-          checkedKeys={checkedKeys}
+          checkedKeys={displayCheckedKeys}
           onCheck={(keys) => setCheckedKeys(keys as React.Key[])}
           fieldNames={{ title: 'label', key: 'key', children: 'children' }}
         />

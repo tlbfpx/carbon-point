@@ -37,4 +37,8 @@ public interface UserRoleMapper extends BaseMapper<UserRole> {
     @Select("<script>SELECT user_id, role_id FROM user_roles WHERE user_id IN " +
             "<foreach item='id' collection='userIds' open='(' separator=',' close=')'>#{id}</foreach></script>")
     List<UserRole> selectByUserIds(@Param("userIds") List<Long> userIds);
+
+    @Delete("<script>DELETE FROM user_roles WHERE role_id = #{roleId} AND user_id IN " +
+            "<foreach item='id' collection='userIds' open='(' separator=',' close=')'>#{id}</foreach></script>")
+    void deleteByRoleIdAndUserIds(@Param("roleId") Long roleId, @Param("userIds") List<Long> userIds);
 }

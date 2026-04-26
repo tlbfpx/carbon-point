@@ -1032,8 +1032,44 @@ const BlockLibrary: React.FC = () => {
               </Select>
             </Form.Item>
           </Space>
-          <Form.Item name="defaultValue" label="默认值">
-            <Input placeholder="如: true、100、{}" style={{ fontFamily: 'monospace' }} />
+          <Form.Item noStyle shouldUpdate={(prev, curr) => prev.valueType !== curr.valueType}>
+            {({ getFieldValue, setFieldsValue }) => {
+              const valueType = getFieldValue('valueType');
+              const currentValue = getFieldValue('defaultValue');
+
+              if (valueType === 'boolean') {
+                return (
+                  <Form.Item name="defaultValue" label="默认值" valuePropName="checked">
+                    <Select placeholder="选择默认值">
+                      <Select.Option value="true">启用 / true</Select.Option>
+                      <Select.Option value="false">禁用 / false</Select.Option>
+                    </Select>
+                  </Form.Item>
+                );
+              }
+
+              if (valueType === 'number') {
+                return (
+                  <Form.Item name="defaultValue" label="默认值">
+                    <InputNumber style={{ width: '100%' }} placeholder="请输入数字" />
+                  </Form.Item>
+                );
+              }
+
+              if (valueType === 'json') {
+                return (
+                  <Form.Item name="defaultValue" label="默认值">
+                    <Input.TextArea rows={3} placeholder='请输入JSON配置，如: {"key": "value"}' style={{ fontFamily: 'monospace' }} />
+                  </Form.Item>
+                );
+              }
+
+              return (
+                <Form.Item name="defaultValue" label="默认值">
+                  <Input placeholder="请输入文本" />
+                </Form.Item>
+              );
+            }}
           </Form.Item>
           <Form.Item name="group" label="分组">
             <Input placeholder="如: point_rule、display（选填）" />

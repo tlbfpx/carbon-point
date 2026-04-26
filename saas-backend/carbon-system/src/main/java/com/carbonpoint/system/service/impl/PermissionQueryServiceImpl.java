@@ -24,6 +24,10 @@ public class PermissionQueryServiceImpl implements PermissionQueryService {
     public List<PermissionTreeRes> getPermissionTree() {
         List<Permission> all = permissionMapper.selectList(null);
 
+        if (all == null || all.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         // Group by module (DDL column: module)
         Map<String, List<Permission>> byModule = all.stream()
                 .collect(Collectors.groupingBy(Permission::getModule));
@@ -35,24 +39,29 @@ public class PermissionQueryServiceImpl implements PermissionQueryService {
                     List<Permission> perms = entry.getValue();
                     Permission first = perms.get(0);
 
-                    // Module-level node
-                    PermissionTreeRes moduleNode = PermissionTreeRes.builder()
-                            .code(moduleCode)
-                            .name(first.getDescription())
-                            .type("module")
-                            .sortOrder(first.getSortOrder())
-                            .children(new ArrayList<>())
-                            .build();
+                    // Module-level node - explicitly set both code/name and key/label
+                    PermissionTreeRes moduleNode = new PermissionTreeRes();
+                    moduleNode.setCode(moduleCode);
+                    moduleNode.setName(first.getDescription());
+                    moduleNode.setKey(moduleCode);
+                    moduleNode.setLabel(first.getDescription());
+                    moduleNode.setType("module");
+                    moduleNode.setSortOrder(first.getSortOrder());
+                    moduleNode.setChildren(new ArrayList<>());
 
                     List<PermissionTreeRes> children = perms.stream()
                             .sorted(Comparator.comparing(Permission::getSortOrder))
-                            .map(p -> PermissionTreeRes.builder()
-                                    .code(p.getCode())
-                                    .name(p.getDescription())
-                                    .type(p.getOperation())
-                                    .sortOrder(p.getSortOrder())
-                                    .children(Collections.emptyList())
-                                    .build())
+                            .map(p -> {
+                                PermissionTreeRes child = new PermissionTreeRes();
+                                child.setCode(p.getCode());
+                                child.setName(p.getDescription());
+                                child.setKey(p.getCode());
+                                child.setLabel(p.getDescription());
+                                child.setType(p.getOperation());
+                                child.setSortOrder(p.getSortOrder());
+                                child.setChildren(Collections.emptyList());
+                                return child;
+                            })
                             .toList();
 
                     moduleNode.setChildren(children);

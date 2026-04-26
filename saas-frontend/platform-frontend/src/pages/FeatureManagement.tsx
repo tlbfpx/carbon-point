@@ -277,8 +277,43 @@ const FeatureManagement: React.FC = () => {
               </Select>
             </Form.Item>
           </Space>
-          <Form.Item name="defaultValue" label="默认值">
-            <Input placeholder="如: true / 100 / {&quot;key&quot;: &quot;value&quot;}" />
+          <Form.Item noStyle shouldUpdate={(prev, curr) => prev.valueType !== curr.valueType}>
+            {({ getFieldValue, setFieldsValue }) => {
+              const valueType = getFieldValue('valueType');
+
+              if (valueType === 'boolean') {
+                return (
+                  <Form.Item name="defaultValue" label="默认值">
+                    <Select placeholder="请选择">
+                      <Select.Option value="true">开启 (true)</Select.Option>
+                      <Select.Option value="false">关闭 (false)</Select.Option>
+                    </Select>
+                  </Form.Item>
+                );
+              }
+
+              if (valueType === 'number') {
+                return (
+                  <Form.Item name="defaultValue" label="默认值">
+                    <InputNumber style={{ width: '100%' }} placeholder="请输入数字" />
+                  </Form.Item>
+                );
+              }
+
+              if (valueType === 'json') {
+                return (
+                  <Form.Item name="defaultValue" label="默认值">
+                    <Input.TextArea rows={4} placeholder='请输入JSON配置，如: {"key": "value"}' />
+                  </Form.Item>
+                );
+              }
+
+              return (
+                <Form.Item name="defaultValue" label="默认值">
+                  <Input placeholder="请输入文本" />
+                </Form.Item>
+              );
+            }}
           </Form.Item>
           <Form.Item name="group" label="分组">
             <Input placeholder="如: checkin、exchange（选填）" />

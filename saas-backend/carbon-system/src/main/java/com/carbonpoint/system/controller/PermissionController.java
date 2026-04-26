@@ -30,3 +30,20 @@ public class PermissionController {
         return Result.success(permissionQueryService.getMyPermissions(currentUser.getUserId()));
     }
 }
+
+/**
+ * System permissions controller for enterprise admin.
+ * Provides permission tree data for role management.
+ */
+@RestController
+@RequestMapping("/api/system/permissions")
+class SystemPermissionController {
+
+    @Autowired
+    private PermissionQueryService permissionQueryService;
+
+    @GetMapping
+    public Result<List<PermissionTreeRes>> getPermissions() {
+        return Result.success(permissionQueryService.getPermissionTree());
+    }
+}

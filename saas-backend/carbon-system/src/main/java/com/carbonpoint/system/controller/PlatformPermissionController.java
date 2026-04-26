@@ -3,11 +3,15 @@ package com.carbonpoint.system.controller;
 import com.carbonpoint.common.result.ErrorCode;
 import com.carbonpoint.common.result.Result;
 import com.carbonpoint.common.security.PlatformAdminContext;
+import com.carbonpoint.system.dto.res.PermissionTreeRes;
 import com.carbonpoint.system.security.PlatformPermissionService;
+import com.carbonpoint.system.service.PermissionQueryService;
 import lombok.Data;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Platform admin permissions controller.
@@ -19,9 +23,11 @@ import java.util.List;
 public class PlatformPermissionController {
 
     private final PlatformPermissionService permissionService;
+    private final PermissionQueryService permissionQueryService;
 
-    public PlatformPermissionController(PlatformPermissionService permissionService) {
+    public PlatformPermissionController(PlatformPermissionService permissionService, PermissionQueryService permissionQueryService) {
         this.permissionService = permissionService;
+        this.permissionQueryService = permissionQueryService;
     }
 
     @Data
@@ -34,6 +40,35 @@ public class PlatformPermissionController {
             this.code = code;
             this.name = name;
             this.description = description;
+        }
+    }
+
+    /**
+     * Get permission tree for platform admin (only platform:* permissions).
+     */
+    @GetMapping("/tree")
+    public Result<List<PermissionTreeRes>> getPermissionTree() {
+        try {
+            List<PermissionTreeRes> allPermissions = permissionQueryService.getPermissionTree();
+            // Filter to only platform permissions
+            List<PermissionTreeRes> platformPermissions = allPermissions.stream()
+                    .filter(node -> node.getKey() != null && node.getKey().startsWith("platform:"))
+                    .collect(Collectors.toList());
+
+            // Also filter children
+            for (PermissionTreeRes node : platformPermissions) {
+                if (node.getChildren() != null) {
+                    List<PermissionTreeRes> filteredChildren = node.getChildren().stream()
+                            .filter(child -> child.getKey() != null && child.getKey().startsWith("platform:"))
+                            .collect(Collectors.toList());
+                    node.setChildren(filteredChildren);
+                }
+            }
+
+            return Result.success(platformPermissions);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error("SYSTEM001", "构建权限树失败: " + e.getMessage());
         }
     }
 
@@ -61,19 +96,21 @@ public class PlatformPermissionController {
         if (admin == null) {
             return Result.error(ErrorCode.UNAUTHORIZED.getCode(), "Unauthorized");
         }
-        List<PermissionInfo> allPermissions = List.of(
-            new PermissionInfo("platform:dashboard:view", "查看平台看板", "平台看板访问权限"),
-            new PermissionInfo("platform:enterprise:list", "查看企业列表", "查看所有企业信息"),
-            new PermissionInfo("platform:enterprise:manage", "管理企业", "创建、编辑、停用企业"),
-            new PermissionInfo("platform:system:view", "查看系统管理", "访问系统管理模块"),
-            new PermissionInfo("platform:system:manage", "管理系统管理", "管理系统配置和参数"),
-            new PermissionInfo("platform:config:view", "查看平台配置", "查看平台配置信息"),
-            new PermissionInfo("platform:config:manage", "管理平台配置", "修改平台配置"),
-            new PermissionInfo("platform:admin:list", "查看管理员列表", "查看平台管理员"),
-            new PermissionInfo("platform:admin:manage", "管理管理员", "创建、编辑、禁用管理员"),
-            new PermissionInfo("platform:package:view", "查看套餐列表", "查看权限套餐"),
-            new PermissionInfo("platform:package:manage", "管理套餐", "创建、编辑、删除套餐")
-        );
+
+        // Get all permissions from database and filter platform ones
+        List<PermissionTreeRes> tree = permissionQueryService.getPermissionTree();
+        List<PermissionInfo> allPermissions = new ArrayList<>();
+
+        for (PermissionTreeRes module : tree) {
+            if (module.getChildren() != null) {
+                for (PermissionTreeRes perm : module.getChildren()) {
+                    if (perm.getCode() != null && perm.getCode().startsWith("platform:")) {
+                        allPermissions.add(new PermissionInfo(perm.getCode(), perm.getName(), perm.getName()));
+                    }
+                }
+            }
+        }
+
         return Result.success(allPermissions);
     }
 }

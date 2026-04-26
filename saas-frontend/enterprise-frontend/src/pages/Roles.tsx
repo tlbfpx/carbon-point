@@ -209,7 +209,15 @@ const Roles: React.FC = () => {
     });
   };
 
-  const permTree = buildTree(permsData?.data || []);
+  // Debug: log the permissions data
+  console.log('permsData:', permsData);
+  console.log('availablePermsData:', availablePermsData);
+
+  // Handle both direct array and wrapped data formats
+  const rawPerms = Array.isArray(permsData) ? permsData : (permsData?.data || permsData || []);
+  console.log('rawPerms:', rawPerms);
+
+  const permTree = buildTree(Array.isArray(rawPerms) ? rawPerms : []);
 
   const getModalTitle = () => {
     if (modalMode === 'view') return `查看权限 — ${editingRole?.name}`;
@@ -398,12 +406,27 @@ const Roles: React.FC = () => {
   ];
 
   const renderPermTree = () => {
+    console.log('Rendering perm tree - groupedPermTree:', groupedPermTree);
+    console.log('Rendering perm tree - selectedPerms:', selectedPerms);
+
     if (rolePermsLoading && modalMode !== 'create') {
       return <Spin style={{ display: 'block', margin: '24px auto' }} />;
     }
+
+    // Simple debug: show raw data
     if (groupedPermTree.length === 0) {
-      return <p style={{ color: colors.textMuted, fontFamily: 'Noto Sans SC, sans-serif' }}>加载中...</p>;
+      return (
+        <div>
+          <p style={{ color: colors.textMuted, fontFamily: 'Noto Sans SC, sans-serif' }}>
+            暂无权限数据
+          </p>
+          <p style={{ color: colors.textMuted, fontSize: '12px' }}>
+            调试信息: permsData = {JSON.stringify(permsData)}
+          </p>
+        </div>
+      );
     }
+
     return (
       <div style={{ maxHeight: 400, overflowY: 'auto', paddingRight: 8 }}>
         <Tree
@@ -412,6 +435,11 @@ const Roles: React.FC = () => {
           onCheck={isReadOnly ? undefined : handlePermChange}
           treeData={groupedPermTree}
           defaultExpandAll
+          fieldNames={{
+            title: 'label',
+            key: 'key',
+            children: 'children'
+          }}
           style={{
             fontFamily: 'Noto Sans SC, sans-serif',
           }}

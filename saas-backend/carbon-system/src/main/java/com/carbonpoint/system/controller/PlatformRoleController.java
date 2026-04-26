@@ -2,6 +2,7 @@ package com.carbonpoint.system.controller;
 
 import com.carbonpoint.common.result.ErrorCode;
 import com.carbonpoint.common.result.Result;
+import com.carbonpoint.system.dto.req.PlatformRoleUpdatePermissionsReq;
 import com.carbonpoint.system.entity.PlatformRoleEntity;
 import com.carbonpoint.system.service.PlatformRoleService;
 import lombok.RequiredArgsConstructor;
@@ -52,8 +53,8 @@ public class PlatformRoleController {
     }
 
     @PutMapping("/{id}/permissions")
-    public Result<Void> updatePermissions(@PathVariable Long id, @RequestBody List<String> permissionCodes) {
-        roleService.updatePermissions(id, permissionCodes);
+    public Result<Void> updatePermissions(@PathVariable Long id, @RequestBody PlatformRoleUpdatePermissionsReq req) {
+        roleService.updatePermissions(id, req.getPermissionCodes());
         return Result.success();
     }
 }

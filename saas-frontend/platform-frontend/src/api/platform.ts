@@ -235,7 +235,7 @@ export const updatePackagePermissions = async (id: string, permissionCodes: stri
 };
 
 export const getPlatformPermissions = async () => {
-  const res = await platformApiClient.get('/permissions/all');
+  const res = await platformApiClient.get('/permissions/tree');
   return res.data;
 };
 

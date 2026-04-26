@@ -246,7 +246,23 @@ public class PlatformTenantServiceImpl implements PlatformTenantService {
         Role superAdminRole = tenantRoles.stream()
                 .filter(r -> "super_admin".equals(r.getRoleType()))
                 .findFirst()
-                .orElseThrow(() -> new BusinessException(ErrorCode.ROLE_NOT_FOUND));
+                .orElse(null);
+
+        // If super_admin role doesn't exist, create it
+        if (superAdminRole == null) {
+            log.warn("Super admin role not found for tenant {}, creating it...", tenantId);
+            if (tenant.getPackageId() == null) {
+                throw new BusinessException(ErrorCode.PACKAGE_NOT_FOUND, "企业未绑定套餐，无法创建超管角色");
+            }
+            // Initialize super_admin role
+            roleService.initSuperAdminRole(tenantId, tenant.getPackageId(), null);
+            // Re-query to get the created role
+            tenantRoles = roleMapper.selectByTenantIdForPlatform(tenantId);
+            superAdminRole = tenantRoles.stream()
+                    .filter(r -> "super_admin".equals(r.getRoleType()))
+                    .findFirst()
+                    .orElseThrow(() -> new BusinessException(ErrorCode.ROLE_NOT_FOUND));
+        }
 
         // Check if already assigned
         List<Long> existingRoleIds = userRoleMapper.selectRoleIdsByUserId(userId);
@@ -254,12 +270,30 @@ public class PlatformTenantServiceImpl implements PlatformTenantService {
             return; // Already super_admin
         }
 
-        // Assign super_admin role
-        UserRole userRole = new UserRole();
-        userRole.setUserId(userId);
-        userRole.setRoleId(superAdminRole.getId());
-        userRole.setTenantId(tenantId);
-        userRoleMapper.batchInsert(List.of(userRole));
+        // First, remove super_admin role from all other users in this tenant
+        // Use MyBatis-Plus LambdaQueryWrapper for safe deletion (handles logic delete)
+        LambdaQueryWrapper<UserRole> deleteWrapper = new LambdaQueryWrapper<>();
+        deleteWrapper.eq(UserRole::getRoleId, superAdminRole.getId());
+        userRoleMapper.delete(deleteWrapper);
+
+        // Assign super_admin role to the new user
+        // Check if the user-role relation already exists (but logically deleted)
+        LambdaQueryWrapper<UserRole> checkWrapper = new LambdaQueryWrapper<>();
+        checkWrapper.eq(UserRole::getUserId, userId)
+                   .eq(UserRole::getRoleId, superAdminRole.getId());
+        UserRole existing = userRoleMapper.selectOne(checkWrapper);
+
+        if (existing != null) {
+            // If existed but deleted, restore it
+            existing.setDeleted(0);
+            userRoleMapper.updateById(existing);
+        } else {
+            // Create new
+            UserRole userRole = new UserRole();
+            userRole.setUserId(userId);
+            userRole.setRoleId(superAdminRole.getId());
+            userRoleMapper.insert(userRole);
+        }
 
         log.info("Super admin assigned: tenantId={}, userId={}, roleId={}", tenantId, userId, superAdminRole.getId());
     }

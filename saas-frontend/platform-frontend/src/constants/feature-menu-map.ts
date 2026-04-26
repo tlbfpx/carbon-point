@@ -5,17 +5,14 @@
  */
 export const FEATURE_MENU_MAP: Record<string, string[]> = {
   // Stair climbing product features
-  time_slot: ['爬楼积分管理', '时段规则配置'],
-  special_date: ['爬楼积分管理', '节假日翻倍配置'],
-  weekly_gift: ['爬楼积分管理', '周三活动配置'],
-  consecutive_reward: ['爬楼积分管理', '连续打卡奖励配置'],
-  points_exchange: ['积分商城'],
-  daily_cap: ['爬楼积分管理', '每日上限配置'],
-  holiday_bonus: ['爬楼积分管理', '节假日加成配置'],
+  'checkin.stairs': ['爬楼打卡'],
+  'points.exchange': ['积分商城'],
+  'mall.virtual': ['虚拟商品'],
+  'honor.badge': ['徽章体系'],
+  'honor.leaderboard': ['排行榜'],
 
   // Walking product features
-  step_calc_config: ['走路积分管理', '步数换算配置'],
-  fun_equivalence: ['走路积分管理', '趣味等价物配置'],
+  'checkin.walking': ['走路打卡'],
 };
 
 /**
@@ -30,14 +27,12 @@ export const EXTENSION_GUIDANCE = {
  * Feature type display names in Chinese.
  */
 export const FEATURE_TYPE_LABELS: Record<string, string> = {
-  consecutive_reward: '连续打卡奖励',
-  special_date: '特殊日期',
-  fun_equivalence: '趣味等价物',
-  points_exchange: '积分兑换',
-  time_slot: '时段规则',
-  daily_cap: '每日上限',
-  holiday_bonus: '节假日加成',
-  step_calc_config: '步数换算配置',
+  'checkin.stairs': '爬楼梯打卡',
+  'checkin.walking': '步行打卡',
+  'points.exchange': '积分兑换',
+  'mall.virtual': '虚拟商品兑换',
+  'honor.badge': '徽章体系',
+  'honor.leaderboard': '排行榜',
 };
 
 /**

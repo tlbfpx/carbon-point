@@ -16,6 +16,10 @@ import {
   Popconfirm,
   Empty,
   Spin,
+  Card,
+  Row,
+  Col,
+  Divider,
 } from 'antd';
 import { ArrowLeftOutlined, PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -53,6 +57,146 @@ const RULE_TYPE_OPTIONS = [
   { value: 'daily_cap', label: '每日上限' },
   { value: 'consecutive_reward', label: '连续奖励' },
 ];
+
+// 规则类型配置
+const RULE_CONFIG_FIELDS: Record<string, { label: string; type: 'number' | 'text' | 'time' | 'date'; key: string; placeholder?: string; required?: boolean }[]> = {
+  time_slot: [
+    { label: '开始时间', type: 'time', key: 'start_time', required: true },
+    { label: '结束时间', type: 'time', key: 'end_time', required: true },
+    { label: '基础积分', type: 'number', key: 'base_points', placeholder: '如: 10', required: true },
+    { label: '倍率', type: 'number', key: 'multiplier', placeholder: '如: 1.5', required: true },
+  ],
+  random_base: [
+    { label: '最小积分', type: 'number', key: 'min_points', placeholder: '如: 5', required: true },
+    { label: '最大积分', type: 'number', key: 'max_points', placeholder: '如: 20', required: true },
+  ],
+  special_date: [
+    { label: '日期', type: 'date', key: 'date', required: true },
+    { label: '倍率', type: 'number', key: 'multiplier', placeholder: '如: 2.0', required: true },
+    { label: '描述', type: 'text', key: 'description', placeholder: '如: 国庆节双倍积分' },
+  ],
+  level_coefficient: [
+    { label: '等级', type: 'number', key: 'level', placeholder: '如: 1', required: true },
+    { label: '系数', type: 'number', key: 'coefficient', placeholder: '如: 1.1', required: true },
+  ],
+  daily_cap: [
+    { label: '每日上限积分', type: 'number', key: 'cap', placeholder: '如: 500', required: true },
+  ],
+  consecutive_reward: [
+    { label: '连续天数', type: 'number', key: 'days', placeholder: '如: 7', required: true },
+    { label: '奖励积分', type: 'number', key: 'bonus_points', placeholder: '如: 50', required: true },
+    { label: '是否循环', type: 'number', key: 'is_cyclic', placeholder: '1=循环, 0=不循环' },
+  ],
+};
+
+// 配置值输入组件
+const ConfigValueInput: React.FC<{
+  valueType?: string;
+  value?: string;
+  onChange?: (value: string) => void;
+  placeholder?: string;
+}> = ({ valueType = 'string', value, onChange, placeholder }) => {
+  switch (valueType) {
+    case 'boolean':
+      return (
+        <Switch
+          checked={value === 'true'}
+          onChange={(checked) => onChange?.(checked ? 'true' : 'false')}
+        />
+      );
+    case 'number':
+      return (
+        <InputNumber
+          style={{ width: '100%' }}
+          value={value ? Number(value) : undefined}
+          onChange={(val) => onChange?.(val?.toString() ?? '')}
+          placeholder={placeholder}
+        />
+      );
+    case 'json':
+      return (
+        <Input.TextArea
+          rows={3}
+          value={value}
+          onChange={(e) => onChange?.(e.target.value)}
+          placeholder={placeholder || '配置内容'}
+        />
+      );
+    case 'string':
+    default:
+      return (
+        <Input
+          value={value}
+          onChange={(e) => onChange?.(e.target.value)}
+          placeholder={placeholder || '配置值'}
+        />
+      );
+  }
+};
+
+// 规则配置表单组件
+const RuleConfigForm: React.FC<{
+  ruleType: string;
+  config?: string;
+  onChange: (config: string) => void;
+}> = ({ ruleType, config, onChange }) => {
+  const [form] = Form.useForm();
+
+  useEffect(() => {
+    if (config) {
+      try {
+        const parsed = JSON.parse(config);
+        form.setFieldsValue(parsed);
+      } catch {
+        form.resetFields();
+      }
+    } else {
+      form.resetFields();
+    }
+  }, [config, form]);
+
+  const handleValuesChange = (_: any, allValues: any) => {
+    onChange(JSON.stringify(allValues, null, 2));
+  };
+
+  const fields = RULE_CONFIG_FIELDS[ruleType] || [];
+
+  if (fields.length === 0) {
+    return (
+      <Form form={form} layout="vertical" onValuesChange={handleValuesChange}>
+        <Form.Item label="配置" name="config">
+          <Input.TextArea rows={6} placeholder="配置内容" />
+        </Form.Item>
+      </Form>
+    );
+  }
+
+  return (
+    <Form form={form} layout="vertical" onValuesChange={handleValuesChange}>
+      <Row gutter={16}>
+        {fields.map((field) => (
+          <Col span={12} key={field.key}>
+            <Form.Item
+              label={field.label}
+              name={field.key}
+              rules={field.required ? [{ required: true, message: `请输入${field.label}` }] : []}
+            >
+              {field.type === 'time' ? (
+                <TimePicker format="HH:mm" style={{ width: '100%' }} />
+              ) : field.type === 'date' ? (
+                <Input placeholder={field.placeholder || 'YYYY-MM-DD'} />
+              ) : field.type === 'number' ? (
+                <InputNumber style={{ width: '100%' }} placeholder={field.placeholder} />
+              ) : (
+                <Input placeholder={field.placeholder} />
+              )}
+            </Form.Item>
+          </Col>
+        ))}
+      </Row>
+    </Form>
+  );
+};
 
 const ProductConfig: React.FC = () => {
   const { id: productId } = useParams<{ id: string }>();
@@ -251,7 +395,7 @@ const ProductConfig: React.FC = () => {
   const openCreateRuleModal = () => {
     setEditingRule(null);
     ruleTemplateForm.resetFields();
-    ruleTemplateForm.setFieldsValue({ enabled: true, sortOrder: 0 });
+    ruleTemplateForm.setFieldsValue({ enabled: true, sortOrder: 0, config: '{}' });
     setRuleModalOpen(true);
   };
 
@@ -545,20 +689,18 @@ const ProductConfig: React.FC = () => {
                     const isEnabled = state?.isEnabled || false;
                     const configValue = state?.configValue || '';
                     return (
-                      <div
+                      <Card
                         key={feature.id}
+                        size="small"
                         style={{
-                          padding: '12px 16px',
                           marginBottom: 8,
                           background: isEnabled ? '#f6ffed' : '#fafafa',
-                          borderRadius: 6,
-                          border: `1px solid ${isEnabled ? '#b7eb8f' : 'rgba(0, 0, 0, 0.06)'}`,
+                          borderColor: isEnabled ? '#b7eb8f' : undefined,
                         }}
                       >
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <Space>
                             <Switch
-                              size="small"
                               checked={isEnabled}
                               onChange={(checked) =>
                                 setFeatureStates((prev) => ({
@@ -575,26 +717,29 @@ const ProductConfig: React.FC = () => {
                           </Space>
                         </div>
                         {isEnabled && feature.type === 'config' && (
-                          <div style={{ marginTop: 8, marginLeft: 48 }}>
-                            <Input
-                              placeholder="配置值"
-                              value={configValue}
-                              onChange={(e) =>
-                                setFeatureStates((prev) => ({
-                                  ...prev,
-                                  [feature.id]: { ...prev[feature.id], configValue: e.target.value },
-                                }))
-                              }
-                              style={{ maxWidth: 400 }}
-                            />
+                          <div style={{ marginTop: 12 }}>
+                            <Divider style={{ margin: '8px 0' }} />
+                            <div style={{ maxWidth: 400 }}>
+                              <ConfigValueInput
+                                valueType={feature.valueType}
+                                value={configValue}
+                                onChange={(val) =>
+                                  setFeatureStates((prev) => ({
+                                    ...prev,
+                                    [feature.id]: { ...prev[feature.id], configValue: val },
+                                  }))
+                                }
+                                placeholder={`${feature.name}配置`}
+                              />
+                            </div>
                           </div>
                         )}
                         {feature.description && (
-                          <div style={{ marginLeft: 48, marginTop: 4, color: '#94A3B8', fontSize: 12 }}>
+                          <div style={{ marginTop: 8, color: '#94A3B8', fontSize: 12 }}>
                             {feature.description}
                           </div>
                         )}
-                      </div>
+                      </Card>
                     );
                   })}
                   <div style={{ marginTop: 16 }}>
@@ -620,33 +765,56 @@ const ProductConfig: React.FC = () => {
         onCancel={() => { setRuleModalOpen(false); setEditingRule(null); ruleTemplateForm.resetFields(); }}
         onOk={handleRuleModalOk}
         confirmLoading={createRuleMutation.isPending || updateRuleMutation.isPending}
-        width={600}
+        width={700}
         destroyOnHidden
       >
         <Form form={ruleTemplateForm} layout="vertical">
-          <Form.Item name="ruleType" label="规则类型" rules={[{ required: true, message: '请选择规则类型' }]}>
-            <Select placeholder="请选择规则类型">
-              {RULE_TYPE_OPTIONS.map((opt) => (
-                <Select.Option key={opt.value} value={opt.value}>{opt.label}</Select.Option>
-              ))}
-            </Select>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item name="ruleType" label="规则类型" rules={[{ required: true, message: '请选择规则类型' }]}>
+                <Select placeholder="请选择规则类型">
+                  {RULE_TYPE_OPTIONS.map((opt) => (
+                    <Select.Option key={opt.value} value={opt.value}>{opt.label}</Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="name" label="名称" rules={[{ required: true, message: '请输入名称' }]}>
+                <Input placeholder="请输入规则模板名称" />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Form.Item noStyle shouldUpdate={(prev, curr) => prev.ruleType !== curr.ruleType}>
+            {({ getFieldValue }) => {
+              const ruleType = getFieldValue('ruleType');
+              const currentConfig = ruleTemplateForm.getFieldValue('config');
+              return (
+                <Form.Item label="规则配置">
+                  <RuleConfigForm
+                    ruleType={ruleType}
+                    config={currentConfig}
+                    onChange={(config) => ruleTemplateForm.setFieldsValue({ config })}
+                  />
+                </Form.Item>
+              );
+            }}
           </Form.Item>
-          <Form.Item name="name" label="名称" rules={[{ required: true, message: '请输入名称' }]}>
-            <Input placeholder="请输入规则模板名称" />
-          </Form.Item>
-          <Form.Item name="config" label="配置" rules={[{ required: true, message: '请输入配置' }]}>
-            <Input.TextArea
-              rows={6}
-              placeholder='{"key": "value"}'
-              style={{ fontFamily: 'monospace' }}
-            />
-          </Form.Item>
-          <Form.Item name="enabled" label="启用" valuePropName="checked">
-            <Switch />
-          </Form.Item>
-          <Form.Item name="sortOrder" label="排序">
-            <InputNumber min={0} style={{ width: '100%' }} />
-          </Form.Item>
+
+          <Row gutter={16}>
+            <Col span={8}>
+              <Form.Item name="enabled" label="启用" valuePropName="checked">
+                <Switch />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item name="sortOrder" label="排序">
+                <InputNumber min={0} style={{ width: '100%' }} />
+              </Form.Item>
+            </Col>
+          </Row>
+
           <Form.Item name="description" label="描述">
             <Input.TextArea rows={2} placeholder="规则模板描述（选填）" />
           </Form.Item>
