@@ -32,6 +32,7 @@ carbon-system     # Tenants, users, RBAC, JWT auth, packages, platform admin
 carbon-platform   # Product SPI/registry, rule chain engine, trigger abstraction
 carbon-stair      # Stair climbing check-in (replaces carbon-checkin)
 carbon-walking    # Walking steps integration, step→points conversion
+carbon-quiz       # Quiz/knowledge challenge module, daily quiz, analysis
 carbon-points     # Point accounts, level progression, PointsEventBus
 carbon-mall       # Virtual products (coupon/recharge/privilege), exchange orders
 carbon-report     # Dashboards, trend reports, Excel export
