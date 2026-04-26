@@ -39,6 +39,13 @@ public class Tenant {
      */
     private String levelMode;
 
+    /**
+     * 积分兑换汇率：1积分 = exchangeRate分人民币。
+     * 用于计算商品在积分商城中的展示价格：pointsPrice = priceCents / exchangeRate。
+     * 默认值1.0。
+     */
+    private java.math.BigDecimal pointsExchangeRate;
+
     @TableLogic
     private Integer deleted;
 }
