@@ -22,6 +22,7 @@
         <module>carbon-honor</module>
         <module>carbon-platform</module>
         <module>carbon-walking</module>
+        <module>carbon-quiz</module>
         <module>carbon-app</module>
     </modules>
 
@@ -185,6 +186,11 @@
             <dependency>
                 <groupId>com.carbonpoint</groupId>
                 <artifactId>carbon-walking</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.carbonpoint</groupId>
+                <artifactId>carbon-quiz</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>
