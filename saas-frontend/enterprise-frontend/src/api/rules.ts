@@ -125,6 +125,104 @@ export const deleteTimeSlotRule = async (id: string) => {
   return res;
 };
 
+export interface TimeSlotSlot {
+  id?: string;
+  name: string;
+  startTime: string;
+  endTime: string;
+  basePointsMin: number;
+  basePointsMax: number;
+  pointsPerFloor?: number;
+  enabled?: boolean;
+}
+
+/**
+ * Batch-save all time slots in one call.
+ * Deletes existing time_slot rules, then creates new ones from the provided array.
+ */
+export const batchSaveTimeSlots = async (slots: TimeSlotSlot[]) => {
+  // Fetch existing time_slot rules
+  const existing = (await apiClient.get('/point-rules/enabled') as any[]) || [];
+  const existingTimeSlot = existing.filter((r: any) => r.type === 'time_slot');
+
+  // Delete all existing time_slot rules
+  await Promise.all(existingTimeSlot.map((r: any) => apiClient.delete(`/point-rules/${r.id}`)));
+
+  // Create new slots
+  await Promise.all(
+    slots.map((slot, index) =>
+      apiClient.post('/point-rules', {
+        type: 'time_slot',
+        name: slot.name,
+        config: JSON.stringify({
+          startTime: slot.startTime,
+          endTime: slot.endTime,
+          minPoints: slot.basePointsMin,
+          maxPoints: slot.basePointsMax,
+          pointsPerFloor: slot.pointsPerFloor || 0,
+        }),
+        enabled: slot.enabled !== false,
+        sortOrder: index,
+      })
+    )
+  );
+
+  return { code: 200 };
+};
+
+// Workday filter rule types
+
+export interface WorkdayFilterConfig {
+  mode: 'all' | 'workday_only' | 'custom';
+  includeWeekend?: boolean;
+  includeHoliday?: boolean;
+  customDates?: string[]; // ISO date strings
+}
+
+export const getWorkdayFilter = async (_tenantId: string): Promise<WorkdayFilterConfig> => {
+  const res = await apiClient.get('/point-rules/enabled') as any[];
+  const rules = (res || []).filter((r: any) => r.type === 'workday_filter');
+  if (rules.length === 0) {
+    return { mode: 'all' };
+  }
+  try {
+    const config = JSON.parse(rules[0].config || '{}');
+    return {
+      id: String(rules[0].id),
+      mode: config.mode || 'all',
+      includeWeekend: config.includeWeekend || false,
+      includeHoliday: config.includeHoliday || false,
+      customDates: config.customDates || [],
+    } as WorkdayFilterConfig & { id: string };
+  } catch {
+    return { mode: 'all' };
+  }
+};
+
+export const saveWorkdayFilter = async (_tenantId: string, data: WorkdayFilterConfig) => {
+  const res = await apiClient.get('/point-rules/enabled') as any[];
+  const existing = (res || []).filter((r: any) => r.type === 'workday_filter');
+
+  const payload = {
+    type: 'workday_filter',
+    name: '有效日期过滤',
+    config: JSON.stringify({
+      mode: data.mode,
+      includeWeekend: data.includeWeekend || false,
+      includeHoliday: data.includeHoliday || false,
+      customDates: data.customDates || [],
+    }),
+    enabled: true,
+  };
+
+  if (existing.length > 0) {
+    await apiClient.put('/point-rules', { id: Number(existing[0].id), ...payload });
+  } else {
+    await apiClient.post('/point-rules', { ...payload, sortOrder: 0 });
+  }
+  return { code: 200 };
+};
+
 // These rule types are stored in point_rules table with their respective types
 
 // Consecutive rewards are calculated by the point engine, not stored as rules
