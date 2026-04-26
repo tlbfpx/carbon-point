@@ -35,6 +35,9 @@ public class TimeSlotRule {
     /** 是否启用 */
     private Boolean enabled;
 
+    /** 每层楼积分，用于 FloorPointsRule 按楼层数计算积分 */
+    private Integer pointsPerFloor;
+
     @TableField(fill = FieldFill.INSERT)
     private java.time.LocalDateTime createdAt;
 

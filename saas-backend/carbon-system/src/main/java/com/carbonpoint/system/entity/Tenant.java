@@ -39,6 +39,12 @@ public class Tenant {
      */
     private String levelMode;
 
+    /**
+     * 积分兑换汇率（积分兑换为等价物的换算比率）。
+     * 例如 100 表示 100 积分 = 1 元等价物。
+     */
+    private java.math.BigDecimal pointsExchangeRate;
+
     @TableLogic
     private Integer deleted;
 }
