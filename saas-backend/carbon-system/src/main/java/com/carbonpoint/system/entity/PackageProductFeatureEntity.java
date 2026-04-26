@@ -45,6 +45,13 @@ public class PackageProductFeatureEntity {
      */
     private Boolean isCustomized;
 
+    /**
+     * Feature code from the features table (populated by JOIN query only).
+     * Not a column in package_product_features table.
+     */
+    @TableField(exist = false)
+    private String featureCode;
+
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdAt;
 
