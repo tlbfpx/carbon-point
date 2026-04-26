@@ -112,14 +112,25 @@ public class RuleChainExecutor {
             currentPoints = result.getPoints();
 
             // Short-circuit: if a rule node signals to stop the chain, return immediately
-            if (result.getMetadata() != null
-                    && Boolean.TRUE.equals(result.getMetadata().get("shortCircuit"))) {
-                log.debug("RuleChainExecutor: short-circuit triggered by node '{}'", node.getName());
+            if (isShortCircuit(result)) {
+                log.debug("RuleChainExecutor: short-circuit triggered by node '{}', stopping chain", node.getName());
                 return result;
             }
         }
 
         return result;
+    }
+
+    /**
+     * Check if a RuleResult signals short-circuit termination.
+     * A node sets metadata key "shortCircuit" to true to stop the chain.
+     */
+    private boolean isShortCircuit(RuleResult result) {
+        if (result == null || result.getMetadata() == null) {
+            return false;
+        }
+        Object flag = result.getMetadata().get("shortCircuit");
+        return Boolean.TRUE.equals(flag);
     }
 
     /**
