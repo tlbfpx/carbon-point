@@ -7,23 +7,31 @@ export interface LeaderboardEntry {
   nickname: string;
   points: number;
   avatar?: string;
+  isCurrentUser?: boolean;
 }
 
 export interface LeaderboardResponse {
   list: LeaderboardEntry[];
   total: number;
+  currentUserRank?: number;
+  page: number;
+  pageSize: number;
+  hasMore: boolean;
 }
 
-type LeaderboardType = 'daily' | 'weekly' | 'monthly' | 'history';
+export type LeaderboardDimension = 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly' | 'history';
 
 /**
- * Get leaderboard data
+ * Get leaderboard data by dimension.
+ * Calls the unified GET /v1/leaderboard endpoint with dimension param.
  */
 export const getLeaderboard = async (
-  type: LeaderboardType = 'history'
+  dimension: LeaderboardDimension = 'daily',
+  page: number = 1,
+  pageSize: number = 20
 ): Promise<Result<LeaderboardResponse>> => {
-  const res = await apiClient.get<Result<LeaderboardResponse>>('/points/leaderboard', {
-    params: { type },
+  const res = await apiClient.get<Result<LeaderboardResponse>>('/v1/leaderboard', {
+    params: { dimension, page, pageSize },
   });
   return res.data;
 };

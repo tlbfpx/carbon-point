@@ -3,20 +3,29 @@ import { useNavigate } from 'react-router-dom';
 import { GlassCard } from '@carbon-point/design-system';
 import { List, DotLoading, Empty, TabBar, Tabs } from 'antd-mobile';
 import { useQuery } from '@tanstack/react-query';
-import { getLeaderboard } from '@/api/leaderboard';
+import { getLeaderboard, LeaderboardDimension } from '@/api/leaderboard';
 import { getLeaderboardContext } from '@/api/points';
 import { useAuthStore } from '@/store/authStore';
 
-type LeaderboardType = 'daily' | 'weekly' | 'monthly' | 'history';
+const DIMENSION_TABS: { title: string; key: LeaderboardDimension }[] = [
+  { title: '日榜', key: 'daily' },
+  { title: '周榜', key: 'weekly' },
+  { title: '月榜', key: 'monthly' },
+  { title: '季榜', key: 'quarterly' },
+  { title: '年榜', key: 'yearly' },
+  { title: '历史', key: 'history' },
+];
 
 const LeaderboardPage: React.FC = () => {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
-  const [activeType, setActiveType] = useState<LeaderboardType>('history');
+  const [activeDimension, setActiveDimension] = useState<LeaderboardDimension>('daily');
+  const [page, setPage] = useState(1);
+  const pageSize = 20;
 
   const { data, isLoading } = useQuery({
-    queryKey: ['leaderboard', activeType],
-    queryFn: () => getLeaderboard(activeType),
+    queryKey: ['leaderboard', activeDimension, page],
+    queryFn: () => getLeaderboard(activeDimension, page, pageSize),
   });
 
   const { data: contextData } = useQuery({
@@ -24,9 +33,16 @@ const LeaderboardPage: React.FC = () => {
     queryFn: getLeaderboardContext,
   });
 
+  // Reset page when dimension changes
+  const handleDimensionChange = (key: string) => {
+    setActiveDimension(key as LeaderboardDimension);
+    setPage(1);
+  };
+
   const entries = data?.data?.list || [];
   const currentUserId = user?.userId;
   const myRank = contextData?.data?.currentRank;
+  const hasMore = data?.data?.hasMore;
 
   return (
     <div style={{ minHeight: '100vh', background: '#f5f5f5' }}>
@@ -34,11 +50,14 @@ const LeaderboardPage: React.FC = () => {
         <h2 style={{ margin: 0, fontSize: 18 }}>企业积分排行榜</h2>
       </div>
 
-      <Tabs activeKey={activeType} onChange={(key) => setActiveType(key as LeaderboardType)} style={{ background: '#fff' }}>
-        <Tabs.Tab title="历史" key="history" />
-        <Tabs.Tab title="日榜" key="daily" />
-        <Tabs.Tab title="周榜" key="weekly" />
-        <Tabs.Tab title="月榜" key="monthly" />
+      <Tabs
+        activeKey={activeDimension}
+        onChange={handleDimensionChange}
+        style={{ background: '#fff' }}
+      >
+        {DIMENSION_TABS.map((tab) => (
+          <Tabs.Tab title={tab.title} key={tab.key} />
+        ))}
       </Tabs>
 
       <div style={{ padding: 16 }}>
@@ -118,6 +137,20 @@ const LeaderboardPage: React.FC = () => {
                 </List.Item>
               ))}
             </List>
+            {hasMore && (
+              <div
+                onClick={() => setPage((p) => p + 1)}
+                style={{
+                  textAlign: 'center',
+                  padding: '12px 0',
+                  color: '#1890ff',
+                  fontSize: 14,
+                  cursor: 'pointer',
+                }}
+              >
+                加载更多
+              </div>
+            )}
           </GlassCard>
         )}
       </div>

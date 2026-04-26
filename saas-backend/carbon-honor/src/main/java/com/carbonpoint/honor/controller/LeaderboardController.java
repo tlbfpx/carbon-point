@@ -14,21 +14,38 @@ import com.carbonpoint.common.security.JwtUserPrincipal;
 /**
  * 排行榜 API。
  *
- * <p>GET /api/v1/leaderboard/today     — 今日打卡榜
- * <p>GET /api/v1/leaderboard/week      — 本周打卡榜
- * <p>GET /api/v1/leaderboard/history   — 历史累计榜
+ * <p>GET /api/v1/leaderboard          — 统一排行榜接口（dimension 参数控制维度）
+ * <p>GET /api/v1/leaderboard/today     — 今日打卡榜（legacy）
+ * <p>GET /api/v1/leaderboard/week      — 本周打卡榜（legacy）
+ * <p>GET /api/v1/leaderboard/history   — 历史累计榜（legacy）
  * <p>GET /api/v1/leaderboard/context   — 当前用户排行榜上下文
+ *
+ * <p>Dimension 参数取值: daily, weekly, monthly, quarterly, yearly, history
  */
 @RestController
 @RequestMapping("/api/v1/leaderboard")
 @RequiredArgsConstructor
-public class LeaderboardController {
+public class LeaderboardController extends BaseController {
 
     private final LeaderboardService leaderboardService;
 
     /**
-     * 今日打卡排行榜。
-     * 排序：total_points DESC，积分相同按 checkin_time ASC（先打卡排前）。
+     * 统一排行榜接口。
+     * dimension 参数控制排行维度: daily, weekly, monthly, quarterly, yearly, history
+     */
+    @GetMapping
+    public Result<LeaderboardPageDTO> leaderboard(
+            @AuthenticationPrincipal JwtUserPrincipal principal,
+            @RequestParam(defaultValue = "daily") String dimension,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int pageSize) {
+        LeaderboardPageDTO result = leaderboardService.getLeaderboard(
+                principal.getUserId(), dimension, page, pageSize);
+        return Result.success(result);
+    }
+
+    /**
+     * 今日打卡排行榜（legacy）。
      */
     @GetMapping("/today")
     public Result<LeaderboardPageDTO> today(
@@ -40,7 +57,7 @@ public class LeaderboardController {
     }
 
     /**
-     * 本周打卡排行榜。
+     * 本周打卡排行榜（legacy）。
      */
     @GetMapping("/week")
     public Result<LeaderboardPageDTO> week(
@@ -52,7 +69,7 @@ public class LeaderboardController {
     }
 
     /**
-     * 历史累计积分排行榜。
+     * 历史累计积分排行榜（legacy）。
      */
     @GetMapping("/history")
     public Result<LeaderboardPageDTO> history(
