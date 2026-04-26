@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { getMyPermissions } from '@/api/auth';
+import { useFeatureStore } from './featureStore';
 
 export interface AdminUser {
   userId: string;
@@ -131,6 +132,8 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
       try {
         const perms = await getMyPermissions();
         set({ permissions: perms, permissionsLoading: false, fetchPermissionsPromise: null });
+        // Load feature flags after permissions are fetched
+        useFeatureStore.getState().load().catch(() => {});
       } catch {
         set({ permissionsLoading: false, fetchPermissionsPromise: null });
       }
