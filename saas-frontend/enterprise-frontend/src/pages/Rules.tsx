@@ -12,11 +12,13 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '@/store/authStore';
 import { useBranding } from '@/components/BrandingProvider';
 import { getTenantProducts } from '@/api/tenantProducts';
+import FeatureGuard from '@/components/FeatureGuard';
 import TimeSlotTab from './rules/TimeSlotTab';
 import ConsecutiveTab from './rules/ConsecutiveTab';
 import LevelTab from './rules/LevelTab';
 import SpecialTab from './rules/SpecialTab';
 import DailyCapTab from './rules/DailyCapTab';
+import WorkdayFilterTab from './rules/WorkdayFilterTab';
 import StepCalcConfig from './walking/StepCalcConfig';
 import FunEquivalenceConfig from './walking/FunEquivalenceConfig';
 
@@ -40,6 +42,7 @@ const STAIR_TABS: TabItem[] = [
   { key: 'level', label: '等级系数', icon: <StarOutlined /> },
   { key: 'special', label: '特殊日期', icon: <CalendarOutlined />, featureGate: 'special_date' },
   { key: 'dailycap', label: '每日上限', icon: <ThunderboltOutlined /> },
+  { key: 'workday', label: '有效日期', icon: <CalendarOutlined /> },
 ];
 
 const WALKING_TABS: TabItem[] = [
@@ -213,11 +216,20 @@ const Rules: React.FC = () => {
       {/* Tab Content — Stair Climbing */}
       {activeProduct === 'stair' && (
         <div>
-          {activeTab === 'timeslot' && <TimeSlotTab tenantId={tenantId} />}
+          {activeTab === 'timeslot' && (
+            <FeatureGuard feature="stair.time_slot" fallback={<TimeSlotTab tenantId={tenantId} />}>
+              <TimeSlotTab tenantId={tenantId} />
+            </FeatureGuard>
+          )}
           {activeTab === 'consecutive' && <ConsecutiveTab tenantId={tenantId} />}
           {activeTab === 'level' && <LevelTab tenantId={tenantId} />}
           {activeTab === 'special' && <SpecialTab tenantId={tenantId} />}
           {activeTab === 'dailycap' && <DailyCapTab tenantId={tenantId} />}
+          {activeTab === 'workday' && (
+            <FeatureGuard feature="stair.workday_only" fallback={<WorkdayFilterTab tenantId={tenantId} />}>
+              <WorkdayFilterTab tenantId={tenantId} />
+            </FeatureGuard>
+          )}
         </div>
       )}
 
