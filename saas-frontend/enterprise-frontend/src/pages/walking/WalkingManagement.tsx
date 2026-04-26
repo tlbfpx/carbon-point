@@ -1,52 +1,43 @@
 import React, { useState, useMemo } from 'react';
 import { useBranding } from '@/components/BrandingProvider';
+import FeatureGuard from '@/components/FeatureGuard';
 import StepCalcConfig from './StepCalcConfig';
 import FunEquivalenceConfig from './FunEquivalenceConfig';
 import { SettingOutlined, SmileOutlined } from '@ant-design/icons';
-import { getTenantProducts } from '@/api/tenantProducts';
-import { useQuery } from '@tanstack/react-query';
 
 const WalkingManagement: React.FC = () => {
   const { primaryColor } = useBranding();
   const [activeTab, setActiveTab] = useState<string>('step-config');
 
-  // Fetch tenant products to check enabled features
-  const { data: tenantProducts } = useQuery({
-    queryKey: ['tenant-products'],
-    queryFn: getTenantProducts,
-  });
-
-  // Check if fun_equivalence feature is enabled
-  const isFunEquivalenceEnabled = useMemo(() => {
-    if (!tenantProducts) return false;
-    const walkingProduct = tenantProducts.find(
-      (p) => p.productCode === 'walking' || p.category === 'walking'
-    );
-    if (!walkingProduct) return false;
-    // Check if fun_equivalence feature is enabled in featureConfig
-    return walkingProduct.featureConfig?.['fun_equivalence'] === 'true' ||
-           walkingProduct.featureConfig?.['fun_equivalence'] === '1' ||
-           walkingProduct.featureConfig?.['fun_equivalence'] === 'enabled';
-  }, [tenantProducts]);
-
-  const tabs = useMemo(() => {
-    const baseTabs: Array<{ key: string; label: string; icon: React.ReactNode }> = [
-      { key: 'step-config', label: '步数积分配置', icon: <SettingOutlined /> },
-    ];
-    if (isFunEquivalenceEnabled) {
-      baseTabs.push({
+  // Define all possible tabs; FeatureGuard will hide tabs whose feature is off.
+  const allTabs = useMemo(
+    () => [
+      {
+        key: 'step-config',
+        label: '步数积分配置',
+        icon: <SettingOutlined />,
+        feature: 'walking.step_tier',
+      },
+      {
         key: 'fun-equiv',
         label: '趣味换算',
         icon: <SmileOutlined />,
-      });
-    }
-    return baseTabs;
-  }, [isFunEquivalenceEnabled]);
+        feature: 'walking.fun_conversion',
+      },
+    ],
+    [],
+  );
 
-  // If active tab is fun-equiv and it becomes disabled, switch to step-config
-  if (activeTab === 'fun-equiv' && !isFunEquivalenceEnabled) {
-    setActiveTab('step-config');
-  }
+  // Filter tabs that should be visible — we render all and let FeatureGuard
+  // return null for disabled features. However, for the tab bar itself we
+  // need to know which are visible, so we always show them but wrap the
+  // content in FeatureGuard.
+  const visibleTabs = allTabs;
+
+  // If active tab's content is hidden by FeatureGuard, fall back to step-config
+  const handleTabClick = (key: string) => {
+    setActiveTab(key);
+  };
 
   return (
     <div style={{ padding: '0 0 24px', fontFamily: 'var(--font-body, "Noto Sans SC", sans-serif)' }}>
@@ -77,10 +68,10 @@ const WalkingManagement: React.FC = () => {
           flexWrap: 'wrap',
         }}
       >
-        {tabs.map((tab) => (
+        {visibleTabs.map((tab) => (
           <button
             key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
+            onClick={() => handleTabClick(tab.key)}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -121,10 +112,14 @@ const WalkingManagement: React.FC = () => {
         ))}
       </div>
 
-      {/* Tab Content */}
+      {/* Tab Content wrapped with FeatureGuard */}
       <div>
-        {activeTab === 'step-config' && <StepCalcConfig />}
-        {activeTab === 'fun-equiv' && <FunEquivalenceConfig />}
+        <FeatureGuard feature="walking.step_tier">
+          {activeTab === 'step-config' && <StepCalcConfig />}
+        </FeatureGuard>
+        <FeatureGuard feature="walking.fun_conversion">
+          {activeTab === 'fun-equiv' && <FunEquivalenceConfig />}
+        </FeatureGuard>
       </div>
     </div>
   );
