@@ -39,7 +39,13 @@ public class RuleChainExecutor {
             Map.entry("round", "round"),
             Map.entry("daily_cap", "dailyCap"),
             Map.entry("threshold_filter", "thresholdFilter"),
-            Map.entry("formula_calc", "formulaCalc")
+            Map.entry("formula_calc", "formulaCalc"),
+            Map.entry("workday_filter", "workdayFilter"),
+            Map.entry("floor_points", "floorPoints"),
+            Map.entry("step_tier_match", "stepTierMatch"),
+            Map.entry("fun_conversion", "funConversion"),
+            Map.entry("quiz_check", "quizCheck"),
+            Map.entry("quiz_points", "quizPoints")
     );
 
     /** All RuleNode beans from Spring context. */
@@ -104,9 +110,27 @@ public class RuleChainExecutor {
                     .build();
             result = node.apply(updatedContext);
             currentPoints = result.getPoints();
+
+            // Short-circuit: if a node signals termination, stop the chain immediately
+            if (isShortCircuit(result)) {
+                log.debug("RuleChainExecutor: short-circuit triggered by node '{}', stopping chain", node.getName());
+                return result;
+            }
         }
 
         return result;
+    }
+
+    /**
+     * Check if a RuleResult signals short-circuit termination.
+     * A node sets metadata key "shortCircuit" to true to stop the chain.
+     */
+    private boolean isShortCircuit(RuleResult result) {
+        if (result == null || result.getMetadata() == null) {
+            return false;
+        }
+        Object flag = result.getMetadata().get("shortCircuit");
+        return Boolean.TRUE.equals(flag);
     }
 
     /**
