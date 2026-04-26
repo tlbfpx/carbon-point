@@ -40,8 +40,8 @@ public class Tenant {
     private String levelMode;
 
     /**
-     * 积分兑换汇率（积分兑换为等价物的换算比率）。
-     * 例如 100 表示 100 积分 = 1 元等价物。
+     * 积分兑换汇率：用于计算商品展示价格 displayPrice = priceCents × exchangeRate / 100。
+     * 默认值1.0。
      */
     private java.math.BigDecimal pointsExchangeRate;
 
