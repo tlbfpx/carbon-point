@@ -33,6 +33,7 @@ import OperationLogs from '@/pages/OperationLogs';
 import DictManagement from '@/pages/DictManagement';
 import FeatureManagement from '@/pages/FeatureManagement';
 import PlatformLoginPage from '@/pages/PlatformLoginPage';
+import PlatformProductPool from '@/pages/PlatformProductPool';
 
 import { useAuthStore } from '@/store/authStore';
 import ErrorBoundary from '@/components/ErrorBoundary';
@@ -60,6 +61,7 @@ const PLATFORM_PERMISSION_MAP: Record<string, string> = {
   '/features/registry': 'platform:feature:list',
   '/features/blocks': 'platform:block:list',
   '/packages': 'platform:package:list',
+  '/product-pool': 'platform:mall:product:list',
   '/config': 'platform:config:view',
 };
 
@@ -76,6 +78,7 @@ const PLATFORM_MENU_ROLES: Record<string, PlatformRole[]> = {
   '/features/registry': [PLATFORM_ROLES.SUPER_ADMIN, PLATFORM_ROLES.ADMIN],
   '/features/blocks': [PLATFORM_ROLES.SUPER_ADMIN, PLATFORM_ROLES.ADMIN],
   '/packages': [PLATFORM_ROLES.SUPER_ADMIN, PLATFORM_ROLES.ADMIN, PLATFORM_ROLES.VIEWER],
+  '/product-pool': [PLATFORM_ROLES.SUPER_ADMIN, PLATFORM_ROLES.ADMIN],
   '/config': [PLATFORM_ROLES.SUPER_ADMIN, PLATFORM_ROLES.ADMIN, PLATFORM_ROLES.VIEWER],
 };
 
@@ -105,6 +108,7 @@ const PlatformMenuItems: MenuProps['items'] = [
   },
   { type: 'divider' },
   { key: '/packages', icon: <ShopOutlined />, label: '套餐管理' },
+  { key: '/product-pool', icon: <ShopOutlined />, label: '商品池管理' },
   { key: '/config', icon: <SettingOutlined />, label: '平台配置' },
 ];
 
@@ -282,6 +286,7 @@ const PlatformContent: React.FC = () => {
                   <Route path="/products/:id/config" element={<ProductConfig />} />
                   <Route path="/features/blocks" element={<BlockLibrary />} />
                   <Route path="/packages" element={<PackageManagement />} />
+                  <Route path="/product-pool" element={<PlatformProductPool />} />
                   <Route path="*" element={<Navigate to="/dashboard" replace />} />
                 </>
               )}
