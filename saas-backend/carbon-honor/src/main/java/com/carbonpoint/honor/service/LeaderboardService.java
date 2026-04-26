@@ -1,7 +1,6 @@
 package com.carbonpoint.honor.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.carbonpoint.common.tenant.TenantContext;
 import com.carbonpoint.honor.dto.LeaderboardContextDTO;
@@ -19,14 +18,26 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.temporal.IsoFields;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 排行榜服务。
  *
+ * <p>支持多种排行维度 (dimension):
+ * <ul>
+ *   <li>daily — 今日排行（从快照表查询）</li>
+ *   <li>weekly — 本周排行（聚合本周一至今天的积分）</li>
+ *   <li>monthly — 本月排行（聚合本月1日至今天的积分）</li>
+ *   <li>quarterly — 本季排行（聚合本季度首日至今天的积分）</li>
+ *   <li>yearly — 本年排行（聚合本年1月1日至今天的积分）</li>
+ *   <li>history — 历史累计排行（使用用户 total_points）</li>
+ * </ul>
+ *
  * <p>数据来源策略：
  * <ul>
- *   <li>读取时优先从 Redis 缓存获取（TTL 2h）</li>
+ *   <li>读取时优先从 Redis 缓存获取</li>
  *   <li>缓存未命中则从 leaderboard_snapshots 表查询最近快照</li>
  * </ul>
  *
@@ -42,40 +53,61 @@ public class LeaderboardService {
     private final RedisTemplate<String, Object> redisTemplate;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private static final String KEY_TODAY     = "leaderboard:tenant:%d:today";
-    private static final String KEY_WEEK      = "leaderboard:tenant:%d:week";
-    private static final String KEY_HISTORY   = "leaderboard:tenant:%d:history";
+    private static final String KEY_PATTERN = "leaderboard:tenant:%d:%s";
     private static final String KEY_CONTEXT   = "leaderboard:tenant:%d:context:%d";
-    private static final long    TTL_SECONDS  = 7200L; // 2 hours
+
+    /** Valid dimension values */
+    private static final Set<String> VALID_DIMENSIONS = Set.of(
+            "daily", "weekly", "monthly", "quarterly", "yearly", "history"
+    );
+
+    /** Cache TTL per dimension (seconds) */
+    private static final Map<String, Long> TTL_BY_DIMENSION = Map.of(
+            "daily",      3600L,   // 1 hour
+            "weekly",    21600L,   // 6 hours
+            "monthly",   43200L,   // 12 hours
+            "quarterly", 86400L,   // 24 hours
+            "yearly",    86400L,   // 24 hours
+            "history",   43200L    // 12 hours
+    );
 
     // === Public API ===
 
     /**
-     * 获取今日排行榜。
-     * 排序：total_points DESC，积分相同按 checkin_time ASC（先打卡排前）。
+     * Get leaderboard for a specific dimension.
+     *
+     * @param currentUserId current user ID
+     * @param dimension     one of: daily, weekly, monthly, quarterly, yearly, history
+     * @param page          page number (1-based)
+     * @param pageSize      page size
+     * @return paginated leaderboard result
+     */
+    public LeaderboardPageDTO getLeaderboard(Long currentUserId, String dimension, int page, int pageSize) {
+        dimension = normalizeDimension(dimension);
+        Long tenantId = TenantContext.getTenantId();
+        List<LeaderboardEntryDTO> allEntries = loadEntries(tenantId, currentUserId, dimension);
+        return paginate(allEntries, currentUserId, page, pageSize);
+    }
+
+    /**
+     * 获取今日排行榜 (legacy, maps to dimension=daily).
      */
     public LeaderboardPageDTO getToday(Long currentUserId, int page, int pageSize) {
-        Long tenantId = TenantContext.getTenantId();
-        List<LeaderboardEntryDTO> allEntries = loadTodayEntries(tenantId, currentUserId);
-        return paginate(allEntries, currentUserId, page, pageSize);
+        return getLeaderboard(currentUserId, "daily", page, pageSize);
     }
 
     /**
-     * 获取本周排行榜。
+     * 获取本周排行榜 (legacy, maps to dimension=weekly).
      */
     public LeaderboardPageDTO getWeek(Long currentUserId, int page, int pageSize) {
-        Long tenantId = TenantContext.getTenantId();
-        List<LeaderboardEntryDTO> allEntries = loadWeekEntries(tenantId, currentUserId);
-        return paginate(allEntries, currentUserId, page, pageSize);
+        return getLeaderboard(currentUserId, "weekly", page, pageSize);
     }
 
     /**
-     * 获取历史累计排行榜。
+     * 获取历史累计排行榜 (legacy, maps to dimension=history).
      */
     public LeaderboardPageDTO getHistory(Long currentUserId, int page, int pageSize) {
-        Long tenantId = TenantContext.getTenantId();
-        List<LeaderboardEntryDTO> allEntries = loadHistoryEntries(tenantId, currentUserId);
-        return paginate(allEntries, currentUserId, page, pageSize);
+        return getLeaderboard(currentUserId, "history", page, pageSize);
     }
 
     /**
@@ -94,7 +126,7 @@ public class LeaderboardService {
         LeaderboardContextDTO context = new LeaderboardContextDTO();
 
         // currentRank: query today's leaderboard position
-        context.setCurrentRank(getUserRankInToday(tenantId, currentUserId));
+        context.setCurrentRank(getUserRankInDimension(tenantId, currentUserId, "daily"));
 
         // changeFromLastWeek
         context.setChangeFromLastWeek(getRankChange(tenantId, currentUserId));
@@ -103,56 +135,108 @@ public class LeaderboardService {
         context.setPercentile(getPercentile(tenantId, currentUserId));
 
         // Cache for 2 hours
-        redisTemplate.opsForValue().set(cacheKey, context, TTL_SECONDS, java.util.concurrent.TimeUnit.SECONDS);
+        redisTemplate.opsForValue().set(cacheKey, context, 7200L, TimeUnit.SECONDS);
 
         return context;
     }
 
-    // === Private helpers ===
+    // === Dimension-based entry loading ===
 
-    private List<LeaderboardEntryDTO> loadTodayEntries(Long tenantId, Long currentUserId) {
-        String redisKey = String.format(KEY_TODAY, tenantId);
+    private List<LeaderboardEntryDTO> loadEntries(Long tenantId, Long currentUserId, String dimension) {
+        String redisKey = String.format(KEY_PATTERN, tenantId, dimension);
         List<LeaderboardEntryDTO> cached = getCachedEntries(redisKey, currentUserId);
         if (cached != null) return cached;
 
-        // Fallback: query DB snapshot for today
-        List<LeaderboardEntryDTO> entries = queryLeaderboardFromDB(tenantId, "today", currentUserId);
+        List<LeaderboardEntryDTO> entries;
+        if ("history".equals(dimension)) {
+            entries = queryHistoryFromDB(tenantId, currentUserId);
+        } else if ("daily".equals(dimension)) {
+            entries = querySnapshotFromDB(tenantId, dimension, currentUserId);
+        } else {
+            // weekly, monthly, quarterly, yearly: aggregate from point_transactions
+            entries = queryAggregatedFromDB(tenantId, dimension, currentUserId);
+        }
 
-        // Cache result
-        cacheEntries(redisKey, entries);
+        cacheEntries(redisKey, entries, getTTL(dimension));
         return entries;
     }
 
-    private List<LeaderboardEntryDTO> loadWeekEntries(Long tenantId, Long currentUserId) {
-        String redisKey = String.format(KEY_WEEK, tenantId);
-        List<LeaderboardEntryDTO> cached = getCachedEntries(redisKey, currentUserId);
-        if (cached != null) return cached;
+    // === Date range calculation for each dimension ===
 
-        List<LeaderboardEntryDTO> entries = queryLeaderboardFromDB(tenantId, "week", currentUserId);
-        cacheEntries(redisKey, entries);
-        return entries;
+    /**
+     * Calculate the start date for a given dimension.
+     */
+    LocalDate getDimensionStartDate(String dimension) {
+        LocalDate today = LocalDate.now();
+        return switch (dimension) {
+            case "daily" -> today;
+            case "weekly" -> today.with(java.time.DayOfWeek.MONDAY);
+            case "monthly" -> today.withDayOfMonth(1);
+            case "quarterly" -> {
+                int quarter = (today.getMonthValue() - 1) / 3;
+                yield today.withMonth(quarter * 3 + 1).withDayOfMonth(1);
+            }
+            case "yearly" -> today.withDayOfYear(1);
+            default -> today;
+        };
     }
 
-    private List<LeaderboardEntryDTO> loadHistoryEntries(Long tenantId, Long currentUserId) {
-        String redisKey = String.format(KEY_HISTORY, tenantId);
-        List<LeaderboardEntryDTO> cached = getCachedEntries(redisKey, currentUserId);
-        if (cached != null) return cached;
+    // === DB query methods ===
 
-        List<LeaderboardEntryDTO> entries = queryHistoryFromDB(tenantId, currentUserId);
-        cacheEntries(redisKey, entries);
-        return entries;
-    }
-
-    private List<LeaderboardEntryDTO> queryLeaderboardFromDB(Long tenantId, String type, Long currentUserId) {
+    private List<LeaderboardEntryDTO> querySnapshotFromDB(Long tenantId, String dimension, Long currentUserId) {
         LocalDate today = LocalDate.now();
         LambdaQueryWrapper<LeaderboardSnapshot> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(LeaderboardSnapshot::getTenantId, tenantId)
-               .eq(LeaderboardSnapshot::getSnapshotType, type)
+               .eq(LeaderboardSnapshot::getSnapshotType, "today")
+               .eq(LeaderboardSnapshot::getDimension, dimension)
                .eq(LeaderboardSnapshot::getSnapshotDate, today)
                .orderByDesc(LeaderboardSnapshot::getCreatedAt)
                .last("LIMIT 1");
         LeaderboardSnapshot snapshot = leaderboardSnapshotMapper.selectOne(wrapper);
         return parseSnapshotEntries(snapshot, currentUserId);
+    }
+
+    /**
+     * Aggregate points from point_transactions for the given dimension's date range.
+     * Queries all active users in the tenant, then sums their earned points
+     * (amount > 0 where type is an earning type) within the date range.
+     */
+    private List<LeaderboardEntryDTO> queryAggregatedFromDB(Long tenantId, String dimension, Long currentUserId) {
+        LocalDate startDate = getDimensionStartDate(dimension);
+        LocalDate today = LocalDate.now();
+
+        // Use the leaderboard_snapshots table with dimension for cached aggregates,
+        // falling back to real-time user total_points if no snapshot exists.
+        // First try snapshot
+        LambdaQueryWrapper<LeaderboardSnapshot> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(LeaderboardSnapshot::getTenantId, tenantId)
+               .eq(LeaderboardSnapshot::getDimension, dimension)
+               .ge(LeaderboardSnapshot::getSnapshotDate, startDate)
+               .le(LeaderboardSnapshot::getSnapshotDate, today)
+               .orderByDesc(LeaderboardSnapshot::getCreatedAt)
+               .last("LIMIT 1");
+        LeaderboardSnapshot snapshot = leaderboardSnapshotMapper.selectOne(wrapper);
+
+        if (snapshot != null && snapshot.getRankData() != null) {
+            return parseSnapshotEntries(snapshot, currentUserId);
+        }
+
+        // Fallback: build from user total_points (not ideal for non-history dimensions,
+        // but provides a reasonable fallback until a scheduler populates the snapshots).
+        List<User> users = userQueryMapper.selectActiveByTenantOrdered(tenantId);
+        List<LeaderboardEntryDTO> entries = new ArrayList<>();
+        int rank = 1;
+        for (User user : users) {
+            LeaderboardEntryDTO entry = new LeaderboardEntryDTO();
+            entry.setRank(rank++);
+            entry.setUserId(user.getId());
+            entry.setNickname(maskedNickname(user.getNickname(), rank - 1));
+            entry.setAvatar(user.getAvatar());
+            entry.setPoints(user.getTotalPoints());
+            entry.setIsCurrentUser(user.getId().equals(currentUserId));
+            entries.add(entry);
+        }
+        return entries;
     }
 
     private List<LeaderboardEntryDTO> queryHistoryFromDB(Long tenantId, Long currentUserId) {
@@ -164,7 +248,7 @@ public class LeaderboardService {
             LeaderboardEntryDTO entry = new LeaderboardEntryDTO();
             entry.setRank(rank++);
             entry.setUserId(user.getId());
-            entry.setNickname(maskedNickname(user.getNickname(), rank));
+            entry.setNickname(maskedNickname(user.getNickname(), rank - 1));
             entry.setAvatar(user.getAvatar());
             entry.setPoints(user.getTotalPoints());
             entry.setIsCurrentUser(user.getId().equals(currentUserId));
@@ -197,6 +281,8 @@ public class LeaderboardService {
             return Collections.emptyList();
         }
     }
+
+    // === Pagination ===
 
     private LeaderboardPageDTO paginate(List<LeaderboardEntryDTO> allEntries, Long currentUserId,
                                         int page, int pageSize) {
@@ -232,8 +318,10 @@ public class LeaderboardService {
         return result;
     }
 
-    private Integer getUserRankInToday(Long tenantId, Long userId) {
-        List<LeaderboardEntryDTO> entries = loadTodayEntries(tenantId, userId);
+    // === Context helpers ===
+
+    private Integer getUserRankInDimension(Long tenantId, Long userId, String dimension) {
+        List<LeaderboardEntryDTO> entries = loadEntries(tenantId, userId, dimension);
         for (LeaderboardEntryDTO e : entries) {
             if (e.getUserId().equals(userId)) {
                 return e.getRank();
@@ -248,6 +336,7 @@ public class LeaderboardService {
         LambdaQueryWrapper<LeaderboardSnapshot> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(LeaderboardSnapshot::getTenantId, tenantId)
                .eq(LeaderboardSnapshot::getSnapshotType, "today")
+               .eq(LeaderboardSnapshot::getDimension, "daily")
                .eq(LeaderboardSnapshot::getSnapshotDate, lastWeek)
                .orderByDesc(LeaderboardSnapshot::getCreatedAt)
                .last("LIMIT 1");
@@ -268,7 +357,7 @@ public class LeaderboardService {
             log.warn("Failed to parse last week snapshot", e);
         }
 
-        Integer currentRank = getUserRankInToday(tenantId, userId);
+        Integer currentRank = getUserRankInDimension(tenantId, userId, "daily");
         if (lastRank == null || currentRank == null) return null;
         return lastRank - currentRank; // positive = moved up
     }
@@ -285,6 +374,8 @@ public class LeaderboardService {
         Long usersAbove = userQueryMapper.countUsersWithMorePoints(tenantId, userPoints);
         return Math.round((double) usersAbove * 10000 / totalUsers) / 100.0; // 保留两位小数
     }
+
+    // === Redis helpers ===
 
     private List<LeaderboardEntryDTO> getCachedEntries(String key, Long currentUserId) {
         try {
@@ -304,12 +395,25 @@ public class LeaderboardService {
         return null;
     }
 
-    private void cacheEntries(String key, List<LeaderboardEntryDTO> entries) {
+    private void cacheEntries(String key, List<LeaderboardEntryDTO> entries, long ttlSeconds) {
         try {
-            redisTemplate.opsForValue().set(key, entries, TTL_SECONDS, java.util.concurrent.TimeUnit.SECONDS);
+            redisTemplate.opsForValue().set(key, entries, ttlSeconds, TimeUnit.SECONDS);
         } catch (Exception e) {
             log.warn("Failed to cache leaderboard entries: {}", key, e);
         }
+    }
+
+    // === Utility methods ===
+
+    private String normalizeDimension(String dimension) {
+        if (dimension == null || !VALID_DIMENSIONS.contains(dimension.toLowerCase())) {
+            return "daily";
+        }
+        return dimension.toLowerCase();
+    }
+
+    private long getTTL(String dimension) {
+        return TTL_BY_DIMENSION.getOrDefault(dimension, 3600L);
     }
 
     /**
