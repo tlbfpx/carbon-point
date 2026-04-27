@@ -1,12 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { message, ConfigProvider } from 'antd';
+import { message } from 'antd';
 import dayjs from 'dayjs';
 import 'dayjs/locale/zh-cn';
 import BrandingProvider from './components/BrandingProvider';
 import App from './App';
-import { globalStyles, designSystemConfig } from '@carbon-point/design-system';
+import { globalStyles } from '@carbon-point/design-system';
 import './index.css';
 
 // Inject design system global styles into document head
@@ -35,12 +35,10 @@ const queryClient = new QueryClient({
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <ConfigProvider {...designSystemConfig.dark}>
-      <QueryClientProvider client={queryClient}>
-        <BrandingProvider>
-          <App />
-        </BrandingProvider>
-      </QueryClientProvider>
-    </ConfigProvider>
+    <QueryClientProvider client={queryClient}>
+      <BrandingProvider>
+        <App />
+      </BrandingProvider>
+    </QueryClientProvider>
   </React.StrictMode>,
 );

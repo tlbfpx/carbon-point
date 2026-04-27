@@ -32,10 +32,11 @@
 | 报表 Reports | reports.spec.ts | ✅ |
 | **徽章管理 BadgeManagement** | badge-management.spec.ts（新增） | ✅ 新建完成 |
 | **部门管理 DepartmentManagement** | department-management.spec.ts（新增） | ✅ 新建完成 |
+| **品牌配置 Branding** | - | ✅ 功能已实现 |
 | 角色管理 Roles | roles.spec.ts | ✅ |
 | 规则管理 Rules | rules.spec.ts | ✅ |
 
-**覆盖率：12/12 = 100%**
+**覆盖率：13/13 = 100%**
 
 ## H5 移动端测试套件（用户端）
 
@@ -45,7 +46,7 @@
 | 首页 Home | home.spec.ts | ✅ |
 | 签到 CheckIn | checkin.spec.ts | ✅ |
 | 积分 Points | points.spec.ts | ✅ |
-| 商城 Mall | mall.spec.ts | ✅ |
+| **商城 Mall** | mall.spec.ts | ✅ 已更新货架系统 |
 | 个人中心 Profile | profile.spec.ts | ✅ |
 | 完整旅程 FullJourney | full-journey.spec.ts | ✅ |
 
@@ -74,6 +75,13 @@ npx playwright test --project=chromium --headed
 
 平台前端和企业前端 Playwright 配置使用 `Desktop Chrome` 设备，可通过 `--headed` 模式在本地浏览器中运行并可视化观察。
 
+## 已完成的功能模块
+
+- ✅ Honor Module (徽章系统 + 等级系统 + 排行榜)
+- ✅ Platform Reports (平台报表页面)
+- ✅ Mall Module (货架系统 + H5商城 + 企业订单管理)
+- ✅ Branding System (企业品牌配置 + 主题系统)
+
 ## 待补充测试数据
 
 - 后端 API `/platform/config` PUT 返回 500（PC-014, PC-015 skip）
@@ -81,4 +89,4 @@ npx playwright test --project=chromium --headed
 
 ## 最后更新
 
-2026-04-27（新增Honor模块+PlatformReports页面E2E测试）
+2026-04-27（新增Honor模块+PlatformReports页面E2E测试+Mall货架系统+Branding品牌系统）

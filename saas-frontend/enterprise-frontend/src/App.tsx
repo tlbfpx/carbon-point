@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
-import { Layout, Menu, Avatar, Dropdown, Button, Image, ConfigProvider } from 'antd';
-import { designSystemConfig } from '@carbon-point/design-system';
+import { Layout, Menu, Avatar, Dropdown, Button, Image } from 'antd';
 import {
     DashboardOutlined,
     TeamOutlined,
@@ -587,16 +586,14 @@ const EnterpriseContent: React.FC = () => {
 };
 
 const App: React.FC = () => (
-  <ConfigProvider {...designSystemConfig.dark}>
-    <BrowserRouter
-      basename="/enterprise"
-      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-    >
-      <ErrorBoundary>
-        <EnterpriseContent />
-      </ErrorBoundary>
-    </BrowserRouter>
-  </ConfigProvider>
+  <BrowserRouter
+    basename="/enterprise"
+    future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+  >
+    <ErrorBoundary>
+      <EnterpriseContent />
+    </ErrorBoundary>
+  </BrowserRouter>
 );
 
 export default App;
