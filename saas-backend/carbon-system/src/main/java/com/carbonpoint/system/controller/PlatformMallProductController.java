@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
  * 平台管理员维护全局虚拟商品供企业选购上架。
  */
 @RestController
-@RequestMapping("/api/platform/products/pool")
+@RequestMapping("/platform/products/pool")
 @RequiredArgsConstructor
 public class PlatformMallProductController {
 

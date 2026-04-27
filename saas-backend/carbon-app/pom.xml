@@ -49,6 +49,10 @@
             <groupId>com.carbonpoint</groupId>
             <artifactId>carbon-walking</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.carbonpoint</groupId>
+            <artifactId>carbon-quiz</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>

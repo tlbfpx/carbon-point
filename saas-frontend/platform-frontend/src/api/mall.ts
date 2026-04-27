@@ -47,36 +47,36 @@ export interface PlatformMallProductQuery {
 
 // Fetch paginated platform mall products
 export const getPlatformMallProducts = async (params?: PlatformMallProductQuery) => {
-  const res = await platformApiClient.get('/mall/products', { params });
+  const res = await platformApiClient.get('/products/pool', { params });
   return res.data;
 };
 
 // Get a single platform mall product
 export const getPlatformMallProduct = async (id: string) => {
-  const res = await platformApiClient.get(`/mall/products/${id}`);
+  const res = await platformApiClient.get(`/products/pool/${id}`);
   return res.data;
 };
 
 // Create a new platform mall product
 export const createPlatformMallProduct = async (data: CreatePlatformMallProductParams) => {
-  const res = await platformApiClient.post('/mall/products', data);
+  const res = await platformApiClient.post('/products/pool', data);
   return res.data;
 };
 
 // Update a platform mall product
 export const updatePlatformMallProduct = async (id: string, data: UpdatePlatformMallProductParams) => {
-  const res = await platformApiClient.put(`/mall/products/${id}`, data);
+  const res = await platformApiClient.put(`/products/pool/${id}`, data);
   return res.data;
 };
 
 // Toggle platform mall product status (active/inactive)
 export const togglePlatformMallProductStatus = async (id: string) => {
-  const res = await platformApiClient.put(`/mall/products/${id}/toggle`);
+  const res = await platformApiClient.put(`/products/pool/${id}/toggle`);
   return res.data;
 };
 
 // Delete a platform mall product
 export const deletePlatformMallProduct = async (id: string) => {
-  const res = await platformApiClient.delete(`/mall/products/${id}`);
+  const res = await platformApiClient.delete(`/products/pool/${id}`);
   return res.data;
 };

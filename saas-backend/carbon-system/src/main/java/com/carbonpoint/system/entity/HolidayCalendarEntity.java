@@ -35,7 +35,4 @@ public class HolidayCalendarEntity {
 
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdAt;
-
-    @TableLogic
-    private Integer deleted;
 }

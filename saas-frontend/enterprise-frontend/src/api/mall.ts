@@ -62,36 +62,36 @@ export interface MallReportData {
 
 // Fetch enterprise-shelved products
 export const fetchShelfProducts = async () => {
-  const res = await apiClient.get('/mall/shelf');
+  const res = await apiClient.get('/enterprise/mall/shelf');
   return res;
 };
 
 // Add a platform product to the enterprise shelf
 export const addToShelf = async (data: { platformProductId: string; pointsExchangeRate?: number }) => {
-  const res = await apiClient.post('/mall/shelf', data);
+  const res = await apiClient.post('/enterprise/mall/shelf', data);
   return res;
 };
 
 // Remove a product from the enterprise shelf
 export const removeFromShelf = async (shelfProductId: string) => {
-  const res = await apiClient.delete(`/mall/shelf/${shelfProductId}`);
+  const res = await apiClient.delete(`/enterprise/mall/shelf/${shelfProductId}`);
   return res;
 };
 
 // Fetch available platform products (not yet shelved by this enterprise)
 export const fetchAvailableProducts = async () => {
-  const res = await apiClient.get('/mall/available-products');
+  const res = await apiClient.get('/enterprise/mall/available');
   return res;
 };
 
 // Update the exchange rate for a shelved product
 export const updateExchangeRate = async (shelfProductId: string, pointsExchangeRate: number) => {
-  const res = await apiClient.put(`/mall/shelf/${shelfProductId}/rate`, { pointsExchangeRate });
+  const res = await apiClient.put(`/enterprise/mall/shelf/${shelfProductId}/rate`, { pointsExchangeRate });
   return res;
 };
 
 // Fetch mall report data with optional filters
 export const fetchMallReports = async (params?: MallReportParams): Promise<MallReportData> => {
-  const res = await apiClient.get('/mall/reports', { params }) as { data?: MallReportData };
+  const res = await apiClient.get('/enterprise/mall/reports/exchange-stats', { params }) as { data?: MallReportData };
   return (res as any).data ?? res as unknown as MallReportData;
 };

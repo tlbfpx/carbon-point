@@ -15,7 +15,7 @@ import java.util.List;
  * All endpoints under /api/platform/holidays.
  */
 @RestController
-@RequestMapping("/api/platform/holidays")
+@RequestMapping("/platform/holidays")
 @RequiredArgsConstructor
 public class HolidayCalendarController {
 
