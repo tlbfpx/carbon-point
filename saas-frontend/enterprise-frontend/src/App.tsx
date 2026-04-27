@@ -115,6 +115,7 @@ const EnterpriseMenuItems: MenuProps['items'] = [
     label: '积分商城',
     children: [
       { key: '/mall/shelf', label: '商品上架' },
+      { key: '/orders', label: '订单管理' },
       { key: '/mall/reports', label: '商城报表' },
     ],
   },

@@ -8,12 +8,15 @@ export interface ApiResponse<T = unknown> {
 
 export interface Product {
   id: string;
+  shelfId: number;
+  platformMallProductId: number;
   name: string;
   description: string;
   pointsPrice: number;
   stock: number | null;
   type: 'coupon' | 'recharge' | 'privilege';
   imageUrl?: string;
+  fulfillmentConfig?: string;
 }
 
 export interface Order {
@@ -34,26 +37,24 @@ export interface Coupon {
   expireTime: string;
 }
 
+// ================ 新货架系统API ================
+
 export const getProducts = async (
   tenantId: string,
   type?: string
-): Promise<ApiResponse<{ records: Product[]; total: number }>> => {
-  const res = await apiClient.get('/products', {
-    params: { tenantId, type },
+): Promise<ApiResponse<Product[]>> => {
+  const res = await apiClient.get('/mall/products', {
+    params: { type },
   });
   return res.data;
 };
 
-export const getProductDetail = async (productId: string): Promise<ApiResponse<Product>> => {
-  const res = await apiClient.get(`/products/${productId}`);
-  // Backend returns { code, data: { id, pointsPrice, ... } }
-  // Unwrap so callers get product directly
-  const payload = res.data;
-  if (payload?.data && !Array.isArray(payload.data)) {
-    return { code: payload.code, data: payload.data as Product };
-  }
-  return payload as ApiResponse<Product>;
+export const getProductDetail = async (shelfItemId: string): Promise<ApiResponse<Product>> => {
+  const res = await apiClient.get(`/mall/products/${shelfItemId}`);
+  return res.data;
 };
+
+// ================ 旧API（保留兼容性） ================
 
 export const exchangeProduct = async (params: {
   tenantId: string;

@@ -34,7 +34,8 @@ const MallPage: React.FC = () => {
     enabled: !!user?.tenantId,
   });
 
-  const products = (productsData?.data?.records || []) as Product[];
+  // 兼容新旧API：先检查records格式，再检查直接数组格式
+  const products = (productsData?.data?.records || productsData?.data || []) as Product[];
 
   const filteredProducts = useMemo(() => {
     if (!searchQuery) return products;
