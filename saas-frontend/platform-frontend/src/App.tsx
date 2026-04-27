@@ -15,11 +15,13 @@ import {
   ShopOutlined,
   SearchOutlined,
   QuestionCircleOutlined,
+  LineChartOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { designSystemConfig } from '@carbon-point/design-system';
 
 import PlatformDashboard from '@/pages/PlatformDashboard';
+import PlatformReports from '@/pages/PlatformReports';
 import EnterpriseManagement from '@/pages/EnterpriseManagement';
 import SystemManagement from '@/pages/SystemManagement';
 import PlatformConfig from '@/pages/PlatformConfig';
@@ -51,6 +53,7 @@ type PlatformRole = typeof PLATFORM_ROLES[keyof typeof PLATFORM_ROLES];
 
 const PLATFORM_PERMISSION_MAP: Record<string, string> = {
   '/dashboard': 'platform:dashboard:view',
+  '/reports': 'platform:report:view',
   '/enterprises': 'platform:enterprise:list',
   '/system': 'platform:system:view',
   '/system/users': 'platform:system:user:list',
@@ -67,6 +70,7 @@ const PLATFORM_PERMISSION_MAP: Record<string, string> = {
 
 const PLATFORM_MENU_ROLES: Record<string, PlatformRole[]> = {
   '/dashboard': [PLATFORM_ROLES.SUPER_ADMIN, PLATFORM_ROLES.ADMIN, PLATFORM_ROLES.VIEWER],
+  '/reports': [PLATFORM_ROLES.SUPER_ADMIN, PLATFORM_ROLES.ADMIN, PLATFORM_ROLES.VIEWER],
   '/enterprises': [PLATFORM_ROLES.SUPER_ADMIN, PLATFORM_ROLES.ADMIN, PLATFORM_ROLES.VIEWER],
   '/system': [PLATFORM_ROLES.SUPER_ADMIN],
   '/system/users': [PLATFORM_ROLES.SUPER_ADMIN],
@@ -84,6 +88,7 @@ const PLATFORM_MENU_ROLES: Record<string, PlatformRole[]> = {
 
 const PlatformMenuItems: MenuProps['items'] = [
   { key: '/dashboard', icon: <DashboardOutlined />, label: '平台看板' },
+  { key: '/reports', icon: <LineChartOutlined />, label: '平台报表' },
   { key: '/enterprises', icon: <TeamOutlined />, label: '企业管理' },
   {
     key: '/system',
@@ -274,6 +279,7 @@ const PlatformContent: React.FC = () => {
                 <>
                   <Route path="/" element={<Navigate to="/dashboard" replace />} />
                   <Route path="/dashboard" element={<PlatformDashboard />} />
+                  <Route path="/reports" element={<PlatformReports />} />
                   <Route path="/enterprises" element={<EnterpriseManagement />} />
                   <Route path="/system" element={<SystemManagement />} />
                   <Route path="/system/users" element={<SystemUsers />} />

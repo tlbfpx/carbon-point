@@ -216,26 +216,22 @@ const EnterpriseDashboard: React.FC = () => {
     refetchOnWindowFocus: false,
   });
 
-  // 优化：暂时禁用这两个多产品请求，它们不是必需的
-  // Multi-product dashboard data - disabled for faster load
-  const productOverviewData = null;
-  const productStatsData = null;
+  // Multi-product dashboard data - enabled
+  const { data: productOverviewData } = useQuery({
+    queryKey: ['product-overview', tenantId],
+    queryFn: () => getCrossProductOverview(),
+    enabled: !!tenantId,
+    staleTime: 2 * 60 * 1000, // 2分钟
+    refetchOnWindowFocus: false,
+  });
 
-  // const { data: productOverviewData } = useQuery({
-  //   queryKey: ['product-overview', tenantId],
-  //   queryFn: () => getCrossProductOverview(),
-  //   enabled: !!tenantId,
-  //   staleTime: 2 * 60 * 1000, // 2分钟
-  //   refetchOnWindowFocus: false,
-  // });
-
-  // const { data: productStatsData } = useQuery({
-  //   queryKey: ['product-stats', tenantId],
-  //   queryFn: () => getProductStats(),
-  //   enabled: !!tenantId,
-  //   staleTime: 5 * 60 * 1000, // 5分钟
-  //   refetchOnWindowFocus: false,
-  // });
+  const { data: productStatsData } = useQuery({
+    queryKey: ['product-stats', tenantId],
+    queryFn: () => getProductStats(),
+    enabled: !!tenantId,
+    staleTime: 5 * 60 * 1000, // 5分钟
+    refetchOnWindowFocus: false,
+  });
 
   const stats: DashboardStats = (statsData as DashboardStats) || {
     todayCheckInCount: 0,
@@ -248,14 +244,14 @@ const EnterpriseDashboard: React.FC = () => {
   const pointsTrend: PointsTrend[] = extractArray<PointsTrend>(pointsTrendData);
   const hotProducts: HotProduct[] = extractArray<HotProduct>(hotProductsData);
 
-  // Multi-product data - disabled for faster load
-  const productOverview: CrossProductOverview = {
+  // Multi-product data - enabled
+  const productOverview: CrossProductOverview = (productOverviewData as CrossProductOverview) || {
     slices: [],
     totalPoints: 0,
     participationRates: {},
     overallParticipationRate: 0,
   };
-  const productList: ProductStats[] = [];
+  const productList: ProductStats[] = extractArray<ProductStats>(productStatsData);
   const stackedTrendData: any[] = [];
   const allProductNames: string[] = [];
 
