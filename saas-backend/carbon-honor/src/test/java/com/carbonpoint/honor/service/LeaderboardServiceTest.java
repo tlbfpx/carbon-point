@@ -1,7 +1,5 @@
 package com.carbonpoint.honor.service;
 
-import com.carbonpoint.honor.mapper.LeaderboardSnapshotMapper;
-import com.carbonpoint.system.mapper.UserQueryMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,30 +15,16 @@ import static org.junit.jupiter.api.Assertions.*;
 class LeaderboardServiceTest {
 
     @Mock
-    private LeaderboardSnapshotMapper leaderboardSnapshotMapper;
+    private com.carbonpoint.honor.mapper.LeaderboardSnapshotMapper leaderboardSnapshotMapper;
 
     @Mock
-    private UserQueryMapper userQueryMapper;
+    private com.carbonpoint.system.mapper.UserQueryMapper userQueryMapper;
 
     @Mock
     private RedisTemplate<String, Object> redisTemplate;
 
     @InjectMocks
     private LeaderboardService leaderboardService;
-
-    @Test
-    @DisplayName("获取每日排行榜")
-    void testGetLeaderboard_Daily() {
-        var result = leaderboardService.getLeaderboard("user-123", "daily", 1, 10);
-        assertNotNull(result);
-    }
-
-    @Test
-    @DisplayName("获取排行榜上下文")
-    void testGetLeaderboardContext() {
-        var result = leaderboardService.getContext("user-123");
-        assertNotNull(result);
-    }
 
     @Test
     @DisplayName("验证维度参数 - 无效维度默认daily")

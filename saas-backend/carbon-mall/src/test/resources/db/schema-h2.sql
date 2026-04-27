@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS tenants (
     status VARCHAR(20) NOT NULL DEFAULT 'active',
     expires_at DATETIME,
     level_mode VARCHAR(20) NOT NULL DEFAULT 'strict',
+    points_exchange_rate DECIMAL(10,2) NOT NULL DEFAULT 1.0,
     version BIGINT DEFAULT 0,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,

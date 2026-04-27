@@ -28,28 +28,28 @@ class BadgeServiceTest {
     @Test
     @DisplayName("授予徽章 - 第一次授予成功")
     void testAwardBadge_FirstTime() {
-        boolean result = badgeService.awardBadge("user-123", "first-checkin");
+        boolean result = badgeService.awardBadge(123L, "first-checkin");
         assertNotNull(result);
     }
 
     @Test
     @DisplayName("检查用户是否拥有徽章")
     void testHasBadge() {
-        boolean result = badgeService.hasBadge("user-123", "first-checkin");
+        boolean result = badgeService.hasBadge(123L, "first-checkin");
         assertNotNull(result);
     }
 
     @Test
     @DisplayName("获取用户徽章列表")
     void testGetUserBadges() {
-        var result = badgeService.getUserBadges("user-123", 9);
+        var result = badgeService.getUserBadges(123L, 9);
         assertNotNull(result);
     }
 
     @Test
     @DisplayName("获取用户所有徽章")
     void testGetAllUserBadges() {
-        var result = badgeService.getAllUserBadges("user-123");
+        var result = badgeService.getAllUserBadges(123L);
         assertNotNull(result);
     }
 }

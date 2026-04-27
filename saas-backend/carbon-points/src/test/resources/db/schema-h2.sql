@@ -43,8 +43,28 @@ CREATE TABLE IF NOT EXISTS point_rules (
     config TEXT NOT NULL,
     enabled BOOLEAN NOT NULL DEFAULT TRUE,
     sort_order INT NOT NULL DEFAULT 0,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    source_template_id VARCHAR(36) DEFAULT NULL,
+    product_code VARCHAR(50) DEFAULT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Check-in records table (needed for PointEngineService tests)
+CREATE TABLE IF NOT EXISTS check_in_records (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    tenant_id BIGINT NOT NULL,
+    time_slot_rule_id BIGINT NOT NULL,
+    checkin_date DATE NOT NULL,
+    checkin_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    base_points INT NOT NULL,
+    final_points INT NOT NULL,
+    multiplier DECIMAL(5, 2) DEFAULT 1.0,
+    level_coefficient DECIMAL(5, 2) DEFAULT 1.0,
+    consecutive_days INT DEFAULT 1,
+    streak_bonus INT DEFAULT 0,
+    deleted INT NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS point_transactions (
@@ -143,6 +163,68 @@ CREATE TABLE IF NOT EXISTS email_send_logs (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Trigger types and rule node types (needed by PlatformRegistryController and RuleChainExecutor)
+CREATE TABLE IF NOT EXISTS trigger_types (
+    id VARCHAR(36) NOT NULL,
+    code VARCHAR(50) NOT NULL UNIQUE,
+    name VARCHAR(100) NOT NULL,
+    description VARCHAR(500) DEFAULT NULL,
+    sort_order INT NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS rule_node_types (
+    id VARCHAR(36) NOT NULL,
+    code VARCHAR(50) NOT NULL UNIQUE,
+    name VARCHAR(100) NOT NULL,
+    description VARCHAR(500) DEFAULT NULL,
+    bean_name VARCHAR(100) NOT NULL,
+    sort_order INT NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id)
+);
+
+-- Additional platform tables (referenced by tenant line handler)
+CREATE TABLE IF NOT EXISTS platform_products (
+    id VARCHAR(36) NOT NULL,
+    code VARCHAR(50) NOT NULL UNIQUE,
+    name VARCHAR(100) NOT NULL,
+    category VARCHAR(50) DEFAULT NULL,
+    description VARCHAR(500) DEFAULT NULL,
+    status INT NOT NULL DEFAULT 1,
+    sort_order INT NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS features (
+    id VARCHAR(36) NOT NULL,
+    code VARCHAR(50) NOT NULL UNIQUE,
+    name VARCHAR(100) NOT NULL,
+    description VARCHAR(500) DEFAULT NULL,
+    sort_order INT NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS permission_packages (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    code VARCHAR(50) NOT NULL UNIQUE,
+    name VARCHAR(100) NOT NULL,
+    description VARCHAR(500) DEFAULT NULL,
+    max_users INT DEFAULT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'active',
+    sort_order INT NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted INT NOT NULL DEFAULT 0
+);
+
 -- Seed notification templates
 INSERT INTO notification_templates (id, type, channel, title_template, content_template, is_preset) VALUES (1, 'level_up', 'in_app', '恭喜升级！', '恭喜您升级为{level_name}！继续加油！', TRUE);
 
@@ -154,3 +236,37 @@ INSERT INTO permissions (code, module, operation, description, sort_order, delet
 INSERT INTO permissions (code, module, operation, description, sort_order, deleted) VALUES ('enterprise:rule:edit', 'enterprise', 'rule:edit', '编辑规则', 11, 0);
 INSERT INTO permissions (code, module, operation, description, sort_order, deleted) VALUES ('enterprise:rule:delete', 'enterprise', 'rule:delete', '删除规则', 12, 0);
 INSERT INTO permissions (code, module, operation, description, sort_order, deleted) VALUES ('enterprise:rule:view', 'enterprise', 'rule:view', '查看规则', 13, 0);
+
+-- Seed trigger types
+INSERT INTO trigger_types (id, code, name, description, sort_order) VALUES
+('tt-check_in', 'check_in', '打卡触发器', '用户手动打卡触发，验证打卡时间是否在有效时段内', 1),
+('tt-sensor_data', 'sensor_data', '传感器数据触发器', '传感器数据触发（走路计步），验证步数是否达到阈值', 2);
+
+-- Seed rule node types
+INSERT INTO rule_node_types (id, code, name, description, bean_name, sort_order) VALUES
+('rnt-time-slot-match', 'time_slot_match', '时段匹配', '检查触发时间是否在允许的时段内', 'timeSlotMatch', 1),
+('rnt-random-base', 'random_base', '随机基数', '在配置的积分区间内随机生成基础积分', 'randomBase', 2),
+('rnt-special-date-multiplier', 'special_date_multiplier', '特殊日期倍率', '节假日/特殊日期积分翻倍', 'specialDateMultiplier', 3),
+('rnt-level-coefficient', 'level_coefficient', '等级系数', '根据用户等级调整积分系数', 'levelCoefficient', 4),
+('rnt-round', 'round', '数值取整', '对积分结果进行四舍五入处理', 'round', 5),
+('rnt-daily-cap', 'daily_cap', '每日上限', '检查当日累计积分是否超过每日上限', 'dailyCap', 6),
+('rnt-threshold-filter', 'threshold_filter', '步数阈值过滤', '过滤不满足最低步数要求的数据', 'thresholdFilter', 7),
+('rnt-formula-calc', 'formula_calc', '步数公式换算', '按公式将步数换算为积分', 'formulaCalc', 8);
+
+-- Seed platform products
+INSERT INTO platform_products (id, code, name, category, description, status, sort_order) VALUES
+('stair_climbing', 'stair_climbing', '爬楼梯打卡', 'stairs_climbing', '员工爬楼梯打卡获取积分', 1, 1),
+('walking', 'walking', '步行打卡', 'walking', '员工步行打卡获取积分，支持微信运动/HealthKit/Health Connect', 1, 2);
+
+-- Seed features
+INSERT INTO features (id, code, name, description, sort_order) VALUES
+('f-checkin-stairs', 'checkin.stairs', '爬楼梯打卡', '爬楼梯打卡功能', 1),
+('f-checkin-walking', 'checkin.walking', '步行打卡', '步行打卡功能', 2),
+('f-points-exchange', 'points.exchange', '积分兑换', '积分兑换功能', 3),
+('f-mall-virtual', 'mall.virtual', '虚拟商品兑换', '虚拟商品兑换功能', 4);
+
+-- Seed permission packages
+INSERT INTO permission_packages (id, code, name, description, max_users, status, sort_order, deleted) VALUES
+(1, 'free', '免费版', '免费套餐', 50, 'active', 1, 0),
+(2, 'pro', '专业版', '专业套餐', 500, 'active', 2, 0),
+(3, 'enterprise', '企业版', '企业套餐', NULL, 'active', 3, 0);
