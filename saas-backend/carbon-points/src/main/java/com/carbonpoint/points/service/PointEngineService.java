@@ -1,5 +1,6 @@
 package com.carbonpoint.points.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.carbonpoint.common.exception.BusinessException;
 import com.carbonpoint.common.result.ErrorCode;
 import com.carbonpoint.common.tenant.TenantContext;
@@ -11,24 +12,31 @@ import com.carbonpoint.points.dto.PointCalcResult;
 import com.carbonpoint.points.entity.PointRule;
 import com.carbonpoint.points.mapper.CheckInRecordQueryMapper;
 import com.carbonpoint.points.mapper.PointsUserMapper;
+import com.carbonpoint.system.entity.ProductEntity;
 import com.carbonpoint.system.entity.User;
+import com.carbonpoint.system.mapper.ProductMapper;
 import com.carbonpoint.system.service.NotificationTrigger;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Unified point calculation engine.
- * All calculations go through {@link RuleChainExecutor} — the legacy hardcoded
- * path has been removed.
+ * Reads rule chain configuration from database (platform_products table)
+ * with fallback to hardcoded ProductModule SPI.
  */
 @Slf4j
 @Service
@@ -41,6 +49,7 @@ public class PointEngineService {
     private final NotificationTrigger notificationTrigger;
     private final RuleChainExecutor ruleChainExecutor;
     private final ProductRegistry productRegistry;
+    private final ProductMapper productMapper;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -54,7 +63,8 @@ public class PointEngineService {
             PointsUserMapper pointsUserMapper,
             NotificationTrigger notificationTrigger,
             RuleChainExecutor ruleChainExecutor,
-            ProductRegistry productRegistry) {
+            ProductRegistry productRegistry,
+            ProductMapper productMapper) {
         this.pointRuleService = pointRuleService;
         this.pointAccountService = pointAccountService;
         this.checkInRecordQueryMapper = checkInRecordQueryMapper;
@@ -62,6 +72,7 @@ public class PointEngineService {
         this.notificationTrigger = notificationTrigger;
         this.ruleChainExecutor = ruleChainExecutor;
         this.productRegistry = productRegistry;
+        this.productMapper = productMapper;
     }
 
     public PointCalcResult calculate(Long userId, Long ruleId, int userLevel) {
@@ -81,17 +92,27 @@ public class PointEngineService {
     }
 
     private PointCalcResult executeRuleChain(Long userId, PointRule timeSlotRule, int userLevel) {
-        var moduleOpt = productRegistry.getModule("stair_climbing");
-        if (moduleOpt.isEmpty()) {
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR,
-                    "Rule chain engine unavailable: product module 'stair_climbing' not registered");
-        }
+        final String productCode = "stair_climbing";
 
-        var module = moduleOpt.get();
-        List<String> ruleChainNames = module.getRuleChain();
+        // First try to get rule chain from database
+        List<String> ruleChainNames = getRuleChainFromDatabase(productCode);
+        String usedProductCode = productCode;
+
+        // Fallback to ProductRegistry if database doesn't have valid config
         if (ruleChainNames == null || ruleChainNames.isEmpty()) {
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR,
-                    "Rule chain engine unavailable: no rule chain defined for 'stair_climbing'");
+            log.info("No valid rule chain config in database for product {}, falling back to ProductRegistry", productCode);
+            var moduleOpt = productRegistry.getModule(productCode);
+            if (moduleOpt.isEmpty()) {
+                throw new BusinessException(ErrorCode.SYSTEM_ERROR,
+                        "Rule chain engine unavailable: product module '" + productCode + "' not registered");
+            }
+
+            var module = moduleOpt.get();
+            ruleChainNames = module.getRuleChain();
+            if (ruleChainNames == null || ruleChainNames.isEmpty()) {
+                throw new BusinessException(ErrorCode.SYSTEM_ERROR,
+                        "Rule chain engine unavailable: no rule chain defined for '" + productCode + "'");
+            }
         }
 
         Long tenantId = timeSlotRule.getTenantId();
@@ -102,7 +123,7 @@ public class PointEngineService {
         RuleContext context = RuleContext.builder()
                 .userId(userId)
                 .tenantId(tenantId)
-                .productCode(module.getCode())
+                .productCode(usedProductCode)
                 .currentPoints(0)
                 .tenantConfig(tenantConfig)
                 .triggerData(triggerData)
@@ -275,5 +296,38 @@ public class PointEngineService {
 
     private Long getTenantIdFromUser(Long userId) {
         return TenantContext.getTenantId();
+    }
+
+    /**
+     * Get rule chain configuration from database (platform_products table).
+     *
+     * @param productCode the product code to look up
+     * @return the rule chain, or empty list if not found or invalid
+     */
+    private List<String> getRuleChainFromDatabase(String productCode) {
+        try {
+            LambdaQueryWrapper<ProductEntity> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(ProductEntity::getCode, productCode)
+                   .eq(ProductEntity::getStatus, 1); // Only enabled products
+
+            ProductEntity product = productMapper.selectOne(wrapper);
+            if (product == null) {
+                log.debug("Product not found in database: {}", productCode);
+                return Collections.emptyList();
+            }
+
+            String ruleChainConfig = product.getRuleChainConfig();
+            if (!StringUtils.hasText(ruleChainConfig)) {
+                log.debug("No ruleChainConfig for product: {}", productCode);
+                return Collections.emptyList();
+            }
+
+            List<String> ruleChain = objectMapper.readValue(ruleChainConfig, new TypeReference<List<String>>() {});
+            log.info("Loaded rule chain from database for product {}: {}", productCode, ruleChain);
+            return ruleChain;
+        } catch (Exception e) {
+            log.warn("Failed to load rule chain from database for product: {}", productCode, e);
+            return Collections.emptyList();
+        }
     }
 }
