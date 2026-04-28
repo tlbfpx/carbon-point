@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, Row, Col, Statistic, Table, Button, DatePicker, Space, message, Empty } from 'antd';
 import {
   DownloadOutlined,
@@ -26,7 +26,8 @@ import {
 import dayjs from 'dayjs';
 import type { Dayjs } from 'dayjs';
 import { useAuthStore } from '@/store/authStore';
-import { getDashboardStats, getCheckInTrend, getPointsTrend, exportReport, DashboardStats, CheckInTrend, PointsTrend } from '@/api/reports';
+import { getDashboardStats, getCheckInTrend, getPointsTrend, getCrossProductOverview, exportReport, DashboardStats, CheckInTrend, PointsTrend, CrossProductOverview } from '@/api/reports';
+import { getTenantProducts } from '@/api/tenantProducts';
 import { useBranding } from '@/components/BrandingProvider';
 import { extractArray } from '@/utils';
 
@@ -93,8 +94,23 @@ const Reports: React.FC = () => {
     enabled: !!tenantId,
   });
 
+  // Fetch tenant products for dynamic product display
+  const { data: tenantProductsData } = useQuery({
+    queryKey: ['tenant-products', tenantId],
+    queryFn: () => getTenantProducts(),
+    enabled: !!tenantId,
+  });
+
+  const { data: productOverviewData } = useQuery({
+    queryKey: ['product-overview', tenantId],
+    queryFn: () => getCrossProductOverview(),
+    enabled: !!tenantId,
+  });
+
   const checkInTrend: CheckInTrend[] = extractArray<CheckInTrend>(checkInTrendData);
   const pointsTrend: PointsTrend[] = extractArray<PointsTrend>(pointsTrendData);
+  const tenantProducts = (tenantProductsData as { productCode: string; productName: string }[]) || [];
+  const productOverview = (productOverviewData as unknown as CrossProductOverview) || { slices: [], totalPoints: 0, participationRates: {}, overallParticipationRate: 0 };
 
   const stats: DashboardStats = (statsData as DashboardStats) || {
     todayCheckInCount: 0,
@@ -102,6 +118,41 @@ const Reports: React.FC = () => {
     activeUsers: 0,
     monthExchangeCount: 0,
   };
+
+  // Generate dynamic product data based on tenant products and overview
+  const productChartData = useMemo(() => {
+    if (productOverview.slices.length > 0) {
+      return productOverview.slices.map((slice: any, index: number) => ({
+        name: slice.productName,
+        points: slice.points,
+        color: [ACCENT_COLORS.blue, ACCENT_COLORS.green, ACCENT_COLORS.orange, ACCENT_COLORS.purple][index % 4],
+      }));
+    }
+    // Fallback to tenant products if no overview data
+    return tenantProducts.map((product, index: number) => ({
+      name: product.productName,
+      points: index === 0 ? stats.todayPointsGranted : index === tenantProducts.length - 1 ? stats.monthExchangeCount : 0,
+      color: [ACCENT_COLORS.blue, ACCENT_COLORS.green, ACCENT_COLORS.orange, ACCENT_COLORS.purple][index % 4],
+    }));
+  }, [tenantProducts, productOverview.slices, stats.todayPointsGranted, stats.monthExchangeCount]);
+
+  const productTableData = useMemo(() => {
+    if (productOverview.slices.length > 0) {
+      return productOverview.slices.map((slice: any, index: number) => ({
+        key: `product-${index}`,
+        productName: slice.productName,
+        pointsIssued: slice.points,
+        transactionCount: slice.activeUsers || Math.round(slice.points / 10), // Use activeUsers if available
+      }));
+    }
+    // Fallback to tenant products if no overview data
+    return tenantProducts.map((product, index: number) => ({
+      key: product.productCode,
+      productName: product.productName,
+      pointsIssued: index === 0 ? stats.todayPointsGranted : 0,
+      transactionCount: index === 0 ? stats.todayCheckInCount : index === tenantProducts.length - 1 ? stats.monthExchangeCount : 0,
+    }));
+  }, [tenantProducts, productOverview.slices, stats]);
 
   const handleExport = (type: string) => {
     exportReport(tenantId, type, startDate, endDate).then((blob: Blob) => {
@@ -507,11 +558,7 @@ const Reports: React.FC = () => {
             styles={{ body: { padding: 24 } }}
           >
             <ResponsiveContainer width="100%" height={240} minWidth={300}>
-              <BarChart data={[
-                { name: '爬楼打卡', points: stats.todayPointsGranted, color: ACCENT_COLORS.blue },
-                { name: '走路积分', points: 0, color: ACCENT_COLORS.green },
-                { name: '商城兑换', points: stats.monthExchangeCount, color: ACCENT_COLORS.orange },
-              ]} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+              <BarChart data={productChartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke={colors.warmBorder} strokeOpacity={0.5} />
                 <XAxis dataKey="name" style={{ fontFamily: 'Noto Sans SC, sans-serif', fontSize: 12 }} stroke={colors.textMuted} />
                 <YAxis style={{ fontFamily: 'Outfit, sans-serif', fontSize: 12 }} stroke={colors.textMuted} />
@@ -548,11 +595,7 @@ const Reports: React.FC = () => {
             styles={{ body: { padding: 16 } }}
           >
             <Table
-              dataSource={[
-                { key: 'checkin', productName: '爬楼打卡', pointsIssued: stats.todayPointsGranted, transactionCount: stats.todayCheckInCount },
-                { key: 'walking', productName: '走路积分', pointsIssued: 0, transactionCount: 0 },
-                { key: 'mall', productName: '商城兑换', pointsIssued: 0, transactionCount: stats.monthExchangeCount },
-              ]}
+              dataSource={productTableData}
               pagination={false}
               size="small"
               columns={[

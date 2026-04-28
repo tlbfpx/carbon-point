@@ -1,5 +1,5 @@
-import React from 'react';
-import { Table, Progress, Empty, Button, Flex, Typography } from 'antd';
+import React, { useMemo } from 'react';
+import { Table, Progress, Empty, Button, Flex, Typography, Card, Row, Col } from 'antd';
 import {
   TeamOutlined,
   TrophyOutlined,
@@ -7,6 +7,8 @@ import {
   RiseOutlined,
   ArrowRightOutlined,
   ThunderboltOutlined,
+  EnvironmentOutlined,
+  BookOutlined,
 } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -39,6 +41,7 @@ import {
   CrossProductOverview,
   ProductStats,
 } from '@/api/reports';
+import { getTenantProducts } from '@/api/tenantProducts';
 import {
   GlassCard,
   GlassCardStat,
@@ -51,6 +54,7 @@ import {
 import type { InsightData, QueryResult } from '@carbon-point/design-system';
 import { BRAND_PALETTE } from '@carbon-point/design-system';
 import { extractArray } from '@/utils';
+import { useNavigate } from 'react-router-dom';
 
 const { Text } = Typography;
 
@@ -67,7 +71,7 @@ const RANKING_COLORS = {
   gold: { start: '#FFD700', end: '#FFED4E' },
   silver: { start: '#C0C0C0', end: '#E8E8E8' },
   bronze: { start: '#CD7F32', end: '#E5A66B' },
-  default: 'rgba(255,255,255,0.06)',
+  default: 'rgba(0,0,0,0.06)',
 };
 
 // 图标配置
@@ -182,6 +186,18 @@ const handleNaturalQuery = async (query: string): Promise<QueryResult> => {
 const EnterpriseDashboard: React.FC = () => {
   const user = useAuthStore((s) => s.user);
   const tenantId = user?.tenantId || '';
+  const navigate = useNavigate();
+
+  // Fetch tenant products to determine which products are available
+  const { data: tenantProductsData } = useQuery({
+    queryKey: ['tenant-products', tenantId],
+    queryFn: () => getTenantProducts(),
+    enabled: !!tenantId,
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+
+  const tenantProducts = (tenantProductsData as { productCode: string; productName: string }[]) || [];
 
   // 优化：使用staleTime缓存数据，减少重复请求
   const { data: statsData } = useQuery({
@@ -255,8 +271,36 @@ const EnterpriseDashboard: React.FC = () => {
   const stackedTrendData: any[] = [];
   const allProductNames: string[] = [];
 
-  // Product colors for multi-product charts - disabled
-  const getProductColor = (_productName: string, _index: number): string => BRAND_PALETTE.primary;
+  // Product colors for multi-product charts - enabled
+  const PRODUCT_COLORS = [
+    { primary: BRAND_PALETTE.primary, secondary: BRAND_PALETTE.secondary },
+    { primary: BRAND_PALETTE.success, secondary: '#34D399' },
+    { primary: BRAND_PALETTE.accent, secondary: '#F472B6' },
+    { primary: BRAND_PALETTE.warning, secondary: '#FBBF24' },
+  ];
+
+  const getProductColor = (productName: string, index: number): string => {
+    const colorSet = PRODUCT_COLORS[index % PRODUCT_COLORS.length];
+    return colorSet.primary;
+  };
+
+  // Product icon mapping
+  const getProductIcon = (productCode: string) => {
+    const lowerCode = productCode.toLowerCase();
+    if (lowerCode.includes('stair') || lowerCode.includes('climb') || lowerCode.includes('爬楼')) {
+      return <EnvironmentOutlined />;
+    }
+    if (lowerCode.includes('walk') || lowerCode.includes('走路')) {
+      return <RiseOutlined />;
+    }
+    if (lowerCode.includes('quiz') || lowerCode.includes('quiz')) {
+      return <BookOutlined />;
+    }
+    if (lowerCode.includes('mall') || lowerCode.includes('商城')) {
+      return <ShoppingOutlined />;
+    }
+    return <ThunderboltOutlined />;
+  };
 
   // 统计数据
   const statValues = [
@@ -268,12 +312,11 @@ const EnterpriseDashboard: React.FC = () => {
 
   // 图表 tooltip 样式
   const glassTooltipStyle = {
-    backgroundColor: 'rgba(26, 26, 36, 0.95)',
-    backdropFilter: 'blur(12px)',
-    border: '1px solid rgba(255, 255, 255, 0.12)',
+    backgroundColor: '#fff',
+    border: '1px solid rgba(0, 0, 0, 0.08)',
     borderRadius: 12,
     padding: '12px 16px',
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
     fontFamily: "'Inter', sans-serif",
   };
 
@@ -281,7 +324,7 @@ const EnterpriseDashboard: React.FC = () => {
     if (active && payload && payload.length) {
       return (
         <div style={glassTooltipStyle}>
-          <p style={{ margin: 0, marginBottom: 4, fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>
+          <p style={{ margin: 0, marginBottom: 4, fontSize: 12, color: '#8a857f' }}>
             {label}
           </p>
           {payload.map((entry: any, index: number) => (
@@ -361,9 +404,174 @@ const EnterpriseDashboard: React.FC = () => {
         ))}
       </BentoGrid>
 
-      {/* 多产品维度统计卡片 - 已禁用以提高加载速度 */}
+      {/* 产品概览卡片 - 仅显示已开通的产品 */}
+      {tenantProducts.length > 0 && (
+        <div style={{ marginBottom: 24 }}>
+          <BentoGrid cols={Math.min(tenantProducts.length, 4)} gap={16}>
+            {tenantProducts.map((product, index) => {
+              const colorSet = PRODUCT_COLORS[index % PRODUCT_COLORS.length];
+              const productStats = productList.find(p => p.productCode === product.productCode);
+              // Get today's stats from dailyStats if available
+              const todayStat = productStats?.dailyStats?.[0];
+              return (
+                <BentoItem key={product.productCode}>
+                  <GlassCard
+                    hoverable
+                    onClick={() => navigate(`/product/${product.productCode}`)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <Flex justify="space-between" align="start" style={{ marginBottom: 16 }}>
+                      <div
+                        style={{
+                          width: 48,
+                          height: 48,
+                          borderRadius: 14,
+                          background: `linear-gradient(135deg, ${colorSet.primary}20, ${colorSet.secondary}10)`,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: 22,
+                          color: colorSet.primary,
+                        }}
+                      >
+                        {getProductIcon(product.productCode)}
+                      </div>
+                      <Button type="text" size="small" style={{ color: colorSet.primary }}>
+                        <ArrowRightOutlined />
+                      </Button>
+                    </Flex>
+                    <h3
+                      style={{
+                        fontSize: 16,
+                        fontWeight: 600,
+                        margin: 0,
+                        marginBottom: 8,
+                        color: '#2c2825',
+                      }}
+                    >
+                      {product.productName}
+                    </h3>
+                    <Row gutter={12}>
+                      <Col span={12}>
+                        <div style={{ fontSize: 12, color: '#8a857f', marginBottom: 4 }}>今日参与</div>
+                        <div style={{ fontSize: 20, fontWeight: 700, color: colorSet.primary }}>
+                          {todayStat?.count || productStats?.transactionCount || 0}
+                        </div>
+                      </Col>
+                      <Col span={12}>
+                        <div style={{ fontSize: 12, color: '#8a857f', marginBottom: 4 }}>发放积分</div>
+                        <div style={{ fontSize: 20, fontWeight: 700, color: colorSet.secondary }}>
+                          {todayStat?.points || productStats?.totalPointsIssued || 0}
+                        </div>
+                      </Col>
+                    </Row>
+                  </GlassCard>
+                </BentoItem>
+              );
+            })}
+          </BentoGrid>
+        </div>
+      )}
 
-      {/* 多产品图表区域 - 已禁用以提高加载速度 */}
+      {/* 多产品图表区域 - 仅当有多个产品时显示 */}
+      {tenantProducts.length > 0 && productOverview.slices.length > 0 && (
+        <BentoGrid cols={2} gap={16} style={{ marginBottom: 24 }}>
+          <BentoItem>
+            <GlassCard hoverable>
+              <Flex justify="space-between" align="center" style={{ marginBottom: 20 }}>
+                <Flex align="center" gap={12}>
+                  <div
+                    style={{
+                      width: 4,
+                      height: 24,
+                      background: `linear-gradient(180deg, ${BRAND_PALETTE.primary}, ${BRAND_PALETTE.secondary})`,
+                      borderRadius: 2,
+                    }}
+                  />
+                  <h3
+                    style={{
+                      fontSize: 16,
+                      fontWeight: 600,
+                      margin: 0,
+                      color: '#2c2825',
+                    }}
+                  >
+                    产品积分分布
+                  </h3>
+                </Flex>
+              </Flex>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={productOverview.slices}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
+                  <XAxis dataKey="name" style={{ fontSize: 11 }} stroke="rgba(0,0,0,0.25)" />
+                  <YAxis style={{ fontSize: 11 }} stroke="rgba(0,0,0,0.25)" />
+                  <Tooltip content={<GlassTooltip />} />
+                  <Bar
+                    dataKey="points"
+                    radius={[8, 8, 0, 0]}
+                    name="积分"
+                    fill={BRAND_PALETTE.primary}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </GlassCard>
+          </BentoItem>
+
+          <BentoItem>
+            <GlassCard hoverable>
+              <Flex justify="space-between" align="center" style={{ marginBottom: 20 }}>
+                <Flex align="center" gap={12}>
+                  <div
+                    style={{
+                      width: 4,
+                      height: 24,
+                      background: `linear-gradient(180deg, ${BRAND_PALETTE.success}, #34D399)`,
+                      borderRadius: 2,
+                    }}
+                  />
+                  <h3
+                    style={{
+                      fontSize: 16,
+                      fontWeight: 600,
+                      margin: 0,
+                      color: '#2c2825',
+                    }}
+                  >
+                    产品参与率
+                  </h3>
+                </Flex>
+              </Flex>
+              <Table
+                dataSource={productOverview.slices}
+                rowKey="productCode"
+                pagination={false}
+                size="small"
+                style={{ fontFamily: "'Inter', sans-serif" }}
+                columns={[
+                  {
+                    title: '产品',
+                    render: (_: unknown, record: any) => <Text style={{ color: '#2c2825', fontSize: 13 }}>{record.productName}</Text>,
+                  },
+                  {
+                    title: '参与率',
+                    render: (_: unknown, record: any) => (
+                      <Progress
+                        percent={record.participationRate || 0}
+                        size="small"
+                        strokeColor={{
+                          '0%': BRAND_PALETTE.success,
+                          '100%': '#34D399',
+                        }}
+                        trailColor="rgba(0,0,0,0.06)"
+                      />
+                    ),
+                  },
+                ]}
+              />
+            </GlassCard>
+          </BentoItem>
+        </BentoGrid>
+      )}
 
       {/* 图表区域 - 使用 BentoGrid 实现不对称布局 */}
       <BentoGrid cols={3} gap={16} style={{ marginBottom: 24 }}>
@@ -385,12 +593,12 @@ const EnterpriseDashboard: React.FC = () => {
                     fontSize: 16,
                     fontWeight: 600,
                     margin: 0,
-                    color: '#fff',
+                    color: '#2c2825',
                   }}
                 >
                   签到趋势
                 </h3>
-                <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>近7天</Text>
+                <Text style={{ fontSize: 13, color: '#8a857f' }}>近7天</Text>
               </Flex>
               <Button type="link" style={{ color: BRAND_PALETTE.primary }}>
                 查看更多 <ArrowRightOutlined />
@@ -406,15 +614,15 @@ const EnterpriseDashboard: React.FC = () => {
                       <stop offset="95%" stopColor={CHART_COLORS.primary.start} stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
                   <XAxis
                     dataKey="date"
                     style={{ fontFamily: "'Inter', sans-serif", fontSize: 12 }}
-                    stroke="rgba(255,255,255,0.3)"
+                    stroke="rgba(0,0,0,0.25)"
                   />
                   <YAxis
                     style={{ fontFamily: "'Inter', sans-serif", fontSize: 12 }}
-                    stroke="rgba(255,255,255,0.3)"
+                    stroke="rgba(0,0,0,0.25)"
                   />
                   <Tooltip content={<GlassTooltip />} />
                   <Area
@@ -451,7 +659,7 @@ const EnterpriseDashboard: React.FC = () => {
                     fontSize: 16,
                     fontWeight: 600,
                     margin: 0,
-                    color: '#fff',
+                    color: '#2c2825',
                   }}
                 >
                   积分概况
@@ -472,15 +680,15 @@ const EnterpriseDashboard: React.FC = () => {
                       <stop offset="100%" stopColor={CHART_COLORS.accent.end} stopOpacity={0.6} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
                   <XAxis
                     dataKey="date"
                     style={{ fontFamily: "'Inter', sans-serif", fontSize: 12 }}
-                    stroke="rgba(255,255,255,0.3)"
+                    stroke="rgba(0,0,0,0.25)"
                   />
                   <YAxis
                     style={{ fontFamily: "'Inter', sans-serif", fontSize: 12 }}
-                    stroke="rgba(255,255,255,0.3)"
+                    stroke="rgba(0,0,0,0.25)"
                   />
                   <Tooltip content={<GlassTooltip />} />
                   <Bar dataKey="granted" fill="url(#glassBarGranted)" name="发放" radius={[4, 4, 0, 0]} />
@@ -514,12 +722,12 @@ const EnterpriseDashboard: React.FC = () => {
                     fontSize: 16,
                     fontWeight: 600,
                     margin: 0,
-                    color: '#fff',
+                    color: '#2c2825',
                   }}
                 >
                   热门商品
                 </h3>
-                <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>TOP5</Text>
+                <Text style={{ fontSize: 13, color: '#8a857f' }}>TOP5</Text>
               </Flex>
               <Button type="link" style={{ color: BRAND_PALETTE.primary }}>
                 查看全部 <ArrowRightOutlined />
@@ -553,7 +761,7 @@ const EnterpriseDashboard: React.FC = () => {
                               : index === 2
                                 ? `linear-gradient(135deg, ${RANKING_COLORS.bronze.start}, ${RANKING_COLORS.bronze.end})`
                                 : RANKING_COLORS.default,
-                        color: index < 3 ? '#18181B' : 'rgba(255,255,255,0.6)',
+                        color: index < 3 ? '#18181B' : '#8a857f',
                       }}
                     >
                       {index + 1}
@@ -563,17 +771,17 @@ const EnterpriseDashboard: React.FC = () => {
                 {
                   title: '商品名称',
                   dataIndex: 'productName',
-                  render: (text: string) => <Text style={{ color: '#fff' }}>{text}</Text>,
+                  render: (text: string) => <Text style={{ color: '#2c2825' }}>{text}</Text>,
                 },
                 {
                   title: '兑换次数',
                   dataIndex: 'exchangeCount',
-                  render: (v: number) => <Text style={{ color: 'rgba(255,255,255,0.8)' }}>{v}</Text>,
+                  render: (v: number) => <Text style={{ color: '#8a857f' }}>{v}</Text>,
                 },
                 {
                   title: '消耗积分',
                   dataIndex: 'totalPoints',
-                  render: (v: number) => <Text style={{ color: 'rgba(255,255,255,0.8)' }}>{v}</Text>,
+                  render: (v: number) => <Text style={{ color: '#8a857f' }}>{v}</Text>,
                 },
                 {
                   title: '热度',
@@ -587,7 +795,7 @@ const EnterpriseDashboard: React.FC = () => {
                           '0%': CHART_COLORS.tertiary.start,
                           '100%': CHART_COLORS.tertiary.end,
                         }}
-                        trailColor="rgba(255,255,255,0.06)"
+                        trailColor="rgba(0,0,0,0.06)"
                         showInfo={false}
                         strokeWidth={6}
                       />

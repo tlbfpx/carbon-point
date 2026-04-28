@@ -23,14 +23,12 @@ import {
     SwapOutlined,
     SmileOutlined,
     ClockCircleOutlined,
+    RiseOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 
 import Dashboard from '@/pages/Dashboard';
 import Member from '@/pages/Member';
-import Rules from '@/pages/Rules';
-import Products from '@/pages/Products';
-import Orders from '@/pages/Orders';
 import Points from '@/pages/Points';
 import Reports from '@/pages/Reports';
 import Roles from '@/pages/Roles';
@@ -39,12 +37,16 @@ import FeatureMatrix from '@/pages/FeatureMatrix';
 import DictManagement from '@/pages/DictManagement';
 import LoginPage from '@/pages/LoginPage';
 import OperationLog from '@/pages/OperationLog';
-import WalkingManagement from '@/pages/walking/WalkingManagement';
 import PointExpiration from '@/pages/PointExpiration';
-import ProductConfig from '@/pages/ProductConfig';
-import QuizManagement from '@/pages/quiz/QuizManagement';
-import MallShelf from '@/pages/MallShelf';
-import MallReports from '@/pages/MallReports';
+
+// New product pages
+import StairClimbingPage from '@/pages/product/StairClimbingPage';
+import WalkingPage from '@/pages/product/WalkingPage';
+import QuizPage from '@/pages/product/QuizPage';
+import MallPage from '@/pages/product/MallPage';
+import SettingsPage from '@/pages/SettingsPage';
+
+import { useFeatureStore } from '@/store/featureStore';
 
 import { useAuthStore } from '@/store/authStore';
 import { useBranding } from '@/components/BrandingProvider';
@@ -63,24 +65,33 @@ const { Header, Sider, Content } = Layout;
 const ENTERPRISE_PERMISSION_MAP: Record<string, string | undefined> = {
   '/dashboard': 'enterprise:dashboard:view',
   '/members': 'enterprise:member:list',
-  '/rules': 'enterprise:rule:view',
-  '/products': 'enterprise:product:list',
-  '/product-config': 'enterprise:product:config',
-  '/orders': 'enterprise:order:list',
+  // Product pages
+  '/product/stair-climbing': 'enterprise:rule:view',
+  '/product/walking': 'enterprise:walking:view',
+  '/product/quiz': 'enterprise:quiz:view',
+  '/product/mall': 'enterprise:product:list',
+  '/settings': undefined,
+  // Operations
   '/points': 'enterprise:point:query',
+  '/point-expiration': 'enterprise:point:query',
   '/reports': 'enterprise:report:view',
+  // Settings sub-pages
   '/roles': 'enterprise:role:list',
+  '/branding': undefined,
   '/feature-matrix': 'enterprise:feature:view',
   '/dict-management': 'enterprise:dict:view',
-  '/branding': undefined,
   '/operation-log': 'enterprise:log:query',
+  // Legacy redirects (keep for compatibility)
+  '/rules': 'enterprise:rule:view',
   '/walking': 'enterprise:walking:view',
   '/walking/step-config': 'enterprise:walking:config',
   '/walking/fun-equiv': 'enterprise:walking:config',
-  '/point-expiration': 'enterprise:point:query',
   '/quiz': 'enterprise:quiz:view',
+  '/products': 'enterprise:product:list',
+  '/orders': 'enterprise:order:list',
   '/mall/shelf': 'enterprise:mall:shelf',
   '/mall/reports': 'enterprise:mall:report',
+  '/product-config': 'enterprise:product:config',
 };
 
 // Phase 2 fallback: static menu rendered when getTenantMenu() returns empty.
@@ -88,79 +99,55 @@ const ENTERPRISE_PERMISSION_MAP: Record<string, string | undefined> = {
 const EnterpriseMenuItems: MenuProps['items'] = [
   { key: '/dashboard', icon: <DashboardOutlined />, label: '数据看板' },
   { key: '/members', icon: <TeamOutlined />, label: '员工管理' },
-  {
-    key: 'stair-group',
-    icon: <SettingOutlined />,
-    label: '爬楼积分管理',
-    children: [
-      { key: '/rules', label: '规则配置' },
-    ],
-  },
-  {
-    key: 'walking-group',
-    icon: <WomanOutlined />,
-    label: '走路积分管理',
-    children: [
-      { key: '/walking/step-config', icon: <SwapOutlined />, label: '步数换算' },
-      { key: '/walking/fun-equiv', icon: <SmileOutlined />, label: '趣味等价物' },
-    ],
-  },
-  { key: '/products', icon: <ShopOutlined />, label: '产品管理' },
-  { key: '/product-config', icon: <SettingOutlined />, label: '产品配置' },
-  { key: '/orders', icon: <ShoppingOutlined />, label: '订单管理' },
-  {
-    key: 'mall-group',
-    icon: <ShopOutlined />,
-    label: '积分商城',
-    children: [
-      { key: '/mall/shelf', label: '商品上架' },
-      { key: '/orders', label: '订单管理' },
-      { key: '/mall/reports', label: '商城报表' },
-    ],
-  },
+  // Product menus — filtered dynamically below based on purchased products
+  { key: '/product/stair-climbing', icon: <RiseOutlined />, label: '爬楼积分管理' },
+  { key: '/product/walking', icon: <WomanOutlined />, label: '走路积分管理' },
+  { key: '/product/quiz', icon: <BookOutlined />, label: '答题管理' },
+  { key: '/product/mall', icon: <ShopOutlined />, label: '积分商城' },
+  // Operations
   { key: '/points', icon: <TrophyOutlined />, label: '积分运营' },
   { key: '/point-expiration', icon: <ClockCircleOutlined />, label: '积分过期配置' },
   { key: '/reports', icon: <BarChartOutlined />, label: '数据报表' },
-  { key: '/roles', icon: <SafetyOutlined />, label: '角色管理' },
-  { key: '/feature-matrix', icon: <AppstoreOutlined />, label: '功能点阵' },
-  { key: '/dict-management', icon: <BookOutlined />, label: '字典管理' },
-  { key: '/branding', icon: <SkinOutlined />, label: '品牌配置' },
-  { key: '/operation-log', icon: <FileTextOutlined />, label: '操作日志' },
-  { key: '/quiz', icon: <BookOutlined />, label: '答题管理' },
+  // Settings
+  {
+    key: 'settings-group',
+    icon: <SettingOutlined />,
+    label: '系统设置',
+    children: [
+      { key: '/roles', label: '角色管理' },
+      { key: '/branding', label: '品牌配置' },
+      { key: '/feature-matrix', label: '功能点阵' },
+      { key: '/dict-management', label: '字典管理' },
+      { key: '/operation-log', label: '操作日志' },
+    ],
+  },
 ];
 
 // Map backend paths to frontend routes
 const mapBackendPathToFrontend = (backendPath: string): string => {
   const pathMap: Record<string, string> = {
     '/dashboard': '/dashboard',
-    '/mall': '/products',
+    '/mall': '/product/mall',
     '/users': '/members',
     '/reports': '/reports',
-    '/settings': '/branding',
+    '/settings': '/settings',
   };
 
   // Check for product paths
   if (backendPath.startsWith('/product/')) {
     const parts = backendPath.split('/');
     const productCode = parts[2];
-    const feature = parts[3];
 
-    if (productCode === 'stair_climbing' || productCode === 'stairs_climbing') {
-      if (!feature || feature === 'records') {
-        return '/rules';
-      }
-      // All stair climbing features map to rules page
-      return '/rules';
-    }
+    const codeToRoute: Record<string, string> = {
+      'stair_climbing': '/product/stair-climbing',
+      'stairs_climbing': '/product/stair-climbing',
+      'walking': '/product/walking',
+      'quiz': '/product/quiz',
+      'mall': '/product/mall',
+    };
 
-    if (productCode === 'walking') {
-      if (feature === 'step-calc' || feature === 'step-config') {
-        return '/walking/step-config';
-      }
-      if (feature === 'fun-equiv' || feature === 'fun_equiv') {
-        return '/walking/fun-equiv';
-      }
-      return '/walking/step-config';
+    if (codeToRoute[productCode]) {
+      return codeToRoute[productCode];
     }
   }
 
@@ -170,7 +157,7 @@ const mapBackendPathToFrontend = (backendPath: string): string => {
   }
 
   // Check if path exists in permission map
-  if (ENTERPRISE_PERMISSION_MAP[backendPath]) {
+  if (ENTERPRISE_PERMISSION_MAP[backendPath] !== undefined) {
     return backendPath;
   }
 
@@ -212,16 +199,26 @@ const EnterpriseContent: React.FC = () => {
     refetchOnWindowFocus: false,
   });
 
-  // Only used in static-fallback mode to hide walking menus for tenants without walking product.
-  const hasWalkingProduct = useMemo(() => {
-    if (!tenantProducts) return false;
-    return tenantProducts.some(
-      (p) => p.productCode === 'walking' || p.category === 'walking'
+  // Product code to menu route mapping for static fallback filtering
+  const PRODUCT_MENU_MAP: Record<string, string> = {
+    'stair_climbing': '/product/stair-climbing',
+    'stairs_climbing': '/product/stair-climbing',
+    'walking': '/product/walking',
+    'quiz': '/product/quiz',
+    'mall': '/product/mall',
+  };
+
+  const tenantProductKeys = useMemo(() => {
+    if (!tenantProducts) return new Set<string>();
+    return new Set(
+      tenantProducts
+        .map(p => PRODUCT_MENU_MAP[p.productCode] || PRODUCT_MENU_MAP[p.category])
+        .filter(Boolean)
     );
   }, [tenantProducts]);
 
   // Debug logging
-  console.log('[EnterpriseContent render] isAuthenticated:', isAuthenticated, 'user:', !!user, 'location:', location.pathname, 'hasWalkingProduct:', hasWalkingProduct, 'dynamicMenu:', dynamicMenu);
+  console.log('[EnterpriseContent render] isAuthenticated:', isAuthenticated, 'user:', !!user, 'location:', location.pathname, 'tenantProductKeys:', tenantProductKeys, 'dynamicMenu:', dynamicMenu);
 
   useEffect(() => {
     useAuthStore.getState().hydrate();
@@ -266,8 +263,8 @@ const EnterpriseContent: React.FC = () => {
       .filter(item => {
         const key = String((item as any).key);
 
-        // Hide walking group if tenant doesn't have walking product
-        if (key === 'walking-group' && !hasWalkingProduct) {
+        // Hide product menus if tenant hasn't purchased the product
+        if (key.startsWith('/product/') && !tenantProductKeys.has(key)) {
           return false;
         }
 
@@ -292,7 +289,7 @@ const EnterpriseContent: React.FC = () => {
           onClick: () => { if (i?.key) navigate(String(i.key)); },
         };
       });
-  }, [dynamicMenu, hasWalkingProduct, permissionsLoading, productsLoading, permissions, navigate]);
+  }, [dynamicMenu, tenantProductKeys, permissionsLoading, productsLoading, permissions, navigate]);
 
   const userMenuItems: MenuProps['items'] = [
     { key: 'profile', icon: <UserOutlined />, label: '个人信息' },
@@ -426,9 +423,8 @@ const EnterpriseContent: React.FC = () => {
           theme="dark"
           mode="inline"
           selectedKeys={[location.pathname]}
-          defaultOpenKeys={dynamicMenu ? [] : ['stair-group', 'walking-group', 'mall-group']}
+          defaultOpenKeys={dynamicMenu ? [] : ['settings-group']}
           items={customMenuItems}
-          loading={menuLoading || productsLoading}
           style={{
             flex: 1,
             background: 'transparent',
@@ -559,24 +555,38 @@ const EnterpriseContent: React.FC = () => {
             <Route path="/login" element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<PermissionGuard><Dashboard /></PermissionGuard>} />
             <Route path="/members" element={<PermissionGuard><Member /></PermissionGuard>} />
-            <Route path="/rules" element={<PermissionGuard><Rules /></PermissionGuard>} />
-            <Route path="/products" element={<PermissionGuard><Products /></PermissionGuard>} />
-            <Route path="/product-config" element={<PermissionGuard><ProductConfig /></PermissionGuard>} />
-            <Route path="/orders" element={<PermissionGuard><Orders /></PermissionGuard>} />
+
+            {/* New product pages */}
+            <Route path="/product/stair-climbing" element={<PermissionGuard><StairClimbingPage /></PermissionGuard>} />
+            <Route path="/product/walking" element={<PermissionGuard><WalkingPage /></PermissionGuard>} />
+            <Route path="/product/quiz" element={<PermissionGuard><QuizPage /></PermissionGuard>} />
+            <Route path="/product/mall" element={<PermissionGuard><MallPage /></PermissionGuard>} />
+            <Route path="/settings" element={<PermissionGuard><SettingsPage /></PermissionGuard>} />
+
+            {/* Operations */}
             <Route path="/points" element={<PermissionGuard><Points /></PermissionGuard>} />
             <Route path="/point-expiration" element={<PermissionGuard><PointExpiration /></PermissionGuard>} />
             <Route path="/reports" element={<PermissionGuard><Reports /></PermissionGuard>} />
+
+            {/* Settings sub-pages */}
             <Route path="/roles" element={<PermissionGuard><Roles /></PermissionGuard>} />
+            <Route path="/branding" element={<PermissionGuard><Branding /></PermissionGuard>} />
             <Route path="/feature-matrix" element={<PermissionGuard><FeatureMatrix /></PermissionGuard>} />
             <Route path="/dict-management" element={<PermissionGuard><DictManagement /></PermissionGuard>} />
-            <Route path="/branding" element={<PermissionGuard><Branding /></PermissionGuard>} />
             <Route path="/operation-log" element={<PermissionGuard><OperationLog /></PermissionGuard>} />
-            <Route path="/walking" element={<PermissionGuard><WalkingManagement /></PermissionGuard>} />
-            <Route path="/walking/step-config" element={<PermissionGuard><WalkingManagement /></PermissionGuard>} />
-            <Route path="/walking/fun-equiv" element={<PermissionGuard><WalkingManagement /></PermissionGuard>} />
-            <Route path="/quiz" element={<PermissionGuard><QuizManagement /></PermissionGuard>} />
-            <Route path="/mall/shelf" element={<PermissionGuard><MallShelf /></PermissionGuard>} />
-            <Route path="/mall/reports" element={<PermissionGuard><MallReports /></PermissionGuard>} />
+
+            {/* Old route redirects */}
+            <Route path="/rules" element={<Navigate to="/product/stair-climbing" replace />} />
+            <Route path="/walking" element={<Navigate to="/product/walking" replace />} />
+            <Route path="/walking/step-config" element={<Navigate to="/product/walking" replace />} />
+            <Route path="/walking/fun-equiv" element={<Navigate to="/product/walking" replace />} />
+            <Route path="/quiz" element={<Navigate to="/product/quiz" replace />} />
+            <Route path="/products" element={<Navigate to="/product/mall" replace />} />
+            <Route path="/orders" element={<Navigate to="/product/mall" replace />} />
+            <Route path="/mall/shelf" element={<Navigate to="/product/mall" replace />} />
+            <Route path="/mall/reports" element={<Navigate to="/product/mall" replace />} />
+            <Route path="/product-config" element={<Navigate to="/product/stair-climbing" replace />} />
+
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </Content>
