@@ -11,12 +11,12 @@ const QuizPage: React.FC = () => {
             fontSize: 24,
             fontWeight: 700,
             marginBottom: 4,
-            color: '#fff',
+            color: '#2c2825',
           }}
         >
           答题管理
         </h1>
-        <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 14, margin: 0 }}>
+        <p style={{ color: '#8a857f', fontSize: 14, margin: 0 }}>
           管理题库与答题配置
         </p>
       </div>

@@ -1,0 +1,182 @@
+{
+  "config": {
+    "configFile": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/playwright.local-chrome.config.ts",
+    "rootDir": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/global-setup.ts",
+    "globalTeardown": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/global-teardown.ts",
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "local-chrome",
+        "name": "local-chrome",
+        "testDir": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "specs/**/*.spec.ts"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "html",
+        {
+          "outputFolder": "e2e/reports-local",
+          "open": "on-failure"
+        }
+      ],
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "e2e/reports-local/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.59.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "specs/platform/dashboard.spec.ts",
+      "file": "specs/platform/dashboard.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "平台后台 - 平台看板 (20 tests)",
+          "file": "specs/platform/dashboard.spec.ts",
+          "line": 6,
+          "column": 6,
+          "specs": [
+            {
+              "title": "PD-001: 平台看板页面可访问",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "local-chrome",
+                  "projectName": "local-chrome",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "timedOut",
+                      "duration": 32549,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 30000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 30000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at /Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/specs/platform/dashboard.spec.ts:9:8",
+                        "location": {
+                          "file": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/specs/platform/dashboard.spec.ts",
+                          "column": 8,
+                          "line": 9
+                        },
+                        "snippet": "   7 |   let dashboardPage: PlatformDashboardPage;\n   8 |\n>  9 |   test.beforeEach(async ({ page }) => {\n     |        ^\n  10 |     dashboardPage = new PlatformDashboardPage(page);\n  11 |     await loginAsPlatformAdmin(page, BASE_URL);\n  12 |     await dashboardPage.goto();"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/specs/platform/dashboard.spec.ts",
+                            "column": 8,
+                            "line": 9
+                          },
+                          "message": "\u001b[31mTest timeout of 30000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n\n   7 |   let dashboardPage: PlatformDashboardPage;\n   8 |\n>  9 |   test.beforeEach(async ({ page }) => {\n     |        ^\n  10 |     dashboardPage = new PlatformDashboardPage(page);\n  11 |     await loginAsPlatformAdmin(page, BASE_URL);\n  12 |     await dashboardPage.goto();\n    at /Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/specs/platform/dashboard.spec.ts:9:8"
+                        },
+                        {
+                          "location": {
+                            "file": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/helpers.ts",
+                            "column": 16,
+                            "line": 143
+                          },
+                          "message": "Error: page.waitForSelector: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.ant-layout-content') to be visible\u001b[22m\n\n\n   at helpers.ts:143\n\n  141 |     await page.goto(`${baseUrl}/dashboard`, { waitUntil: 'networkidle' });\n  142 |     // Wait for the layout content to be visible (longer timeout)\n> 143 |     await page.waitForSelector('.ant-layout-content', { timeout: 30000 });\n      |                ^\n  144 |   }\n  145 | }\n  146 |\n    at loginAsPlatformAdmin (/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/helpers.ts:143:16)\n    at /Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/specs/platform/dashboard.spec.ts:11:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-27T08:35:03.653Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/test-results/specs-platform-dashboard-平-ca72d-板-20-tests-PD-001-平台看板页面可访问-local-chrome/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/test-results/specs-platform-dashboard-平-ca72d-板-20-tests-PD-001-平台看板页面可访问-local-chrome/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/test-results/specs-platform-dashboard-平-ca72d-板-20-tests-PD-001-平台看板页面可访问-local-chrome/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/test-results/specs-platform-dashboard-平-ca72d-板-20-tests-PD-001-平台看板页面可访问-local-chrome/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/muxi/workspace/carbon-point/saas-frontend/platform-frontend/e2e/specs/platform/dashboard.spec.ts",
+                        "column": 8,
+                        "line": 9
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "c20963167e1158dd63e3-f1e6ed5b6e7519850cbd",
+              "file": "specs/platform/dashboard.spec.ts",
+              "line": 16,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-04-27T08:35:01.937Z",
+    "duration": 167976.706,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

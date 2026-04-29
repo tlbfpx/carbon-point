@@ -96,51 +96,22 @@ export async function logout(page: Page) {
 
 
 /**
- * Login as platform admin.
- * Platform API uses /platform/auth/login (not /api/auth/platform/login).
- * Bypasses UI form by calling API directly and injecting JWT into localStorage.
- *
- * The API admin object needs transformation to match the AdminUser interface:
- *   API: { id, username, displayName, role, status }
- *   Frontend expects: { userId, username, roles[], isPlatformAdmin }
+ * Login as platform admin via UI.
+ * This is more reliable than localStorage injection for testing.
  */
 export async function loginAsPlatformAdmin(page: Page, baseUrl: string) {
-  // Platform API is at port 8080, not the frontend port (3001)
-  const apiResponse = await page.request.post(`http://localhost:8080/platform/auth/login`, {
-    headers: { 'Content-Type': 'application/json' },
-    data: { username: 'admin', password: 'admin123' },
-  });
-  const apiData = await apiResponse.json();
+  // Navigate to login page
+  await page.goto(`${baseUrl}/login`, { waitUntil: 'networkidle' });
 
-  if ((apiData.code === 200 || apiData.code === '0000') && apiData.data) {
-    const { accessToken, refreshToken, admin } = apiData.data;
-    // Transform API admin object to match AdminUser interface
-    const user = {
-      userId: String(admin.id),
-      username: admin.username,
-      roles: [admin.role].filter(Boolean),
-      permissions: [],
-      isPlatformAdmin: true,
-    };
-    await page.goto(`${baseUrl}/`);
-    await page.waitForLoadState('domcontentloaded');
-    // Inject auth state into localStorage
-    await page.evaluate(
-      ([at, rt, u]) => {
-        localStorage.setItem(
-          'carbon-platform-auth',
-          JSON.stringify({
-            state: { accessToken: at, refreshToken: rt, user: u },
-            version: 0,
-          })
-        );
-      },
-      [accessToken, refreshToken, user]
-    );
-    // Reload page so Zustand hydrates from localStorage before render
-    await page.reload();
-    await page.waitForLoadState('networkidle');
-    // Navigate to platform dashboard (or let redirect handle it)
-    await page.waitForSelector('.ant-layout-content', { timeout: 5000 });
-  }
+  // Fill login form (correct placeholder from PlatformLoginPage)
+  await page.getByPlaceholder('请输入管理员用户名').fill('admin');
+  await page.getByPlaceholder('请输入密码').fill('admin123');
+
+  // Click login button
+  await page.locator('button[type="submit"]').click();
+
+  // Wait for navigation to dashboard and layout to be visible
+  await page.waitForURL(/dashboard/, { timeout: 30000 });
+  await page.waitForLoadState('networkidle');
+  await page.waitForSelector('.ant-layout-content', { timeout: 30000 });
 }

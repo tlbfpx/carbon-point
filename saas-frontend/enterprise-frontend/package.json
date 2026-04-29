@@ -9,8 +9,12 @@
     "preview": "vite preview",
     "lint": "eslint src --ext .ts,.tsx",
     "type-check": "tsc --noEmit",
+    "test": "vitest",
+    "test:run": "vitest run",
     "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e:ui": "playwright test --ui",
+    "test:local": "playwright test --config=playwright.local-chrome.config.ts --headed",
+    "test:local:ui": "playwright test --config=playwright.local-chrome.config.ts --ui"
   },
   "dependencies": {
     "@ant-design/cssinjs": "^1.18.0",
@@ -28,16 +32,20 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.59.1",
+    "@testing-library/jest-dom": "^6.4.2",
+    "@testing-library/react": "^14.3.1",
     "@types/node": "^20.0.0",
     "@types/react": "^18.2.64",
     "@types/react-dom": "^18.2.21",
     "@typescript-eslint/eslint-plugin": "^7.1.0",
     "@typescript-eslint/parser": "^7.1.0",
-    "@vitejs/plugin-react": "^4.2.1",
+    "@vitejs/plugin-react": "^4.7.0",
     "eslint": "^8.57.0",
     "eslint-plugin-react-hooks": "^4.6.0",
+    "jsdom": "^24.1.0",
     "playwright": "^1.44.0",
     "typescript": "^5.4.2",
-    "vite": "^5.1.6"
+    "vite": "^5.1.6",
+    "vitest": "^1.6.0"
   }
 }

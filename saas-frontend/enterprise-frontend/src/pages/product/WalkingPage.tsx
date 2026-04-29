@@ -41,19 +41,18 @@ const WalkingPage: React.FC = () => {
             fontSize: 24,
             fontWeight: 700,
             marginBottom: 4,
-            color: '#fff',
+            color: '#2c2825',
           }}
         >
           走路积分管理
         </h1>
-        <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 14, margin: 0 }}>
+        <p style={{ color: '#8a857f', fontSize: 14, margin: 0 }}>
           管理走路步数积分规则与数据
         </p>
       </div>
 
       <Tabs
         items={tabItems}
-        style={{ color: '#fff' }}
         tabBarStyle={{ marginBottom: 24 }}
       />
     </div>

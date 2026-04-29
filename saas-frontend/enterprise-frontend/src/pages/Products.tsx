@@ -46,7 +46,7 @@ const typeTagColors: Record<string, { bg: string; color: string }> = {
   privilege: { bg: '#fff8e1', color: '#f57c00' },
 };
 
-const Products: React.FC = () => {
+const Products: React.FC<{ hideHeader?: boolean }> = ({ hideHeader = false }) => {
   const { primaryColor } = useBranding();
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
@@ -217,7 +217,7 @@ const Products: React.FC = () => {
           style={{
             borderRadius: 16,
             fontFamily: 'var(--font-body, "Noto Sans SC", sans-serif)',
-            border: '1px solid rgba(255,255,255,0.12)',
+            border: '1px solid #d4d0c8',
             background: stock === 0 ? 'rgba(239,68,68,0.1)' : 'transparent',
             color: stock === 0 ? '#ff4d4f' : primaryColor,
           }}
@@ -250,7 +250,7 @@ const Products: React.FC = () => {
             style={{
               borderRadius: 20,
               fontFamily: 'var(--font-body, "Noto Sans SC", sans-serif)',
-              border: '1px solid rgba(255,255,255,0.12)',
+              border: '1px solid #d4d0c8',
               color: primaryColor,
             }}
           >
@@ -264,6 +264,7 @@ const Products: React.FC = () => {
   return (
     <div style={{ padding: '0 0 24px', fontFamily: 'var(--font-body, "Noto Sans SC", sans-serif)' }}>
       {/* Page Header */}
+      {!hideHeader && (
       <div style={{ marginBottom: 24 }}>
         <h1
           style={{
@@ -271,13 +272,14 @@ const Products: React.FC = () => {
             fontSize: 24,
             fontWeight: 700,
             marginBottom: 4,
-            color: '#fff',
+            color: '#2c2825',
           }}
         >
           商品管理
         </h1>
-        <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 14, margin: 0 }}>管理您的虚拟商品库存和设置</p>
+        <p style={{ color: '#8a857f', fontSize: 14, margin: 0 }}>管理您的虚拟商品库存和设置</p>
       </div>
+      )}
 
       {/* Filter Bar */}
       <GlassCard hoverable style={{ marginBottom: 20, padding: '16px 20px', display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -289,7 +291,7 @@ const Products: React.FC = () => {
           styles={{
             input: {
               borderRadius: 12,
-              border: '1px solid rgba(255,255,255,0.1)',
+              border: '1px solid #d4d0c8',
             },
           }}
         />
@@ -339,9 +341,9 @@ const Products: React.FC = () => {
                   <Button
                     style={{
                       borderRadius: 8,
-                      border: '1px solid rgba(255,255,255,0.12)',
-                      color: current === page ? primaryColor : 'rgba(255,255,255,0.65)',
-                      background: current === page ? `${primaryColor}15` : 'rgba(255,255,255,0.04)',
+                      border: '1px solid #d4d0c8',
+                      color: current === page ? primaryColor : '#8a857f',
+                      background: current === page ? `${primaryColor}15` : '#fff',
                       fontWeight: current === page ? 600 : 400,
                     }}
                   >
@@ -379,7 +381,7 @@ const Products: React.FC = () => {
         <div
           style={{
             padding: '24px 28px',
-            borderBottom: '1px solid rgba(255,255,255,0.08)',
+            borderBottom: '1px solid #d4d0c8',
           }}
         >
           <h2
@@ -388,7 +390,7 @@ const Products: React.FC = () => {
               fontSize: 20,
               fontWeight: 600,
               margin: 0,
-              color: '#fff',
+              color: '#2c2825',
             }}
           >
             {editingProduct ? '编辑商品' : '添加商品'}
@@ -401,7 +403,7 @@ const Products: React.FC = () => {
                 placeholder="请输入商品名称"
                 style={{
                   borderRadius: 12,
-                  border: '1px solid rgba(255,255,255,0.1)',
+                  border: '1px solid #d4d0c8',
                   fontFamily: 'var(--font-body, "Noto Sans SC", sans-serif)',
                 }}
               />
@@ -412,7 +414,7 @@ const Products: React.FC = () => {
                 placeholder="请输入商品描述"
                 style={{
                   borderRadius: 12,
-                  border: '1px solid rgba(255,255,255,0.1)',
+                  border: '1px solid #d4d0c8',
                   fontFamily: 'var(--font-body, "Noto Sans SC", sans-serif)',
                 }}
               />
@@ -431,7 +433,7 @@ const Products: React.FC = () => {
                   style={{
                     width: 120,
                     borderRadius: 12,
-                    border: '1px solid rgba(255,255,255,0.1)',
+                    border: '1px solid #d4d0c8',
                   }}
                 />
               </Form.Item>
@@ -441,7 +443,7 @@ const Products: React.FC = () => {
                   style={{
                     width: 120,
                     borderRadius: 12,
-                    border: '1px solid rgba(255,255,255,0.1)',
+                    border: '1px solid #d4d0c8',
                   }}
                 />
               </Form.Item>
@@ -454,7 +456,7 @@ const Products: React.FC = () => {
                   style={{
                     width: 140,
                     borderRadius: 12,
-                    border: '1px solid rgba(255,255,255,0.1)',
+                    border: '1px solid #d4d0c8',
                   }}
                 />
               </Form.Item>
@@ -464,7 +466,7 @@ const Products: React.FC = () => {
                   style={{
                     width: 140,
                     borderRadius: 12,
-                    border: '1px solid rgba(255,255,255,0.1)',
+                    border: '1px solid #d4d0c8',
                   }}
                 />
               </Form.Item>
@@ -474,7 +476,7 @@ const Products: React.FC = () => {
                 placeholder="请输入图片URL"
                 style={{
                   borderRadius: 12,
-                  border: '1px solid rgba(255,255,255,0.1)',
+                  border: '1px solid #d4d0c8',
                   fontFamily: 'var(--font-body, "Noto Sans SC", sans-serif)',
                 }}
               />
@@ -485,8 +487,8 @@ const Products: React.FC = () => {
                   onClick={() => setModalOpen(false)}
                   style={{
                     borderRadius: 20,
-                    border: '1px solid rgba(255,255,255,0.12)',
-                    color: 'rgba(255,255,255,0.65)',
+                    border: '1px solid #d4d0c8',
+                    color: '#8a857f',
                     fontFamily: 'var(--font-body, "Noto Sans SC", sans-serif)',
                   }}
                 >
@@ -530,7 +532,7 @@ const Products: React.FC = () => {
         <div
           style={{
             padding: '20px 24px',
-            borderBottom: '1px solid rgba(255,255,255,0.08)',
+            borderBottom: '1px solid #d4d0c8',
           }}
         >
           <h2
@@ -539,7 +541,7 @@ const Products: React.FC = () => {
               fontSize: 18,
               fontWeight: 600,
               margin: 0,
-              color: '#fff',
+              color: '#2c2825',
             }}
           >
             编辑库存
@@ -548,7 +550,7 @@ const Products: React.FC = () => {
         <div style={{ padding: '24px' }}>
           <p
             style={{
-              color: 'rgba(255,255,255,0.65)',
+              color: '#8a857f',
               marginBottom: 16,
               fontFamily: 'var(--font-body, "Noto Sans SC", sans-serif)',
             }}
@@ -562,7 +564,7 @@ const Products: React.FC = () => {
             style={{
               width: '100%',
               borderRadius: 12,
-              border: '1px solid rgba(255,255,255,0.1)',
+              border: '1px solid #d4d0c8',
             }}
           />
           <div
@@ -577,8 +579,8 @@ const Products: React.FC = () => {
               onClick={() => setStockModalOpen(false)}
               style={{
                 borderRadius: 20,
-                border: '1px solid rgba(255,255,255,0.12)',
-                color: 'rgba(255,255,255,0.65)',
+                border: '1px solid #d4d0c8',
+                color: '#8a857f',
                 fontFamily: 'var(--font-body, "Noto Sans SC", sans-serif)',
               }}
             >
@@ -603,20 +605,21 @@ const Products: React.FC = () => {
 
       <style>{`
         .digital-garden-table .ant-table-thead > tr > th {
-          background: rgba(255,255,255,0.04) !important;
-          border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+          background: #faf8f5 !important;
+          border-bottom: 1px solid #d4d0c8 !important;
           font-family: 'Outfit', sans-serif !important;
           font-weight: 600 !important;
-          color: rgba(255,255,255,0.65) !important;
+          color: #8a857f !important;
           padding: 16px !important;
         }
         .digital-garden-table .ant-table-tbody > tr > td {
           padding: 16px !important;
-          border-bottom: 1px solid rgba(255,255,255,0.06) !important;
-          color: rgba(255,255,255,0.85) !important;
+          border-bottom: 1px solid #d4d0c8 !important;
+          color: #2c2825 !important;
+          background: #fff !important;
         }
         .digital-garden-table .ant-table-tbody > tr:hover > td {
-          background: rgba(255,255,255,0.04) !important;
+          background: #faf8f5 !important;
         }
         .digital-garden-table .ant-table-tbody > tr > td:first-child {
           border-top-left-radius: 12px;
@@ -627,11 +630,11 @@ const Products: React.FC = () => {
           border-bottom-right-radius: 12px;
         }
         .digital-garden-table .ant-table-tbody > tr.odd-row > td {
-          background: rgba(255,255,255,0.02) !important;
+          background: #faf8f5 !important;
         }
         .digital-garden-table .ant-pagination-item {
           border-radius: 8px !important;
-          border: 1px solid rgba(255,255,255,0.12) !important;
+          border: 1px solid #d4d0c8 !important;
         }
         .digital-garden-table .ant-pagination-item-active {
           background: ${primaryColor}15 !important;

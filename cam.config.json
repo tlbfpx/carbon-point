@@ -1,0 +1,5 @@
+{
+  "serverPort": 7890,
+  "dashboardPort": 7891,
+  "theme": "modern"
+}

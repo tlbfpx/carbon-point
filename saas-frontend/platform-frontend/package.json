@@ -13,7 +13,9 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:platform": "cd ../.. && pnpm -F @carbon-point/platform-frontend exec playwright test --project=platform",
     "test:e2e:platform:headed": "cd ../.. && pnpm -F @carbon-point/platform-frontend exec playwright test --project=platform --headed",
-    "test:e2e:platform:ui": "cd ../.. && pnpm -F @carbon-point/platform-frontend exec playwright test --project=platform --ui"
+    "test:e2e:platform:ui": "cd ../.. && pnpm -F @carbon-point/platform-frontend exec playwright test --project=platform --ui",
+    "test:local": "playwright test --config=playwright.local-chrome.config.ts --headed",
+    "test:local:ui": "playwright test --config=playwright.local-chrome.config.ts --ui"
   },
   "dependencies": {
     "@ant-design/cssinjs": "^1.18.0",

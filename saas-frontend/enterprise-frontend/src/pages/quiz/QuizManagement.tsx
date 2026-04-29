@@ -42,7 +42,7 @@ const difficultyLabels: Record<number, string> = {
   3: '困难',
 };
 
-const QuizManagement: React.FC = () => {
+const QuizManagement: React.FC<{ hideHeader?: boolean }> = ({ hideHeader = false }) => {
   const { primaryColor } = useBranding();
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
@@ -212,6 +212,7 @@ const QuizManagement: React.FC = () => {
     <FeatureGuard feature="quiz.enabled" fallback={null}>
       <div style={{ padding: '0 0 24px', fontFamily: 'var(--font-body, "Noto Sans SC", sans-serif)' }}>
         {/* Page Header */}
+        {!hideHeader && (
         <div style={{ marginBottom: 24 }}>
           <h1
             style={{
@@ -228,6 +229,7 @@ const QuizManagement: React.FC = () => {
             管理题库与答题配置
           </p>
         </div>
+        )}
 
         {/* Tab Switcher */}
         <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>

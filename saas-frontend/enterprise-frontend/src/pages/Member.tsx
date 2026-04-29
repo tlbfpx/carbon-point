@@ -140,7 +140,7 @@ const Member: React.FC = () => {
           </div>
           <div>
             <div style={{ fontWeight: 500, fontFamily: 'var(--font-body)' }}>{name}</div>
-            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)' }}>{record.phone}</div>
+            <div style={{ fontSize: 12, color: '#8a857f' }}>{record.phone}</div>
           </div>
         </div>
       ),
@@ -246,12 +246,12 @@ const Member: React.FC = () => {
             fontSize: 24,
             fontWeight: 700,
             marginBottom: 8,
-            color: '#fff',
+            color: '#2c2825',
           }}
         >
           成员管理
         </h1>
-        <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 14, fontFamily: 'var(--font-body)' }}>
+        <p style={{ color: '#8a857f', fontSize: 14, fontFamily: 'var(--font-body)' }}>
           管理组织成员、查看积分等级、邀请新成员加入
         </p>
       </div>
@@ -288,8 +288,8 @@ const Member: React.FC = () => {
             icon={<UploadOutlined />}
             style={{
               borderRadius: 20,
-              borderColor: 'rgba(255,255,255,0.12)',
-              color: 'rgba(255,255,255,0.65)',
+              borderColor: '#d4d0c8',
+              color: '#4a4540',
             }}
           >
             批量导入
@@ -317,7 +317,7 @@ const Member: React.FC = () => {
                   <div
                     style={{
                       borderRadius: 12,
-                      borderColor: 'rgba(255,255,255,0.12)',
+                      borderColor: '#d4d0c8',
                       minWidth: 36,
                       height: 36,
                       display: 'flex',
@@ -342,10 +342,10 @@ const Member: React.FC = () => {
               cursor: 'pointer',
             },
             onMouseEnter: (e) => {
-              e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
+              e.currentTarget.style.background = '#faf8f5';
             },
             onMouseLeave: (e) => {
-              e.currentTarget.style.background = 'transparent';
+              e.currentTarget.style.background = '#ffffff';
             },
           })}
           components={{
@@ -355,12 +355,12 @@ const Member: React.FC = () => {
                   {...props}
                   style={{
                     ...props.style,
-                    background: 'rgba(255,255,255,0.04)',
+                    background: '#faf8f5',
                     fontFamily: 'var(--font-heading)',
                     fontWeight: 600,
-                    color: 'rgba(255,255,255,0.65)',
+                    color: '#2c2825',
                     padding: '16px 24px',
-                    borderBottom: '1px solid rgba(255,255,255,0.06)',
+                    borderBottom: '1px solid #d4d0c8',
                   }}
                 />
               ),
@@ -381,7 +381,7 @@ const Member: React.FC = () => {
                   style={{
                     ...props.style,
                     padding: '16px 24px',
-                    borderBottom: '1px solid rgba(255,255,255,0.06)',
+                    borderBottom: '1px solid #d4d0c8',
                   }}
                 />
               ),
@@ -408,7 +408,7 @@ const Member: React.FC = () => {
         <div
           style={{
             padding: '24px 32px 20px',
-            borderBottom: '1px solid rgba(255,255,255,0.08)',
+            borderBottom: '1px solid #d4d0c8',
           }}
         >
           <h2
@@ -417,12 +417,12 @@ const Member: React.FC = () => {
               fontSize: 20,
               fontWeight: 600,
               margin: 0,
-              color: '#fff',
+              color: '#2c2825',
             }}
           >
             添加成员
           </h2>
-          <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 13, marginTop: 4, fontFamily: 'var(--font-body)' }}>
+          <p style={{ color: '#8a857f', fontSize: 13, marginTop: 4, fontFamily: 'var(--font-body)' }}>
             邀请新成员加入您的组织
           </p>
         </div>
@@ -443,7 +443,7 @@ const Member: React.FC = () => {
                 placeholder="请输入手机号"
                 style={{
                   borderRadius: 12,
-                  borderColor: 'rgba(255,255,255,0.1)',
+                  borderColor: '#d4d0c8',
                   padding: '10px 16px',
                 }}
               />
@@ -459,7 +459,7 @@ const Member: React.FC = () => {
                 placeholder="请输入姓名"
                 style={{
                   borderRadius: 12,
-                  borderColor: 'rgba(255,255,255,0.1)',
+                  borderColor: '#d4d0c8',
                   padding: '10px 16px',
                 }}
               />
@@ -485,8 +485,8 @@ const Member: React.FC = () => {
                   onClick={() => setCreateModalOpen(false)}
                   style={{
                     borderRadius: 20,
-                    borderColor: 'rgba(255,255,255,0.12)',
-                    color: 'rgba(255,255,255,0.65)',
+                    borderColor: '#d4d0c8',
+                    color: '#4a4540',
                     minWidth: 80,
                   }}
                 >

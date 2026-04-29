@@ -6,7 +6,6 @@ import 'dayjs/locale/zh-cn';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getCurrentBranding, getBrandingByTenantId, TenantBranding } from '@/api/branding';
 import { useAuthStore } from '@/store/authStore';
-import { useLocation } from 'react-router-dom';
 
 // Preset theme color map
 const PRESET_COLORS: Record<string, string> = {
@@ -48,7 +47,6 @@ const getTenantIdFromUrl = () => {
 const BrandingProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const queryClient = useQueryClient();
-  const location = useLocation();
   const [initialTenantId] = useState(() => getTenantIdFromUrl());
 
   // For authenticated users - use current tenant branding

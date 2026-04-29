@@ -48,7 +48,7 @@ const formatPrice = (cents: number) => {
 
 const DEFAULT_EXCHANGE_RATE = 100; // 100 points = 1 RMB
 
-const MallShelf: React.FC = () => {
+const MallShelf: React.FC<{ hideHeader?: boolean }> = ({ hideHeader = false }) => {
   const { primaryColor } = useBranding();
   const queryClient = useQueryClient();
   const [rateModalOpen, setRateModalOpen] = useState(false);
@@ -134,6 +134,7 @@ const MallShelf: React.FC = () => {
   return (
     <div style={{ padding: '0 0 24px', fontFamily: 'var(--font-body, "Noto Sans SC", sans-serif)' }}>
       {/* Page Header */}
+      {!hideHeader && (
       <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
           <h1
@@ -159,6 +160,7 @@ const MallShelf: React.FC = () => {
           刷新
         </Button>
       </div>
+      )}
 
       <Row gutter={20}>
         {/* Left Panel: Available Products */}

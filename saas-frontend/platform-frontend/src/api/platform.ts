@@ -482,25 +482,6 @@ export const getPackageDetail = async (id: string) => {
   return res.data;
 };
 
-export const updatePackageProducts = async (packageId: string, products: { productId: string; sortOrder?: number }[]) => {
-  const res = await platformApiClient.put(`/packages/${packageId}/products`, { products });
-  return res.data;
-};
-
-export const getPackageProductFeatures = async (packageId: string, productId: string) => {
-  const res = await platformApiClient.get(`/packages/${packageId}/products/${productId}/features`);
-  return res.data;
-};
-
-export const updatePackageProductFeatures = async (
-  packageId: string,
-  productId: string,
-  features: { featureId: string; configValue?: string; isEnabled: boolean }[]
-) => {
-  const res = await platformApiClient.put(`/packages/${packageId}/products/${productId}/features`, { features });
-  return res.data;
-};
-
 // Tenant Product APIs
 export interface TenantProductInfo {
   productId: string;

@@ -29,23 +29,20 @@ const StairClimbingPage: React.FC = () => {
       },
     ];
 
-    if (isEnabled('time_slot')) {
-      tabs.push({ key: 'timeslot', label: '规则配置', children: <TimeSlotTab tenantId={tenantId} /> });
+    if (isEnabled('stair.time_slot')) {
+      tabs.push({ key: 'timeslot', label: '时段配置', children: <TimeSlotTab tenantId={tenantId} /> });
     }
-    if (isEnabled('consecutive_reward')) {
-      tabs.push({ key: 'consecutive', label: '连续奖励', children: <ConsecutiveTab tenantId={tenantId} /> });
+    if (isEnabled('stair.floor_points')) {
+      tabs.push({ key: 'floorpoints', label: '楼层积分', children: <div style={{ padding: 24 }}>楼层积分配置功能即将上线</div> });
     }
-    if (isEnabled('special_date')) {
+    if (isEnabled('stair.special_date')) {
       tabs.push({ key: 'special', label: '特殊日期', children: <SpecialTab tenantId={tenantId} /> });
     }
-    if (isEnabled('level_coefficient')) {
-      tabs.push({ key: 'level', label: '等级系数', children: <LevelTab tenantId={tenantId} /> });
+    if (isEnabled('stair.workday_only')) {
+      tabs.push({ key: 'workday', label: '工作日限制', children: <WorkdayFilterTab tenantId={tenantId} /> });
     }
-    if (isEnabled('daily_cap')) {
-      tabs.push({ key: 'dailycap', label: '每日上限', children: <DailyCapTab tenantId={tenantId} /> });
-    }
-    if (isEnabled('workday_filter')) {
-      tabs.push({ key: 'workday', label: '工作日过滤', children: <WorkdayFilterTab tenantId={tenantId} /> });
+    if (isEnabled('stair.leaderboard')) {
+      tabs.push({ key: 'leaderboard', label: '排行榜', children: <div style={{ padding: 24 }}>排行榜配置功能即将上线</div> });
     }
 
     return tabs;
@@ -60,19 +57,18 @@ const StairClimbingPage: React.FC = () => {
             fontSize: 24,
             fontWeight: 700,
             marginBottom: 4,
-            color: '#fff',
+            color: '#2c2825',
           }}
         >
           爬楼积分管理
         </h1>
-        <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 14, margin: 0 }}>
+        <p style={{ color: '#8a857f', fontSize: 14, margin: 0 }}>
           管理爬楼签到规则与数据
         </p>
       </div>
 
       <Tabs
         items={tabItems}
-        style={{ color: '#fff' }}
         tabBarStyle={{
           marginBottom: 24,
         }}

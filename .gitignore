@@ -63,3 +63,16 @@ test-results/
 /carbon-system/
 /apps/
 .worktrees/
+
+# Claude 临时文件
+.claude/
+session-*.md
+start-backend-foreground.sh
+
+# 临时报告
+architecture-diagram.html
+fix_*.sql
+
+# E2E 报告（如果是临时的）
+saas-frontend/enterprise-frontend/e2e/reports/
+saas-frontend/platform-frontend/e2e/reports/

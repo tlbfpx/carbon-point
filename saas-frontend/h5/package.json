@@ -12,7 +12,9 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e:ui": "playwright test --ui",
+    "test:local": "playwright test --config=e2e/playwright.local-chrome.config.ts --headed",
+    "test:local:ui": "playwright test --config=e2e/playwright.local-chrome.config.ts --ui"
   },
   "dependencies": {
     "@ant-design/cssinjs": "^1.18.0",

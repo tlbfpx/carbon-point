@@ -15,7 +15,6 @@ import {
   Tooltip,
   Empty,
   Alert,
-  Collapse,
   InputNumber,
   Select,
   Divider,
@@ -25,34 +24,38 @@ import {
   PlusOutlined,
   DeleteOutlined,
   EditOutlined,
-  SettingOutlined,
   ReloadOutlined,
   CheckCircleOutlined,
   ExclamationCircleOutlined,
-  LockOutlined,
   AppstoreOutlined,
 } from '@ant-design/icons';
 import { platformApiClient } from '@/api/request';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
-import type { PermissionPackage, Product, ProductFeature, PackageProduct } from '@/api/platform';
+import type { PermissionPackage } from '@/api/platform';
 import {
   getPackages,
   createPackage,
   updatePackage,
   deletePackage,
   getPackageDetail,
-  updatePackageProducts,
-  getProducts,
-  getProductFeatures,
-  updatePackageProductFeatures,
   getPackagePermissions,
 } from '@/api/platform';
-import { extractArray } from '@/utils';
 
 const { Text } = Typography;
 
 // ---------- Product feature definitions (UI catalog) ----------
+
+interface ParamDefinition {
+  key: string;
+  label: string;
+  type: 'boolean' | 'number' | 'string' | 'multi-select';
+  defaultValue?: unknown;
+  min?: number;
+  max?: number;
+  options?: { label: string; value: string }[];
+  placeholder?: string;
+}
 
 interface ProductFeatureDef {
   code: string;
@@ -60,16 +63,7 @@ interface ProductFeatureDef {
   description: string;
   required?: boolean;
   type: 'permission' | 'config';
-  params?: {
-    key: string;
-    label: string;
-    type: 'boolean' | 'number' | 'string' | 'multi-select';
-    defaultValue?: unknown;
-    min?: number;
-    max?: number;
-    options?: { label: string; value: string }[];
-    placeholder?: string;
-  }[];
+  params?: ParamDefinition[];
 }
 
 interface ProductDef {
@@ -88,7 +82,7 @@ const PRODUCT_CATALOG: ProductDef[] = [
     category: 'stairs_climbing',
     features: [
       {
-        code: 'time_slot',
+        code: 'stair.time_slot',
         name: '时段配置',
         description: '设置每日打卡时段和最大时段数',
         required: true,
@@ -98,7 +92,7 @@ const PRODUCT_CATALOG: ProductDef[] = [
         ],
       },
       {
-        code: 'floor_points',
+        code: 'stair.floor_points',
         name: '楼层积分',
         description: '按楼层计算积分',
         type: 'config',
@@ -107,7 +101,7 @@ const PRODUCT_CATALOG: ProductDef[] = [
         ],
       },
       {
-        code: 'workday_only',
+        code: 'stair.workday_only',
         name: '仅工作日',
         description: '限制仅工作日可打卡',
         type: 'config',
@@ -116,7 +110,7 @@ const PRODUCT_CATALOG: ProductDef[] = [
         ],
       },
       {
-        code: 'special_date',
+        code: 'stair.special_date',
         name: '特殊日期',
         description: '特殊日期积分翻倍',
         type: 'config',
@@ -125,7 +119,7 @@ const PRODUCT_CATALOG: ProductDef[] = [
         ],
       },
       {
-        code: 'leaderboard',
+        code: 'stair.leaderboard',
         name: '排行榜',
         description: '爬楼排行榜功能',
         type: 'permission',
@@ -153,7 +147,7 @@ const PRODUCT_CATALOG: ProductDef[] = [
     category: 'walking',
     features: [
       {
-        code: 'daily_points',
+        code: 'walking.daily_points',
         name: '每日步数积分',
         description: '按每日步数计算积分',
         required: true,
@@ -163,7 +157,7 @@ const PRODUCT_CATALOG: ProductDef[] = [
         ],
       },
       {
-        code: 'step_tier',
+        code: 'walking.step_tier',
         name: '阶梯奖励',
         description: '按步数阶梯奖励额外积分',
         type: 'config',
@@ -172,7 +166,7 @@ const PRODUCT_CATALOG: ProductDef[] = [
         ],
       },
       {
-        code: 'fun_conversion',
+        code: 'walking.fun_conversion',
         name: '趣味换算',
         description: '将步数换算为趣味数据（如绕地球圈数）',
         type: 'config',
@@ -181,7 +175,7 @@ const PRODUCT_CATALOG: ProductDef[] = [
         ],
       },
       {
-        code: 'leaderboard',
+        code: 'walking.leaderboard',
         name: '排行榜',
         description: '走路排行榜功能',
         type: 'permission',
@@ -209,7 +203,7 @@ const PRODUCT_CATALOG: ProductDef[] = [
     category: 'quiz',
     features: [
       {
-        code: 'enabled',
+        code: 'quiz.enabled',
         name: '启用问答',
         description: '开启知识问答功能',
         required: true,
@@ -219,7 +213,7 @@ const PRODUCT_CATALOG: ProductDef[] = [
         ],
       },
       {
-        code: 'question_types',
+        code: 'quiz.question_types',
         name: '题型支持',
         description: '支持的题目类型',
         type: 'config',
@@ -238,7 +232,7 @@ const PRODUCT_CATALOG: ProductDef[] = [
         ],
       },
       {
-        code: 'daily_limit',
+        code: 'quiz.daily_limit',
         name: '每日限制',
         description: '每日答题次数上限',
         type: 'config',
@@ -247,7 +241,7 @@ const PRODUCT_CATALOG: ProductDef[] = [
         ],
       },
       {
-        code: 'analysis',
+        code: 'quiz.analysis',
         name: '答题分析',
         description: '答题后展示答案解析',
         type: 'permission',
@@ -264,7 +258,7 @@ const PRODUCT_CATALOG: ProductDef[] = [
     category: 'mall',
     features: [
       {
-        code: 'enabled',
+        code: 'mall.enabled',
         name: '启用商城',
         description: '开启积分商城功能',
         required: true,
@@ -274,7 +268,7 @@ const PRODUCT_CATALOG: ProductDef[] = [
         ],
       },
       {
-        code: 'exchange_rate',
+        code: 'mall.exchange_rate',
         name: '兑换比例',
         description: '积分兑换比例配置',
         type: 'config',
@@ -283,7 +277,7 @@ const PRODUCT_CATALOG: ProductDef[] = [
         ],
       },
       {
-        code: 'platform_pool',
+        code: 'mall.platform_pool',
         name: '平台商品池',
         description: '平台共享商品池配置',
         type: 'config',
@@ -292,7 +286,7 @@ const PRODUCT_CATALOG: ProductDef[] = [
         ],
       },
       {
-        code: 'reports',
+        code: 'mall.reports',
         name: '兑换报表',
         description: '积分兑换统计报表',
         type: 'permission',
@@ -339,7 +333,7 @@ const buildDefaultFeatures = (catalog: ProductDef[]): PackageFeaturesState => {
 // ---------- Param input renderer ----------
 
 const renderParamInput = (
-  paramDef: ProductFeatureDef['params']![0],
+  paramDef: ParamDefinition,
   value: unknown,
   onChange: (val: unknown) => void,
   disabled: boolean,
@@ -407,14 +401,8 @@ const PackageManagement: React.FC = () => {
   const [editingPackage, setEditingPackage] = useState<PermissionPackage | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const [productModalOpen, setProductModalOpen] = useState(false);
-  const [selectedPackage, setSelectedPackage] = useState<PermissionPackage | null>(null);
-  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
-  const [packageProductFeatures, setPackageProductFeatures] = useState<Record<string, Record<string, ProductFeature>>>({});
-  const [productFeaturesLoading, setProductFeaturesLoading] = useState(false);
-  const [expandedProducts, setExpandedProducts] = useState<string[]>([]);
 
-  // New: features state for the integrated product/feature selector
+  // Features state for the product/feature selector
   const [featuresModalOpen, setFeaturesModalOpen] = useState(false);
   const [featuresPackage, setFeaturesPackage] = useState<PermissionPackage | null>(null);
   const [featuresState, setFeaturesState] = useState<PackageFeaturesState>(buildDefaultFeatures(PRODUCT_CATALOG));
@@ -425,12 +413,6 @@ const PackageManagement: React.FC = () => {
     queryFn: () => getPackages({ page, size: pageSize }),
     retry: false,
     refetchOnWindowFocus: false,
-  });
-
-  const { data: productsData } = useQuery({
-    queryKey: ['all-products-for-package'],
-    queryFn: () => getProducts({ size: 100, status: 1 }),
-    enabled: productModalOpen,
   });
 
   const createMutation = useMutation({
@@ -475,35 +457,6 @@ const PackageManagement: React.FC = () => {
     },
   });
 
-  const updateProductsMutation = useMutation({
-    mutationFn: ({ packageId, products }: { packageId: string; products: { productId: string; sortOrder?: number }[] }) =>
-      updatePackageProducts(packageId, products),
-    onSuccess: () => {
-      message.success('套餐产品更新成功');
-      setProductModalOpen(false);
-      queryClient.invalidateQueries({ queryKey: ['packages'] });
-    },
-    onError: (err: unknown) => {
-      const error = err as { response?: { data?: { message?: string } } };
-      message.error(error?.response?.data?.message || '更新失败');
-    },
-  });
-
-  const updateProductFeaturesMutation = useMutation({
-    mutationFn: ({
-      packageId, productId, features,
-    }: { packageId: string; productId: string; features: { featureId: string; configValue?: string; isEnabled: boolean }[] }) =>
-      updatePackageProductFeatures(packageId, productId, features),
-    onSuccess: () => {
-      message.success('功能点配置保存成功');
-      queryClient.invalidateQueries({ queryKey: ['packages'] });
-    },
-    onError: (err: unknown) => {
-      const error = err as { response?: { data?: { message?: string } } };
-      message.error(error?.response?.data?.message || '保存失败');
-    },
-  });
-
   const openCreateModal = () => {
     setPackageModalMode('create');
     setEditingPackage(null);
@@ -516,66 +469,6 @@ const PackageManagement: React.FC = () => {
     setEditingPackage(record);
     form.setFieldsValue({ name: record.name, description: record.description });
     setPackageModalOpen(true);
-  };
-
-  const openProductModal = async (record: PermissionPackage) => {
-    setSelectedPackage(record);
-    setProductFeaturesLoading(true);
-    try {
-      const detail = await getPackageDetail(record.id);
-      const packageProducts = detail?.products || [];
-      const newSelectedProducts = packageProducts.map((p: PackageProduct) => p.productId);
-      setSelectedProducts(newSelectedProducts);
-
-      const featureMap: Record<string, Record<string, ProductFeature>> = {};
-      for (const pkgProduct of packageProducts) {
-        if (!pkgProduct.productId) continue;
-        try {
-          const featuresData = await getProductFeatures(pkgProduct.productId);
-          const productFeatures: ProductFeature[] = featuresData || [];
-          const pkgFeatures = pkgProduct.features || [];
-
-          featureMap[pkgProduct.productId] = {};
-          productFeatures.forEach((pf: ProductFeature) => {
-            const pkgF = pkgFeatures.find(f => f.featureId === pf.featureId);
-            featureMap[pkgProduct.productId][pf.featureId] = {
-              ...pf,
-              isEnabled: pkgF ? pkgF.isEnabled : pf.isEnabled,
-              configValue: pkgF ? (pkgF.configValue ?? pf.configValue) : pf.configValue,
-            };
-          });
-
-          pkgFeatures.forEach(pkgF => {
-            if (!featureMap[pkgProduct.productId][pkgF.featureId]) {
-              featureMap[pkgProduct.productId][pkgF.featureId] = {
-                id: '',
-                productId: pkgProduct.productId,
-                featureId: pkgF.featureId,
-                featureCode: pkgF.featureCode,
-                featureName: pkgF.featureName,
-                featureType: pkgF.featureType,
-                valueType: pkgF.valueType,
-                defaultValue: pkgF.productDefaultValue,
-                configValue: pkgF.configValue,
-                isRequired: false,
-                isEnabled: pkgF.isEnabled,
-              };
-            }
-          });
-        } catch {
-          // ignore individual product errors
-        }
-      }
-      setPackageProductFeatures(featureMap);
-      setExpandedProducts(newSelectedProducts);
-    } catch {
-      setSelectedProducts([]);
-      setPackageProductFeatures({});
-      setExpandedProducts([]);
-    } finally {
-      setProductFeaturesLoading(false);
-    }
-    setProductModalOpen(true);
   };
 
   // Open the new features selector modal
@@ -596,39 +489,62 @@ const PackageManagement: React.FC = () => {
         );
         if (!catalogProduct) continue;
 
+        // 确保 defaultState 中有这个产品的配置
+        if (!defaultState[catalogProduct.code]) {
+          defaultState[catalogProduct.code] = {
+            included: false,
+            features: {},
+          };
+        }
         defaultState[catalogProduct.code].included = true;
 
+        // 确保 features 对象存在
+        if (!defaultState[catalogProduct.code].features) {
+          defaultState[catalogProduct.code].features = {};
+        }
+
         // Override with persisted feature settings
-        if (pkgProduct.features) {
+        if (pkgProduct.features && pkgProduct.features.length > 0) {
           for (const pf of pkgProduct.features) {
             const featDef = catalogProduct.features.find((f) => f.code === pf.featureCode);
             if (featDef) {
-              const existing = defaultState[catalogProduct.code].features[featDef.code];
-              if (existing) {
-                existing.enabled = pf.isEnabled;
-                // Parse configValue into params if available
-                if (pf.configValue) {
-                  try {
-                    const parsed = JSON.parse(pf.configValue);
-                    if (typeof parsed === 'object' && parsed !== null) {
-                      existing.params = { ...existing.params, ...parsed };
-                    } else {
-                      // Single value - set the first param
-                      const firstParamKey = featDef.params?.[0]?.key;
-                      if (firstParamKey) existing.params[firstParamKey] = parsed;
-                    }
-                  } catch {
-                    // Not JSON - set first param as string
-                    const firstParamKey = featDef.params?.[0]?.key;
-                    if (firstParamKey) existing.params[firstParamKey] = pf.configValue;
+              // 确保该功能的配置存在，不存在则用默认值初始化
+              let existing = defaultState[catalogProduct.code].features[featDef.code];
+              if (!existing) {
+                const params: Record<string, unknown> = {};
+                if (featDef.params) {
+                  for (const p of featDef.params) {
+                    params[p.key] = p.defaultValue;
                   }
+                }
+                existing = { enabled: true, params };
+                defaultState[catalogProduct.code].features[featDef.code] = existing;
+              }
+
+              existing.enabled = pf.isEnabled !== undefined ? pf.isEnabled : true;
+              // Parse configValue into params if available
+              if (pf.configValue) {
+                try {
+                  const parsed = JSON.parse(pf.configValue);
+                  if (typeof parsed === 'object' && parsed !== null) {
+                    existing.params = { ...existing.params, ...parsed };
+                  } else {
+                    // Single value - set the first param
+                    const firstParamKey = featDef.params?.[0]?.key;
+                    if (firstParamKey) existing.params[firstParamKey] = parsed;
+                  }
+                } catch {
+                  // Not JSON - set first param as string
+                  const firstParamKey = featDef.params?.[0]?.key;
+                  if (firstParamKey) existing.params[firstParamKey] = pf.configValue;
                 }
               }
             }
           }
         }
       }
-    } catch {
+    } catch (err) {
+      console.error('加载套餐详情失败:', err);
       // Use defaults if API fails
     }
 
@@ -640,15 +556,6 @@ const PackageManagement: React.FC = () => {
       createMutation.mutate({ code: values.code || `PKG_${Date.now()}`, name: values.name, description: values.description, permissionCodes: [] });
     } else if (editingPackage) {
       updateMutation.mutate({ id: editingPackage.id, data: values });
-    }
-  };
-
-  const handleProductSave = () => {
-    if (selectedPackage) {
-      updateProductsMutation.mutate({
-        packageId: selectedPackage.id,
-        products: selectedProducts.map((productId, index) => ({ productId, sortOrder: index })),
-      });
     }
   };
 
@@ -704,6 +611,8 @@ const PackageManagement: React.FC = () => {
         payload.products.push({ productCode: product.code, features });
       }
 
+      console.log('保存套餐配置，发送数据:', payload);
+
       // PUT /api/platform/packages/{id}/features
       await platformApiClient.put(`/packages/${featuresPackage.id}/features`, payload);
 
@@ -720,7 +629,6 @@ const PackageManagement: React.FC = () => {
 
   const records = packagesData?.records || (Array.isArray(packagesData) ? packagesData : []);
   const total = packagesData?.total || records.length;
-  const allProducts = productsData?.records || (Array.isArray(productsData) ? productsData : []);
 
   const columns = [
     { title: '套餐编码', dataIndex: 'code', width: 120, render: (v: string) => <Text code copyable>{v}</Text> },
@@ -762,9 +670,6 @@ const PackageManagement: React.FC = () => {
         <Space size="small">
           <Button type="link" size="small" icon={<EditOutlined />} onClick={() => openEditModal(record)}>
             编辑
-          </Button>
-          <Button type="link" size="small" icon={<SettingOutlined />} onClick={() => openProductModal(record)}>
-            配置产品
           </Button>
           <Button type="link" size="small" icon={<AppstoreOutlined />} onClick={() => openFeaturesModal(record)}>
             产品功能
@@ -867,190 +772,6 @@ const PackageManagement: React.FC = () => {
         </Form>
       </Modal>
 
-      {/* Product Configuration Modal (existing) */}
-      <Modal
-        title={`配置产品 - ${selectedPackage?.name}`}
-        open={productModalOpen}
-        onCancel={() => {
-          setProductModalOpen(false);
-          setSelectedPackage(null);
-          setSelectedProducts([]);
-          setPackageProductFeatures({});
-          setExpandedProducts([]);
-        }}
-        onOk={handleProductSave}
-        confirmLoading={updateProductsMutation.isPending || productFeaturesLoading}
-        width={800}
-      >
-        <div style={{ marginBottom: 16 }}>
-          <h4 style={{ marginBottom: 8 }}>选择产品</h4>
-          {allProducts.length === 0 ? (
-            <Empty description="暂无可用产品" image={Empty.PRESENTED_IMAGE_SIMPLE} />
-          ) : (
-            <Space wrap>
-              {allProducts.map((product: Product) => (
-                <Checkbox
-                  key={product.id}
-                  checked={selectedProducts.includes(product.id)}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      setSelectedProducts([...selectedProducts, product.id]);
-                      setExpandedProducts([...expandedProducts, product.id]);
-                    } else {
-                      setSelectedProducts(selectedProducts.filter((id) => id !== product.id));
-                      setExpandedProducts(expandedProducts.filter((id) => id !== product.id));
-                      const newFeatures = { ...packageProductFeatures };
-                      delete newFeatures[product.id];
-                      setPackageProductFeatures(newFeatures);
-                    }
-                  }}
-                >
-                  {product.name}
-                  <Tag color={product.category === 'stairs_climbing' ? 'blue' : 'green'} style={{ marginLeft: 4 }}>
-                    {product.category === 'stairs_climbing' ? '爬楼积分' : '走路积分'}
-                  </Tag>
-                </Checkbox>
-              ))}
-            </Space>
-          )}
-        </div>
-        <Collapse
-          activeKey={expandedProducts}
-          onChange={(keys) => setExpandedProducts(keys as string[])}
-          style={{ background: 'transparent' }}
-          items={allProducts
-            .filter((product: Product) => selectedProducts.includes(product.id))
-            .map((product: Product) => {
-              const features = packageProductFeatures[product.id] || {};
-              const featureList = Object.values(features) as ProductFeature[];
-              const enabledCount = featureList.filter((pf) => pf.isEnabled).length;
-
-              return {
-                key: product.id,
-                label: (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <strong>{product.name}</strong>
-                    <Tag color={product.category === 'stairs_climbing' ? 'blue' : 'green'}>
-                      {product.category === 'stairs_climbing' ? '爬楼积分' : '走路积分'}
-                    </Tag>
-                    <span style={{ fontSize: 12, color: '#475569' }}>
-                      {enabledCount}/{featureList.length} 功能点已启用
-                    </span>
-                  </div>
-                ),
-                children: (
-                  <div>
-                    <Alert
-                      type="info"
-                      showIcon
-                      icon={<LockOutlined />}
-                      message="必需功能点不可关闭，可选功能点可自由开关"
-                      style={{ marginBottom: 8, padding: '4px 12px' }}
-                      banner
-                    />
-                    {featureList.map((pf) => (
-                      <div
-                        key={pf.featureId}
-                        style={{
-                          padding: '6px 0',
-                          borderBottom: '1px solid #f0f0f0',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                        }}
-                      >
-                        <Space>
-                          <Switch
-                            size="small"
-                            checked={pf.isEnabled}
-                            disabled={pf.isRequired}
-                            onChange={(checked) => {
-                              setPackageProductFeatures((prev) => ({
-                                ...prev,
-                                [product.id]: {
-                                  ...prev[product.id],
-                                  [pf.featureId]: { ...pf, isEnabled: checked },
-                                },
-                              }));
-                            }}
-                          />
-                          <Text strong>{pf.featureName || pf.featureId}</Text>
-                          <Tag color={pf.featureType === 'permission' ? 'blue' : 'orange'}>
-                            {pf.featureType === 'permission' ? '权限' : '配置'}
-                          </Tag>
-                          {pf.isRequired ? (
-                            <Tag color="red" icon={<LockOutlined />}>必需</Tag>
-                          ) : (
-                            <Tag color="default">可选</Tag>
-                          )}
-                        </Space>
-                        {pf.featureType === 'config' && pf.isEnabled && !pf.isRequired && (
-                          <div style={{ minWidth: 160 }}>
-                            {pf.valueType === 'boolean' ? (
-                              <Switch
-                                size="small"
-                                checked={pf.configValue === 'true' || pf.configValue === '1'}
-                                onChange={(checked) => {
-                                  setPackageProductFeatures((prev) => ({
-                                    ...prev,
-                                    [product.id]: {
-                                      ...prev[product.id],
-                                      [pf.featureId]: { ...pf, configValue: String(checked) },
-                                    },
-                                  }));
-                                }}
-                                checkedChildren="开"
-                                unCheckedChildren="关"
-                              />
-                            ) : (
-                              <Input
-                                size="small"
-                                value={pf.configValue || ''}
-                                placeholder={pf.defaultValue || '配置值'}
-                                onChange={(e) => {
-                                  setPackageProductFeatures((prev) => ({
-                                    ...prev,
-                                    [product.id]: {
-                                      ...prev[product.id],
-                                      [pf.featureId]: { ...pf, configValue: e.target.value },
-                                    },
-                                  }));
-                                }}
-                              />
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                    <Button
-                      type="primary"
-                      size="small"
-                      style={{ marginTop: 8 }}
-                      icon={<CheckCircleOutlined />}
-                      onClick={() => {
-                        if (!selectedPackage?.id) return;
-                        const features = Object.values(packageProductFeatures[product.id] || {}).map((pf: ProductFeature) => ({
-                          featureId: pf.featureId,
-                          configValue: pf.configValue,
-                          isEnabled: pf.isEnabled,
-                        }));
-                        updateProductFeaturesMutation.mutate({
-                          packageId: selectedPackage.id,
-                          productId: product.id,
-                          features,
-                        });
-                      }}
-                      loading={updateProductFeaturesMutation.isPending}
-                    >
-                      保存该产品功能点
-                    </Button>
-                  </div>
-                ),
-              };
-            })
-          }
-        />
-      </Modal>
 
       {/* Product & Features Selector Modal (new) */}
       <Modal
@@ -1098,7 +819,10 @@ const PackageManagement: React.FC = () => {
         {PRODUCT_CATALOG.map((product) => {
           const productConfig = featuresState[product.code];
           const isIncluded = productConfig?.included ?? false;
-          const enabledCount = Object.values(productConfig?.features ?? {}).filter((f) => f.enabled).length;
+
+          // 安全地计算启用的功能数量，确保 features 存在
+          const features = productConfig?.features ?? {};
+          const enabledCount = Object.values(features).filter((f) => f && f.enabled).length;
           const totalFeatCount = product.features.length;
 
           return (
@@ -1115,10 +839,34 @@ const PackageManagement: React.FC = () => {
                   <Checkbox
                     checked={isIncluded}
                     onChange={(e) =>
-                      setFeaturesState((prev) => ({
-                        ...prev,
-                        [product.code]: { ...prev[product.code], included: e.target.checked },
-                      }))
+                      setFeaturesState((prev) => {
+                        // 获取或初始化产品配置
+                        const existingConfig = prev[product.code];
+
+                        // 如果 features 不存在或为空，初始化一个新的
+                        let featuresToUse = existingConfig?.features;
+                        if (!featuresToUse || Object.keys(featuresToUse).length === 0) {
+                          featuresToUse = {};
+                          for (const feat of product.features) {
+                            const params: Record<string, unknown> = {};
+                            if (feat.params) {
+                              for (const p of feat.params) {
+                                params[p.key] = p.defaultValue;
+                              }
+                            }
+                            featuresToUse[feat.code] = { enabled: true, params };
+                          }
+                        }
+
+                        return {
+                          ...prev,
+                          [product.code]: {
+                            ...existingConfig,
+                            included: e.target.checked,
+                            features: featuresToUse,
+                          },
+                        };
+                      })
                     }
                   />
                   <Text strong style={{ fontSize: 14 }}>{product.name}</Text>
@@ -1135,9 +883,13 @@ const PackageManagement: React.FC = () => {
                 <>
                   <Divider style={{ margin: '8px 0' }} />
                   {product.features.map((featDef) => {
-                    const featConfig = productConfig?.features?.[featDef.code];
-                    const isEnabled = featConfig?.enabled ?? true;
-                    const params = featConfig?.params ?? {};
+                    // 确保 featConfig 存在
+                    let featConfig = features[featDef.code];
+                    if (!featConfig) {
+                      featConfig = { enabled: true, params: {} };
+                    }
+                    const isEnabled = featConfig.enabled ?? true;
+                    const params = featConfig.params ?? {};
 
                     return (
                       <div
@@ -1154,19 +906,36 @@ const PackageManagement: React.FC = () => {
                               checked={isEnabled}
                               disabled={featDef.required}
                               onChange={(checked) =>
-                                setFeaturesState((prev) => ({
-                                  ...prev,
-                                  [product.code]: {
-                                    ...prev[product.code],
-                                    features: {
-                                      ...prev[product.code].features,
-                                      [featDef.code]: {
-                                        ...prev[product.code].features[featDef.code],
-                                        enabled: checked,
+                                setFeaturesState((prev) => {
+                                  // 确保产品配置存在
+                                  const productConfig = prev[product.code] || { included: false, features: {} };
+                                  // 确保功能配置存在，不存在则初始化
+                                  const existingFeatConfig = productConfig.features?.[featDef.code];
+                                  const newFeatConfig = existingFeatConfig || { enabled: true, params: {} };
+
+                                  // 初始化参数如果需要
+                                  if (!newFeatConfig.params && featDef.params) {
+                                    const params: Record<string, unknown> = {};
+                                    for (const p of featDef.params) {
+                                      params[p.key] = p.defaultValue;
+                                    }
+                                    newFeatConfig.params = params;
+                                  }
+
+                                  return {
+                                    ...prev,
+                                    [product.code]: {
+                                      ...productConfig,
+                                      features: {
+                                        ...productConfig.features,
+                                        [featDef.code]: {
+                                          ...newFeatConfig,
+                                          enabled: checked,
+                                        },
                                       },
                                     },
-                                  },
-                                }))
+                                  };
+                                })
                               }
                             />
                             <Text>{featDef.name}</Text>
@@ -1204,22 +973,31 @@ const PackageManagement: React.FC = () => {
                                   paramDef,
                                   params[paramDef.key] ?? paramDef.defaultValue,
                                   (val) =>
-                                    setFeaturesState((prev) => ({
-                                      ...prev,
-                                      [product.code]: {
-                                        ...prev[product.code],
-                                        features: {
-                                          ...prev[product.code].features,
-                                          [featDef.code]: {
-                                            ...prev[product.code].features[featDef.code],
-                                            params: {
-                                              ...prev[product.code].features[featDef.code].params,
-                                              [paramDef.key]: val,
+                                    setFeaturesState((prev) => {
+                                      // 确保产品配置存在
+                                      const productConfig = prev[product.code] || { included: false, features: {} };
+                                      // 确保功能配置存在
+                                      const featConfig = productConfig.features?.[featDef.code] || { enabled: true, params: {} };
+                                      // 确保 params 对象存在
+                                      const featParams = featConfig.params || {};
+
+                                      return {
+                                        ...prev,
+                                        [product.code]: {
+                                          ...productConfig,
+                                          features: {
+                                            ...productConfig.features,
+                                            [featDef.code]: {
+                                              ...featConfig,
+                                              params: {
+                                                ...featParams,
+                                                [paramDef.key]: val,
+                                              },
                                             },
                                           },
                                         },
-                                      },
-                                    })),
+                                      };
+                                    }),
                                   false,
                                 )}
                               </div>

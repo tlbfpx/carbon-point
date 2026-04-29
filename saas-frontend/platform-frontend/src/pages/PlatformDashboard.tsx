@@ -58,29 +58,29 @@ const COLORS = {
 const ActiveRateRing: React.FC<{ rate: number; loading?: boolean }> = ({ rate, loading }) => {
   if (loading) {
     return (
-      <div style={{ width: 80, height: 80, borderRadius: '50%', background: '#F1F5F9', margin: '0 auto' }} />
+      <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#F1F5F9' }} />
     );
   }
 
-  const strokeWidth = 6;
-  const radius = 36;
+  const strokeWidth = 4;
+  const radius = 12;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (rate / 100) * circumference;
   const color = rate > 70 ? '#10B981' : rate > 40 ? '#3B82F6' : '#F59E0B';
 
   return (
-    <svg width={80} height={80} style={{ display: 'block', margin: '0 auto' }}>
+    <svg width={28} height={28} style={{ display: 'block' }}>
       <circle
-        cx={40}
-        cy={40}
+        cx={14}
+        cy={14}
         r={radius}
         fill="none"
         stroke="#F1F5F9"
         strokeWidth={strokeWidth}
       />
       <circle
-        cx={40}
-        cy={40}
+        cx={14}
+        cy={14}
         r={radius}
         fill="none"
         stroke={color}
@@ -88,15 +88,9 @@ const ActiveRateRing: React.FC<{ rate: number; loading?: boolean }> = ({ rate, l
         strokeDasharray={circumference}
         strokeDashoffset={offset}
         strokeLinecap="round"
-        transform="rotate(-90 40 40)"
+        transform="rotate(-90 14 14)"
         style={{ transition: 'stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1)' }}
       />
-      <text x={40} y={36} textAnchor="middle" style={{ fontSize: 18, fontWeight: 700, fill: '#1E293B', fontFamily: "'Inter', sans-serif" }}>
-        {rate}
-      </text>
-      <text x={40} y={52} textAnchor="middle" style={{ fontSize: 11, fill: '#94A3B8', fontFamily: "'Inter', sans-serif" }}>
-        %
-      </text>
     </svg>
   );
 };
@@ -428,18 +422,49 @@ const PlatformDashboard: React.FC = () => {
             padding: 20,
             boxShadow: '0 1px 3px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 0, 0, 0.04)',
             transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+            height: '100%',
+            minHeight: 140,
           }}>
-            <div style={{ fontSize: 13, color: '#94A3B8', marginBottom: 12 }}>企业活跃率</div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
-              <ActiveRateRing rate={activeRate} loading={!statsData} />
-              <div>
-                <div style={{ fontSize: 13, color: '#475569', marginBottom: 4 }}>
-                  活跃企业 <strong style={{ color: '#1E293B' }}>{stats.activeEnterprises}</strong> / {stats.totalEnterprises}
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
+              <div style={{
+                width: 48,
+                height: 48,
+                borderRadius: 12,
+                background: 'rgba(6, 182, 212, 0.08)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 22,
+                color: '#06B6D4',
+                flexShrink: 0,
+              }}>
+                <ActiveRateRing rate={activeRate} loading={!statsData} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{
+                  fontSize: 13,
+                  color: '#94A3B8',
+                  marginBottom: 8,
+                  fontWeight: 400,
+                }}>
+                  企业活跃率
+                </div>
+                <div style={{
+                  fontSize: 32,
+                  fontWeight: 700,
+                  color: '#1E293B',
+                  fontFamily: "'Inter', 'Noto Sans SC', sans-serif",
+                  lineHeight: 1.1,
+                  letterSpacing: '-0.02em',
+                }}>
+                  {activeRate}
+                  <span style={{ fontSize: 16, fontWeight: 500, color: '#475569', marginLeft: 2 }}>%</span>
                 </div>
                 <div style={{
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: 4,
+                  marginTop: 8,
                   padding: '2px 8px',
                   borderRadius: 6,
                   background: activeRate > 50 ? 'rgba(16, 185, 129, 0.08)' : 'rgba(245, 158, 11, 0.08)',

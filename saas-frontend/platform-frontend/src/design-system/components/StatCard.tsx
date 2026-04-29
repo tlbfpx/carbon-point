@@ -57,6 +57,7 @@ export const StatCard: React.FC<StatCardProps> = ({
     boxShadow: '0 1px 3px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 0, 0, 0.04)',
     position: 'relative' as const,
     overflow: 'hidden' as const,
+    minHeight: 140,
     ...style,
   }), [onClick, style]);
 

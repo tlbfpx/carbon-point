@@ -41,7 +41,7 @@ const ACCENT_COLORS = {
   red: '#ff7875',
 };
 
-const MallReports: React.FC = () => {
+const MallReports: React.FC<{ hideHeader?: boolean }> = ({ hideHeader = false }) => {
   const { primaryColor } = useBranding();
   const [dateRange, setDateRange] = useState<[Dayjs | null, Dayjs | null]>([
     dayjs().subtract(30, 'day'),
@@ -65,25 +65,38 @@ const MallReports: React.FC = () => {
     retry: false,
   });
 
-  const data: MallReportData = reportData || {
-    exchangeVolume: [],
-    pointsConsumption: [],
-    productPopularity: [],
+  // Safely extract data from response
+  const getSafeData = (input: unknown): MallReportData => {
+    if (!input) return { exchangeVolume: [], pointsConsumption: [], productPopularity: [] };
+    // Check if it's a wrapped response { data: ... }
+    const unwrapped = (input as { data?: MallReportData }).data ?? input;
+    if (!unwrapped || typeof unwrapped !== 'object') {
+      return { exchangeVolume: [], pointsConsumption: [], productPopularity: [] };
+    }
+    return {
+      exchangeVolume: Array.isArray((unwrapped as MallReportData).exchangeVolume) ? (unwrapped as MallReportData).exchangeVolume : [],
+      pointsConsumption: Array.isArray((unwrapped as MallReportData).pointsConsumption) ? (unwrapped as MallReportData).pointsConsumption : [],
+      productPopularity: Array.isArray((unwrapped as MallReportData).productPopularity) ? (unwrapped as MallReportData).productPopularity : [],
+    };
   };
 
-  // Summary stats
-  const totalExchanges = useMemo(
-    () => data.exchangeVolume.reduce((sum, item) => sum + (item.count || 0), 0),
-    [data.exchangeVolume]
-  );
-  const totalPointsConsumed = useMemo(
-    () => data.pointsConsumption.reduce((sum, item) => sum + (item.consumed || 0), 0),
-    [data.pointsConsumption]
-  );
-  const totalPointsFromExchanges = useMemo(
-    () => data.exchangeVolume.reduce((sum, item) => sum + (item.totalPoints || 0), 0),
-    [data.exchangeVolume]
-  );
+  const data = getSafeData(reportData);
+
+  // Summary stats with safety
+  const totalExchanges = useMemo(() => {
+    if (!Array.isArray(data.exchangeVolume)) return 0;
+    return data.exchangeVolume.reduce((sum, item) => sum + ((item as any).count || (item as any).exchangeCount || 0), 0);
+  }, [data.exchangeVolume]);
+
+  const totalPointsConsumed = useMemo(() => {
+    if (!Array.isArray(data.pointsConsumption)) return 0;
+    return data.pointsConsumption.reduce((sum, item) => sum + ((item as any).consumed || (item as any).totalPoints || 0), 0);
+  }, [data.pointsConsumption]);
+
+  const totalPointsFromExchanges = useMemo(() => {
+    if (!Array.isArray(data.exchangeVolume)) return 0;
+    return data.exchangeVolume.reduce((sum, item) => sum + ((item as any).totalPoints || 0), 0);
+  }, [data.exchangeVolume]);
 
   // Product popularity columns
   const popularityColumns = [
@@ -160,6 +173,7 @@ const MallReports: React.FC = () => {
   return (
     <div style={{ padding: '0 0 24px', fontFamily: 'var(--font-body, "Noto Sans SC", sans-serif)' }}>
       {/* Page Header */}
+      {!hideHeader && (
       <div style={{ marginBottom: 24 }}>
         <h1
           style={{
@@ -176,6 +190,7 @@ const MallReports: React.FC = () => {
           查看积分商城兑换数据、积分消耗趋势和商品热度排名
         </p>
       </div>
+      )}
 
       {/* Filter Card */}
       <Card

@@ -23,6 +23,7 @@ public class MenuServiceImpl implements MenuService {
     private final ProductFeatureMapper productFeatureMapper;
     private final PackageProductMapper packageProductMapper;
     private final PackageProductFeatureMapper packageProductFeatureMapper;
+    private final FeatureMapper featureMapper;
 
     @Override
     public List<MenuItemVO> getTenantMenu() {
@@ -35,73 +36,68 @@ public class MenuServiceImpl implements MenuService {
         List<MenuItemVO> menu = new ArrayList<>();
 
         // Add dashboard
-        menu.add(buildMenuItem("dashboard", "工作台", "DashboardOutlined", "/dashboard", 1));
+        menu.add(buildMenuItem("dashboard", "数据看板", "DashboardOutlined", "/dashboard", 1));
+
+        // Add members menu
+        menu.add(buildMenuItem("members", "员工管理", "TeamOutlined", "/members", 2));
 
         // Get tenant's package and enabled products
         Tenant tenant = tenantMapper.selectById(tenantId);
         if (tenant != null && tenant.getPackageId() != null) {
             // Add product menus based on package
             List<PackageProductEntity> packageProducts = packageProductMapper.selectByPackageId(tenant.getPackageId());
+            int sortOrder = 10;
             for (PackageProductEntity pp : packageProducts) {
                 ProductEntity product = productMapper.selectById(pp.getProductId());
                 if (product != null && product.getStatus() == 1) {
-                    menu.add(buildProductMenu(product, pp, tenant.getPackageId()));
+                    menu.add(buildProductMenu(product, pp, sortOrder++));
                 }
             }
         }
 
-        // Add other standard menus
-        menu.add(buildMenuItem("mall", "积分商城", "ShoppingOutlined", "/mall", 50));
-        menu.add(buildMenuItem("users", "用户管理", "UserOutlined", "/users", 60));
-        menu.add(buildMenuItem("reports", "数据报表", "BarChartOutlined", "/reports", 70));
-        menu.add(buildMenuItem("settings", "系统设置", "SettingOutlined", "/settings", 80));
+        // Add operations menus
+        menu.add(buildMenuItem("points", "积分运营", "TrophyOutlined", "/points", 50));
+        menu.add(buildMenuItem("point-expiration", "积分过期配置", "ClockCircleOutlined", "/point-expiration", 51));
+        menu.add(buildMenuItem("reports", "数据报表", "BarChartOutlined", "/reports", 52));
+
+        // Add settings group
+        MenuItemVO settingsGroup = buildMenuItem("settings-group", "系统设置", "SettingOutlined", "/settings", 80);
+        List<MenuItemVO> settingsChildren = new ArrayList<>();
+        settingsChildren.add(buildMenuItem("roles", "角色管理", "SafetyOutlined", "/roles", 1));
+        settingsChildren.add(buildMenuItem("branding", "品牌配置", "SkinOutlined", "/branding", 2));
+        settingsChildren.add(buildMenuItem("feature-matrix", "功能点阵", "AppstoreOutlined", "/feature-matrix", 3));
+        settingsChildren.add(buildMenuItem("dict-management", "字典管理", "FileTextOutlined", "/dict-management", 4));
+        settingsChildren.add(buildMenuItem("operation-log", "操作日志", "FileTextOutlined", "/operation-log", 5));
+        settingsGroup.setChildren(settingsChildren);
+        menu.add(settingsGroup);
 
         return menu.stream()
                 .sorted(Comparator.comparingInt(MenuItemVO::getSortOrder))
                 .collect(Collectors.toList());
     }
 
-    private MenuItemVO buildProductMenu(ProductEntity product, PackageProductEntity pp, Long packageId) {
+    private MenuItemVO buildProductMenu(ProductEntity product, PackageProductEntity pp, int sortOrder) {
+        // Map product codes to correct frontend paths
+        String frontendPath = mapProductCodeToPath(product.getCode());
+
         MenuItemVO productMenu = buildMenuItem(
                 "product-" + product.getCode(),
                 product.getName(),
                 getProductIcon(product.getCategory()),
-                "/product/" + product.getCode(),
-                pp.getSortOrder() + 10
+                frontendPath,
+                sortOrder
         );
-
-        // Add child menus based on enabled features
-        List<MenuItemVO> children = new ArrayList<>();
-        children.add(buildMenuItem("records", "打卡记录", "FileTextOutlined", "/product/" + product.getCode() + "/records", 1));
-
-        // Get enabled features for this product in the package
-        List<PackageProductFeatureEntity> features = packageProductFeatureMapper.selectByPackageIdAndProductId(packageId, pp.getProductId());
-        for (PackageProductFeatureEntity ppf : features) {
-            if (ppf.getIsEnabled()) {
-                String featureKey = ppf.getFeatureId();
-                children.add(buildFeatureMenu(featureKey, product.getCode()));
-            }
-        }
-
-        if (!children.isEmpty()) {
-            productMenu.setChildren(children);
-        }
 
         return productMenu;
     }
 
-    private MenuItemVO buildFeatureMenu(String featureKey, String productCode) {
-        return switch (featureKey) {
-            case "time_slot" -> buildMenuItem("time-slot", "时段配置", "ClockCircleOutlined",
-                    "/product/" + productCode + "/time-slot", 2);
-            case "special_date" -> buildMenuItem("special-date", "特殊日期配置", "CalendarOutlined",
-                    "/product/" + productCode + "/special-date", 3);
-            case "consecutive_reward" -> buildMenuItem("consecutive-reward", "连续打卡奖励", "TrophyOutlined",
-                    "/product/" + productCode + "/consecutive-reward", 4);
-            case "daily_cap" -> buildMenuItem("daily-cap", "积分规则", "NumberOutlined",
-                    "/product/" + productCode + "/daily-cap", 5);
-            default -> buildMenuItem(featureKey, featureKey, "AppstoreOutlined",
-                    "/product/" + productCode + "/" + featureKey, 99);
+    private String mapProductCodeToPath(String productCode) {
+        return switch (productCode) {
+            case "stair_climbing", "stairs_basic", "stairs_pro" -> "/product/stair-climbing";
+            case "walking", "walking_basic", "walking_pro" -> "/product/walking";
+            case "quiz" -> "/product/quiz";
+            case "mall" -> "/product/mall";
+            default -> "/product/" + productCode;
         };
     }
 
@@ -118,8 +114,10 @@ public class MenuServiceImpl implements MenuService {
 
     private String getProductIcon(String category) {
         return switch (category) {
-            case "stairs_climbing" -> "UpOutlined";
-            case "walking" -> "EnvironmentOutlined";
+            case "stairs_climbing" -> "RiseOutlined";
+            case "walking" -> "WomanOutlined";
+            case "quiz" -> "BookOutlined";
+            case "mall" -> "ShopOutlined";
             default -> "AppstoreOutlined";
         };
     }

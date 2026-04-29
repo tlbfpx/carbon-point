@@ -173,6 +173,14 @@ const Branding: React.FC = () => {
     );
   }
 
+  // ---------- Light-theme color tokens ----------
+  const t = {
+    textHeading: '#2c2825',
+    textMuted: '#8a857f',
+    bgSoft: '#faf8f5',
+    warmBorder: '#d4d0c8',
+  };
+
   // ---------- STYLES ----------
   const s = {
     page: {
@@ -181,14 +189,13 @@ const Branding: React.FC = () => {
       gridTemplateColumns: '1fr 1fr',
       gap: 0,
       minHeight: 'calc(100vh - 160px)',
-      margin: '-24px',
     } as React.CSSProperties,
 
     leftPanel: {
       padding: '48px 40px',
       overflowY: 'auto' as const,
       maxHeight: 'calc(100vh - 160px)',
-      borderRight: '1px solid rgba(255,255,255,0.06)',
+      borderRight: `1px solid ${t.warmBorder}`,
     } as React.CSSProperties,
 
     rightPanel: {
@@ -205,7 +212,7 @@ const Branding: React.FC = () => {
       fontWeight: 600,
       letterSpacing: '1.5px',
       textTransform: 'uppercase' as const,
-      color: 'rgba(255,255,255,0.45)',
+      color: t.textMuted,
       marginBottom: 16,
     } as React.CSSProperties,
 
@@ -213,13 +220,13 @@ const Branding: React.FC = () => {
       fontFamily: "'Playfair Display', Georgia, serif",
       fontSize: 28,
       fontWeight: 700,
-      color: '#fff',
+      color: t.textHeading,
       marginBottom: 4,
     } as React.CSSProperties,
 
     subheading: {
       fontSize: 14,
-      color: 'rgba(255,255,255,0.45)',
+      color: t.textMuted,
       marginBottom: 40,
     } as React.CSSProperties,
 
@@ -230,7 +237,7 @@ const Branding: React.FC = () => {
     logoFrame: {
       width: '100%',
       height: 120,
-      border: '2px dashed rgba(255,255,255,0.12)',
+      border: `2px dashed ${t.warmBorder}`,
       borderRadius: 12,
       display: 'flex',
       flexDirection: 'column' as const,
@@ -253,7 +260,7 @@ const Branding: React.FC = () => {
       borderRadius: 16,
       overflow: 'hidden',
       cursor: 'pointer',
-      border: isActive ? '3px solid #1a1a1a' : '3px solid transparent',
+      border: isActive ? `3px solid ${t.textHeading}` : '3px solid transparent',
       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
       transform: isActive ? 'scale(1.02)' : 'scale(1)',
       boxShadow: isActive ? '0 8px 24px rgba(0,0,0,0.12)' : '0 2px 8px rgba(0,0,0,0.06)',
@@ -267,10 +274,11 @@ const Branding: React.FC = () => {
 
     swatchInfo: {
       padding: '12px 14px',
-      background: 'rgba(26,26,36,0.8)',
+      background: '#fff',
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
+      boxShadow: '0 -1px 4px rgba(0,0,0,0.04)',
     } as React.CSSProperties,
 
     saveBar: {
@@ -282,6 +290,7 @@ const Branding: React.FC = () => {
       display: 'flex',
       gap: 12,
       zIndex: 10,
+      background: t.bgSoft,
     } as React.CSSProperties,
 
     // Mini preview styles
@@ -289,14 +298,14 @@ const Branding: React.FC = () => {
       width: 340,
       borderRadius: 12,
       overflow: 'hidden',
-      boxShadow: '0 20px 60px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.06)',
+      boxShadow: '0 20px 60px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.06)',
       transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-      background: '#1a1a24',
+      background: '#fff',
     } as React.CSSProperties,
 
     miniTitlebar: {
       height: 28,
-      background: 'rgba(255,255,255,0.04)',
+      background: '#f5f5f5',
       display: 'flex',
       alignItems: 'center',
       padding: '0 10px',
@@ -343,6 +352,7 @@ const Branding: React.FC = () => {
       display: 'flex',
       flexDirection: 'column',
       gap: 8,
+      background: '#fafafa',
     } as React.CSSProperties,
 
     miniHeader: (color: string) => ({
@@ -361,17 +371,17 @@ const Branding: React.FC = () => {
       width: 16,
       height: 16,
       borderRadius: '50%',
-      background: 'rgba(255,255,255,0.1)',
+      background: '#e8e8e8',
     } as React.CSSProperties,
 
     miniCard: {
       borderRadius: 6,
-      border: '1px solid rgba(255,255,255,0.06)',
+      border: `1px solid ${t.warmBorder}`,
       padding: 10,
       display: 'flex',
       flexDirection: 'column',
       gap: 6,
-      background: 'rgba(255,255,255,0.03)',
+      background: '#fff',
     } as React.CSSProperties,
 
     miniStatRow: {
@@ -396,7 +406,7 @@ const Branding: React.FC = () => {
     miniButton: (color: string, filled: boolean) => ({
       height: 20,
       borderRadius: 4,
-      background: filled ? color : 'rgba(255,255,255,0.04)',
+      background: filled ? color : '#fff',
       border: `1px solid ${color}40`,
       color: filled ? '#fff' : color,
       display: 'flex',
@@ -409,10 +419,11 @@ const Branding: React.FC = () => {
 
     modeToggle: {
       display: 'flex',
-      background: 'rgba(255,255,255,0.04)',
+      background: t.bgSoft,
       borderRadius: 10,
       padding: 3,
       marginBottom: 20,
+      border: `1px solid ${t.warmBorder}`,
     } as React.CSSProperties,
 
     modeBtn: (active: boolean) => ({
@@ -420,10 +431,10 @@ const Branding: React.FC = () => {
       padding: '8px 0',
       borderRadius: 8,
       border: 'none',
-      background: active ? 'rgba(255,255,255,0.08)' : 'transparent',
-      boxShadow: active ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
+      background: active ? '#fff' : 'transparent',
+      boxShadow: active ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
       fontWeight: active ? 600 : 400,
-      color: active ? '#fff' : 'rgba(255,255,255,0.45)',
+      color: active ? t.textHeading : t.textMuted,
       cursor: 'pointer',
       transition: 'all 0.25s ease',
       fontSize: 13,
@@ -439,7 +450,7 @@ const Branding: React.FC = () => {
     colorLabel: {
       fontSize: 13,
       fontWeight: 500,
-      color: 'rgba(255,255,255,0.65)',
+      color: t.textMuted,
       width: 60,
     } as React.CSSProperties,
 
@@ -449,7 +460,7 @@ const Branding: React.FC = () => {
       borderRadius: 10,
       background: color,
       transition: 'background-color 0.3s ease',
-      boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.06)',
+      boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.06)',
     } as React.CSSProperties),
 
     previewLabel: {
@@ -457,7 +468,7 @@ const Branding: React.FC = () => {
       fontSize: 11,
       letterSpacing: '1px',
       textTransform: 'uppercase',
-      color: 'rgba(255,255,255,0.35)',
+      color: t.textMuted,
       marginBottom: 20,
       fontWeight: 600,
     } as React.CSSProperties,
@@ -484,9 +495,9 @@ const Branding: React.FC = () => {
             <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 12 }}>
               <div style={{
                 width: 160, height: 80, borderRadius: 12,
-                border: '1px solid rgba(255,255,255,0.08)', display: 'flex',
+                border: `1px solid ${t.warmBorder}`, display: 'flex',
                 alignItems: 'center', justifyContent: 'center',
-                background: 'rgba(255,255,255,0.03)', padding: 12,
+                background: '#fff', padding: 12,
               }}>
                 <img src={logoUrl} alt="Logo" style={s.logoImg} />
               </div>
@@ -510,14 +521,14 @@ const Branding: React.FC = () => {
           >
             <div className="branding-upload-zone" style={{
               ...s.logoFrame,
-              borderColor: logoUrl ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.12)',
+              borderColor: logoUrl ? t.warmBorder : t.warmBorder,
             }}>
               {uploadMutation.isPending ? (
-                <div style={{ fontSize: 13, color: '#999' }}>上传中...</div>
+                <div style={{ fontSize: 13, color: t.textMuted }}>上传中...</div>
               ) : (
                 <>
-                  <UploadOutlined style={{ fontSize: 20, color: '#bbb' }} />
-                  <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>
+                  <UploadOutlined style={{ fontSize: 20, color: t.textMuted }} />
+                  <span style={{ fontSize: 12, color: t.textMuted }}>
                     点击上传 · PNG / JPG / SVG · ≤ 500KB
                   </span>
                 </>
@@ -581,10 +592,10 @@ const Branding: React.FC = () => {
                     </div>
                     <div style={s.swatchInfo}>
                       <div>
-                        <div style={{ fontWeight: 600, fontSize: 13, color: '#fff' }}>
+                        <div style={{ fontWeight: 600, fontSize: 13, color: t.textHeading }}>
                           {theme.label}
                         </div>
-                        <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', marginTop: 1 }}>
+                        <div style={{ fontSize: 10, color: t.textMuted, marginTop: 1 }}>
                           {theme.sublabel}
                         </div>
                       </div>
@@ -701,8 +712,8 @@ const Branding: React.FC = () => {
 
               {/* Card */}
               <div style={s.miniCard}>
-                <div style={{ fontSize: 8, fontWeight: 600, color: 'rgba(255,255,255,0.85)' }}>最近活动</div>
-                <div style={{ height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.08)', width: '100%' }}>
+                <div style={{ fontSize: 8, fontWeight: 600, color: t.textHeading }}>最近活动</div>
+                <div style={{ height: 4, borderRadius: 2, background: '#e8e6e2', width: '100%' }}>
                   <div style={{
                     height: '100%',
                     borderRadius: 2,
@@ -717,7 +728,7 @@ const Branding: React.FC = () => {
                       flex: 1,
                       height: 28,
                       borderRadius: 3,
-                      background: i <= 3 ? previewPrimary : 'rgba(255,255,255,0.06)',
+                      background: i <= 3 ? previewPrimary : '#e8e6e2',
                       opacity: i <= 3 ? 0.2 + i * 0.2 : 1,
                       transition: 'background 0.3s ease',
                     }} />
@@ -738,7 +749,7 @@ const Branding: React.FC = () => {
         <div style={{
           marginTop: 20,
           fontSize: 13,
-          color: 'rgba(255,255,255,0.45)',
+          color: t.textMuted,
           display: 'flex',
           alignItems: 'center',
           gap: 8,

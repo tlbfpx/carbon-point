@@ -4,8 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.carbonpoint.common.exception.BusinessException;
 import com.carbonpoint.common.result.ErrorCode;
 import com.carbonpoint.system.dto.req.PackageCreateReq;
-import com.carbonpoint.system.dto.req.PackageProductFeatureUpdateReq;
-import com.carbonpoint.system.dto.req.PackageProductUpdateReq;
+import com.carbonpoint.system.dto.req.PackageFeaturesUpdateReq;
 import com.carbonpoint.system.dto.req.PackageUpdateReq;
 import com.carbonpoint.system.dto.req.TenantPackageChangeReq;
 import com.carbonpoint.system.dto.res.PackageDetailRes;
@@ -474,120 +473,6 @@ public class PackageServiceImpl implements PackageService {
                 .build();
     }
 
-    @Override
-    @Transactional
-    public void updatePackageProducts(Long packageId, PackageProductUpdateReq req) {
-        PermissionPackage pkg = packageMapper.selectById(packageId);
-        if (pkg == null) {
-            throw new BusinessException(ErrorCode.PACKAGE_NOT_FOUND);
-        }
-
-        if (req.getProducts() == null || req.getProducts().isEmpty()) {
-            // Remove all associations
-            packageProductFeatureMapper.deleteByPackageId(packageId);
-            packageProductMapper.deleteByPackageId(packageId);
-            log.info("All products removed from package: packageId={}", packageId);
-            return;
-        }
-
-        // 1. Remove existing features for this package (they will be re-inserted)
-        packageProductFeatureMapper.deleteByPackageId(packageId);
-
-        // 2. Remove existing product associations (they will be re-inserted)
-        packageProductMapper.deleteByPackageId(packageId);
-
-        // 3. Re-insert product associations and features
-        List<PackageProductEntity> packageProducts = new ArrayList<>();
-        for (PackageProductUpdateReq.ProductItem item : req.getProducts()) {
-            PackageProductEntity pp = new PackageProductEntity();
-            pp.setPackageId(packageId);
-            pp.setProductId(item.getProductId());
-            pp.setSortOrder(item.getSortOrder() != null ? item.getSortOrder() : 0);
-            packageProducts.add(pp);
-
-            // Insert features if provided
-            if (item.getFeatures() != null && !item.getFeatures().isEmpty()) {
-                List<PackageProductFeatureEntity> features = new ArrayList<>();
-                for (PackageProductUpdateReq.FeatureItem fi : item.getFeatures()) {
-                    PackageProductFeatureEntity ppf = new PackageProductFeatureEntity();
-                    ppf.setPackageId(packageId);
-                    ppf.setProductId(item.getProductId());
-                    ppf.setFeatureId(fi.getFeatureId());
-                    ppf.setConfigValue(fi.getConfigValue());
-                    ppf.setIsEnabled(fi.getIsEnabled() != null ? fi.getIsEnabled() : true);
-                    // Determine if customized: compare with product default
-                    ppf.setIsCustomized(determineIfCustomized(item.getProductId(), fi.getFeatureId(), fi.getConfigValue()));
-                    features.add(ppf);
-                }
-                packageProductFeatureMapper.batchInsert(features);
-            }
-        }
-
-        // Batch insert package-product associations
-        for (PackageProductEntity pp : packageProducts) {
-            packageProductMapper.insert(pp);
-        }
-
-        // Sync rule templates for products in this package
-        for (var item : req.getProducts()) {
-            ruleTemplateService.syncToTenants(item.getProductId());
-        }
-
-        log.info("Package products updated: packageId={}, productCount={}", packageId, packageProducts.size());
-    }
-
-    @Override
-    public List<PackageFeatureRes> getPackageProductFeatures(Long packageId, String productId) {
-        PermissionPackage pkg = packageMapper.selectById(packageId);
-        if (pkg == null) {
-            throw new BusinessException(ErrorCode.PACKAGE_NOT_FOUND);
-        }
-
-        List<PackageProductFeatureEntity> ppfList = packageProductFeatureMapper
-                .selectByPackageIdAndProductId(packageId, productId);
-        return buildFeatureResList(productId, ppfList);
-    }
-
-    @Override
-    @Transactional
-    public void updatePackageProductFeatures(Long packageId, String productId, PackageProductFeatureUpdateReq req) {
-        PermissionPackage pkg = packageMapper.selectById(packageId);
-        if (pkg == null) {
-            throw new BusinessException(ErrorCode.PACKAGE_NOT_FOUND);
-        }
-
-        // Remove existing features for this package-product
-        packageProductFeatureMapper.deleteByPackageIdAndProductId(packageId, productId);
-
-        // Ensure package-product association exists
-        PackageProductEntity existingPp = packageProductMapper.selectByPackageIdAndProductId(packageId, productId);
-        if (existingPp == null) {
-            PackageProductEntity pp = new PackageProductEntity();
-            pp.setPackageId(packageId);
-            pp.setProductId(productId);
-            pp.setSortOrder(0);
-            packageProductMapper.insert(pp);
-        }
-
-        // Insert new features
-        if (req.getFeatures() != null && !req.getFeatures().isEmpty()) {
-            List<PackageProductFeatureEntity> features = new ArrayList<>();
-            for (PackageProductFeatureUpdateReq.FeatureItem fi : req.getFeatures()) {
-                PackageProductFeatureEntity ppf = new PackageProductFeatureEntity();
-                ppf.setPackageId(packageId);
-                ppf.setProductId(productId);
-                ppf.setFeatureId(fi.getFeatureId());
-                ppf.setConfigValue(fi.getConfigValue());
-                ppf.setIsEnabled(fi.getIsEnabled() != null ? fi.getIsEnabled() : true);
-                ppf.setIsCustomized(determineIfCustomized(productId, fi.getFeatureId(), fi.getConfigValue()));
-                features.add(ppf);
-            }
-            packageProductFeatureMapper.batchInsert(features);
-        }
-
-        log.info("Package product features updated: packageId={}, productId={}, featureCount={}",
-                packageId, productId, req.getFeatures() != null ? req.getFeatures().size() : 0);
-    }
 
     /**
      * Build feature response list by enriching with product defaults and system defaults.
@@ -682,5 +567,93 @@ public class PackageServiceImpl implements PackageService {
             return false;
         }
         return !pf.getConfigValue().equals(configValue);
+    }
+
+    @Override
+    @Transactional
+    public void updatePackageFeatures(Long packageId, PackageFeaturesUpdateReq req) {
+        log.info("开始更新套餐功能配置: packageId={}, request={}", packageId, req);
+
+        try {
+            PermissionPackage pkg = packageMapper.selectById(packageId);
+            if (pkg == null) {
+                log.error("套餐不存在: packageId={}", packageId);
+                throw new BusinessException(ErrorCode.PACKAGE_NOT_FOUND);
+            }
+
+            if (req.getProducts() == null || req.getProducts().isEmpty()) {
+                log.info("请求中没有产品，清除所有套餐-产品功能配置: packageId={}", packageId);
+                packageProductFeatureMapper.deleteByPackageId(packageId);
+                return;
+            }
+
+            // Process each product in the request
+            for (PackageFeaturesUpdateReq.ProductFeatureItem productItem : req.getProducts()) {
+                String productCode = productItem.getProductCode();
+                log.info("处理产品: productCode={}", productCode);
+
+                // Find product by code
+                ProductEntity product = productMapper.selectByCode(productCode);
+                if (product == null) {
+                    log.warn("产品不存在，跳过: productCode={}", productCode);
+                    continue;
+                }
+                String productId = product.getId();
+                log.info("找到产品: productId={}", productId);
+
+                // Remove existing features for this package-product
+                log.info("清除套餐-产品的旧功能配置: packageId={}, productId={}", packageId, productId);
+                packageProductFeatureMapper.deleteByPackageIdAndProductId(packageId, productId);
+
+                // Ensure package-product association exists
+                PackageProductEntity existingPp = packageProductMapper.selectByPackageIdAndProductId(packageId, productId);
+                if (existingPp == null) {
+                    log.info("创建套餐-产品关联: packageId={}, productId={}", packageId, productId);
+                    PackageProductEntity pp = new PackageProductEntity();
+                    pp.setPackageId(packageId);
+                    pp.setProductId(productId);
+                    pp.setSortOrder(0);
+                    packageProductMapper.insert(pp);
+                }
+
+                // Insert new features if provided
+                if (productItem.getFeatures() != null && !productItem.getFeatures().isEmpty()) {
+                    List<PackageProductFeatureEntity> features = new ArrayList<>();
+                    for (PackageFeaturesUpdateReq.FeatureItem fi : productItem.getFeatures()) {
+                        log.info("处理功能: featureCode={}", fi.getFeatureCode());
+
+                        // Find feature by code
+                        FeatureEntity feature = featureMapper.selectByCode(fi.getFeatureCode());
+                        if (feature == null) {
+                            log.warn("功能不存在，跳过: featureCode={}", fi.getFeatureCode());
+                            continue;
+                        }
+
+                        PackageProductFeatureEntity ppf = new PackageProductFeatureEntity();
+                        ppf.setPackageId(packageId);
+                        ppf.setProductId(productId);
+                        ppf.setFeatureId(feature.getId());
+                        ppf.setConfigValue(fi.getConfigValue());
+                        ppf.setIsEnabled(fi.getIsEnabled() != null ? fi.getIsEnabled() : true);
+                        ppf.setIsCustomized(determineIfCustomized(productId, feature.getId(), fi.getConfigValue()));
+                        features.add(ppf);
+                        log.info("准备添加功能配置: featureId={}, isEnabled={}, configValue={}",
+                            feature.getId(), ppf.getIsEnabled(), ppf.getConfigValue());
+                    }
+                    if (!features.isEmpty()) {
+                        log.info("批量插入 {} 个功能配置", features.size());
+                        packageProductFeatureMapper.batchInsert(features);
+                    }
+                }
+            }
+
+            log.info("套餐功能配置更新成功: packageId={}", packageId);
+        } catch (Exception e) {
+            log.error("更新套餐功能配置失败: packageId={}", packageId, e);
+            throw e;
+        }
+
+        log.info("Package features updated: packageId={}, productCount={}",
+                packageId, req.getProducts().size());
     }
 }

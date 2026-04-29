@@ -25,7 +25,7 @@ const statusLabels: Record<string, { text: string; bg: string; color: string }> 
   pending: { text: '待处理', bg: 'rgba(245,124,0,0.15)', color: '#f57c00' },
   fulfilled: { text: '已发放', bg: 'rgba(56,142,60,0.15)', color: '#388e3c' },
   used: { text: '已使用', bg: 'rgba(25,118,210,0.15)', color: '#1976d2' },
-  expired: { text: '已过期', bg: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.45)' },
+  expired: { text: '已过期', bg: 'rgba(0,0,0,0.04)', color: '#8a857f' },
   cancelled: { text: '已取消', bg: 'rgba(211,47,47,0.15)', color: '#d32f2f' },
 };
 
@@ -35,7 +35,7 @@ const productTypeLabels: Record<string, { text: string; bg: string; color: strin
   privilege: { text: '权益', bg: 'rgba(245,124,0,0.15)', color: '#f57c00' },
 };
 
-const Orders: React.FC = () => {
+const Orders: React.FC<{ hideHeader?: boolean }> = ({ hideHeader = false }) => {
   const { primaryColor } = useBranding();
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
@@ -102,7 +102,7 @@ const Orders: React.FC = () => {
       title: '手机号',
       dataIndex: 'phone',
       render: (phone: string) => (
-        <span style={{ fontFamily: 'Outfit, sans-serif', color: 'rgba(255,255,255,0.65)' }}>
+        <span style={{ fontFamily: 'Outfit, sans-serif', color: '#8a857f' }}>
           {phone}
         </span>
       ),
@@ -145,7 +145,7 @@ const Orders: React.FC = () => {
     },
     {
       title: '积分',
-      dataIndex: 'pointsPrice',
+      dataIndex: 'pointsCost',
       render: (v: number) => (
         <span
           style={{
@@ -185,7 +185,7 @@ const Orders: React.FC = () => {
       title: '下单时间',
       dataIndex: 'createTime',
       render: (t: string) => (
-        <span style={{ fontFamily: 'Outfit, sans-serif', color: 'rgba(255,255,255,0.45)', fontSize: 13 }}>
+        <span style={{ fontFamily: 'Outfit, sans-serif', color: '#8a857f', fontSize: 13 }}>
           {dayjs(t).format('YYYY-MM-DD HH:mm')}
         </span>
       ),
@@ -243,7 +243,7 @@ const Orders: React.FC = () => {
               onClick={() => { setSelectedOrder(record); setCouponModalOpen(true); }}
               style={{
                 borderRadius: 20,
-                border: '1px solid rgba(255,255,255,0.12)',
+                border: '1px solid #d4d0c8',
                 color: primaryColor,
                 fontFamily: 'var(--font-body, "Noto Sans SC", sans-serif)',
               }}
@@ -259,6 +259,7 @@ const Orders: React.FC = () => {
   return (
     <div style={{ padding: '0 0 24px', fontFamily: 'var(--font-body, "Noto Sans SC", sans-serif)' }}>
       {/* Page Header */}
+      {!hideHeader && (
       <div style={{ marginBottom: 24 }}>
         <h1
           style={{
@@ -266,13 +267,14 @@ const Orders: React.FC = () => {
             fontSize: 24,
             fontWeight: 700,
             marginBottom: 4,
-            color: '#fff',
+            color: '#2c2825',
           }}
         >
           订单管理
         </h1>
-        <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 14, margin: 0 }}>查看和管理所有兑换订单</p>
+        <p style={{ color: '#8a857f', fontSize: 14, margin: 0 }}>查看和管理所有兑换订单</p>
       </div>
+      )}
 
       {/* Filter Bar */}
       <GlassCard hoverable style={{ marginBottom: 20, padding: '16px 20px', display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -284,7 +286,7 @@ const Orders: React.FC = () => {
           styles={{
             input: {
               borderRadius: 12,
-              border: '1px solid rgba(255,255,255,0.1)',
+              border: '1px solid #d4d0c8',
             },
           }}
         />
@@ -301,7 +303,7 @@ const Orders: React.FC = () => {
           placeholder={['开始日期', '结束日期']}
           style={{
             borderRadius: 12,
-            border: '1px solid rgba(255,255,255,0.1)',
+            border: '1px solid #d4d0c8',
           }}
           popupClassName="digital-garden-calendar"
         />
@@ -326,9 +328,9 @@ const Orders: React.FC = () => {
                   <Button
                     style={{
                       borderRadius: 8,
-                      border: '1px solid rgba(255,255,255,0.12)',
-                      color: current === page ? primaryColor : 'rgba(255,255,255,0.65)',
-                      background: current === page ? `${primaryColor}15` : 'rgba(255,255,255,0.04)',
+                      border: '1px solid #d4d0c8',
+                      color: current === page ? primaryColor : '#8a857f',
+                      background: current === page ? `${primaryColor}15` : '#faf8f5',
                       fontWeight: current === page ? 600 : 400,
                     }}
                   >
@@ -363,7 +365,7 @@ const Orders: React.FC = () => {
         <div
           style={{
             padding: '20px 24px',
-            borderBottom: '1px solid rgba(255,255,255,0.08)',
+            borderBottom: '1px solid #d4d0c8',
           }}
         >
           <h2
@@ -372,7 +374,7 @@ const Orders: React.FC = () => {
               fontSize: 18,
               fontWeight: 600,
               margin: 0,
-              color: '#fff',
+              color: '#2c2825',
             }}
           >
             券码信息
@@ -383,7 +385,7 @@ const Orders: React.FC = () => {
             <div>
               <p
                 style={{
-                  color: 'rgba(255,255,255,0.65)',
+                  color: '#8a857f',
                   marginBottom: 16,
                   fontFamily: 'var(--font-body, "Noto Sans SC", sans-serif)',
                 }}
@@ -398,12 +400,12 @@ const Orders: React.FC = () => {
                     background: 'linear-gradient(135deg, #f8f7f4 0%, #f0efea 100%)',
                     borderRadius: 16,
                     textAlign: 'center',
-                    border: '1px dashed rgba(255,255,255,0.12)',
+                    border: '1px dashed #d4d0c8',
                   }}
                 >
                   <p
                     style={{
-                      color: 'rgba(255,255,255,0.45)',
+                      color: '#8a857f',
                       fontSize: 12,
                       marginBottom: 8,
                       fontFamily: 'var(--font-body, "Noto Sans SC", sans-serif)',
@@ -417,7 +419,7 @@ const Orders: React.FC = () => {
                       fontWeight: 700,
                       fontFamily: 'Outfit, monospace',
                       letterSpacing: 4,
-                      color: '#fff',
+                      color: '#2c2825',
                       margin: 0,
                     }}
                   >
@@ -432,8 +434,8 @@ const Orders: React.FC = () => {
               onClick={() => setCouponModalOpen(false)}
               style={{
                 borderRadius: 20,
-                border: '1px solid rgba(255,255,255,0.12)',
-                color: 'rgba(255,255,255,0.65)',
+                border: '1px solid #d4d0c8',
+                color: '#8a857f',
                 fontFamily: 'var(--font-body, "Noto Sans SC", sans-serif)',
               }}
             >
@@ -445,20 +447,21 @@ const Orders: React.FC = () => {
 
       <style>{`
         .digital-garden-table .ant-table-thead > tr > th {
-          background: rgba(255,255,255,0.04) !important;
-          border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+          background: #faf8f5 !important;
+          border-bottom: 1px solid #d4d0c8 !important;
           font-family: 'Outfit', sans-serif !important;
           font-weight: 600 !important;
-          color: rgba(255,255,255,0.65) !important;
+          color: #8a857f !important;
           padding: 16px !important;
         }
         .digital-garden-table .ant-table-tbody > tr > td {
           padding: 16px !important;
-          border-bottom: 1px solid rgba(255,255,255,0.06) !important;
-          color: rgba(255,255,255,0.85) !important;
+          border-bottom: 1px solid #d4d0c8 !important;
+          color: #2c2825 !important;
+          background: #fff !important;
         }
         .digital-garden-table .ant-table-tbody > tr:hover > td {
-          background: rgba(255,255,255,0.04) !important;
+          background: #faf8f5 !important;
         }
         .digital-garden-table .ant-table-tbody > tr > td:first-child {
           border-top-left-radius: 12px;
@@ -469,11 +472,11 @@ const Orders: React.FC = () => {
           border-bottom-right-radius: 12px;
         }
         .digital-garden-table .ant-table-tbody > tr.odd-row > td {
-          background: rgba(255,255,255,0.02) !important;
+          background: #faf8f5 !important;
         }
         .digital-garden-table .ant-pagination-item {
           border-radius: 8px !important;
-          border: 1px solid rgba(255,255,255,0.12) !important;
+          border: 1px solid #d4d0c8 !important;
         }
         .digital-garden-table .ant-pagination-item-active {
           background: ${primaryColor}15 !important;

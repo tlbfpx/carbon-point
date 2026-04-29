@@ -56,23 +56,19 @@ export const GlassCard: React.FC<GlassCardProps> = ({
   children,
   ...cardProps
 }) => {
-  // 动态样式计算
+  // 动态样式计算 - light theme
   const glassStyles = useMemo(() => {
     const baseBg = brandColor
       ? `rgba(${hexToRgb(brandColor)}, ${glassOpacity * 0.15})`
-      : `rgba(26, 26, 36, ${glassOpacity})`;
+      : '#ffffff';
 
     const baseStyles: CSSProperties = {
       background: baseBg,
-      backdropFilter: `blur(${blurIntensity}px) saturate(180%)`,
-      WebkitBackdropFilter: `blur(${blurIntensity}px) saturate(180%)`,
-      border: '1px solid rgba(255, 255, 255, 0.12)',
+      border: '1px solid rgba(0, 0, 0, 0.06)',
       borderRadius: 16,
       boxShadow: `
-        0 8px 32px rgba(0, 0, 0, 0.3),
-        0 2px 8px rgba(0, 0, 0, 0.2),
-        inset 0 1px 0 rgba(255, 255, 255, 0.08),
-        inset 0 -1px 0 rgba(0, 0, 0, 0.2)
+        0 1px 3px rgba(0, 0, 0, 0.04),
+        0 1px 2px rgba(0, 0, 0, 0.06)
       `,
       position: 'relative',
       overflow: 'hidden',
@@ -87,12 +83,12 @@ export const GlassCard: React.FC<GlassCardProps> = ({
   const pseudoElementStyles = useMemo(() => {
     const styles: Record<string, CSSProperties> = {};
 
-    // 高光层
+    // Light theme - no overlay highlight needed
     styles['&::before'] = {
       content: '""',
       position: 'absolute' as const,
       inset: 0,
-      background: `linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 50%, rgba(255, 255, 255, 0.04) 100%)`,
+      background: 'transparent',
       borderRadius: 'inherit',
       pointerEvents: 'none' as const,
       zIndex: 0,
@@ -135,13 +131,11 @@ export const GlassCard: React.FC<GlassCardProps> = ({
   const hoverStyles: Record<string, any> = hoverable
     ? {
         '&:hover': {
-          border: '1px solid rgba(255, 255, 255, 0.18)',
+          border: '1px solid rgba(0, 0, 0, 0.1)',
           transform: 'translateY(-2px)',
           boxShadow: `
-            0 12px 48px rgba(99, 102, 241, 0.15),
-            0 4px 16px rgba(0, 0, 0, 0.3),
-            inset 0 1px 0 rgba(255, 255, 255, 0.12),
-            inset 0 -1px 0 rgba(0, 0, 0, 0.2)
+            0 8px 24px rgba(0, 0, 0, 0.08),
+            0 2px 8px rgba(0, 0, 0, 0.06)
           `,
         },
         transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -194,7 +188,7 @@ export const GlassCardColumn: React.FC<{ left: React.ReactNode; right: React.Rea
 }) => (
   <GlassCard padding={0} style={{ overflow: 'hidden' }}>
     <div style={{ display: 'flex', height: '100%' }}>
-      <div style={{ flex: ratio[0], padding: 24, borderRight: '1px solid rgba(255,255,255,0.06)' }}>{left}</div>
+      <div style={{ flex: ratio[0], padding: 24, borderRight: '1px solid rgba(0,0,0,0.06)' }}>{left}</div>
       <div style={{ flex: ratio[1], padding: 24 }}>{right}</div>
     </div>
   </GlassCard>
@@ -233,10 +227,10 @@ export const GlassCardStat: React.FC<GlassCardStatProps> = ({ label, value, icon
         {icon}
       </div>
       <div style={{ flex: 1 }}>
-        <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 4 }}>{label}</div>
-        <div style={{ fontSize: 28, fontWeight: 600, color: '#fff', fontFamily: "'Inter', sans-serif" }}>{value}</div>
+        <div style={{ fontSize: 13, color: '#8a857f', marginBottom: 4 }}>{label}</div>
+        <div style={{ fontSize: 28, fontWeight: 600, color: '#2c2825', fontFamily: "'Inter', sans-serif" }}>{value}</div>
         {subValue && (
-          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginTop: 2 }}>{subValue}</div>
+          <div style={{ fontSize: 12, color: '#8a857f', marginTop: 2 }}>{subValue}</div>
         )}
         {trend && (
           <div

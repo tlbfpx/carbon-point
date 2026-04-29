@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   ClockCircleOutlined,
   TrophyOutlined,
@@ -100,10 +100,12 @@ const Rules: React.FC = () => {
   );
 
   // Auto-select first visible product if current is not available
-  if (visibleGroups.length > 0 && !visibleGroups.find((g) => g.key === activeProduct)) {
-    setActiveProduct(visibleGroups[0].key);
-    setActiveTab(visibleGroups[0].tabs[0]?.key || 'timeslot');
-  }
+  useEffect(() => {
+    if (visibleGroups.length > 0 && !visibleGroups.find((g) => g.key === activeProduct)) {
+      setActiveProduct(visibleGroups[0].key);
+      setActiveTab(visibleGroups[0].tabs[0]?.key || 'timeslot');
+    }
+  }, [visibleGroups, activeProduct]);
 
   const currentGroup = visibleGroups.find((g) => g.key === activeProduct);
   const visibleTabs = (currentGroup?.tabs || []).filter(
@@ -111,9 +113,11 @@ const Rules: React.FC = () => {
   );
 
   // Auto-select first tab if current is hidden
-  if (visibleTabs.length > 0 && !visibleTabs.find((t) => t.key === activeTab)) {
-    setActiveTab(visibleTabs[0].key);
-  }
+  useEffect(() => {
+    if (visibleTabs.length > 0 && !visibleTabs.find((t) => t.key === activeTab)) {
+      setActiveTab(visibleTabs[0].key);
+    }
+  }, [visibleTabs, activeTab]);
 
   const pillButtonStyle = (isActive: boolean): React.CSSProperties => ({
     display: 'flex',
@@ -121,18 +125,18 @@ const Rules: React.FC = () => {
     gap: 8,
     padding: '12px 20px',
     borderRadius: 20,
-    border: 'none',
+    border: isActive ? 'none' : '1px solid #d4d0c8',
     background: isActive
       ? `linear-gradient(135deg, ${primaryColor}, ${primaryColor}dd)`
-      : 'rgba(255,255,255,0.04)',
-    color: isActive ? '#fff' : 'rgba(255,255,255,0.65)',
+      : '#faf8f5',
+    color: isActive ? '#fff' : '#2c2825',
     fontFamily: 'var(--font-body)',
     fontSize: 14,
     fontWeight: isActive ? 600 : 500,
     cursor: 'pointer',
     boxShadow: isActive
       ? `0 4px 12px ${primaryColor}40`
-      : '0 2px 8px rgba(0,0,0,0.06)',
+      : '0 1px 3px rgba(0,0,0,0.06)',
     transition: 'all 0.2s ease',
   });
 
@@ -146,12 +150,12 @@ const Rules: React.FC = () => {
             fontSize: 24,
             fontWeight: 700,
             marginBottom: 8,
-            color: '#fff',
+            color: '#2c2825',
           }}
         >
           规则配置
         </h1>
-        <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 14, fontFamily: 'var(--font-body)' }}>
+        <p style={{ color: '#8a857f', fontSize: 14, fontFamily: 'var(--font-body)' }}>
           按产品分组管理积分规则，仅显示套餐已启用的产品和功能点
         </p>
       </div>
@@ -197,13 +201,13 @@ const Rules: React.FC = () => {
             onMouseEnter={(e) => {
               if (activeTab !== tab.key) {
                 e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
               }
             }}
             onMouseLeave={(e) => {
               if (activeTab !== tab.key) {
                 e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
+                e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.06)';
               }
             }}
           >

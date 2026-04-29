@@ -19,6 +19,12 @@ const ROUTE_PERMISSION_MAP: Record<string, string | undefined> = {
   '/walking': 'enterprise:walking:view',
   '/walking/step-config': 'enterprise:walking:config',
   '/walking/fun-equiv': 'enterprise:walking:config',
+  // New product pages
+  '/product/stair-climbing': 'enterprise:rule:view',
+  '/product/walking': 'enterprise:walking:view',
+  '/product/quiz': 'enterprise:quiz:view',
+  '/product/mall': 'enterprise:product:list',
+  '/settings': undefined,
 };
 
 interface PermissionGuardProps {

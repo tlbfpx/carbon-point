@@ -14,14 +14,17 @@ const MallPage: React.FC = () => {
   const tabItems = useMemo(() => {
     const tabs = [
       { key: 'overview', label: '数据概览', children: <MallReports hideHeader /> },
-      { key: 'products', label: '商品管理', children: <Products hideHeader /> },
     ];
 
-    if (isEnabled('mall.shelf')) {
+    if (isEnabled('mall.enabled')) {
+      tabs.push({ key: 'products', label: '商品管理', children: <Products hideHeader /> });
+    }
+    if (isEnabled('mall.platform_pool')) {
       tabs.push({ key: 'shelf', label: '商品上架', children: <MallShelf hideHeader /> });
     }
-
-    tabs.push({ key: 'orders', label: '订单管理', children: <Orders hideHeader /> });
+    if (isEnabled('mall.reports')) {
+      tabs.push({ key: 'orders', label: '订单管理', children: <Orders hideHeader /> });
+    }
 
     return tabs;
   }, [isEnabled]);
@@ -35,19 +38,18 @@ const MallPage: React.FC = () => {
             fontSize: 24,
             fontWeight: 700,
             marginBottom: 4,
-            color: '#fff',
+            color: '#2c2825',
           }}
         >
           积分商城
         </h1>
-        <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 14, margin: 0 }}>
+        <p style={{ color: '#8a857f', fontSize: 14, margin: 0 }}>
           管理商品、上架、订单和报表
         </p>
       </div>
 
       <Tabs
         items={tabItems}
-        style={{ color: '#fff' }}
         tabBarStyle={{ marginBottom: 24 }}
       />
     </div>
