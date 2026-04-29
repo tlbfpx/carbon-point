@@ -153,7 +153,7 @@ public class PackagePlatformProductServiceImpl implements PackagePlatformProduct
             if (productFeatures.isEmpty()) {
                 return Collections.emptyList();
             }
-            Map<String, Feature> featureMap = loadFeatureEntities(productFeatures);
+            Map<String, FeatureEntity> featureMap = loadFeatureEntities(productFeatures);
             return productFeatures.stream()
                     .map(pf -> {
                         FeatureEntity feature = featureMap.get(pf.getFeatureId());
@@ -176,7 +176,7 @@ public class PackagePlatformProductServiceImpl implements PackagePlatformProduct
         Map<String, PlatformProductFeature> productFeatureMap = productFeatures.stream()
                 .collect(Collectors.toMap(PlatformProductFeature::getFeatureId, pf -> pf));
 
-        Map<String, Feature> featureMap = loadFeatureEntities(productFeatures);
+        Map<String, FeatureEntity> featureMap = loadFeatureEntities(productFeatures);
 
         return ppfList.stream()
                 .map(ppf -> {
