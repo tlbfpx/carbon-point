@@ -64,6 +64,7 @@ const PLATFORM_PERMISSION_MAP: Record<string, string> = {
   '/features/products': 'platform:product:list',
   '/features/registry': 'platform:feature:list',
   '/features/blocks': 'platform:block:list',
+  '/platform-products': 'platform:product:list',
   '/packages': 'platform:package:list',
   '/product-pool': 'platform:mall:product:list',
   '/config': 'platform:config:view',
@@ -108,7 +109,8 @@ const PlatformMenuItems: MenuProps['items'] = [
     label: '功能配置',
     children: [
       { key: '/features/registry', label: '功能配置项' },
-      { key: '/features/products', label: '产品管理' },
+      { key: '/features/products', label: '产品管理（旧）' },
+      { key: '/platform-products', label: '平台产品管理' },
       { key: '/features/blocks', label: '积木组件库' },
     ],
   },

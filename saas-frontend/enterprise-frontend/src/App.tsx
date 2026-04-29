@@ -24,6 +24,7 @@ import {
     SmileOutlined,
     ClockCircleOutlined,
     RiseOutlined,
+    GiftOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 
@@ -71,6 +72,7 @@ const ENTERPRISE_PERMISSION_MAP: Record<string, string | undefined> = {
   '/product/walking': 'enterprise:walking:view',
   '/product/quiz': 'enterprise:quiz:view',
   '/product/mall': 'enterprise:product:list',
+  '/virtual-goods': 'enterprise:product:list',
   '/settings': undefined,
   // Operations
   '/points': 'enterprise:point:query',
@@ -105,6 +107,7 @@ const EnterpriseMenuItems: MenuProps['items'] = [
   { key: '/product/walking', icon: <WomanOutlined />, label: '走路积分管理' },
   { key: '/product/quiz', icon: <BookOutlined />, label: '答题管理' },
   { key: '/product/mall', icon: <ShopOutlined />, label: '积分商城' },
+  { key: '/virtual-goods', icon: <GiftOutlined />, label: '虚拟商品管理' },
   // Operations
   { key: '/points', icon: <TrophyOutlined />, label: '积分运营' },
   { key: '/point-expiration', icon: <ClockCircleOutlined />, label: '积分过期配置' },
