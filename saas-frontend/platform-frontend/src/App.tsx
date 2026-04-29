@@ -28,6 +28,7 @@ import PlatformConfig from '@/pages/PlatformConfig';
 import PackageManagement from '@/pages/PackageManagement';
 import ProductManagement from '@/pages/ProductManagement';
 import ProductConfig from '@/pages/ProductConfig';
+import PlatformProductManagement from '@/pages/PlatformProductManagement';
 import BlockLibrary from '@/pages/BlockLibrary';
 import SystemUsers from '@/pages/SystemUsers';
 import SystemRoles from '@/pages/SystemRoles';
@@ -290,6 +291,8 @@ const PlatformContent: React.FC = () => {
                   <Route path="/features/registry" element={<FeatureManagement />} />
                   <Route path="/features/products" element={<ProductManagement />} />
                   <Route path="/products/:id/config" element={<ProductConfig />} />
+                  <Route path="/platform-products" element={<PlatformProductManagement />} />
+                  <Route path="/platform-products/:id/config" element={<ProductConfig />} />
                   <Route path="/features/blocks" element={<BlockLibrary />} />
                   <Route path="/packages" element={<PackageManagement />} />
                   <Route path="/product-pool" element={<PlatformProductPool />} />

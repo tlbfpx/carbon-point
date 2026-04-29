@@ -45,6 +45,7 @@ import WalkingPage from '@/pages/product/WalkingPage';
 import QuizPage from '@/pages/product/QuizPage';
 import MallPage from '@/pages/product/MallPage';
 import SettingsPage from '@/pages/SettingsPage';
+import VirtualGoodsManagement from '@/pages/VirtualGoodsManagement';
 
 import { useFeatureStore } from '@/store/featureStore';
 
@@ -561,6 +562,7 @@ const EnterpriseContent: React.FC = () => {
             <Route path="/product/walking" element={<PermissionGuard><WalkingPage /></PermissionGuard>} />
             <Route path="/product/quiz" element={<PermissionGuard><QuizPage /></PermissionGuard>} />
             <Route path="/product/mall" element={<PermissionGuard><MallPage /></PermissionGuard>} />
+            <Route path="/virtual-goods" element={<PermissionGuard><VirtualGoodsManagement /></PermissionGuard>} />
             <Route path="/settings" element={<PermissionGuard><SettingsPage /></PermissionGuard>} />
 
             {/* Operations */}
