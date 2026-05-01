@@ -10,7 +10,9 @@ import java.time.LocalDateTime;
 /**
  * 平台商品池实体。
  * 平台管理员维护的全局虚拟商品，企业可从中选购上架到自己的积分商城。
+ * @deprecated Deprecated for removal in v2.3, use unified resources instead.
  */
+@Deprecated
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

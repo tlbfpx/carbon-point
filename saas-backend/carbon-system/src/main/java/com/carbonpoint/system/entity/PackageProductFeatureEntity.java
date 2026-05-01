@@ -13,7 +13,9 @@ import java.time.LocalDateTime;
  * Package-Product-Feature association entity.
  * Stores per-(package, product, feature) configuration that overrides product defaults.
  * Configuration priority: package config > product config > system default value.
+ * @deprecated Deprecated for removal in v2.3, use unified resources instead.
  */
+@Deprecated
 @Data
 @TableName("package_product_features")
 public class PackageProductFeatureEntity {

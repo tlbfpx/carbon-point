@@ -12,7 +12,9 @@ import java.time.LocalDateTime;
 /**
  * Package-Product association entity.
  * Links a permission package to products and defines sort order.
+ * @deprecated Deprecated for removal in v2.3, use unified resources instead.
  */
+@Deprecated
 @Data
 @TableName("package_products")
 public class PackagePlatformProduct {

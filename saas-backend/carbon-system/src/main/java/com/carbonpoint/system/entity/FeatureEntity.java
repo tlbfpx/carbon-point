@@ -11,7 +11,9 @@ import java.time.LocalDateTime;
 
 /**
  * Feature entity - platform-level feature flag/config management.
+ * @deprecated Deprecated for removal in v2.3, use unified resources instead.
  */
+@Deprecated
 @Data
 @TableName("features")
 public class FeatureEntity {

@@ -10,7 +10,9 @@ import java.time.LocalDateTime;
 /**
  * 企业商品货架实体。
  * 记录企业从平台商品池中选择上架的商品。
+ * @deprecated Deprecated for removal in v2.3, use unified resources instead.
  */
+@Deprecated
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

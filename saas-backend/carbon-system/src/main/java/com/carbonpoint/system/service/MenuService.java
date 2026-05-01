@@ -1,6 +1,7 @@
 package com.carbonpoint.system.service;
 
 import com.carbonpoint.system.dto.res.MenuItemVO;
+import com.carbonpoint.system.dto.res.MenuNode;
 
 import java.util.List;
 
@@ -21,4 +22,17 @@ public interface MenuService {
      * @return menu tree
      */
     List<MenuItemVO> getTenantMenu(Long tenantId);
+
+    /**
+     * Get resource-driven menu for current tenant (new unified architecture).
+     * @return menu tree
+     */
+    List<MenuNode> getResourceDrivenMenu();
+
+    /**
+     * Get resource-driven menu for a specific tenant (new unified architecture).
+     * @param tenantId tenant ID
+     * @return menu tree
+     */
+    List<MenuNode> getResourceDrivenMenu(Long tenantId);
 }

@@ -11,6 +11,10 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 
+/**
+ * @deprecated Deprecated for removal in v2.3, use unified resources instead.
+ */
+@Deprecated
 @Data
 @TableName("platform_products")
 @InterceptorIgnore

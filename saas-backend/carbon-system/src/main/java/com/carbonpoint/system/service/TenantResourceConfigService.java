@@ -26,4 +26,14 @@ public interface TenantResourceConfigService {
      * @return optional configuration value
      */
     Optional<Object> getResourceConfig(Long tenantId, String resourceCode);
+
+    /**
+     * Update a specific resource configuration for a tenant.
+     * Writes to old system first, then to new table (dual-write).
+     *
+     * @param tenantId     the tenant ID
+     * @param resourceCode the resource code
+     * @param config       the configuration value
+     */
+    void updateConfig(Long tenantId, String resourceCode, Object config);
 }

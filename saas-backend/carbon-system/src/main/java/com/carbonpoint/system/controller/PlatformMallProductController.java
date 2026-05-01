@@ -14,7 +14,9 @@ import java.time.LocalDateTime;
 /**
  * 平台商品池管理控制器。
  * 平台管理员维护全局虚拟商品供企业选购上架。
+ * @deprecated Deprecated for removal in v2.3, use unified resources instead.
  */
+@Deprecated
 @RestController
 @RequestMapping("/platform/products/pool")
 @RequiredArgsConstructor

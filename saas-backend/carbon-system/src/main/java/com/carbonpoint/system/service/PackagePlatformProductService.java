@@ -6,7 +6,9 @@ import com.carbonpoint.system.dto.res.PackageDetailRes;
 /**
  * Service for managing the relationship between permission packages and platform products.
  * This includes product assignments, feature configurations, and package-product relationships.
+ * @deprecated Deprecated for removal in v2.3, use unified resources instead.
  */
+@Deprecated
 public interface PackagePlatformProductService {
 
     /**

@@ -8,7 +8,9 @@ import org.apache.ibatis.annotations.Select;
 
 /**
  * Feature mapper - platform level, ignores tenant interceptor.
+ * @deprecated Deprecated for removal in v2.3, use unified resources instead.
  */
+@Deprecated
 @Mapper
 @InterceptorIgnore
 public interface FeatureMapper extends BaseMapper<FeatureEntity> {

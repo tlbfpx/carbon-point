@@ -23,7 +23,9 @@ import java.util.List;
 
 /**
  * Product management controller - platform level.
+ * @deprecated Deprecated for removal in v2.3, use unified resources instead.
  */
+@Deprecated
 @RestController
 @RequestMapping("/platform/products")
 @RequiredArgsConstructor

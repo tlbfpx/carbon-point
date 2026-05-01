@@ -15,6 +15,7 @@ import com.carbonpoint.system.dto.res.TenantPackageRes;
 import com.carbonpoint.system.entity.*;
 import com.carbonpoint.system.event.PackagePermissionUpdatedEvent;
 import com.carbonpoint.system.mapper.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.carbonpoint.system.security.PermissionService;
 import com.carbonpoint.system.service.PackageService;
 import com.carbonpoint.system.service.ProductRuleTemplateService;
@@ -47,6 +48,8 @@ public class PackageServiceImpl implements PackageService {
     private final ApplicationEventPublisher eventPublisher;
     private final ProductRuleTemplateService ruleTemplateService;
     private final FeatureMapper featureMapper;
+    private final PackageResourceMapper packageResourceMapper;
+    private final ObjectMapper objectMapper;
 
     @Override
     public List<PackageRes> list() {
@@ -749,5 +752,83 @@ public class PackageServiceImpl implements PackageService {
 
         log.info("Package features updated: packageId={}, productCount={}",
                 packageId, req.getProducts().size());
+    }
+
+    // ── Package-Resource management implementation ─────────────────────────────
+
+    @Override
+    @Transactional
+    public void attachResourceToPackage(Long packageId, String resourceCode, Object config, Boolean required) {
+        PermissionPackage pkg = packageMapper.selectById(packageId);
+        if (pkg == null) {
+            throw new BusinessException(ErrorCode.PACKAGE_NOT_FOUND);
+        }
+
+        // Check if resource is already attached
+        LambdaQueryWrapper<PackageResource> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(PackageResource::getPackageId, packageId)
+               .eq(PackageResource::getResourceCode, resourceCode);
+        PackageResource existing = packageResourceMapper.selectOne(wrapper);
+
+        String configJson = null;
+        if (config != null) {
+            try {
+                configJson = objectMapper.writeValueAsString(config);
+            } catch (Exception e) {
+                log.error("Failed to serialize config for resource: {}", resourceCode, e);
+                throw new BusinessException(ErrorCode.PARAM_INVALID, "Failed to serialize resource config");
+            }
+        }
+
+        if (existing != null) {
+            // Update existing
+            if (configJson != null) {
+                existing.setConfig(configJson);
+            }
+            if (required != null) {
+                existing.setIsRequired(required);
+            }
+            packageResourceMapper.updateById(existing);
+            log.info("Package resource updated: packageId={}, resourceCode={}", packageId, resourceCode);
+        } else {
+            // Create new
+            PackageResource pr = new PackageResource();
+            pr.setPackageId(packageId);
+            pr.setResourceCode(resourceCode);
+            pr.setConfig(configJson);
+            pr.setIsRequired(required != null ? required : false);
+            pr.setSortOrder(0);
+            packageResourceMapper.insert(pr);
+            log.info("Package resource attached: packageId={}, resourceCode={}", packageId, resourceCode);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void detachResourceFromPackage(Long packageId, String resourceCode) {
+        PermissionPackage pkg = packageMapper.selectById(packageId);
+        if (pkg == null) {
+            throw new BusinessException(ErrorCode.PACKAGE_NOT_FOUND);
+        }
+
+        LambdaQueryWrapper<PackageResource> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(PackageResource::getPackageId, packageId)
+               .eq(PackageResource::getResourceCode, resourceCode);
+        packageResourceMapper.delete(wrapper);
+
+        log.info("Package resource detached: packageId={}, resourceCode={}", packageId, resourceCode);
+    }
+
+    @Override
+    public List<PackageResource> getPackageResources(Long packageId) {
+        PermissionPackage pkg = packageMapper.selectById(packageId);
+        if (pkg == null) {
+            throw new BusinessException(ErrorCode.PACKAGE_NOT_FOUND);
+        }
+
+        LambdaQueryWrapper<PackageResource> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(PackageResource::getPackageId, packageId)
+               .orderByAsc(PackageResource::getSortOrder);
+        return packageResourceMapper.selectList(wrapper);
     }
 }

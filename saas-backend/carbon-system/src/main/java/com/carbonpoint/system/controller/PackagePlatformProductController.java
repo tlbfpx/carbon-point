@@ -11,7 +11,9 @@ import org.springframework.web.bind.annotation.*;
 /**
  * Controller for managing package-platform-product relationships.
  * All endpoints require platform admin authentication.
+ * @deprecated Deprecated for removal in v2.3, use unified resources instead.
  */
+@Deprecated
 @RestController
 @RequestMapping("/platform/packages/{packageId}/products")
 @RequiredArgsConstructor

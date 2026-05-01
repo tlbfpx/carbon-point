@@ -4,6 +4,9 @@ import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 import java.time.LocalDateTime;
 
+/**
+ * Tenant resource configuration entity (reference for future phases).
+ */
 @Data
 @TableName("tenant_resource_configs")
 public class TenantResourceConfig {
@@ -16,8 +19,7 @@ public class TenantResourceConfig {
 
     private Boolean enabled;
 
-    @TableField(typeHandler = org.apache.ibatis.type.JdbcTypeForHandler.class)
-    private Object config;
+    private String config;
 
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdAt;

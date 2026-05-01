@@ -8,7 +8,9 @@ import java.util.Optional;
 
 /**
  * Feature service - platform-level feature flag/config management.
+ * @deprecated Deprecated for removal in v2.3, use unified resources instead.
  */
+@Deprecated
 public interface FeatureService {
 
     /**

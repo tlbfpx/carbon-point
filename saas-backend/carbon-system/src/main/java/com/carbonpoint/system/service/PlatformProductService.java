@@ -13,7 +13,9 @@ import java.util.List;
 /**
  * Service for managing platform products (the core products that tenants can subscribe to).
  * This includes product CRUD, feature management, and product-package relationships.
+ * @deprecated Deprecated for removal in v2.3, use unified resources instead.
  */
+@Deprecated
 public interface PlatformProductService {
 
     /**

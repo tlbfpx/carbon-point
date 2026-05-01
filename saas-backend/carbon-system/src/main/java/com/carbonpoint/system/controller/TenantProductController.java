@@ -15,7 +15,9 @@ import java.util.List;
  * Tenant Products API.
  * Provides endpoints for tenants to discover which products are available
  * to them based on their package, and for platform admins to query any tenant's products.
+ * @deprecated Deprecated for removal in v2.3, use unified resources instead.
  */
+@Deprecated
 @RestController
 @RequiredArgsConstructor
 public class TenantProductController {

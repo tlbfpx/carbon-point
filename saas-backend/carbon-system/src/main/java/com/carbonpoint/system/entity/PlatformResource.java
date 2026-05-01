@@ -4,11 +4,15 @@ import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 import java.time.LocalDateTime;
 
+/**
+ * Unified resource entity (reference for future phases).
+ * Currently not used - ResourceRegistry reads from existing Feature/Product tables.
+ */
 @Data
 @TableName("platform_resources")
 public class PlatformResource {
     @TableId(type = IdType.ASSIGN_UUID)
-    private byte[] id;
+    private String id;
 
     private String code;
 
@@ -20,8 +24,7 @@ public class PlatformResource {
 
     private String description;
 
-    @TableField(typeHandler = org.apache.ibatis.type.JdbcTypeForHandler.class)
-    private Object metadata;
+    private String metadata;
 
     private String icon;
 

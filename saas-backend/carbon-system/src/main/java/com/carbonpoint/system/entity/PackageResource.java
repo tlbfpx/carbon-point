@@ -4,6 +4,9 @@ import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 import java.time.LocalDateTime;
 
+/**
+ * Package-resource mapping entity (reference for future phases).
+ */
 @Data
 @TableName("package_resources")
 public class PackageResource {
@@ -16,8 +19,7 @@ public class PackageResource {
 
     private Boolean isRequired;
 
-    @TableField(typeHandler = org.apache.ibatis.type.JdbcTypeForHandler.class)
-    private Object config;
+    private String config;
 
     private Integer sortOrder;
 

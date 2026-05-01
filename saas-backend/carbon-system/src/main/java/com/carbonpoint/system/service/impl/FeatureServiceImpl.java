@@ -23,7 +23,9 @@ import java.util.Optional;
 
 /**
  * Feature service implementation.
+ * @deprecated Deprecated for removal in v2.3, use unified resources instead.
  */
+@Deprecated
 @Slf4j
 @Service
 @RequiredArgsConstructor

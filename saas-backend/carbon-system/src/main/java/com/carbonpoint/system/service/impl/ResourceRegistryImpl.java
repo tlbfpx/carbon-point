@@ -1,17 +1,18 @@
 package com.carbonpoint.system.service.impl;
 
-import com.carbonpoint.common.util.JsonUtils;
+import com.carbonpoint.system.config.FeatureToggleProperties;
 import com.carbonpoint.system.entity.FeatureEntity;
 import com.carbonpoint.system.entity.PlatformProduct;
 import com.carbonpoint.system.entity.PlatformResource;
 import com.carbonpoint.system.enums.ResourceType;
 import com.carbonpoint.system.mapper.FeatureMapper;
 import com.carbonpoint.system.mapper.PlatformProductMapper;
+import com.carbonpoint.system.repository.PlatformResourceRepository;
 import com.carbonpoint.system.service.ResourceRegistry;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -19,12 +20,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
- * Implementation of ResourceRegistry.
+ * Implementation of ResourceRegistry with feature toggle support.
  * <p>
- * Phase 1 implementation: reads from existing Feature and Product tables.
- * Future phases will read from platform_resources table.
+ * When feature.unified-resources is true: reads from new platform_resources table as primary.
+ * When false (default): reads from existing Feature and Product tables.
  * <p>
- * This is completely non-intrusive - existing code continues to work.
+ * In both cases, maintains compatibility with old APIs.
  */
 @Slf4j
 @Service
@@ -33,45 +34,43 @@ public class ResourceRegistryImpl implements ResourceRegistry {
 
     private final FeatureMapper featureMapper;
     private final PlatformProductMapper productMapper;
+    private final ObjectMapper objectMapper;
+    private final PlatformResourceRepository platformResourceRepository;
+    private final FeatureToggleProperties featureToggleProperties;
 
-    // Feature flag - disabled by default
-    @Value("${feature.unified-resources:false}")
-    private boolean unifiedResourcesEnabled;
-
-    // Cache for resources (from existing tables)
+    // Cache for resources
     private volatile Map<String, PlatformResource> resourceCache = new ConcurrentHashMap<>();
     private volatile Map<String, FeatureEntity> featureEntityCache = new ConcurrentHashMap<>();
     private volatile Map<String, PlatformProduct> productCache = new ConcurrentHashMap<>();
 
     @PostConstruct
     public void init() {
-        log.info("Initializing ResourceRegistry (feature enabled: {})", unifiedResourcesEnabled);
+        log.info("Initializing ResourceRegistry (feature enabled: {})", featureToggleProperties.isUnifiedResources());
         refresh();
     }
 
     @Override
-    @PostConstruct  // Also refresh on start
     public synchronized void refresh() {
-        log.info("Refreshing resource cache");
+        log.info("Refreshing resource cache (feature enabled: {})", featureToggleProperties.isUnifiedResources());
 
         Map<String, PlatformResource> newResourceCache = new ConcurrentHashMap<>();
         Map<String, FeatureEntity> newFeatureCache = new ConcurrentHashMap<>();
         Map<String, PlatformProduct> newProductCache = new ConcurrentHashMap<>();
 
-        // Load features from existing Feature table
-        List<FeatureEntity> features = featureMapper.selectList(null);
-        for (FeatureEntity feature : features) {
-            PlatformResource resource = buildResourceFromFeature(feature);
-            newResourceCache.put(resource.getCode(), resource);
-            newFeatureCache.put(feature.getCode(), feature);
-        }
+        if (featureToggleProperties.isUnifiedResources()) {
+            // Load from new platform_resources table
+            log.info("Loading resources from new platform_resources table");
+            List<PlatformResource> resources = platformResourceRepository.findAllFromNewTable();
+            for (PlatformResource resource : resources) {
+                newResourceCache.put(resource.getCode(), resource);
+            }
 
-        // Load products from existing PlatformProduct table
-        List<PlatformProduct> products = productMapper.selectList(null);
-        for (PlatformProduct product : products) {
-            PlatformResource resource = buildResourceFromProduct(product);
-            newResourceCache.put(resource.getCode(), resource);
-            newProductCache.put(product.getCode(), product);
+            // Also load from old tables for compatibility fallback
+            loadFromOldTables(newFeatureCache, newProductCache);
+        } else {
+            // Load from old tables (Feature + Product)
+            log.info("Loading resources from old tables (Feature + Product)");
+            loadFromOldTables(newResourceCache, newFeatureCache, newProductCache);
         }
 
         // Atomic swap
@@ -81,6 +80,41 @@ public class ResourceRegistryImpl implements ResourceRegistry {
 
         log.info("Resource cache refreshed: {} resources ({} features, {} products)",
                 resourceCache.size(), featureEntityCache.size(), productCache.size());
+    }
+
+    private void loadFromOldTables(Map<String, PlatformResource> resourceCache,
+                                    Map<String, FeatureEntity> featureCache,
+                                    Map<String, PlatformProduct> productCache) {
+        // Load features from existing Feature table
+        List<FeatureEntity> features = featureMapper.selectList(null);
+        for (FeatureEntity feature : features) {
+            PlatformResource resource = buildResourceFromFeature(feature);
+            resourceCache.put(resource.getCode(), resource);
+            featureCache.put(feature.getCode(), feature);
+        }
+
+        // Load products from existing PlatformProduct table
+        List<PlatformProduct> products = productMapper.selectList(null);
+        for (PlatformProduct product : products) {
+            PlatformResource resource = buildResourceFromProduct(product);
+            resourceCache.put(resource.getCode(), resource);
+            productCache.put(product.getCode(), product);
+        }
+    }
+
+    private void loadFromOldTables(Map<String, FeatureEntity> featureCache,
+                                    Map<String, PlatformProduct> productCache) {
+        // Load features from existing Feature table
+        List<FeatureEntity> features = featureMapper.selectList(null);
+        for (FeatureEntity feature : features) {
+            featureCache.put(feature.getCode(), feature);
+        }
+
+        // Load products from existing PlatformProduct table
+        List<PlatformProduct> products = productMapper.selectList(null);
+        for (PlatformProduct product : products) {
+            productCache.put(product.getCode(), product);
+        }
     }
 
     @Override
@@ -111,7 +145,7 @@ public class ResourceRegistryImpl implements ResourceRegistry {
 
     @Override
     public boolean isFeatureEnabled() {
-        return unifiedResourcesEnabled;
+        return featureToggleProperties.isUnifiedResources();
     }
 
     @Override
@@ -131,12 +165,12 @@ public class ResourceRegistryImpl implements ResourceRegistry {
         resource.setCode(feature.getCode());
         resource.setType(ResourceType.FEATURE.getCode());
         resource.setName(feature.getName());
-        resource.setCategory(feature.getCategory());
+        resource.setCategory(feature.getGroup());  // Feature uses 'group' instead of 'category'
         resource.setDescription(feature.getDescription());
         resource.setIcon(null);  // Features don't have icons in old table
-        resource.setStatus(feature.getStatus() == 1 ? "ENABLED" : "DISABLED");
-        resource.setSortOrder(feature.getSortOrder() != null ? feature.getSortOrder() : 0);
-        resource.setDeleted(feature.getDeleted() != null && feature.getDeleted());
+        resource.setStatus("ENABLED");  // Feature doesn't have status field, default to ENABLED
+        resource.setSortOrder(0);  // Feature doesn't have sortOrder field, default to 0
+        resource.setDeleted(false);  // Feature doesn't have deleted field, default to false
         resource.setCreatedAt(feature.getCreatedAt());
         resource.setUpdatedAt(feature.getUpdatedAt());
 
@@ -145,7 +179,13 @@ public class ResourceRegistryImpl implements ResourceRegistry {
         metadata.put("featureType", feature.getType());
         metadata.put("valueType", feature.getValueType());
         metadata.put("defaultValue", feature.getDefaultValue());
-        resource.setMetadata(JsonUtils.toJsonString(metadata));
+        metadata.put("group", feature.getGroup());
+        try {
+            resource.setMetadata(objectMapper.writeValueAsString(metadata));
+        } catch (Exception e) {
+            log.warn("Failed to serialize metadata for feature {}", feature.getCode(), e);
+            resource.setMetadata("{}");
+        }
 
         return resource;
     }
@@ -157,10 +197,10 @@ public class ResourceRegistryImpl implements ResourceRegistry {
         resource.setName(product.getName());
         resource.setCategory(product.getCategory());
         resource.setDescription(product.getDescription());
-        resource.setIcon(product.getIcon());
+        resource.setIcon(null);  // Product doesn't have icon field in current schema
         resource.setStatus(product.getStatus() == 1 ? "ENABLED" : "DISABLED");
         resource.setSortOrder(product.getSortOrder() != null ? product.getSortOrder() : 0);
-        resource.setDeleted(product.getDeleted() != null && product.getDeleted());
+        resource.setDeleted(product.getDeleted() != null && product.getDeleted() == 1);
         resource.setCreatedAt(product.getCreatedAt());
         resource.setUpdatedAt(product.getUpdatedAt());
 
@@ -170,7 +210,12 @@ public class ResourceRegistryImpl implements ResourceRegistry {
         metadata.put("ruleChainConfig", product.getRuleChainConfig());
         metadata.put("defaultConfig", product.getDefaultConfig());
         metadata.put("basicConfig", product.getBasicConfig());
-        resource.setMetadata(JsonUtils.toJsonString(metadata));
+        try {
+            resource.setMetadata(objectMapper.writeValueAsString(metadata));
+        } catch (Exception e) {
+            log.warn("Failed to serialize metadata for product {}", product.getCode(), e);
+            resource.setMetadata("{}");
+        }
 
         return resource;
     }

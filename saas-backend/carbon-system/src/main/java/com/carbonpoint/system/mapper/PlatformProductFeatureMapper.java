@@ -11,7 +11,9 @@ import java.util.List;
 
 /**
  * Product-Feature association mapper.
+ * @deprecated Deprecated for removal in v2.3, use unified resources instead.
  */
+@Deprecated
 @Mapper
 @InterceptorIgnore
 public interface PlatformProductFeatureMapper extends BaseMapper<PlatformProductFeature> {
