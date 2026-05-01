@@ -2,6 +2,7 @@ package com.carbonpoint.system.repository;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.carbonpoint.common.tenant.InterceptorIgnore;
+import com.carbonpoint.system.config.FeatureToggleProperties;
 import com.carbonpoint.system.dto.ConsistencyReport;
 import com.carbonpoint.system.entity.FeatureEntity;
 import com.carbonpoint.system.entity.PlatformProduct;
@@ -13,16 +14,21 @@ import com.carbonpoint.system.mapper.PlatformResourceMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Implementation of PlatformResourceRepository with dual-read support.
+ * Implementation of PlatformResourceRepository with dual-read support and feature toggle.
+ * <p>
+ * When feature.unified-resources is true: uses new tables as primary, old tables as fallback.
+ * When false (default): uses old tables as primary, new tables for validation only.
  */
 @Slf4j
 @Repository
+@Primary
 @RequiredArgsConstructor
 public class PlatformResourceRepositoryImpl implements PlatformResourceRepository {
 
@@ -30,6 +36,7 @@ public class PlatformResourceRepositoryImpl implements PlatformResourceRepositor
     private final FeatureMapper featureMapper;
     private final PlatformProductMapper platformProductMapper;
     private final ObjectMapper objectMapper;
+    private final FeatureToggleProperties featureToggleProperties;
 
     @Override
     @InterceptorIgnore
@@ -63,8 +70,18 @@ public class PlatformResourceRepositoryImpl implements PlatformResourceRepositor
 
     @Override
     public List<PlatformResource> findAll() {
-        // Non-invasive: default to old table
-        return findAllFromOldTable();
+        if (featureToggleProperties.isUnifiedResources()) {
+            log.debug("Feature toggle enabled: using new platform_resources table as primary");
+            try {
+                return findAllFromNewTable();
+            } catch (Exception e) {
+                log.warn("Failed to read from new table, falling back to old tables", e);
+                return findAllFromOldTable();
+            }
+        } else {
+            log.debug("Feature toggle disabled: using old tables (Feature + Product) as primary");
+            return findAllFromOldTable();
+        }
     }
 
     @Override

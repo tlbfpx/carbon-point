@@ -25,6 +25,7 @@ import {
     ClockCircleOutlined,
     RiseOutlined,
     GiftOutlined,
+    ExperimentOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 
@@ -47,6 +48,7 @@ import QuizPage from '@/pages/product/QuizPage';
 import MallPage from '@/pages/product/MallPage';
 import SettingsPage from '@/pages/SettingsPage';
 import VirtualGoodsManagement from '@/pages/VirtualGoodsManagement';
+import ResourceManagement from '@/pages/ResourceManagement';
 
 import { useFeatureStore } from '@/store/featureStore';
 
@@ -54,6 +56,8 @@ import { useAuthStore } from '@/store/authStore';
 import { useBranding } from '@/components/BrandingProvider';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import PermissionGuard from '@/components/PermissionGuard';
+import FeatureGuard from '@/components/FeatureGuard';
+import { FEATURES } from '@/constants/features';
 import { routeLogger } from '@/utils';
 import { getTenantProducts } from '@/api/tenantProducts';
 import { getTenantMenu, MenuItem as ApiMenuItem } from '@/api/menu';
@@ -178,6 +182,7 @@ const MENU_ITEM_ACTIVE_BG = 'rgba(255, 255, 255, 0.08)';
 
 const EnterpriseContent: React.FC = () => {
   const { user, isAuthenticated, logout, permissions, permissionsLoading, isHydrated } = useAuthStore();
+  const isUnifiedResourcesEnabled = useFeatureStore((s) => s.isEnabled(FEATURES.UNIFIED_RESOURCES));
   const navigate = useNavigate();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
@@ -227,6 +232,12 @@ const EnterpriseContent: React.FC = () => {
   useEffect(() => {
     useAuthStore.getState().hydrate();
   }, []);
+
+  useEffect(() => {
+    if (isAuthenticated && !useFeatureStore.getState().loaded) {
+      useFeatureStore.getState().load();
+    }
+  }, [isAuthenticated]);
 
   useEffect(() => {
     routeLogger.info(`[路由切换] 导航到 ${location.pathname}`);
@@ -279,6 +290,25 @@ const EnterpriseContent: React.FC = () => {
       })
       .map(item => {
         const i = item as any;
+        if (i.children && i.key === 'settings-group') {
+          // Add experimental resources menu item if feature is enabled
+          const updatedChildren = [...i.children];
+          if (isUnifiedResourcesEnabled) {
+            updatedChildren.push({
+              key: '/resources',
+              label: '资源管理 (实验)',
+              icon: <ExperimentOutlined />,
+              onClick: () => navigate('/resources'),
+            });
+          }
+          return {
+            ...item,
+            children: updatedChildren.map((child: any) => ({
+              ...child,
+              onClick: child.onClick || (() => { if (child.key) navigate(String(child.key)); }),
+            })),
+          };
+        }
         if (i.children) {
           return {
             ...item,
@@ -579,6 +609,16 @@ const EnterpriseContent: React.FC = () => {
             <Route path="/feature-matrix" element={<PermissionGuard><FeatureMatrix /></PermissionGuard>} />
             <Route path="/dict-management" element={<PermissionGuard><DictManagement /></PermissionGuard>} />
             <Route path="/operation-log" element={<PermissionGuard><OperationLog /></PermissionGuard>} />
+
+            {/* Experimental resources page (Phase 2) */}
+            <Route
+              path="/resources"
+              element={
+                <FeatureGuard feature={FEATURES.UNIFIED_RESOURCES}>
+                  <ResourceManagement />
+                </FeatureGuard>
+              }
+            />
 
             {/* Old route redirects */}
             <Route path="/rules" element={<Navigate to="/product/stair-climbing" replace />} />

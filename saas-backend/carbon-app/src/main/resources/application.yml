@@ -89,6 +89,10 @@ security:
     enabled: true
     duration-minutes: 30
 
+# Feature toggles
+feature:
+  unified-resources: false
+
 logging:
   level:
     com.carbonpoint: debug

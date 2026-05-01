@@ -118,3 +118,9 @@ pnpm build
 1. 检查套餐分配后的菜单加载
 2. 监控资源访问权限控制
 3. 观察数据库性能
+
+## 相关文档
+
+- [最终验证报告](./docs/reports/FINAL_VERIFICATION_REPORT.md)
+- [生产运维手册 (RUNBOOK)](./RUNBOOK.md)
+- [部署指南 (英文)](./DEPLOYMENT.md)
