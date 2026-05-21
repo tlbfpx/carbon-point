@@ -57,11 +57,14 @@ public class MenuServiceImpl implements MenuService {
         }
     }
 
+    private static final Set<String> POINTS_GENERATING_CATEGORIES = Set.of("stair_climbing", "stairs_climbing", "walking");
+
     /**
      * Old menu implementation (kept for backward compatibility).
      */
     private List<MenuItemVO> getOldTenantMenu(Long tenantId) {
         List<MenuItemVO> menu = new ArrayList<>();
+        Set<String> tenantProductCategories = new HashSet<>();
 
         // Add dashboard
         menu.add(buildMenuItem("dashboard", "数据看板", "DashboardOutlined", "/dashboard", 1));
@@ -79,13 +82,22 @@ public class MenuServiceImpl implements MenuService {
                 ProductEntity product = productMapper.selectById(pp.getProductId());
                 if (product != null && product.getStatus() == 1) {
                     menu.add(buildProductMenu(product, pp, sortOrder++));
+                    tenantProductCategories.add(product.getCode());
+                    if (product.getCategory() != null) {
+                        tenantProductCategories.add(product.getCategory());
+                    }
                 }
             }
         }
 
-        // Add operations menus
-        menu.add(buildMenuItem("points", "积分运营", "TrophyOutlined", "/points", 50));
-        menu.add(buildMenuItem("point-expiration", "积分过期配置", "ClockCircleOutlined", "/point-expiration", 51));
+        boolean hasPointsProducts = tenantProductCategories.stream()
+                .anyMatch(POINTS_GENERATING_CATEGORIES::contains);
+
+        // Add operations menus — only show points-related menus when tenant has point-generating products
+        if (hasPointsProducts) {
+            menu.add(buildMenuItem("points", "积分运营", "TrophyOutlined", "/points", 50));
+            menu.add(buildMenuItem("point-expiration", "积分过期配置", "ClockCircleOutlined", "/point-expiration", 51));
+        }
         menu.add(buildMenuItem("reports", "数据报表", "BarChartOutlined", "/reports", 52));
 
         // Add settings group
@@ -200,6 +212,7 @@ public class MenuServiceImpl implements MenuService {
 
         // Get function products from ResourceRegistry, filter by tenant's resources
         List<PlatformResource> products = resourceRegistry.getFunctionProducts();
+        Set<String> enabledProductCategories = new HashSet<>();
         int sortOrder = 10;
         for (PlatformResource product : products) {
             if ("ENABLED".equals(product.getStatus())) {
@@ -208,13 +221,22 @@ public class MenuServiceImpl implements MenuService {
                 Object hasProduct = tenantResources.get(productResourceKey);
                 if (Boolean.TRUE.equals(hasProduct)) {
                     menu.add(buildProductMenuNode(product, sortOrder++));
+                    enabledProductCategories.add(product.getCode());
+                    if (product.getCategory() != null) {
+                        enabledProductCategories.add(product.getCategory());
+                    }
                 }
             }
         }
 
-        // Add operations menus
-        menu.add(buildMenuNode("points", "积分运营", "TrophyOutlined", "/points", 50, null, null));
-        menu.add(buildMenuNode("point-expiration", "积分过期配置", "ClockCircleOutlined", "/point-expiration", 51, null, null));
+        boolean hasPointsProducts = enabledProductCategories.stream()
+                .anyMatch(POINTS_GENERATING_CATEGORIES::contains);
+
+        // Add operations menus — only show points-related menus when tenant has point-generating products
+        if (hasPointsProducts) {
+            menu.add(buildMenuNode("points", "积分运营", "TrophyOutlined", "/points", 50, null, null));
+            menu.add(buildMenuNode("point-expiration", "积分过期配置", "ClockCircleOutlined", "/point-expiration", 51, null, null));
+        }
         menu.add(buildMenuNode("reports", "数据报表", "BarChartOutlined", "/reports", 52, null, null));
 
         // Add settings group
