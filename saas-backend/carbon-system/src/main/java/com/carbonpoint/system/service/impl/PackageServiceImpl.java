@@ -15,6 +15,7 @@ import com.carbonpoint.system.dto.res.TenantPackageRes;
 import com.carbonpoint.system.entity.*;
 import com.carbonpoint.system.event.PackagePermissionUpdatedEvent;
 import com.carbonpoint.system.mapper.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.carbonpoint.system.security.PermissionService;
 import com.carbonpoint.system.service.PackageService;
 import com.carbonpoint.system.service.ProductRuleTemplateService;
@@ -47,6 +48,8 @@ public class PackageServiceImpl implements PackageService {
     private final ApplicationEventPublisher eventPublisher;
     private final ProductRuleTemplateService ruleTemplateService;
     private final FeatureMapper featureMapper;
+    private final PackageResourceMapper packageResourceMapper;
+    private final ObjectMapper objectMapper;
 
     @Override
     public List<PackageRes> list() {
@@ -436,27 +439,64 @@ public class PackageServiceImpl implements PackageService {
         List<PackageProductEntity> packageProducts = packageProductMapper.selectByPackageId(id);
         List<PackageProductRes> productResList = new ArrayList<>();
 
-        for (PackageProductEntity pp : packageProducts) {
-            ProductEntity product = productMapper.selectById(pp.getProductId());
-            if (product == null) {
-                continue;
+        if (!packageProducts.isEmpty()) {
+            // Batch fetch all products in one query
+            List<String> productIds = packageProducts.stream()
+                    .map(PackageProductEntity::getProductId)
+                    .collect(Collectors.toList());
+            Map<String, ProductEntity> productMap = productMapper.selectBatchIds(productIds).stream()
+                    .collect(Collectors.toMap(ProductEntity::getId, p -> p));
+
+            // Batch fetch all package-product-features in one query
+            List<PackageProductFeatureEntity> allPpfList = packageProductFeatureMapper
+                    .selectByPackageId(id);
+            Map<String, List<PackageProductFeatureEntity>> ppfByProductId = allPpfList.stream()
+                    .collect(Collectors.groupingBy(PackageProductFeatureEntity::getProductId));
+
+            // Batch load all product features and feature entities
+            Set<String> allFeatureIds = new HashSet<>();
+            Map<String, List<ProductFeatureEntity>> productFeaturesByProductId = new HashMap<>();
+
+            for (String productId : productIds) {
+                List<ProductFeatureEntity> productFeatures = productFeatureMapper
+                        .selectByProductId(productId);
+                productFeaturesByProductId.put(productId, productFeatures);
+                allFeatureIds.addAll(productFeatures.stream()
+                        .map(ProductFeatureEntity::getFeatureId)
+                        .collect(Collectors.toSet()));
             }
 
-            // Fetch features for this product in the package
-            List<PackageProductFeatureEntity> ppfList = packageProductFeatureMapper
-                    .selectByPackageIdAndProductId(id, pp.getProductId());
-            List<PackageFeatureRes> featureResList = buildFeatureResList(pp.getProductId(), ppfList);
+            // Batch load all feature entities
+            Map<String, FeatureEntity> featureMap = new HashMap<>();
+            if (!allFeatureIds.isEmpty()) {
+                List<FeatureEntity> features = featureMapper.selectBatchIds(new ArrayList<>(allFeatureIds));
+                featureMap = features.stream()
+                        .collect(Collectors.toMap(FeatureEntity::getId, f -> f));
+            }
 
-            productResList.add(PackageProductRes.builder()
-                    .productId(product.getId())
-                    .productCode(product.getCode())
-                    .productName(product.getName())
-                    .productCategory(product.getCategory())
-                    .productStatus(product.getStatus())
-                    .sortOrder(pp.getSortOrder())
-                    .features(featureResList)
-                    .createdAt(pp.getCreatedAt())
-                    .build());
+            // Build responses in memory
+            for (PackageProductEntity pp : packageProducts) {
+                ProductEntity product = productMap.get(pp.getProductId());
+                if (product == null) {
+                    continue;
+                }
+
+                List<PackageProductFeatureEntity> ppfList = ppfByProductId.getOrDefault(
+                        pp.getProductId(), Collections.emptyList());
+                List<PackageFeatureRes> featureResList = buildFeatureResListOptimized(
+                        pp.getProductId(), ppfList, productFeaturesByProductId, featureMap);
+
+                productResList.add(PackageProductRes.builder()
+                        .productId(product.getId())
+                        .productCode(product.getCode())
+                        .productName(product.getName())
+                        .productCategory(product.getCategory())
+                        .productStatus(product.getStatus())
+                        .sortOrder(pp.getSortOrder())
+                        .features(featureResList)
+                        .createdAt(pp.getCreatedAt())
+                        .build());
+            }
         }
 
         return PackageDetailRes.builder()
@@ -537,6 +577,7 @@ public class PackageServiceImpl implements PackageService {
 
     /**
      * Load FeatureEntity objects for the feature IDs referenced by product features.
+     * Optimized: single batch query instead of N+1.
      */
     private Map<String, FeatureEntity> loadFeatureEntities(List<ProductFeatureEntity> productFeatures) {
         List<String> featureIds = productFeatures.stream()
@@ -546,16 +587,72 @@ public class PackageServiceImpl implements PackageService {
         if (featureIds.isEmpty()) {
             return Collections.emptyMap();
         }
-        List<FeatureEntity> systemFeatures = featureIds.stream()
-                .map(id -> {
-                    LambdaQueryWrapper<FeatureEntity> w = new LambdaQueryWrapper<>();
-                    w.eq(FeatureEntity::getId, id);
-                    return featureMapper.selectOne(w);
-                })
-                .filter(Objects::nonNull)
-                .toList();
+        // Single batch query instead of N+1
+        List<FeatureEntity> systemFeatures = featureMapper.selectBatchIds(featureIds);
         return systemFeatures.stream()
                 .collect(Collectors.toMap(FeatureEntity::getId, f -> f));
+    }
+
+    /**
+     * Optimized version: uses pre-loaded maps instead of querying in loop.
+     */
+    private List<PackageFeatureRes> buildFeatureResListOptimized(
+            String productId,
+            List<PackageProductFeatureEntity> ppfList,
+            Map<String, List<ProductFeatureEntity>> productFeaturesByProductId,
+            Map<String, FeatureEntity> featureMap) {
+
+        List<ProductFeatureEntity> productFeatures = productFeaturesByProductId.getOrDefault(
+                productId, Collections.emptyList());
+
+        if (ppfList.isEmpty()) {
+            // No package-level features configured — fall back to product defaults
+            if (productFeatures.isEmpty()) {
+                return Collections.emptyList();
+            }
+            return productFeatures.stream()
+                    .map(pf -> {
+                        FeatureEntity sf = featureMap.get(pf.getFeatureId());
+                        return PackageFeatureRes.builder()
+                                .featureId(pf.getFeatureId())
+                                .featureCode(sf != null ? sf.getCode() : null)
+                                .featureName(sf != null ? sf.getName() : null)
+                                .featureType(sf != null ? sf.getType() : null)
+                                .valueType(sf != null ? sf.getValueType() : null)
+                                .configValue(pf.getConfigValue())
+                                .isEnabled(pf.getIsEnabled() != null ? pf.getIsEnabled() : true)
+                                .isCustomized(false)
+                                .productDefaultValue(pf.getConfigValue())
+                                .systemDefaultValue(sf != null ? sf.getDefaultValue() : null)
+                                .build();
+                    })
+                    .toList();
+        }
+
+        // Use pre-loaded product features to build the map
+        Map<String, ProductFeatureEntity> productFeatureMap = productFeatures.stream()
+                .collect(Collectors.toMap(ProductFeatureEntity::getFeatureId, pf -> pf));
+
+        return ppfList.stream()
+                .map(ppf -> {
+                    ProductFeatureEntity pf = productFeatureMap.get(ppf.getFeatureId());
+                    FeatureEntity sf = featureMap.get(ppf.getFeatureId());
+                    return PackageFeatureRes.builder()
+                            .featureId(ppf.getFeatureId())
+                            .featureCode(sf != null ? sf.getCode() : null)
+                            .featureName(sf != null ? sf.getName() : null)
+                            .featureType(sf != null ? sf.getType() : null)
+                            .valueType(sf != null ? sf.getValueType() : null)
+                            .configValue(ppf.getConfigValue())
+                            .isEnabled(ppf.getIsEnabled())
+                            .isCustomized(ppf.getIsCustomized())
+                            .productDefaultValue(pf != null ? pf.getConfigValue() : null)
+                            .systemDefaultValue(sf != null ? sf.getDefaultValue() : null)
+                            .createdAt(ppf.getCreatedAt())
+                            .updatedAt(ppf.getUpdatedAt())
+                            .build();
+                })
+                .toList();
     }
 
     /**
@@ -655,5 +752,83 @@ public class PackageServiceImpl implements PackageService {
 
         log.info("Package features updated: packageId={}, productCount={}",
                 packageId, req.getProducts().size());
+    }
+
+    // ── Package-Resource management implementation ─────────────────────────────
+
+    @Override
+    @Transactional
+    public void attachResourceToPackage(Long packageId, String resourceCode, Object config, Boolean required) {
+        PermissionPackage pkg = packageMapper.selectById(packageId);
+        if (pkg == null) {
+            throw new BusinessException(ErrorCode.PACKAGE_NOT_FOUND);
+        }
+
+        // Check if resource is already attached
+        LambdaQueryWrapper<PackageResource> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(PackageResource::getPackageId, packageId)
+               .eq(PackageResource::getResourceCode, resourceCode);
+        PackageResource existing = packageResourceMapper.selectOne(wrapper);
+
+        String configJson = null;
+        if (config != null) {
+            try {
+                configJson = objectMapper.writeValueAsString(config);
+            } catch (Exception e) {
+                log.error("Failed to serialize config for resource: {}", resourceCode, e);
+                throw new BusinessException(ErrorCode.PARAM_INVALID, "Failed to serialize resource config");
+            }
+        }
+
+        if (existing != null) {
+            // Update existing
+            if (configJson != null) {
+                existing.setConfig(configJson);
+            }
+            if (required != null) {
+                existing.setIsRequired(required);
+            }
+            packageResourceMapper.updateById(existing);
+            log.info("Package resource updated: packageId={}, resourceCode={}", packageId, resourceCode);
+        } else {
+            // Create new
+            PackageResource pr = new PackageResource();
+            pr.setPackageId(packageId);
+            pr.setResourceCode(resourceCode);
+            pr.setConfig(configJson);
+            pr.setIsRequired(required != null ? required : false);
+            pr.setSortOrder(0);
+            packageResourceMapper.insert(pr);
+            log.info("Package resource attached: packageId={}, resourceCode={}", packageId, resourceCode);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void detachResourceFromPackage(Long packageId, String resourceCode) {
+        PermissionPackage pkg = packageMapper.selectById(packageId);
+        if (pkg == null) {
+            throw new BusinessException(ErrorCode.PACKAGE_NOT_FOUND);
+        }
+
+        LambdaQueryWrapper<PackageResource> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(PackageResource::getPackageId, packageId)
+               .eq(PackageResource::getResourceCode, resourceCode);
+        packageResourceMapper.delete(wrapper);
+
+        log.info("Package resource detached: packageId={}, resourceCode={}", packageId, resourceCode);
+    }
+
+    @Override
+    public List<PackageResource> getPackageResources(Long packageId) {
+        PermissionPackage pkg = packageMapper.selectById(packageId);
+        if (pkg == null) {
+            throw new BusinessException(ErrorCode.PACKAGE_NOT_FOUND);
+        }
+
+        LambdaQueryWrapper<PackageResource> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(PackageResource::getPackageId, packageId)
+               .orderByAsc(PackageResource::getSortOrder);
+        return packageResourceMapper.selectList(wrapper);
     }
 }

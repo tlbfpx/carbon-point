@@ -6,6 +6,10 @@ import com.carbonpoint.system.dto.res.RuleTemplateRes;
 
 import java.util.List;
 
+/**
+ * @deprecated Deprecated for removal in v2.3, use unified resources instead.
+ */
+@Deprecated
 public interface ProductRuleTemplateService {
     List<RuleTemplateRes> listByProduct(String productId);
     RuleTemplateRes create(String productId, RuleTemplateCreateReq req);

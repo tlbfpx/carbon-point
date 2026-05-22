@@ -8,7 +8,9 @@ import org.apache.ibatis.annotations.Select;
 
 /**
  * Platform-level product mapper.
+ * @deprecated Deprecated for removal in v2.3, use unified resources instead.
  */
+@Deprecated
 @Mapper
 @InterceptorIgnore
 public interface ProductMapper extends BaseMapper<ProductEntity> {

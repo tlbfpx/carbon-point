@@ -10,6 +10,10 @@ import com.carbonpoint.system.dto.res.ProductPackageBriefRes;
 
 import java.util.List;
 
+/**
+ * @deprecated Deprecated for removal in v2.3, use unified resources instead.
+ */
+@Deprecated
 public interface ProductService {
 
     PageRes<ProductRes> getProducts(int page, int size, String category, Integer status, String keyword);

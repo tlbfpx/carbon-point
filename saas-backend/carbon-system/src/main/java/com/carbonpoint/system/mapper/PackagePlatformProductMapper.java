@@ -12,7 +12,9 @@ import java.util.List;
 
 /**
  * Package-Product association mapper.
+ * @deprecated Deprecated for removal in v2.3, use unified resources instead.
  */
+@Deprecated
 @Mapper
 @InterceptorIgnore
 public interface PackagePlatformProductMapper extends BaseMapper<PackagePlatformProduct> {

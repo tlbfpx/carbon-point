@@ -12,7 +12,9 @@ import java.time.LocalDateTime;
 /**
  * Product-Feature association entity.
  * Defines which features are available for a product and their default values.
+ * @deprecated Deprecated for removal in v2.3, use unified resources instead.
  */
+@Deprecated
 @Data
 @TableName("product_features")
 public class ProductFeatureEntity {

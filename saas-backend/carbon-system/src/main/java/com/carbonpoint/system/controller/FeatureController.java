@@ -12,7 +12,9 @@ import java.util.Optional;
 
 /**
  * Feature management controller - platform level.
+ * @deprecated Deprecated for removal in v2.3, use unified resources instead.
  */
+@Deprecated
 @RestController
 @RequestMapping("/platform/features")
 @RequiredArgsConstructor

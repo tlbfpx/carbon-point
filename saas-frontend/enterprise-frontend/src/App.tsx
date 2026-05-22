@@ -25,6 +25,7 @@ import {
     ClockCircleOutlined,
     RiseOutlined,
     GiftOutlined,
+    ExperimentOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 
@@ -36,6 +37,7 @@ import Roles from '@/pages/Roles';
 import Branding from '@/pages/Branding';
 import FeatureMatrix from '@/pages/FeatureMatrix';
 import DictManagement from '@/pages/DictManagement';
+import ProductConfig from '@/pages/ProductConfig';
 import LoginPage from '@/pages/LoginPage';
 import OperationLog from '@/pages/OperationLog';
 import PointExpiration from '@/pages/PointExpiration';
@@ -47,6 +49,7 @@ import QuizPage from '@/pages/product/QuizPage';
 import MallPage from '@/pages/product/MallPage';
 import SettingsPage from '@/pages/SettingsPage';
 import VirtualGoodsManagement from '@/pages/VirtualGoodsManagement';
+import ResourceManagement from '@/pages/ResourceManagement';
 
 import { useFeatureStore } from '@/store/featureStore';
 
@@ -54,6 +57,8 @@ import { useAuthStore } from '@/store/authStore';
 import { useBranding } from '@/components/BrandingProvider';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import PermissionGuard from '@/components/PermissionGuard';
+import FeatureGuard from '@/components/FeatureGuard';
+import { FEATURES } from '@/constants/features';
 import { routeLogger } from '@/utils';
 import { getTenantProducts } from '@/api/tenantProducts';
 import { getTenantMenu, MenuItem as ApiMenuItem } from '@/api/menu';
@@ -70,6 +75,7 @@ const ENTERPRISE_PERMISSION_MAP: Record<string, string | undefined> = {
   // Product pages
   '/product/stair-climbing': 'enterprise:rule:view',
   '/product/walking': 'enterprise:walking:view',
+  '/product-config': 'enterprise:product:config',
   '/product/quiz': 'enterprise:quiz:view',
   '/product/mall': 'enterprise:product:list',
   '/virtual-goods': 'enterprise:product:list',
@@ -94,7 +100,6 @@ const ENTERPRISE_PERMISSION_MAP: Record<string, string | undefined> = {
   '/orders': 'enterprise:order:list',
   '/mall/shelf': 'enterprise:mall:shelf',
   '/mall/reports': 'enterprise:mall:report',
-  '/product-config': 'enterprise:product:config',
 };
 
 // Phase 2 fallback: static menu rendered when getTenantMenu() returns empty.
@@ -102,9 +107,8 @@ const ENTERPRISE_PERMISSION_MAP: Record<string, string | undefined> = {
 const EnterpriseMenuItems: MenuProps['items'] = [
   { key: '/dashboard', icon: <DashboardOutlined />, label: '数据看板' },
   { key: '/members', icon: <TeamOutlined />, label: '员工管理' },
-  // Product menus — filtered dynamically below based on purchased products
-  { key: '/product/stair-climbing', icon: <RiseOutlined />, label: '爬楼积分管理' },
-  { key: '/product/walking', icon: <WomanOutlined />, label: '走路积分管理' },
+  // Product menus — unified product config panel
+  { key: '/product-config', icon: <AppstoreOutlined />, label: '产品功能配置' },
   { key: '/product/quiz', icon: <BookOutlined />, label: '答题管理' },
   { key: '/product/mall', icon: <ShopOutlined />, label: '积分商城' },
   { key: '/virtual-goods', icon: <GiftOutlined />, label: '虚拟商品管理' },
@@ -127,46 +131,59 @@ const EnterpriseMenuItems: MenuProps['items'] = [
   },
 ];
 
-// Map backend paths to frontend routes
-const mapBackendPathToFrontend = (backendPath: string): string => {
-  const pathMap: Record<string, string> = {
-    '/dashboard': '/dashboard',
-    '/mall': '/product/mall',
-    '/users': '/members',
-    '/reports': '/reports',
-    '/settings': '/settings',
+// Map backend menu items to frontend routes
+const mapBackendMenuToFrontendPath = (item: { key?: string; path?: string }): string => {
+  // Priority 1: use path if it's already a valid frontend route
+  if (item.path && item.path.startsWith('/')) {
+    return item.path;
+  }
+
+  // Priority 2: map by key
+  const keyMap: Record<string, string> = {
+    'dashboard': '/dashboard',
+    'members': '/members',
+    'points': '/points',
+    'point-expiration': '/point-expiration',
+    'reports': '/reports',
+    'roles': '/roles',
+    'branding': '/branding',
+    'feature-matrix': '/feature-matrix',
+    'dict-management': '/dict-management',
+    'operation-log': '/operation-log',
+    'settings': '/settings',
   };
 
-  // Check for product paths
-  if (backendPath.startsWith('/product/')) {
-    const parts = backendPath.split('/');
-    const productCode = parts[2];
+  if (item.key && keyMap[item.key]) {
+    return keyMap[item.key];
+  }
 
-    const codeToRoute: Record<string, string> = {
-      'stair_climbing': '/product/stair-climbing',
-      'stairs_climbing': '/product/stair-climbing',
-      'walking': '/product/walking',
+  // Handle product keys like "product-stair_climbing"
+  if (item.key && item.key.startsWith('product-')) {
+    const productCode = item.key.replace('product-', '');
+    const codeToPath: Record<string, string> = {
+      'stair_climbing': '/product-config',
+      'stairs_basic': '/product-config',
+      'stairs_pro': '/product-config',
+      'stairs_climbing': '/product-config',
+      'walking': '/product-config',
+      'walking_basic': '/product-config',
+      'walking_pro': '/product-config',
       'quiz': '/product/quiz',
       'mall': '/product/mall',
     };
-
-    if (codeToRoute[productCode]) {
-      return codeToRoute[productCode];
+    if (codeToPath[productCode]) {
+      return codeToPath[productCode];
     }
+    return `/product/${productCode}`;
   }
 
-  // If direct match, return it
-  if (pathMap[backendPath]) {
-    return pathMap[backendPath];
+  // Fallback: if path looks like a route, use it
+  if (item.path) {
+    return item.path;
   }
 
-  // Check if path exists in permission map
-  if (ENTERPRISE_PERMISSION_MAP[backendPath] !== undefined) {
-    return backendPath;
-  }
-
-  // Default fallback
-  console.log('[Menu] Unknown path, falling back to dashboard:', backendPath);
+  // Last resort: dashboard
+  console.warn('[Menu] Could not map menu item, falling back to /dashboard:', item);
   return '/dashboard';
 };
 
@@ -178,6 +195,7 @@ const MENU_ITEM_ACTIVE_BG = 'rgba(255, 255, 255, 0.08)';
 
 const EnterpriseContent: React.FC = () => {
   const { user, isAuthenticated, logout, permissions, permissionsLoading, isHydrated } = useAuthStore();
+  const isUnifiedResourcesEnabled = useFeatureStore((s) => s.isEnabled(FEATURES.UNIFIED_RESOURCES));
   const navigate = useNavigate();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
@@ -205,12 +223,14 @@ const EnterpriseContent: React.FC = () => {
 
   // Product code to menu route mapping for static fallback filtering
   const PRODUCT_MENU_MAP: Record<string, string> = {
-    'stair_climbing': '/product/stair-climbing',
-    'stairs_climbing': '/product/stair-climbing',
-    'walking': '/product/walking',
+    'stair_climbing': '/product-config',
+    'stairs_climbing': '/product-config',
+    'walking': '/product-config',
     'quiz': '/product/quiz',
     'mall': '/product/mall',
   };
+
+  const POINTS_GENERATING_CODES = new Set(['stair_climbing', 'stairs_climbing', 'walking']);
 
   const tenantProductKeys = useMemo(() => {
     if (!tenantProducts) return new Set<string>();
@@ -221,12 +241,22 @@ const EnterpriseContent: React.FC = () => {
     );
   }, [tenantProducts]);
 
-  // Debug logging
-  console.log('[EnterpriseContent render] isAuthenticated:', isAuthenticated, 'user:', !!user, 'location:', location.pathname, 'tenantProductKeys:', tenantProductKeys, 'dynamicMenu:', dynamicMenu);
+  const hasPointsProducts = useMemo(() => {
+    if (!tenantProducts) return false;
+    return tenantProducts.some(p =>
+      POINTS_GENERATING_CODES.has(p.productCode) || POINTS_GENERATING_CODES.has(p.category)
+    );
+  }, [tenantProducts]);
 
   useEffect(() => {
     useAuthStore.getState().hydrate();
   }, []);
+
+  useEffect(() => {
+    if (isAuthenticated && !useFeatureStore.getState().loaded) {
+      useFeatureStore.getState().load();
+    }
+  }, [isAuthenticated]);
 
   useEffect(() => {
     routeLogger.info(`[路由切换] 导航到 ${location.pathname}`);
@@ -237,63 +267,79 @@ const EnterpriseContent: React.FC = () => {
     if (!items || !Array.isArray(items)) return [];
 
     return items.map(item => {
-      const frontendPath = mapBackendPathToFrontend(item.path || item.key);
+      const frontendPath = mapBackendMenuToFrontendPath(item);
+
+      console.log('[Menu] Converting item:', { original: item, frontendPath });
 
       return {
-        key: frontendPath,
+        key: frontendPath, // Use the path as key for proper selection and navigation
         icon: getIconComponent(item.icon),
         label: item.label,
         disabled: item.disabled || false,
         children: item.children && item.children.length > 0 ? convertToMenuItems(item.children) : undefined,
-        onClick: () => {
-          if (frontendPath && (!item.children || item.children.length === 0)) {
-            navigate(frontendPath);
-          }
-        },
       };
     });
   };
 
   // Use dynamic menu if available, otherwise fallback to static
   const menuItems = useMemo(() => {
+    console.log('[Menu] Building menu, dynamicMenu:', dynamicMenu);
+
     if (dynamicMenu && Array.isArray(dynamicMenu) && dynamicMenu.length > 0) {
-      console.log('[Menu] Using dynamic menu');
+      console.log('[Menu] Using dynamic menu from backend');
       return convertToMenuItems(dynamicMenu);
     }
 
-    // Fallback to static menu
-    console.log('[Menu] Using static menu fallback');
+    console.log('[Menu] Using static fallback menu');
     return EnterpriseMenuItems
       .filter(item => {
         const key = String((item as any).key);
 
-        // Hide product menus if tenant hasn't purchased the product
         if (key.startsWith('/product/') && !tenantProductKeys.has(key)) {
           return false;
         }
+        if (key === '/product-config' && tenantProductKeys.size === 0) {
+          return false;
+        }
+        // Gate points-related menus by point-generating products
+        if ((key === '/points' || key === '/point-expiration') && !hasPointsProducts) {
+          return false;
+        }
 
-        // Check permissions for leaf items
         if (permissionsLoading || productsLoading) return true;
         const perm = ENTERPRISE_PERMISSION_MAP[key];
-        return !perm || permissions.includes(perm);
+        return !perm || permissions.includes('*') || permissions.includes(perm);
       })
       .map(item => {
         const i = item as any;
-        if (i.children) {
+        if (i.children && i.key === 'settings-group') {
+          const updatedChildren = [...i.children];
+          if (isUnifiedResourcesEnabled) {
+            updatedChildren.push({
+              key: '/resources',
+              label: '资源管理 (实验)',
+              icon: <ExperimentOutlined />,
+            });
+          }
           return {
             ...item,
-            children: i.children.map((child: any) => ({
-              ...child,
-              onClick: () => { if (child.key) navigate(String(child.key)); },
-            })),
+            children: updatedChildren,
           };
         }
-        return {
-          ...item,
-          onClick: () => { if (i?.key) navigate(String(i.key)); },
-        };
+        return item;
       });
-  }, [dynamicMenu, tenantProductKeys, permissionsLoading, productsLoading, permissions, navigate]);
+  }, [dynamicMenu, tenantProductKeys, hasPointsProducts, permissionsLoading, productsLoading, permissions, isUnifiedResourcesEnabled]);
+
+  // Handle menu click - THIS IS THE KEY FIX!
+  const handleMenuClick: MenuProps['onClick'] = ({ key, keyPath, domEvent }) => {
+    console.log('[Menu] Click event:', { key, keyPath });
+    if (key && key.startsWith('/')) {
+      console.log('[Menu] Navigating to:', key);
+      navigate(key);
+    } else {
+      console.warn('[Menu] Invalid menu key, not navigating:', key);
+    }
+  };
 
   const userMenuItems: MenuProps['items'] = [
     { key: 'profile', icon: <UserOutlined />, label: '个人信息' },
@@ -307,17 +353,29 @@ const EnterpriseContent: React.FC = () => {
     },
   ];
 
-  // Custom menu item renderer for pill-shaped items with glow effects
-  const customMenuItems: MenuProps['items'] = (menuItems || []).map((item: any) => ({
-    ...item,
-    label: (
-      <span className="custom-menu-label">
-        {item?.label || ''}
-      </span>
-    ),
-  }));
+  const customMenuItems: MenuProps['items'] = (menuItems || []).map((item: any) => {
+    const mappedItem: any = {
+      ...item,
+      label: (
+        <span className="custom-menu-label">
+          {item?.label || ''}
+        </span>
+      ),
+    };
+    // Recursively map children
+    if (item.children && Array.isArray(item.children)) {
+      mappedItem.children = item.children.map((child: any) => ({
+        ...child,
+        label: (
+          <span className="custom-menu-label">
+            {child?.label || ''}
+          </span>
+        ),
+      }));
+    }
+    return mappedItem;
+  });
 
-  // 还在hydrating → 显示加载状态
   if (!isHydrated) {
     return (
       <div style={{
@@ -429,6 +487,7 @@ const EnterpriseContent: React.FC = () => {
           selectedKeys={[location.pathname]}
           defaultOpenKeys={dynamicMenu ? [] : ['settings-group']}
           items={customMenuItems}
+          onClick={handleMenuClick}
           style={{
             flex: 1,
             background: 'transparent',
@@ -560,7 +619,7 @@ const EnterpriseContent: React.FC = () => {
             <Route path="/dashboard" element={<PermissionGuard><Dashboard /></PermissionGuard>} />
             <Route path="/members" element={<PermissionGuard><Member /></PermissionGuard>} />
 
-            {/* New product pages */}
+            <Route path="/product-config" element={<PermissionGuard><ProductConfig /></PermissionGuard>} />
             <Route path="/product/stair-climbing" element={<PermissionGuard><StairClimbingPage /></PermissionGuard>} />
             <Route path="/product/walking" element={<PermissionGuard><WalkingPage /></PermissionGuard>} />
             <Route path="/product/quiz" element={<PermissionGuard><QuizPage /></PermissionGuard>} />
@@ -580,18 +639,26 @@ const EnterpriseContent: React.FC = () => {
             <Route path="/dict-management" element={<PermissionGuard><DictManagement /></PermissionGuard>} />
             <Route path="/operation-log" element={<PermissionGuard><OperationLog /></PermissionGuard>} />
 
+            {/* Experimental resources page (Phase 2) */}
+            <Route
+              path="/resources"
+              element={
+                <FeatureGuard feature={FEATURES.UNIFIED_RESOURCES}>
+                  <ResourceManagement />
+                </FeatureGuard>
+              }
+            />
+
             {/* Old route redirects */}
-            <Route path="/rules" element={<Navigate to="/product/stair-climbing" replace />} />
-            <Route path="/walking" element={<Navigate to="/product/walking" replace />} />
-            <Route path="/walking/step-config" element={<Navigate to="/product/walking" replace />} />
-            <Route path="/walking/fun-equiv" element={<Navigate to="/product/walking" replace />} />
+            <Route path="/rules" element={<Navigate to="/product-config" replace />} />
+            <Route path="/walking" element={<Navigate to="/product-config" replace />} />
+            <Route path="/walking/step-config" element={<Navigate to="/product-config" replace />} />
+            <Route path="/walking/fun-equiv" element={<Navigate to="/product-config" replace />} />
             <Route path="/quiz" element={<Navigate to="/product/quiz" replace />} />
             <Route path="/products" element={<Navigate to="/product/mall" replace />} />
             <Route path="/orders" element={<Navigate to="/product/mall" replace />} />
             <Route path="/mall/shelf" element={<Navigate to="/product/mall" replace />} />
             <Route path="/mall/reports" element={<Navigate to="/product/mall" replace />} />
-            <Route path="/product-config" element={<Navigate to="/product/stair-climbing" replace />} />
-
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </Content>

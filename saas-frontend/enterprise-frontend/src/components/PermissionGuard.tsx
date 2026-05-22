@@ -1,5 +1,6 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
+import { message } from 'antd';
 import { useAuthStore } from '@/store/authStore';
 
 const ROUTE_PERMISSION_MAP: Record<string, string | undefined> = {
@@ -43,10 +44,11 @@ const PermissionGuard: React.FC<PermissionGuardProps> = ({ children }) => {
 
   const requiredPerm = ROUTE_PERMISSION_MAP[currentPath];
 
-  if (!requiredPerm || permissions.includes(requiredPerm)) {
+  if (!requiredPerm || permissions.includes('*') || permissions.includes(requiredPerm)) {
     return <>{children}</>;
   }
 
+  void message.warning('您没有访问该页面的权限');
   return <Navigate to="/dashboard" replace />;
 };
 

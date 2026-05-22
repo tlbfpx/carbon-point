@@ -14,7 +14,9 @@ import java.util.Map;
 /**
  * Enterprise feature API.
  * Returns the feature map for the current tenant based on their package.
+ * @deprecated Deprecated for removal in v2.3, use unified resources instead.
  */
+@Deprecated
 @RestController
 @RequestMapping("/api/enterprise")
 @RequiredArgsConstructor

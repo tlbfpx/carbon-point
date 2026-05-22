@@ -6,7 +6,9 @@ import java.util.List;
 
 /**
  * Service for querying tenant's available products based on their package.
+ * @deprecated Deprecated for removal in v2.3, use unified resources instead.
  */
+@Deprecated
 public interface TenantProductService {
 
     /**
